@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- splitted from ./de/functions/mysql.xml, last change in rev 1.36 -->
-<!-- last change to 'mysql-fetch-array' in en/ tree in rev 1.27 -->
-<!-- EN-Revision: 1.2 Maintainer: betz Status: ready -->
-<!-- OLD-Revision: 1.82/EN.1.27 -->
+<!-- EN-Revision: 1.5 Maintainer: betz Status: ready -->
+
   <refentry id="function.mysql-fetch-array">
    <refnamediv>
     <refname>mysql_fetch_array</refname> 
@@ -37,13 +35,14 @@
      Spalten verwenden, können Sie auf die Inhalte dieser Spalten nicht über
      ihren ursprünglichen Namen zugreifen. (In folgendem Beispiel können Sie
      <literal>'field'</literal> nicht benutzen).
-    <informalexample>
+     <example>
+      <title>Query with duplicate field names</title>
       <programlisting role="sql">
 <![CDATA[
 select tone.field as foo ttwo.field as bar from tone, ttwo
 ]]>
       </programlisting>
-     </informalexample>
+     </example>
     </para>
     <para>
      Zu betonen ist, dass der Gebrauch von
@@ -56,7 +55,7 @@ select tone.field as foo ttwo.field as bar from tone, ttwo
      Das optionale zweite Argumente <parameter>Ergebnistyp</parameter>
      in <function>mysql_fetch_array</function> ist eine Konstante und
      kann die folgenden Werte annehmen: MYSQL_ASSOC, MYSQL_NUM und
-     MYSQL_BOTH. Diese Eigenschaft wurde in PHP 3.0.7 hinzugefügt. MYSQL_BOTH
+     MYSQL_BOTH. Diese Eigenschaft steht seit PHP 3.0.7 zur Verfügung. MYSQL_BOTH
      ist der Standard für diesen Paramater.
     </para>
     <para>
@@ -66,29 +65,71 @@ select tone.field as foo ttwo.field as bar from tone, ttwo
      Bei MYSQL_NUM erhalten Sie nur numerische Indizes (genau wie bei 
      <function>mysql_fetch_row</function>).
     </para>
+    <example>
+     <title>mysql_fetch_array mit MYSQL_NUM</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+    mysql_connect("localhost", "mysql_user", "mysql_password") or
+        die("Keine Verbindung möglich");
+    mysql_select_db("mydb");
+
+    $result = mysql_query("SELECT id, name FROM mytable");
+
+    while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
+        printf ("ID: %s  Name: %s", $row[0], $row[1]);  
+    }
+
+    mysql_free_result($result);
+?>
+]]>
+     </programlisting>
+    </example>
+    <example>
+     <title>mysql_fetch_array mit MYSQL_ASSOC</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+    mysql_connect("localhost", "mysql_user", "mysql_password") or
+        die("Keine Verbindung möglich");
+    mysql_select_db("mydb");
+
+    $result = mysql_query("SELECT id, name FROM mytable");
+
+    while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+        printf ("ID: %s  Name: %s", $row["id"], $row["name"]);
+    }
+
+    mysql_free_result($result);
+?>
+]]>
+     </programlisting>
+    </example>
+    <example>
+     <title>mysql_fetch_array mit MYSQL_BOTH</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+    mysql_connect("localhost", "mysql_user", "mysql_password") or
+        die("Keine Verbindung möglich");
+    mysql_select_db("mydb");
+
+    $result = mysql_query("SELECT id, name FROM mytable");
+
+    while ($row = mysql_fetch_array($result, MYSQL_BOTH)) {
+        printf ("ID: %s  Name: %s", $row[0], $row["name"]);
+    }
+
+    mysql_free_result($result);
+?>
+]]>
+     </programlisting>
+    </example>
     <para>
      Für weitere Details, siehe auch
      <function>mysql_fetch_row</function> und
      <function>mysql_fetch_assoc</function>
     </para>
-    <example>
-     <title><function>mysql_fetch_array</function> Beispiel</title>
-     <programlisting role="php">
-<![CDATA[
-<?php 
-mysql_connect ($host, $user, $password);
-$result = mysql_db_query ("database","select user_id, fullname from table");
-while ($row = mysql_fetch_array ($result)) {
-    echo "user_id: ".$row["user_id"]."<br>\n";
-    echo "user_id: ".$row[0]."<br>\n";
-    echo "fullname: ".$row["fullname"]."<br>\n";
-    echo "fullname: ".$row[1]."<br>\n";
-}
-mysql_free_result ($result);
-?>
-]]>
-     </programlisting>
-    </example>
    </refsect1>
   </refentry>
 
