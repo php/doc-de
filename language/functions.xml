@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.13 $ -->
-<!-- EN-Revision: 1.28 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.14 $ -->
+<!-- EN-Revision: 1.31 Maintainer: tom Status: ready -->
  <chapter id="functions">
   <title>Funktionen</title>
 
@@ -29,9 +29,79 @@ function foo ($arg_1, $arg_2, ..., $arg_n)
     linkend="keyword.class">Klassen-</link> Definitionen.
    </simpara>
    <simpara>
-    In PHP3 müssen Funktionen definiert sein, bevor man auf sie
-    verweist. In PHP4 ist das nicht mehr erforderlich.
+    In PHP 3 müssen Funktionen definiert sein, bevor man auf sie
+    verweist. In PHP4 ist das nicht mehr erforderlich,
+    <emphasis>außer</emphasis> wenn eine Funktion nur bedingt definiert
+    wird, wie in den beiden untenstehenden Beispielen gezeigt.
    </simpara>
+   <para>
+    Wenn eine Funktion nur unter bestimmten Bedingungen definiert wird,
+    muß die Definition dieser Funktion noch <emphasis>vor</emphasis>
+    deren Aufruf abgearbeitet werden.
+    <example>
+     <title>Bedingte Funktionen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+
+$makefoo = true;
+
+/* Wir können foo() von her aus nicht
+   aufrufen, da sie noch nicht existiert,
+   aber wir können bar() aufrufen */
+
+bar();
+
+if ($makefoo) {
+  function foo ()
+  {
+    echo "Ich existiere nicht, bis mich die Programmausführung erreicht hat.\n";
+  }
+}
+
+/* Nun können wir foo() sicher aufrufen,
+   da $makefoo als true ausgewertet wurde */
+
+if ($makefoo) foo();
+
+function bar() {
+{
+  echo "Ich existiere sofort nach Programmstart.\n";
+}
+
+?>
+]]>
+     </programlisting>
+    </example>
+    <example>
+     <title>Funktionen innerhalb von Funktionen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function foo() 
+{
+  function bar() 
+  {
+    echo "Ich existiere nicht, bis foo() aufgerufen wurde.\n";
+  }
+}
+
+/* Wir können bar() noch nicht
+   aufrufen, da es nicht existiert */
+
+foo();
+
+/* Nun können wir auch bar() aufrufen,
+   da sie durch die Abarbeitung von
+   foo() verfügbar gemacht wurde */
+
+bar();
+
+?>  
+]]>
+     </programlisting>
+    </example>
+   </para>
    <simpara>
     PHP unterstützt weder das Überladen von Funktionen, noch ist es
     möglich, zuvor deklarierte Funktionen neu zu definieren oder die
@@ -330,9 +400,12 @@ $neuereferenz =& returniere_referenz();
    </para>
    <para>
     Variablenfunktionen funktionieren nicht mit Sprachkonstrukten
-    wie <function>echo</function>, <function>unset</function>,
-    <function>isset</function>, <function>empty</function>, 
-    <function>include</function> und <function>print</function>.
+    wie <function>echo</function>, <function>print</function>,
+    <function>unset</function>, <function>isset</function>,
+    <function>empty</function>, <function>include</function> und
+    <function>require</function>. Sie müssen Ihre eigenen Wrapperfunktionen
+    verwenden, um diese Konstrukte als variable Funktionen benutzen zu
+    können.
    </para>
    <para>
     <example>
@@ -340,32 +413,72 @@ $neuereferenz =& returniere_referenz();
      <programlisting role="php">
 <![CDATA[
 <?php
-function blah()
+function foo()
 {
-    echo "In blah()<br>\n";
+    echo "In foo()<br>\n";
 }
 
-function fasel($arg = '')
+function bar($arg = '')
 {
-    echo "In fasel(); der Parameter ist '$arg'.<br>\n";
+    echo "In bar(); der Parameter ist '$arg'.<br>\n";
 }
 
-$func = 'blah';
-$func();
-$func = 'fasel';
-$func('test');
+// Dies ist eine Wrapperfunkiton für echo
+function echoit($string)
+{
+    echo $string;
+}
+
+$func = 'foo';
+$func();        // Dies ruft foo() auf
+
+$func = 'bar';
+$func('test');  // Dies ruft bar() auf
+
+$func = 'echoit';
+$func('test');  // Dies ruft echoit() auf
 ?>
 ]]>
      </programlisting>
     </example>
    </para>
    <para>
-    Siehe auch <link linkend="language.variables.variable">
+    Sie können auch die Methode eines Objektes mittels der variablen
+    Funktionen aufrufen.
+    <example>
+     <title>Variable Methode</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+class Foo
+{
+    function Var()
+    {
+        $name = 'Bar';
+        $this->$name(); // Dies ruft die Bar() Methode auf
+    }
+    
+    function Bar()
+    {
+        echo "Das ist Bar";
+    }
+}
+
+$foo = new Foo();
+$funcname = "Var";
+$foo->$varname();   // Dies ruft $foo->Var() auf
+
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Siehe auch <function>call_user_func</function>,
+    <link linkend="language.variables.variable">
     Variable Variablen</link> und <function>function_exists</function>.
    </para>
-
   </sect1>
- 
  </chapter>
  
  <!-- Keep this comment at the end of the file
