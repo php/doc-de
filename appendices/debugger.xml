@@ -1,61 +1,63 @@
  <appendix id="debugger">
-  <title>The PHP Debugger</title>
+  <title>Der PHP Debugger</title>
 
   <sect1 id="debugger-using">
-   <title>Using the Debugger</title>
-
+   <title>Verwendung des Debuggers</title>
+ 
    <para>
-    PHP's internal debugger is useful for tracking down evasive bugs.
-    The debugger works by connecting to a <acronym>TCP</acronym> port
-    for every time PHP starts up.  All error messages from that
-    request will be sent to this TCP connection.  This information is
-    intended for "debugging server" that can run inside an
-    <acronym>IDE</acronym> or programmable editor (such as Emacs).
+    Der integrierte Debugger von PHP is nützlich um die Zahl der
+    vermeidbaren Fehler gering zu halten. Jedesmal, wenn PHP startet 
+    stellt der Debugger eine Verbindung zu einem <acronym>TCP</acronym> 
+    Port her. Jede Fehlermeldung wird nun an diese TCP Verbindung ausgegeben.
+    Damit lässt sich ein "debugging server" einrichten, der innerhalb
+    einer <acronym>IDE</acronym> oder einem programmierbaren Editor (z.B.
+    Emacs) laeuft.
    </para>
    <para>
-    How to set up the debugger:
+    Den Debugger einrichten:
     <orderedlist>
      <listitem>
       <simpara> 
-       Set up a TCP port for the debugger in the <link
-       linkend="configuration.file">configuration file</link> (<link
-       linkend="ini.debugger.port">debugger.port</link>) and enable it
-       (<link linkend="ini.debugger.enabled">debugger.enabled</link>).
+       In der <link linkend="configuration.file">Konfigurationsdatei</link>
+        (<link linkend="ini.debugger.port">debugger.port</link>) muss man
+	einen TCP Port fuer den Debugger eingeben und ihn starten (<link 
+	linkend="ini.debugger.enabled">debugger.enabled</link>).
       </simpara>
      </listitem>
      <listitem>
       <simpara> 
-       Set up a TCP listener on that port somewhere (for example
-       <command>socket -l -s 1400</command> on UNIX).
+       Dann muss man einen TCP Listener auf diesem Port installieren,
+       der auf dem Port horcht. (zum Beispiel <command>socket -l -s 
+       1400</command> unter UNIX).
       </simpara>
      </listitem>
      <listitem>
       <simpara> 
-       In your code, run
-       "debugger_on(<replaceable>host</replaceable>)", where
-       <replaceable>host</replaceable> is the IP number or name of the
-       host running the <acronym>TCP</acronym> listener.
+       Im Code steht dann
+       "debugger_on(<replaceable>host</replaceable>)", wobei
+       <replaceable>host</replaceable> die IP Nummer oder der Hostname 
+       ist, wo der  <acronym>TCP</acronym> Listener läuft.
       </simpara>
      </listitem>
     </orderedlist>
-    Now, all warnings, notices etc. will show up on that listener
-    socket, <emphasis>even if you them turned off with
-    <function>error_reporting</function></emphasis>.  
+    Nun werden alle Warnungen, Hinweise etc. an dieser Schnittstelle
+    angezeigt, <emphasis>soger wenn sie mit <function>error_reporting
+    </function> abgeschaltet wurden.</emphasis>.  
    </para>
   </sect1>
 
   <sect1 id="debugger-protocol">
-   <title>Debugger Protocol</title>
+   <title>Debugger Protokoll</title>
    <para>
-    The debugger protocol is line-based.  Each line has a
-    <emphasis>type</emphasis>, and several lines compose a
-    <emphasis>message</emphasis>.  Each message starts with a line of
-    the type <literal>start</literal> and terminates with a line of
-    the type <literal>end</literal>.  PHP may send lines for different
-    messages simultaneously.
+    Das Protokoll des Debuggers ist Zeilenorientiert. Jede Zeile
+    besteht aus einem <emphasis>type</emphasis> und weiteren
+    Zeilen, die eine <emphasis>message</emphasis> darstellen.
+    Jede Meldung beginnt mit der Zeile <literal>start</literal>
+    und endet mit <literal>end</literal>.  Es ist möglich, dass PHP
+    mehrere Meldungen gleichzeitig ausgibt.
    </para>
    <para>
-    A line has this format:
+    Eine Zeile hat folgendes Format:
     <informalexample>
      <literallayout>
 <replaceable>date</replaceable> <replaceable>time</replaceable>
@@ -69,16 +71,16 @@
       <term><replaceable>date</replaceable></term>
       <listitem>
        <simpara>
-	Date in ISO 8601 format
-	(<replaceable>yyyy</replaceable>-<replaceable>mm</replaceable>-<replaceable>dd</replaceable>)
+	Datum im ISO 8601 Format:
+	(<replaceable>jjjj</replaceable>-<replaceable>mm</replaceable>-<replaceable>tt</replaceable>)
        </simpara>
       </listitem>
      </varlistentry>
      <varlistentry>
       <term><replaceable>time</replaceable></term>
       <listitem>
-       <simpara>Time including microseconds:
-	<replaceable>hh</replaceable>:<replaceable>mm</replaceable>:<replaceable>uuuuuu</replaceable>
+       <simpara>Zeit inklusive Mikrosekunden:
+	<replaceable>ss</replaceable>:<replaceable>mm</replaceable>:<replaceable>uuuuuu</replaceable>
        </simpara>
       </listitem>
      </varlistentry>
@@ -86,8 +88,7 @@
       <term><replaceable>host</replaceable></term>
       <listitem>
        <simpara>
-	DNS name or IP address of the host where the script error was
-	generated.
+	DNS Name oder IP Adresse des Hosts auf dem der Fehler auftrat.
        </simpara>
       </listitem>
      </varlistentry>
@@ -95,8 +96,8 @@
       <term><replaceable>pid</replaceable></term>
       <listitem>
        <simpara>
-	PID (process id) on <replaceable>host</replaceable> of the
-	process with the PHP script that generated this error.
+	PID (process id) auf dem <replaceable>host</replaceable> 
+	des Prozesses mit dem das PHP Script den Fehler erzeugt hat.
        </simpara>
       </listitem>
      </varlistentry>
@@ -104,67 +105,66 @@
       <term><replaceable>type</replaceable></term>
       <listitem>
        <para>
-	Type of line.  Tells the receiving program about what it
-	should treat the following data as:
+        Typ der Zeile. Er zeigt dem empfangenden Programm wie es die 
+	folgenden Daten behandeln soll:
 	<table>
-	 <title>Debugger Line Types</title>
+	 <title>Typen der Debugger Zeilen</title>
 	 <tgroup cols="2">
 	  <thead>
 	   <row>
 	    <entry>Name</entry>
-	    <entry>Meaning</entry>
+	    <entry>Bedeutung</entry>
 	   </row>
 	  </thead>
 	  <tbody>
 	   <row>
 	    <entry><literal>start</literal></entry> 
 	    <entry>
-	     Tells the receiving program that a debugger message
-	     starts here.  The contents of
-	     <replaceable>data</replaceable> will be the type of error
-	     message, listed below.
+	     Sagt dem empfangenden Programm, dass eine Debuggermeldung
+	     hier startet. Der Inhalt von <replaceable>data</replaceable> 
+	     ist der Typ der Fehlermeldung, der unten aufgelistet ist.
 	    </entry>
 	   </row>
 	   <row>
 	    <entry><literal>message</literal></entry>
-	    <entry>The PHP error message.</entry>
+	    <entry>Die PHP Fehlermeldung.</entry>
 	   </row>
 	   <row>
 	    <entry><literal>location</literal></entry>
 	    <entry>
-	     File name and line number where the error occured.  The
-	     first <literal>location</literal> line will always
-	     contain the top-level location.
-	     <replaceable>data</replaceable> will contain
+	     Dateiname und Zeilennummer wo der Fehler aufgetreten ist.
+	     Die erste <literal>Location-</literal> Zeile beinhaltet immer die
+	     Top-Level Location.
+	     <replaceable>data</replaceable> beinhaltet
 	     <literal><replaceable>file</replaceable>:<replaceable>line</replaceable></literal>.
-	     There will always be a <literal>location</literal> line
-	     after <literal>message</literal> and after every
-	     <literal>function</literal>.
+	     Nach jeder <literal>message</literal> und nach jeder 
+	     <literal>function</literal> steht eine <literal>location</literal> Zeile.
 	    </entry>
 	   </row>
 	   <row>
 	    <entry>
-	     <literal>frames</literal></entry> <entry>Number of frames
-	     in the following stack dump.  If there are four frames,
-	     expect information about four levels of called functions.
-	     If no "frames" line is given, the depth should be assumed
-	     to be 0 (the error occured at top-level).
+	     <literal>frames</literal></entry> <entry>
+	     Anzahl der der Nummer von Frames in der Folgenden Ebenenanzeige
+	     Bei vier Frames werden Informationen zu den vier Ebenen der aufgerufenen
+	     Funktion angezeigt. Wenn keine "frames" Zeile angezeigt wird, 
+	     ist die Funktionstiefe 0 (Der Fehler ist auf höchster Ebene 
+	     aufgetreten).
 	    </entry>
 	   </row>
 	   <row>
 	    <entry>
 	     <literal>function</literal></entry> 
 	    <entry>
-	     Name of function where the error occured.  Will be
-	     repeated once for every level in the function call
-	     stack.
+	     Name der Funktion in der der Fehler aufgetreten ist. Wird jeweils 
+	     fuer jede Funktionebene innerhalb des Funktionsaufrufs wiederholt
+	     angezeigt.
 	    </entry>
 	   </row>
 	   <row>
 	    <entry><literal>end</literal></entry> 
 	    <entry>
-	     Tells the receiving program that a debugger message ends
-	     here.
+	     Gibt dem empfangenden Programm zu verstehen, 
+	     dass die Meldung hier endet.
 	    </entry>
 	   </row>
 	  </tbody>
@@ -176,18 +176,18 @@
      <varlistentry>
       <term><replaceable>data</replaceable></term>
       <listitem>
-       <simpara>Line data.</simpara>
+       <simpara>Daten in der jeweiligen Zeile.</simpara>
       </listitem>
      </varlistentry>
     </variablelist>
 
     <table>
-     <title>Debugger Error Types</title>
+     <title>Debugger Fehlertypen</title>
      <tgroup cols="2">
       <thead>
        <row>
 	<entry>Debugger</entry>
-	<entry>PHP Internal</entry>
+	<entry>PHP Interne</entry>
        </row>
       </thead>
       <tbody>
@@ -222,9 +222,10 @@
       </tbody>
      </tgroup>
     </table>
-    
+   </para>
+   <para>
     <example>
-     <title>Example Debugger Message</title>
+     <title>Beispielhafge Debuggermeldung</title>
      <literallayout>
 1998-04-05 23:27:400966 lucifer.guardian.no(20481) start: notice
 1998-04-05 23:27:400966 lucifer.guardian.no(20481) message: Uninitialized variable
@@ -256,3 +257,12 @@ sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
 -->
+
+
+
+
+
+
+
+
+
