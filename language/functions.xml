@@ -1,267 +1,289 @@
-  <chapter id="functions">
-   <title>Functions</title>
+ <chapter id="functions">
+  <title>Funktionen</title>
 
-   <sect1 id="functions.user-defined">
-    <title>User-defined functions</title>
+  <sect1 id="functions.user-defined">
+   <title>Vom Nutzer definierte Funktionen</title>
  
-    <para>
-     A function may be defined using syntax such as the following:
+   <para>
+    Eine Funktion kann wie folgt definiert werden:
  
-     <informalexample>
-      <programlisting>
+    <informalexample>
+     <programlisting role="php">
 function foo ($arg_1, $arg_2, ..., $arg_n) {
-    echo "Example function.\n";
+    echo "Beispielfunktion.\n";
     return $retval;
 }
-      </programlisting>
-     </informalexample></para>
-     
-    <simpara>
-     Any valid PHP code may appear inside a function, even other
-     functions and <link linkend="keyword.class">class</link>
-     definitions.</simpara>
+     </programlisting>
+    </informalexample>
+   </para>
      
    <simpara>
-	In PHP3, functions must be defined before they are referenced. No
-	such requirement exists in PHP4.
+    Jeder beliebige korrekte PHP-Code kann in einer Funktion
+    vorkommen, sogar andere Funktionen und <link
+    linkend="keyword.class">Klassen- </link>Definitionen.
+   </simpara>
+   <simpara>
+    In PHP3 müssen Funktionen definiert sein, bevor man auf sie
+    verweist.  In PHP4 ist das nicht mehr erforderlich.
    </simpara>
   </sect1>
  
-   <sect1 id="functions.arguments">
-    <title>Function arguments</title>
+  <sect1 id="functions.arguments">
+   <title>Funktionsparameter</title>
+ 
+   <simpara>
+    Mit einer Parameterliste kann man Informationen an eine Funktion 
+    übergeben. Die Parameterliste ist eine kommagetrennte Liste von
+    Variablen und/oder Konstanten.
+   </simpara>
+   <para>
+    PHP unterstützt die Weitergabe von Parametern als Werte (das ist
+    der Standard), als <link
+    linkend="functions.arguments.by-reference">Verweise </link>, und
+    als <link linkend="functions.arguments.default">Vorgabewerte
+    </link>. Die Übergabe einer beliebigen Parameterzahl ist nicht
+    möglich, einen ähnlichen Effekt kann man aber durch die Übergabe
+    von Arrays erreichen.
+ 
+    <informalexample>
+     <programlisting role="php">
+function rechne_array($eingabe) {
+    echo "$eingabe[0] + $eingabe[1] = ", $eingabe[0]+$eingabe[1];
+}
+     </programlisting>
+    </informalexample>
+   </para>
+ 
+   <sect2 id="functions.arguments.by-reference">
+    <title>Verweise als Parameter übergeben</title>
  
     <simpara>
-     Information may be passed to functions via the argument list,
-     which is a comma-delimited list of variables and/or constants.</simpara>
- 
+     Normalerweise werden den Funktionen Werte als Parameter
+     übermittelt.  Wenn man den Wert dieses Parameters innerhalb der
+     Funktion ändert, bleibt der Parameter ausserhalb der Funktion
+     unverändert.  Wollen Sie aber genau das erreichen, dann müssen
+     Sie die Parameter als Verweise übergeben. 
+    </simpara>
+       
     <para>
-     PHP supports passing arguments by value (the default), <link linkend="functions.arguments.by-reference">passing by
-     reference</link>, and <link linkend="functions.arguments.default">default argument
-     values</link>. Variable-length argument lists are not supported,
-     but a similar effect may be obtained by passing arrays.
+     Wenn eine Funktion einen Parameter generell als Verweis behandeln soll, 
+     setzt man ein kaufmännisches Und(&amp;) in der Funktionsdefinition vor
+     den Parameternamen:
  
      <informalexample>
-      <programlisting>
-function takes_array($input) {
-    echo "$input[0] + $input[1] = ", $input[0]+$input[1];
+      <programlisting role="php">
+function fuege_etwas_anderes_an(&amp;$string) {
+    $string .= 'und nun zu etwas völlig anderem.';
 }
-      </programlisting>
-     </informalexample></para>
- 
-    <sect2 id="functions.arguments.by-reference">
-     <title>Making arguments be passed by reference</title>
- 
-     <simpara>
-      By default, function arguments are passed by value (so that
-      if you change the value of the argument within the function,
-      it does not get changed outside of the function). If you wish
-      to allow a function to modify its arguments, you must pass them
-      by reference.</simpara>
-       
-     <para>
-      If you want an argument to a function  to always be passed by
-      reference, you can prepend an ampersand (&amp;) to the argument
-      name in the function definition:
- 
-      <informalexample>
-       <programlisting>
-function add_some_extra(&amp;$string) {
-    $string .= 'and something extra.';
-}
-$str = 'This is a string, ';
+$str = 'Dies ist ein String, ';
 add_some_extra($str);
-echo $str;    // outputs 'This is a string, and something extra.'
-       </programlisting>
-      </informalexample></para>
+echo $str; // Ausgabe 'Dies ist ein String, und nun zu etwas völlig anderem.'
+      </programlisting>
+     </informalexample>
+    </para>
  
-     <para>
-      If you wish to pass a variable by reference to a function which
-      does not do this by default, you may prepend an ampersand to the 
-      argument name in the function call:
+    <para>
+     Wenn Sie eine Variable andererseits als Verweis an eine Funktion
+     übergeben wollen, die dies nicht tut, können Sie das
+     kaufmännische Und(&amp;) auch beim Aufruf der Funktion verwenden:
  
-      <informalexample>
-       <programlisting>
-function foo ($bar) {
-    $bar .= ' and something extra.';
+     <informalexample>
+      <programlisting role="php">
+function bla ($fasel) {
+    $fasel .= ' und nun zu etwas völlig anderem.';
 }
-$str = 'This is a string, ';
-foo ($str);
-echo $str;    // outputs 'This is a string, '
-foo (&amp;$str);
-echo $str;    // outputs 'This is a string, and something extra.'
-       </programlisting>
-      </informalexample></para></sect2>
+$str = 'Dies ist ein String, , ';
+bla ($str);
+echo $str;  // outputs 'Dies ist ein String, '
+bla (&amp;$str);
+echo $str;  // outputs 'Dies ist ein String, und nun zu etwas völlig anderem.'
+      </programlisting>
+     </informalexample>
+    </para>
+   </sect2>
  
-    <sect2 id="functions.arguments.default">
-     <title>Default argument values</title>
+   <sect2 id="functions.arguments.default">
+    <title>Vorgabewerte für Parameter</title>
  
-     <para>
-      A function may define C++-style default values for scalar
-      arguments as follows:
+    <para>
+     Eine Funktion kann c++-artige Vorgabewerte für skalare Parameter
+     wie folgt definieren:
  
-      <informalexample>
-       <programlisting>
-function makecoffee ($type = "cappucino") {
-    return "Making a cup of $type.\n";
+     <informalexample>
+      <programlisting role="php">
+function machkaffee ($typ = "Cappucino") {
+    return "Ich mache eine Tasse $typ.\n";
 }
-echo makecoffee ();
-echo makecoffee ("espresso");
-       </programlisting>
-      </informalexample></para>
+echo machkaffee ();
+echo makecoffee ("Espresso");
+      </programlisting>
+     </informalexample>
+    </para>
  
-     <para>
-      The output from the above snippet is:
+    <para>
+     Die Ausgabe von diesem kleinen Skript ist:
  
-      <screen>
-Making a cup of cappucino.
-Making a cup of espresso.
-      </screen></para>
+     <screen>
+Ich mache eine Tasse Cappucino.
+Ich mache eine Tasse Espresso.
+     </screen>
+    </para>
  
-     <simpara>
-      The default value must be a constant expression, not (for
-      example) a variable or class member.</simpara>
+    <simpara>
+     Der Vorgabewert muß eine Konstante sein, darf also (zum Beispiel)
+     keine Variable oder Element einer Klasse sein.
+    </simpara>
+    <para>
+     In PHP 4.0 ist es ebenfalls möglich, <literal>unset</literal> als
+     Vorgabewert zu definieren. Dann wird der Parameter auf gar keinen
+     Fall gesetzt, wenn er bisher keinen Wert hat.
+    </para> 
+    <para>
+     Bitte beachten Sie, dass alle Vorgabewerte rechts von den 
+     Nicht-Vorgabeparametern stehen sollten; - sonst wird es nicht 
+     funktionieren. Betrachten Sie folgendes Beispiel:
 
-     <para>
-      In PHP 4.0 it's also possible to specify <literal>unset</literal>
-      for default argument.  This means that the argument will not be
-      set at all, if a value is not supplied.</para>
- 
-     <para>
-      Note that when using default arguments, any defaults should be
-      on the right side of any non-default arguments; otherwise,
-      things will not work as expected. Consider the following code
-      snippet:
- 
-      <informalexample>
-       <programlisting>
-function makeyogurt ($type = "acidophilus", $flavour) {
-    return "Making a bowl of $type $flavour.\n";
+     <informalexample>
+      <programlisting role="php">
+function mach_joghurt ($typ = "rechtsdrehendes", $geschmack) {
+    return "Mache einen Becher $typ $geschmack-joghurt.\n";
 }
  
-echo makeyogurt ("raspberry");   // won't work as expected
-       </programlisting>
-      </informalexample></para>
+echo mach_joghurt ("Brombeer");   // arbeitet nicht wie erwartet
+      </programlisting>
+     </informalexample>
+    </para>
  
-     <para>
-      The output of the above example is:
+    <para>
+     Die Ausgabe dieses Beispiels ist::
  
-      <screen>
+     <screen>
 Warning: Missing argument 2 in call to makeyogurt() in 
 /usr/local/etc/httpd/htdocs/php3test/functest.html on line 41
-Making a bowl of raspberry .
-      </screen></para>
+Mache einen Becher Brombeer-joghurt.
+     </screen></para>
  
-     <para>
-      Now, compare the above with this:
+    <para>
+     Nun vergleichen Sie bitte oberes Beispiel mit folgendem:
  
-      <informalexample>
-       <programlisting>
-function makeyogurt ($flavour, $type = "acidophilus") {
-    return "Making a bowl of $type $flavour.\n";
+     <informalexample>
+      <programlisting role="php">
+function mach_joghurt ($geschmack, $typ = "rechtsdrehendes") {
+    return "Mache einen Becher $typ $geschmack-joghurt.\n";
 }
  
-echo makeyogurt ("raspberry");   // works as expected
-       </programlisting>
-      </informalexample></para>
+echo mach_jogurt ("Brombeer");   // arbeitet wie erwartet.
+      </programlisting>
+     </informalexample>
+    </para>
  
-     <para>
-      The output of this example is:
+    <para>
+     ... und jetzt ist die Ausgabe:
  
-      <screen>
-Making a bowl of acidophilus raspberry.
+     <screen>
+Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
      </screen>
-	</para>
+    </para>
+
    </sect2>
+
   </sect1>
  
-   <sect1 id="functions.returning-values">
-    <title>Returning values</title>
+  <sect1 id="functions.returning-values">
+   <title>Rückgabewerte</title>
  
-    <para>
-     Values are returned by using the optional return statement. Any
-     type may be returned, including lists and objects.
- 
-     <informalexample>
-      <programlisting>
-function square ($num) {
-    return $num * $num;
+   <para>
+    Sie können Werte mit dem optionalen Befehl "return" zurückgeben.
+    Es können Variablen jedes Typs zurückgegeben werden, auch Listen
+    oder Objekte.
+    <informalexample>
+     <programlisting role="php">
+function quadrat ($zahl) {
+    return $zahl * $zahl;
 }
-echo square (4);   // outputs '16'.
-      </programlisting>
-     </informalexample></para>
+echo quadrat (4);   // gibt '16' aus.
+     </programlisting>
+    </informalexample>
+   </para>
       
-    <para>
-     You can't return multiple values from a function, but similar
-     results can be obtained by returning a list.
+   <para>
+    Es ist leider nicht möglich, mehrere Werte von einer Funktion
+    zurückgeben zu lassen. Ein ähnliches Resultat kann man aber durch
+    die Rückgabe von Listen bekommen.
  
-     <informalexample>
-      <programlisting>
-function small_numbers() {
+    <informalexample>
+     <programlisting role="php">
+function kleine_zahlen() {
    return array (0, 1, 2);
 }
-list ($zero, $one, $two) = small_numbers();
-      </programlisting>
-     </informalexample></para></sect1>
+list ($null, $eins, $zwei) = small_numbers();
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect1>
  
-   <sect1 id="functions.old-syntax">
-    <title><literal>old_function</literal></title>
+  <sect1 id="functions.old-syntax">
+   <title><literal>old_function</literal></title>
  
-    <simpara>
-     The <literal>old_function</literal> statement allows you to declare
-     a function using a syntax identical to PHP/FI2 (except you must
-     replace 'function' with 'old_function'.</simpara>
-    <simpara>
-     This is a deprecated feature, and should only be used by the
-     PHP/FI2->PHP3 convertor.</simpara>
-    <warning>
-     <para>
-      Functions declared as <literal>old_function</literal>
-      cannot be called from PHP's internal code. Among other
-      things, this means you can't use them in functions such as
-      <function>usort</function>, <function>array_walk</function>, and
-      <function>register_shutdown_function</function>. You can get around
-      this limitation by writing a wrapper function (in normal PHP3 form)
-      to call the <literal>old_function</literal>.
-     </para>
-    </warning>
+   <simpara>
+    Der Befehl <literal>old_function</literal> erlaubt es, ein
+    Funktion genauso wie bei PHP/FI2 zu definieren (nur "function"
+    wird durch "old_function" ersetzt.
+   </simpara>
+   <simpara>
+    Dieser Befehl sollte nur vom PHP/FI2->PHP3-Konverter genutzt
+    werden.
+   </simpara>
+   <warning>
+    <para>
+     Funktionen, die durch <literal>old_function</literal> definiert
+     werden, können nicht von PHP selbst aufgerufen werden. Das heißt
+     unter anderem, dass sie nicht in Funktionen wie <function>usort
+     </function>, <function>array_walk</function> und <function>
+     register_shutdown_function</function> benutzt werden können.
+     Dieses Manko können Sie umgehen, indem Sie eine Adapterfunktion
+     in normalem PHP3 schreiben, die die
+     <literal>old_function</literal> aufruft.
+    </para>
+   </warning>
+
   </sect1>
 
   <sect1 id="functions.variable-functions">
-   <title>Variable functions</title>
+   <title>Variablenfunktionen</title>
 
    <para>
-	PHP supports the concept of variable functions. This means that if 
-	a variable name has parentheses appended to it, PHP will look for
-	a function with the same name as whatever the variable evaluates
-	to, and will attempt to execute it. Among other things, this can
-	be used to implement callbacks, function tables, and so forth.
+    PHP unterstützt das Konzept der Variablenfunktionen. Wenn Sie an
+    das Ende einer Variablen Klammern hängen, versucht PHP eine
+    Funktion aufzurufen, deren Name der aktuelle Wert der Variable
+    ist.  Diese Möglichkeit kann für Callbacks, Funktionstabellen und
    </para>
 
    <para>
-	<example>
-	 <title>Variable function example</title>
-	 <programlisting>
+    <example>
+     <title>Beispiel für Variablenfunktionen</title>
+     <programlisting role="php">
 &lt;?php
-function foo() {
-   echo "In foo()&lt;br&gt;\n";
+function blah() {
+    echo "In blah()&lt;br>\n";
 }
 
-function bar( $arg = '' ) {
-   echo "In bar(); argument was '$arg'.&lt;br&gt;\n";
+function fasel( $arg = '' ) {
+    echo "In fasel(); ist der Parameter '$arg'.&lt;br>\n";
 }
 
-$func = 'foo';
+$func = 'blah';
 $func();
-$func = 'bar';
+$func = 'fasel';
 $func( 'test' );
-?&gt;
-	 </programlisting>
-	</example>
+?>
+     </programlisting>
+    </example>
    </para>
 
   </sect1>
  
-  </chapter>
+ </chapter>
  
  <!-- Keep this comment at the end of the file
  Local variables:
@@ -273,7 +295,7 @@ $func( 'test' );
  sgml-indent-step:1
  sgml-indent-data:t
  sgml-parent-document:nil
- sgml-default-dtd-file:"../manual.ced"
+ sgml-default-dtd-file:"../../manual.ced"
  sgml-exposed-tags:nil
  sgml-local-catalogs:nil
  sgml-local-ecat-files:nil
