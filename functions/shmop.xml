@@ -7,25 +7,33 @@
    <para>
     Shmop ist eine Sammlung einfach anzuwendender PHP-Funktionen,
     mit denen man mit PHP UNIX shared-memory-Segmente beschreiben,
-    auslesen und löschen kann. Die Funktionen können mit Windows nicht
-    eingesetzt werden, weil Windows keinen gemeinsamen Speicher
-    unterstützt.
-    Um shmop zu nutzen, müssen Sie PHP mit der Option --enable-shmop
-    in der Konfiguratinszeile kompilieren.
+    auslesen und löschen kann. Die Funktionen können mit Windows
+    nicht eingesetzt werden, weil Windows keinen gemeinsamen
+    Speicher unterstützt.
+    Um shmop zu nutzen, müssen Sie PHP mit der Option --enable-shmop kompilieren.
    </para>
    <note>
     <simpara>
+     Diese Erweiterung ist <emphasis>EXPERIMENTELL</emphasis>. Das
+     Verhalten dieser Erweiterung, einschließlich der Funktionsnamen,
+     und alles Andere was hier dokumentiert ist, kann sich in
+     zukünftigen PHP-Versionen ohne Ankündigung ändern. Seien
+     Sie gewarnt und verwenden Sie diese Erweiterung auf eigenes
+     Risiko.
+    </simpara>
+    <simpara>
      Die Funktionen, die in diesem Kapitel erklärt werden, beginnen
-     in PHP 4.0.3 alle mit <function>shm_</function> , aber ab Version
+     in PHP 4.0.3 alle mit <literal>shm</literal>, aber ab Version
      PHP 4.0.4 und grösser, wurden diese Namen geändert und beginnen
-     nun mit <function>shmop_</function>.
+     nun mit <literal>shmop</literal>.
     </simpara>
    </note>
    <para>
     <example>
      <title>Shared Memory Operationen - Übersicht</title>
      <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 
 // Erstelle einen 100 Byte grossen gemeinsam genutzten Speicherblock
 // mit mit der System_ID if 0xff3
@@ -41,7 +49,7 @@ echo "SHM Block mit: ".$shm_size. " Bytes wurde erstellt.\n";
 // Teststring in den gemeinsamen Speicher schreiben
 $shm_bytes_written = shmop_write($shm_id, "mein gemeinsamer Speicher", 0);
 if($shm_bytes_written != strlen("mein gemeinsamer Speicher")) {
-        echo "Konnte nicht ermitteln, wieviele Bytes geschrieben wurden\n";
+        echo "Konnte nicht den gesamten String schreiben\n";
 }
 
 // Den Teststring wieder auslesen
@@ -57,7 +65,8 @@ if(!shmop_delete($shm_id)) {
 }
 shmop_close($shm_id);
 
-?&gt;
+?>
+]]>
      </programlisting>
     </example>
    </para>
@@ -78,49 +87,70 @@ shmop_close($shm_id);
       <methodparam><type>int</type><parameter>size</parameter></methodparam>
      </methodsynopsis>
     <para>
-     <function>shmop_open</function> Kann einen gemeinsamen Speicherbereich erstellen oder öffnen
+     <function>shmop_open</function> Kann einen gemeinsamen Speicherbereich erstellen oder öffnen.
     </para>
     <para>
-     <function>shmop_open</function> benötigt 4 Parameter: key, die System-ID
-     des gemeinsam genutzten Speicherblocks, dieser Parameter kann als
-     Dezimal- oder Hexadezimalzahl übergeben werden. Der zweite Parameter
-     bezeichnet die Flags, die man benutzen kann:
+     <function>shmop_open</function> benötigt 4 Parameter: key, die
+     System-ID des gemeinsam genutzten Speicherblocks, dieser Parameter
+     kann als Dezimal- oder Hexadezimalzahl übergeben werden. Der
+     zweite Parameter bezeichnet die Flags, die man benutzen kann:
      <itemizedlist>
       <listitem>
        <simpara>
-        "a" zum Zugriff (access) auf einen gemeinsamen Speicherblock (setzt IPC_EXCL)
-        Benutzen Sie dieses Flag, wenn Sie einen bestehenden gemeinsamen
-        Speicherblock öffnen wollen.
+        "a" zum Zugriff (access) auf einen gemeinsamen Speicherblock (setzt SHM_RDONLY für shmat).
+        Benutzen Sie dieses Flag, wenn Sie einen bestehenden gemeinsamen Speicherblock zum Lesen öffnen wollen.
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-        "c" zum Erstellen (create) eines gemeinsamen Speicherblocks (setzt IPC_CREATE)
-        Benutzen Sie dieses Flag, wenn Sie einen gemeinsamen Speicherblock
-        erstellen wollen.
+        "c" zum Erstellen (create) eines gemeinsamen Speicherblocks
+	(setzt IPC_CREATE). Benutzen Sie dieses Flag, wenn Sie einen
+	neuen gemeinsamen Speicherblock erstellen wollen oder, falls
+	bereits ein Segment mit derselben ID existiert, zum Öffnen
+	dieses Segments für Lese- und Schreibzugriffe. 
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        "w" für Lese- und Schreibzugriffe. Benutzen Sie dieses Flag
+	wenn Sie in einen gemeinsamen Speicherbereich schreiben oder
+	daraus lesen müssen. Das wird meistens der Fall sein.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        "n" zum Erzeugen eines neuen gemeinsamen Speichersegments
+	(setzt IPC_CREATE|IPC_EXCL). Benutzen Sie dieses Flag, wenn
+	Sie ein neues gemeinsames Speichersegment erzeugen wollen.
+	Falls schon ein Segment mit diesem Flag existiert, schlägt
+	die Funktion fehl. Dies ist aus Sicherheitsgründen nützlich, 
+	denn damit können Sie Sicherheitslöcher vermeiden.	
        </simpara>
       </listitem>
      </itemizedlist>
-     Der dritte Parameter ist der Modus, der die Zugriffsrechte, die Sie
-     dem gemeinsamen Speicher zuweisen wollen, angibt. Das sind dieselben
-     Zugriffsrechte wie für Dateien. Zugriffsrechte müssen oktal angegeben
-     werden, z.B. 0644. Der letzte Parameter gibt die Grösse des
-     gemeinsamen Speichers, den Sie erstellen wollen, in Byte, an.
+     Der dritte Parameter ist der Modus, der die Zugriffsrechte, die
+     Sie dem gemeinsamen Speicher zuweisen wollen, angibt. Das sind
+     dieselben Zugriffsrechte wie für Dateien. Zugriffsrechte müssen
+     oktal angegeben werden, z.B. 0644. Der letzte Parameter gibt die
+     Grösse des	gemeinsamen Speichers, den Sie erstellen wollen, in
+     Byte, an.
      <note><simpara>
-      Beachten Sie: Der dritte und vierte Parameter muss als 0 angegeben
-      werden, wenn Sie ein existierendes gemeinsames Speichersegment
-      öffnen wollen. Bei Erfolg liefert die Funktion
-      <function>shmop_open</function> eine ID zurück, die Sie zum Zugriff
-      auf den erstellten gemeinsamen Speicher benutzen können.
+      Beachten Sie: Der dritte und vierte Parameter muss als 0
+      angegeben	werden, wenn Sie ein existierendes gemeinsames
+      Speichersegment öffnen wollen. Bei Erfolg liefert die Funktion
+      <function>shmop_open</function> eine ID zurück, die Sie zum
+      Zugriff auf den erstellten gemeinsamen Speicher benutzen können.
      </simpara></note>
     </para>
     <para>
      <example>
       <title>Einen neuen gemeinsamen Speicherblock erstellen</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 $shm_id = shmop_open(0x0fff, "c", 0644, 100);
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -145,21 +175,24 @@ $shm_id = shmop_open(0x0fff, "c", 0644, 100);
       <methodparam><type>int</type><parameter>count</parameter></methodparam>
      </methodsynopsis>
     <para>
-     <function>shmop_read</function> liest einen String aus dem gemeinsamen Speicher.
+     <function>shmop_read</function> liest einen String aus dem gemeinsamen Speicherblock.
     </para>
     <para>
-     <function>shmop_read</function> braucht 3 Parameter: shmid, die Kennung
-     des gemeinsamen Speicherblocks, der mit <function>shmop_open</function>
-     erzeugt wurde, start gibt den Offset an, von wo ab gelesen werden soll
-     und count gibt die Anzahl der zu lesenden Bytes an.
+     <function>shmop_read</function> braucht 3 Parameter: shmid, die
+     Kennung des gemeinsamen Speicherblocks, der mit
+     <function>shmop_open</function>
+     erzeugt wurde, start gibt den Offset an, von wo ab gelesen werden
+     soll und count gibt die Anzahl der zu lesenden Bytes an.
     </para>
     <para>
      <example>
       <title>Aus dem gemeinsamen Speicher lesen</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 $shm_data = shmop_read($shm_id, 0, 50);
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -184,23 +217,26 @@ $shm_data = shmop_read($shm_id, 0, 50);
        <methodparam><type>int</type><parameter>offset</parameter></methodparam>
       </methodsynopsis>
      <para>
-      <function>shmop_write</function> schreibt Daten in einen gemeinsamen
-      Speicherbereich.
+      <function>shmop_write</function> schreibt Daten in einen
+      gemeinsamen Speicherbereich.
      </para>
      <para>
-      <function>shmop_write</function> braucht 3 Parameter:shmid, die Kennung
-      des gemeinsamen Speicherblocks, der mit <function>shmop_open</function>
-      erzeugt wurde, data, ein String, der in den gemeinsamen Speicher
-      geschrieben werden soll und offset, der angibt, von wo ab in den
-      gemeinsamen Speicherblock geschrieben werden soll.
+      <function>shmop_write</function> braucht 3 Parameter:shmid, die
+      Kennung des gemeinsamen Speicherblocks, der mit
+      <function>shmop_open</function> erzeugt wurde, data, ein String,
+      der in den gemeinsamen Speicher geschrieben werden soll und
+      offset, der angibt, von wo ab in den gemeinsamen Speicherblock
+      geschrieben werden soll.
      </para>
      <para>
       <example>
       <title>In den gemeinsamen Speicher schreiben</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 $shm_bytes_written = shmop_write($shm_id, $my_string, 0);
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -215,7 +251,7 @@ $shm_bytes_written = shmop_write($shm_id, $my_string, 0);
   <refentry id="function.size">
   <refnamediv>
    <refname>shmop_size</refname>
-   <refpurpose>Liefert die Grösse des gemeinsamen Speicherblocks</refpurpose>
+   <refpurpose>Gibt die Grösse des gemeinsamen Speicherblocks zurück</refpurpose>
   </refnamediv>
   <refsect1>
    <title>Beschreibung</title>
@@ -237,9 +273,11 @@ $shm_bytes_written = shmop_write($shm_id, $my_string, 0);
      <example>
       <title>Die Grösse des gemeinsamen Speicherblocks ermitteln</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 $shm_size = shmop_size($shm_id);
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -263,8 +301,8 @@ $shm_size = shmop_size($shm_id);
       <methodparam><type>int</type><parameter>shmid</parameter></methodparam>
      </methodsynopsis>
     <para>
-     <function>shmop_delete</function> wird benutzt, um einen gemeinsamen
-     Speicherbereich zu löschen.
+     <function>shmop_delete</function> wird benutzt, um einen
+     gemeinsamen Speicherbereich zu löschen.
     </para>
     <para>
      <function>shmop_delete</function> benötigt shmid, die Kennung
@@ -275,9 +313,11 @@ $shm_size = shmop_size($shm_id);
      <example>
       <title>einen gemeinsamen Speicherblock löschen</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 shmop_delete($shm_id);
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -312,9 +352,11 @@ shmop_delete($shm_id);
      <example>
       <title>Einen gemeinsamen Speicherblock schliessen</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 shmop_close($shm_id);
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
