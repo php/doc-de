@@ -1,40 +1,67 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.12 Maintainer: betz Status: ready -->
  <reference id="ref.mysql">
   <title>MySQL Funktionen</title>
   <titleabbrev>MySQL</titleabbrev>
+
   <partintro>
-   <para id="mysql.intro">
-    Diese Funktionen erlauben den Zugriff auf einen MySQL Datenbank-Server.
-    Weitere Information zu MySQL sind unter <ulink
-     url="&url.mysql;">&url.mysql;</ulink> erhältlich. 
-   </para>
-   <para>
-    Die Dokumentation zu MySQL ist unter <ulink
-     url="&url.mysql.docs;">&url.mysql.docs;</ulink> zu finden.
-   </para>
-   <section id="mysql.installation">
-    <title>Installation</title>
+   <section id="mysql.intro">
+    &reftitle.intro;
     <para>
-     Um diese Funktionen nutzen zu können, müssen Sie PHP mit MySQL
-     Unterstützung übersetzen.
-     Dies erreichen Sie durch die Angabe der
-     Option <option role="configure">--with-mysql</option> beim 
-     Übersetzen. Falls Sie den Pfad zu MySQL nicht angeben, verwendet PHP die
-     internen MySQL Client Bibliotheken. Benutzer die MySQL auch in 
-     anderen Anwendungen nutzen (zum Beispiel: PHP3 und PHP4 als simultane
-     Apache-Module oder auth-mysql) sollten immer den Pfad zu MySQL mit der
-     Option <option role="configure">-- with-mysql=/pfad/zu/mysql</option>
+     Diese Funktionen erlauben den Zugriff auf einen MySQL Datenbank-Server.
+     Weitere Information zu MySQL sind unter <ulink
+     url="&url.mysql;">&url.mysql;</ulink> erhältlich. 
+    </para>
+    <para>
+     Die Dokumentation zu MySQL ist unter <ulink
+     url="&url.mysql.docs;">&url.mysql.docs;</ulink> zu finden.
+    </para>
+   </section>
+
+   <section id="mysql.requirements">
+    &reftitle.required;
+    <para>
+     Um diese Funktionen nutzen zu können, müssen Sie PHP mit
+     MySQL-Unterstützung übersetzen.
+    </para>
+   </section>
+
+
+   <section id="mysql.installation">
+    &reftitle.install;
+    <para>
+     Durch die Angabe der Konfigurationsoption
+     <option role="configure">--with-mysql</option> beim Aufruf von configure
+     ermöglichen Sie den Zugriff auf MySQL über PHP.
+     Falls Sie den Pfad zu MySQL nicht angeben, verwendet PHP die
+     internen MySQL-Client Bibliotheken. Seit PHP4 ist die Unterstützung für
+     MySQL standardmäßig immer aktiviert; falls Sie die Konfigurationsoption
+     wrglassen, werden die internen MySQL-Bibliotheken genutzt. Benutzer die
+     MySQL auch in anderen Anwendungen nutzen möchten (zum Beispiel: PHP3 und
+     PHP4 als simultane Apache-Module oder auth-mysql) sollten immer den Pfad
+     zu MySQL mit der Option
+     <option role="configure">-- with-mysql=/pfad/zu/mysql</option>
      festlegen. Diese Angabe zwingt PHP die Client-Bibliotheken
      zu nutzen, die von MySQL installiert wurden. Diese Vorgehensweise
      vermeidet jegliche Konflikte.
     </para>
+    <warning>
+     <para>
+     Abstürze und Startprobleme von <literal>PHP</literal> können auftreten,
+     wenn Sie diese Extension zusammen mit der recode-Extension laden.
+     Für weitere Informationen schauen Sie bitte bei der
+     <link linkend="ref.recode">recode</link> Extension nach.
+    </para>
+    </warning>
    </section>
+
    <section id="mysql.configuration">
-    <title>Konfiguration</title>
+    &reftitle.runtime;
     <para>
      Das Verhalten der MySQL Funktionen wird durch Einträge in der globalen 
-     <link linkend="configuration">Konfigurationsdatei</link> beeinflusst.
+     <link linkend="configuration">Konfigurationsdatei</link> &php.ini;
+     beeinflusst.
      <table>
       <title>MySQL Konfigurations-Optionen</title>
       <tgroup cols="3">
@@ -80,6 +107,16 @@
          <entry>mysql.default_user</entry>
          <entry>NULL</entry>
          <entry>PHP_INI_ALL</entry>
+        </row>
+        <row>
+         <entry>mysql.default_password</entry>
+         <entry>NULL</entry>
+         <entry>PHP_INI_ALL</entry>
+        </row>
+        <row>
+         <entry>mysql.connect_timeout</entry>
+         <entry>"-1"</entry>
+         <entry>PHP_INI_SYSTEM</entry>
         </row>
        </tbody>
       </tgroup>
@@ -140,13 +177,12 @@
          Gibt die Portnummer an, über den die Verbindung zum MySQL-Server
          aufgebaut werden soll, wenn kein Port als Verbindungsparameter
          übergeben wurde.
-         Wird die Portnummer nicht spezifiziert, wird der Port über die 
+         Wird die Portnummer nicht angegeben, wird der Port über die 
          <literal>MYSQL_TCP_PORT</literal> Umgebungsvariable, dem
-         <literal>mysqltcp</literal> Eintrag aus der Datei
+         <literal>mysql-tcp</literal> Eintrag aus der Datei
          <filename>/etc/services</filename> oder der Konstanten
-         <literal>MYSQL_PORT</literal> festgelegt.
-         Windows 32-bit Systeme können nur <literal>MYSQL_PORT</literal>
-         verwenden.
+         <literal>MYSQL_PORT</literal> festgelegt, in dieser Reihenfolge.
+         Win32 Systeme verwenden nur <literal>MYSQL_PORT</literal>
         </para>
        </listitem>
       </varlistentry>
@@ -159,7 +195,8 @@
        <listitem>
         <para>
          Spezifiziert den Socketnamen der bei der Verbindung zu einem lokalen
-         Datenbankserver bennutzt werden soll, wenn kein Name angegeben wurde.
+         Datenbankserver bennutzt werden soll, wenn kein anderer Name angegeben
+         wurde.
         </para>
        </listitem>
       </varlistentry>
@@ -173,8 +210,8 @@
         <para>
          Spezifiziert den Datenbankserver, zu dem eine Verbindung aufgebaut
          werden soll, wenn kein Server angegeben wurde. Diese Option
-         steht nicht im <link linkend="ini.safe-mode">safe mode</link> zur
-         Verfügung. 
+         hat im <link linkend="ini.safe-mode">safe mode</link> keine
+         Auswirkungen.
         </para>
        </listitem>
       </varlistentry>
@@ -188,8 +225,8 @@
         <para>
          Spezifiziert den Benutzernamen, der bei einer Verbindung zu einer
          Datenbank verwendet werden soll, wenn kein Benutzer angegeben wurde.
-         Diese Option steht nicht im <link linkend="ini.safe-mode">safe
-          mode</link> zur Verfügung.
+         Diese Option hat im <link linkend="ini.safe-mode">safe mode</link>
+         keine Auswirkungen.
         </para>
        </listitem>
       </varlistentry>
@@ -203,55 +240,41 @@
         <para>
          Spezifiziert das Passwort, das bei einer Verbindung zu einer Datenbank
          verwendet werden soll, wenn kein Passwort angegeben wurde.
-         Diese Option steht nicht im <link linkend="ini.safe-mode">safe
-          mode</link> zur Verfügung.
+         Diese Option hat im <link linkend="ini.safe-mode">safe mode</link>
+         keine Auswirkungen.
         </para>
        </listitem>
       </varlistentry>
       
+     <varlistentry id="ini.mysql.connect-timeout">
+      <term>
+       <parameter>mysql.connect_timeout</parameter>
+       <type>integer</type>
+      </term>
+      <listitem>
+       <para>
+        Verbindungstimeout in Sekunden. Auf Linuxsystemen wird dieser Timeout
+        auch für die erste Antwort des Servers benutzt.
+       </para>
+      </listitem>
+     </varlistentry>
      </variablelist>
     </para>
    </section>
 
-   <section id="mysql.constants">
-    <title>Konstanten</title>
+
+   <section id="mysql.resources">
+    &reftitle.resources;
     <para>
-     Die Funktion <function>mysql_fetch_array</function> verwendet eine
-     Konstante für die verschiedenen Arten der Rückgabe:
-     <table>
-      <title>MySQL fetch Konstanten</title>
-      <tgroup cols="2">
-       <thead>
-        <row>
-         <entry>Konstante</entry>
-         <entry>Bedeutung</entry>
-        </row>
-       </thead>
-       <tbody>
-        <row>
-         <entry>MYSQL_ASSOC</entry>
-         <entry>
-          Spalten werden in einem assioziativen Array zurückgegeben.
-         </entry>
-        </row>
-        <row>
-         <entry>MYSQL_BOTH</entry>
-         <entry>
-          Spalten werden sowohl als assioziatives als auch als numerisches
-          Array zurückgegeben.
-         </entry>
-        </row>
-        <row>
-         <entry>MYSQL_NUM</entry>
-         <entry>
-          Spalten werden als numerisches Array zurückgegeben.
-         </entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </table>
+     Innerhalb des MySQL-Moduls werden zwei Resourcetypen benutzt.
+     Der erste ist die Verbindungskennung für eine Verbindung zum
+     Datenbankserver, der zweite Typ ist eine Resource die auf das Ergebnis
+     einer Anfrage/Abfrage verweist.
     </para>
    </section>
+
+   &reference.mysql.constants;
+
    <section>
     <title>Begriffserläuterung</title>
     <para>
@@ -330,8 +353,9 @@
      </variablelist>
     </para>
    </section>
+
    <section id="mysql.examples">
-    <title>Beispiele</title>
+   &reftitle.examples;
     <para>
      Folgendes einfache Beispiel zeigt Ihnen, wie Sie sich mit einer MySQL-
      Datenbank verbinden, eine Anfrage ausführen, die Ergebnisse ausgeben
@@ -340,27 +364,25 @@
       <title>MySQL Erweiterung: ein Überblicks Beispiel</title>
       <programlisting role="php">
 <![CDATA[
-       <?php
-       // Verbindung aufbauen, auswählen einer Datenbank
-       $link = mysql_connect("mysql_host", "mysql_login", "mysql_password")
-       or die("Keine Verbindung möglich!");
-       print "Verbindung zum Datenbankserver erfolgreich";
-       mysql_select_db("Meine_Datenbank")
-       or die("Auswahl der Datenbank fehlgeschlagen");
+<?php
+    /* Verbindung aufbauen, auswählen einer Datenbank */
+    $link = mysql_connect("mysql_host", "mysql_user", "mysql_password")
+        or die("Keine Verbindung möglich!");
+    print "Verbindung zum Datenbankserver erfolgreich";
+    mysql_select_db("Meine_Datenbank") or die("Auswahl der Datenbank fehlgeschlagen");
 
        // ausführen einer SQL Anfrage
        $query = "SELECT * FROM Meine_Tabelle";
-       $result = mysql_query($query)
-       or die("Anfrage fehlgeschlagen");
+       $result = mysql_query($query) or die("Anfrage fehlgeschlagen");
 
        // Ausgabe der Ergebnisse in HTML
        print "<table>\n";
        while ($line = mysql_fetch_array($result, MYSQL_ASSOC)) {
-       print "\t<tr>\n";
-       foreach ($line as $col_value) {
-       print "\t\t<td>$col_value</td>\n";
-       }
-       print "\t</tr>\n";
+           print "\t<tr>\n";
+           foreach ($line as $col_value) {
+               print "\t\t<td>$col_value</td>\n";
+           }
+           print "\t</tr>\n";
        }
        print "</table>\n";
 
@@ -369,8 +391,8 @@
 
        // schliessen der Verbinung
        mysql_close($link);
-       ?>
-       ]]>
+?>
+]]>
       </programlisting>
      </example>
     </para>
