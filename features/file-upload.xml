@@ -1,30 +1,32 @@
  <chapter id="features.file-upload">
-  <title>Handling file uploads</title>
+  <title>Steuerung von Dateiuploads</title>
 
   <sect1 id="features.file-upload.post-method">
-   <title>POST method uploads</title>
+   <title>Dateiuploads mit POST</title>
 
    <simpara>
-    PHP is capable of receiving file uploads from any RFC-1867
-    compliant browser (which includes Netscape Navigator 3 or later,
-    Microsoft Internet Explorer 3 with a patch from Microsoft, or
-    later without a patch).  This feature lets people upload both text
-    and binary files.  With PHP's authentication and file manipulation
-    functions, you have full control over who is allowed to upload and
-    what is to be done with the file once it has been uploaded.
+    PHP kann Dateiuploads mit jedem RFC-1867
+    konformen Browser (dazu gehören der Natscape Navigator
+    3 oder höher, Microsoft Internet Explorer 3 mit Patch von
+    Microsoft oder höher ohne Patch) durchführen. Es können
+    sowohl Text- als auch Binärdaten hochgeladen werden.
+    Mit PHP´s Authentifizierungs- und Dateifunktionen besteht
+    volle Kontrolle darüber, wer Dateien hochladen darf und was
+    mit den Dateien geschehen soll, wenn der Upload beendet ist.
    </simpara>
 
    <para>
-    Note that PHP also supports PUT-method file uploads as used by 
-    Netscape Composer and W3C's Amaya clients.  See the <link linkend="features.file-upload.put-method">PUT Method Support</link>
-    for more details.</para>
+    PHP unterstützt auch Dateiuploads nach der PUT-Methode, die
+    beispielsweise vom Netscape Composer und den W3C Amaya
+    Clients benutzt wird. Siehe dazu <link linkend="features.file-upload.put-method">PUT-Unterstützung</link>
+    für nähere Informationen.</para>
 
    <para>
-    A file upload screen can be built by creating a special form which
-    looks something like this:
+    Eine Maske für den Dateiuplod kann erstellt werden, indem man
+    ein Formular entwirft, was ungefähr so aussieht:
 
     <example>
-     <title>File Upload Form</title>
+     <title>Formular für den Dateiupload</title>
      <programlisting>
 &lt;FORM ENCTYPE=&quot;multipart/form-data&quot; ACTION=&quot;_URL_&quot; METHOD=POST&gt;
 &lt;INPUT TYPE=&quot;hidden&quot; name=&quot;MAX_FILE_SIZE&quot; value=&quot;1000&quot;&gt;
@@ -34,94 +36,101 @@ Send this file: &lt;INPUT NAME=&quot;userfile&quot; TYPE=&quot;file&quot;&gt;
     </programlisting>
     </example>
     
-    The _URL_ should point to a PHP file.  The MAX_FILE_SIZE hidden
-    field must precede the file input field and its value is the maximum
-    filesize accepted.  The value is in bytes.  In this destination file,
-    the following variables will be defined upon a successful upload:</para>
+    Die URL sollte auf eine PHP-Datei verweisen. Das versteckte Feld
+    MAX_FILE_SIZE muß dem Dateieingabefeld vorausgehen und den
+    Wert der maximal akzeptierten Dateigrösse in Bytes enthalten.
+    Bei erfogreichem Upload des Files werden folgende Variablen definiert:
 
    <para>
     <itemizedlist>
      <listitem>
       <simpara>
-       $userfile - The temporary filename in which the uploaded file
-       was stored on the server machine.
+       $userfile - Der temporäre Name, unter dem die hochgeladene Datei 
+       auf demServer gespeichert wurde.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       $userfile_name - The original name of the file on the sender's
-       system.
+       $userfile_name - Der ursprüngliche Dateiname auf dem System des
+       Absenders.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       $userfile_size - The size of the uploaded file in bytes.
+       $userfile_size - Größe der hochgeladenen Datei in Bytes.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       $userfile_type - The mime type of the file if the browser
-       provided this information.  An example would be
+       $userfile_type - Der Mime-Typ der Datei, wenn dies
+       Information zur Verfügung gestellt wird. Ein Beispiel wäre
        &quot;image/gif&quot;.
       </simpara>
      </listitem>
     </itemizedlist>
     
-    Note that the &quot;$userfile&quot; part of the above variables is
-    whatever the name of the INPUT field of TYPE=file is in the upload
-    form.  In the above upload form example, we chose to call it
-    &quot;userfile&quot;.</para>
+    Die Variable &quot;$userfile&quot;  trägt den Namen des 
+    Dateifeldes im Formular; im obigen Beispiel haben wir die 
+    Bezeichnung &quot;userfile&quot; gewählt.</para>
+    
 
    <simpara>
-    Files will by default be stored in the server's default temporary
-    directory.  This can be changed by setting the environment variable
-    <envar>TMPDIR</envar> in the environment in which PHP runs.  Setting
-    it using <function>putenv</function> from within a PHP script will
-    not work.</simpara>
+    Standardmäßig werden Dateien in dem vorgegebenen temporären
+    Verzeichnis des Servers gespeichert. Dies kann durch das Setzen
+    der Umgebungsvariablen <envar>TMPDIR</envar> direkt in der
+    Umgebung, in der PHP ausgeführt wird, geändert werden.
+    Ein Setzen des temporären Verzeichnisses durch die Funktion
+    <function>putenv</function> innerhalb eines Skriptes
+    ist nicht möglich.</simpara>
 
    <simpara>
-    The PHP script which receives the uploaded file should implement
-    whatever logic is necessary for determining what should be done
-    with the uploaded file.  You can for example use the $file_size
-    variable to throw away any files that are either too small or too
-    big.  You could use the $file_type variable to throw away any
-    files that didn't match a certain type criteria.  Whatever the
-    logic, you should either delete the file from the temporary
-    directory or move it elsewhere.</simpara>
+    Das PHP-Skript, dem die hochzuladende Datei übergeben wird,
+    sollte alle nötigen Anweisungen enthalten, die festlegen, wie mit
+    der hochgeladenen Datei verfahren werden soll. Beispielsweise
+    kann die $file_size - Variable verwendet werden, um Dateien
+    auszusortieren, die zu gross oder zu klein sind. Oder man
+    benutzt die $file_type -  Variable, um sich aller Dateien zu entledigen, 
+    die nicht bestimmten Typen entsprechen. Auf jeden Fall sollte
+    die hochgeladene Datei aus dem temporären Verzeichnis gelöscht
+    oder an andere Stelle verschoben werden.</simpara>
 
    <simpara>
-    The file will be deleted from the temporary directory at the end
-    of the request if it has not been moved away or renamed.</simpara></sect1>
+    Die Datei wird aus dem temorären Verzeichnis gelöscht, sobald
+    das Skript abgearbeitet ist, wenn sie nicht verschoben oder
+    umbenannt wurde.</simpara></sect1>
  
   <sect1 id="features.file-upload.common-pitfalls">
-   <title>Common Pitfalls</title>
+   <title>Häufige Probleme</title>
    <simpara>
-    The MAX_FILE_SIZE item cannot specify a file size greater than the file 
-    size that has been set in the upload_max_filesize in the PHP3.ini file
-    or the corresponding php3_upload_max_filesize Apache .conf directive. 
-    The default is 2 Megabytes.</simpara>
+    Der mit MAX_FILE_SIZE eingestellte Wert kann nicht grösser
+    sein als der durch die Zeile upload_max_filesize der PHP3.ini (oder
+    der entsprechenden Zeile php3_upload_max_filesize in der Apache
+    Konfigurationsdatei) festgelegte. Standardmäßig sind dies
+    2 MB.</simpara>
    <simpara>
-    Please note that the CERN httpd seems to strip off everything
-    starting at the first whitespace in the content-type mime header
-    it gets from the client.  As long as this is the case, CERN httpd
-    will not support the file upload feature.</simpara>
+    Bitte beachten, daß der CERN httpd alles abschneidet, was auf 
+    das erste Leerzeichen im content-type Mime-Header folgt, den
+    er vom Client erhält. Solange dies der Fall ist, unterstützt der 
+    CERN httpd keine Dateiuploads.</simpara>
   </sect1>
 
   <sect1 id="feature-fileupload.multiple">
-   <title>Uploading multiple files</title>
+   <title>Mehrere Dateien uploaden</title>
    <simpara>
-    It is possible to upload multiple files simultaneously and have
-    the information organized automatically in arrays for you. To
-    do so, you need to use the same array submission syntax in the
-    HTML form as you do with multiple selects and checkboxes:</simpara>
+    Es ist möglich, gleichzeitig mehrere Dateien hochzuladen und
+    die Upload-Informationen automatisch in Arrays aufgeführt zu
+    erhalten. Dabei muß im HTML-Formular die gleiche Syntax zum 
+    Übermitteln des Arrays benutzt werden, was man durch verschiedene
+    Select- und Checkboxen erreicht.</simpara>
    <note>
     <para>
-     Support for multiple file uploads was added in version 3.0.10.</para>
+      Die Unterstützung für den Upload mehrerer Dateien wurde in 
+      Version 3.0.10 hinzugefügt.</para>
     </note>
 
    <para>
     <example>
-     <title>Uploading multiple forms</title>
+     <title>Formular zum Upload mehrerer Dateien</title>
      <programlisting>
 &lt;form action=&quot;file-upload.html&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
   Send these files:&lt;br&gt;
@@ -133,31 +142,30 @@ Send this file: &lt;INPUT NAME=&quot;userfile&quot; TYPE=&quot;file&quot;&gt;
     </example></para>
 
    <simpara>
-    When the above form is submitted, the arrays <computeroutput>$userfile</computeroutput>,
-    <computeroutput>$userfile_name</computeroutput>, and
-    <computeroutput>$userfile_size</computeroutput> will be formed in the global
-    scope (as well as in $HTTP_POST_VARS). Each of these will be a
-    numerically indexed array of the appropriate values for the
-    submitted files.</simpara> 
+    Wenn das obige Formular abgeschickt wird, werden die Arrays
+    <computeroutput>$userfile</computeroutput>,<computeroutput>$userfile_name</computeroutput> und
+    <computeroutput>$userfile_size</computeroutput> für den globalen
+    Bereich, wie in $HTTP_POST_VARS, angeordnet. Jede dieser
+    Variablen ist ein numerisch indizierte Array, das aus den
+    entsprechenden Werten der übertragenen Dateien besteht.</simpara> 
  
    <simpara>
-    For instance, assume that the filenames
-    <filename>/home/test/review.html</filename> and
-    <filename>/home/test/xwp.out</filename> are submitted.  In this
-    case, <computeroutput>$userfile_name[0]</computeroutput> would contain
-    the value <computeroutput>review.html</computeroutput>, and
-    <computeroutput>$userfile_name[1]</computeroutput> would contain the
-    value <computeroutput>xwp.out</computeroutput>. Similarly,
-    <computeroutput>$userfile_size[0]</computeroutput> would contain
-    <filename>review.html</filename>'s filesize, and so forth.</simpara></sect1>
+    Nehmen wir an, die Dateinamen  <filename>/home/test/review.html</filename>
+    und <filename>/home/test/xwp.out</filename> werden übertragen. In
+    diesem Fall beinhaltet<computeroutput>$userfile_name[0]</computeroutput> 
+    den Wert <computeroutput>review.html</computeroutput> und
+    <computeroutput>$userfile_name[1]</computeroutput>  enthält den Wert
+    <computeroutput>xwp.out</computeroutput>.
+     Genauso enthält <computeroutput>$userfile_size[0]</computeroutput>
+     die Dateigröße von <filename>review.html</filename>,  und so weiter.</simpara></sect1>
 
   <sect1 id="features.file-upload.put-method">
-   <title>PUT method support</title>
+   <title>PUT-Unterstützung</title>
 
    <para>
-    PHP provides support for the HTTP PUT method used by clients such
-    as Netscape Composer and W3C Amaya.  PUT requests are much simpler
-    than a file upload and they look something like this:
+    PHP unterstützt die HTTP PUT-Methode, wie sie von Clients wie Netscape
+    Composer oder W3C Amaya benutzt wird. PUT-Anfragen sind weitaus
+    unkomplizierter als ein Dateiupload und sehen etwa so aus:
 
     <informalexample><programlisting>
 PUT /path/filename.html HTTP/1.1
@@ -165,16 +173,17 @@ PUT /path/filename.html HTTP/1.1
    </para>
 
    <para>
-    This would normally mean that the remote client would like to save
-    the content that follows as: /path/filename.html in your web tree.
-    It is obviously not a good idea for Apache or PHP to automatically
-    let everybody overwrite any files in your web tree.  So, to handle
-    such a request you have to first tell your web server that you
-    want a certain PHP script to handle the request.  In Apache you do
-    this with the <emphasis>Script</emphasis> directive.  It can be
-    placed almost anywhere in your Apache configuration file.  A
-    common place is inside a &lt;Directory&gt; block or perhaps inside
-    a &lt;Virtualhost&gt; block.  A line like this would do the trick:
+    Das würde normalerweise bedeuten, daß der entfernte Client den
+    folgenden Inhalt als /path/filename.html im Webverzeichnisbaum
+    speichert. Natürlich ist es keine gute Idee, dass PHP oder
+    Apache jeden Benutzer beliebige Dateien überschreiben lassen.
+    Um eine solche Anfrage bearbeiten zu können, muss der Webserver
+    erst angewiesen werden, ein bestimmtes PHP-Skript für die
+    Abarbeitung aufzurufen. Im Apache wird dies durch die
+    <emphasis>Script</emphasis> - Direktrive festgelegt. Sie kann
+    irgendwo in der Apache-Konfigurationsdatei plaziert werden,
+    gebräuchlich ist die Plazierung innerhalb einer &lt;Directory&gt;- oder
+    &lt;Virtualhost&gt;- Sektion. Eine Zeile wie die folgende erledigt dies:
 
     <informalexample><programlisting>
 Script PUT /put.php3
@@ -182,13 +191,13 @@ Script PUT /put.php3
    </para>
 
    <simpara>
-    This tells Apache to send all PUT requests for URIs that match the
-    context in which you put this line to the put.php3 script.  This
-    assumes, of course, that you have PHP enabled for the .php3
-    extension and PHP is active.
+    Diese Zeile legt fest, daß Apache alle PUT-Anfragen für URIs, die dem
+    Kontext entsprechen, in dem diese Zeile steht, an das put.php3 
+    Skript weiterleitet. Dies setzt voraus, daß PHP aktiv und für die .php3-
+    Dateierweiterung registriert ist. 
    </simpara>
    <simpara>
-    Inside your put.php3 file you would then do something like this:
+    Innerhalb der put.php3-Datei könnte folgendes stehen:
    </simpara>
    <para>
     <informalexample><programlisting>
@@ -196,20 +205,20 @@ Script PUT /put.php3
     </programlisting></informalexample>
    </para>
    <simpara>
-    This would copy the file to the location requested by the remote
-    client.  You would probably want to perform some checks and/or
-    authenticate the user before performing this file copy.  The only
-    trick here is that when PHP sees a PUT-method request it stores
-    the uploaded file in a temporary file just like those handled bu the
-    <link linkend="features.file-upload.post-method">POST-method</link>.
-    When the request ends, this temporary file is deleted.  So, your PUT
-    handling PHP script has to copy that file somewhere.  The filename
-    of this temporary file is in the $PHP_PUT_FILENAME variable, and
-    you can see the suggested destination filename in the $REQUEST_URI
-    (may vary on non-Apache web servers).  This destination filename is
-    the one that the remote client specified.  You do not have to listen
-    to this client.  You could, for example, copy all uploaded files to
-    a special uploads directory.</simpara></sect1>
+    Dies kopiert die Datei an den vom Client angegebenen Ort.
+    Möglicherweise sollen vor dem Kopieren der Datei noch Überprüfungen
+    und/oder Benutzerauthentifizierung stattfinden. Wenn PHP eine
+    PUT-Anfrage erhält, wird die Datei in einem temporären Verzeichnis
+    gespeichert,  genau wie bei <link linkend="features.file-upload.post-method">POST-Methodede
+    Nach Abarbeiten der Anfrage wird die temporäre Datei gelöscht.
+    Also muß das PHP-Skript, das die PUT-Anfrage bearbeitet, die
+    Datei irgendwohin kopieren. Der Name der temporären Datei findet
+    sich in der Variablen $PHP_PUT_FILENAME; der Name der zu 
+    speichernden Datei steht in $REQUEST_URI (kann bei nicht-
+    Apache Webservern variieren). Dieser Zieldateiname wird vom Client 
+    festgelegt. Man kann den Client auch umgehen; beispielsweise könnten
+    alle hochgeladenen Dateien in ein spezielles Upload-Directory 
+    kopiert werden.</simpara></sect1>
 
  </chapter>
 
