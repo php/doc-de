@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.23 Maintainer: anderiasch Status: ready -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.31 Maintainer: fa Status: ready -->
 <chapter id="features.commandline">
  <title>PHP auf der Kommandozeile</title>
  <!-- NEW DOCUMENTATION STARTS -->
@@ -69,7 +69,17 @@
   Verzeichnis wie das CGI <filename>php.exe</filename>. Beginnend mit
   PHP 4.3.0 enthält das Windows-Paket das CLI als <filename>php.exe</filename>
   in einem eigenen Verzeichnis namens <literal>cli</literal>, also 
-  <literal>cli/php.exe</literal>.
+  <literal>cli/php.exe</literal>. Beginnend mit PHP 5 wird das CLI im
+  Hauptordner al <filename>php.exe</filename> ausgeliefert. Die CGI-Version
+  heisst <filename>php-cgi.exe</filename>.
+ </para>
+ <para>
+  Seit PHP gibt es eine neue Datei, <filename>php-win.exe</filename>. Diese ist
+  identisch mit der CLI-Version, die einzige Ausnahme besteht darin, dass
+  php-win nichts ausgibt und somit keine Konsole bietet. (Es erscheint keine
+  "MS-DOS-Eingabeaufforderung".)  Dieses Verhalten ist ähnlich php-gtk. Sie
+  sollten die folgende Option für ./configure benutzen:
+  <literal>--enable-cli-win32</literal>.
  </para>
  <para>
   <note>
@@ -107,13 +117,14 @@
     </para>
     <para>
      CLI wird standardmäßig im stillen Modus gestartet, dennoch gibt
-     es die <literal>-q</literal>-Option aus Kompatibilitätsgründen noch,
-     so dass Sie auch ältere CGI-Skripte noch benutzen können.
+     es die Optionen <literal>-q</literal> und <literal>--no-header</literal>
+     aus Kompatibilitätsgründen noch, so dass Sie auch ältere CGI-Skripte noch
+     benutzen können.
     </para>
     <para>
      Es verändert das Arbeitsverzeichnis nicht zu dem des Skriptes.
-     (Die <literal>-C</literal>-Option wurde aus Kompatibilitätsgründen
-     beibehalten)
+     (Die Optionen <literal>-C</literal> und <literal>--no-chdir</literal>
+     wurden aus Kompatibilitätsgründen beibehalten.)
     </para>
     <para>
      Fehlermeldungen in Plaintext (keine HTML-Formatierung).
@@ -239,7 +250,11 @@
          Das erspart das öffnen mit
          <programlisting role="php">
 <![CDATA[
+<?php
+
 $stdin = fopen('php://stdin', 'r');
+
+?>
 ]]>
          </programlisting>
          </entry>
@@ -251,7 +266,11 @@ $stdin = fopen('php://stdin', 'r');
          Das erspart das öffnen mit
          <programlisting role="php">
 <![CDATA[
+<?php
+
 $stdout = fopen('php://stdout', 'w');
+
+?>
 ]]>
          </programlisting>
          </entry>
@@ -263,7 +282,11 @@ $stdout = fopen('php://stdout', 'w');
          Das erspart das öffnen mit
          <programlisting role="php">
 <![CDATA[
+<?php
+
 $stderr = fopen('php://stderr', 'w');
+
+?>
 ]]>
          </programlisting>
          </entry>
@@ -276,7 +299,7 @@ $stderr = fopen('php://stderr', 'w');
      Angesichts des oben genannten brauchen Sie beispielsweise nicht 
      selbst einen Stream für <literal>stderr</literal> öffnen, sondern
      einfach die Konstante statt der Ressource:
-     <programlisting role="php">
+     <programlisting role="shell">
 <![CDATA[
 php -r 'fwrite(STDERR, "stderr\n");'
 ]]>
@@ -297,8 +320,8 @@ php -r 'fwrite(STDERR, "stderr\n");'
      <programlisting role="php">
 <![CDATA[
 <?php
-    /* Our simple test application named test.php*/
-    echo getcwd(), "\n";
+// Our simple test application named test.php
+echo getcwd(), "\n";
 ?>
 ]]>
      </programlisting>
@@ -497,7 +520,7 @@ array(2) {
 <![CDATA[
 #!/usr/bin/php
 <?php
-    var_dump($argv);
+var_dump($argv);
 ?>
 ]]>
   </programlisting>
@@ -524,18 +547,21 @@ array(4) {
   beginnen, übergeben.
  </para>
  <para>
+  Die Langformen der Optionen sind seit PHP 4.3.3 verfügbar.
   <table>
    <title>Kommandozeilenoption</title>
    <tgroup cols="2">
     <thead>
      <row>
       <entry>Option</entry>
+      <entry>Langform</entry>
       <entry>Beschreibung</entry>
      </row>
     </thead>
     <tbody>
      <row>
       <entry>-s</entry>
+      <entry>--syntax-highlight</entry>
       <entry>
        <para>
        	Den Quelltext mit farbiger Syntaxhervorhebung anzeigen.
@@ -556,7 +582,17 @@ array(4) {
       </entry>
      </row>
      <row>
+      <entry>-s</entry>
+      <entry>--syntax-highlighting</entry>
+      <entry>
+       <para>
+        Ein Alias für <literal>--syntax-highlight</literal>.
+       </para>
+      </entry>
+     </row>
+     <row>
       <entry>-w</entry>
+      <entry>--strip</entry>
       <entry>
        <para>
         Den Quelltext mit entfernten Kommentaren und Leerzeichen anzeigen.
@@ -570,19 +606,21 @@ array(4) {
      </row>
      <row>
       <entry>-f</entry>
+      <entry>--file</entry>
       <entry>
        <para>
         Parst und führt die angegebene Datei aus. Diese Option ist nicht
         verbindlich und kann weggelassen werden. Alleinige Angabe des
-		Dateinamens ist ausreichend.
+        Dateinamens ist ausreichend.
        </para>
       </entry>
      </row>
      <row>
       <entry>-v</entry>
+      <entry>--version</entry>
       <entry>
        <para>
-        Schrebt die <literal>PHP</literal>, <literal>PHP SAPI</literal> und
+        Schreibt die <literal>PHP</literal>, <literal>PHP SAPI</literal> und
         <literal>Zend</literal>-Version auf die Standardausgabe. Zum Beispiel:
         <screen>
 <![CDATA[
@@ -596,6 +634,7 @@ Zend Engine v1.3.0, Copyright (c) 1998-2002 Zend Technologies
      </row>
      <row>
       <entry>-c</entry>
+      <entry>--php-ini</entry>
       <entry>
        <para>
         Mit dieser Option kann man entweder ein Verzichnis angeben, 
@@ -613,19 +652,17 @@ $ php -c /custom/directory/custom-file.ini my_script.php
       </entry>
      </row>
      <row>
-      <entry>-a</entry>
-      <entry>
+      <entry>-n</entry>
+      <entry>--no-php-ini</entry>
+       <entry>
        <para>
-        <literal>PHP</literal> interaktiv starten.
-        <!-- 
-        mfischer, 20020510: Couldn't come up with a decent useful description
-        of the current implementation of the interactive mode.
-        -->
+        php.ini komplett ignorieren. Diese Option gibt es seit PHP 4.3.0.
        </para>
       </entry>
      </row>
      <row>
       <entry>-d</entry>
+      <entry>--define</entry>
       <entry>
        <para>
         Diese Option erlaubt es Ihnen, einen eigenen Wert für eine beliebige
@@ -664,7 +701,21 @@ string(15) "doesntmakesense"
       </entry>
      </row>
      <row>
+      <entry>-a</entry>
+      <entry>--interactive</entry>
+      <entry>
+       <para>
+        <literal>PHP</literal> interaktiv starten.
+        <!-- 
+        mfischer, 20020510: Couldn't come up with a decent useful description
+        of the current implementation of the interactive mode.
+        -->
+       </para>
+      </entry>
+     </row>
+     <row>
       <entry>-e</entry>
+      <entry>--profile-info</entry>
       <entry>
        <para>
         Erweiterte Informationen für Debugger/Profiler erstellen.
@@ -677,6 +728,7 @@ string(15) "doesntmakesense"
      </row>
      <row>
       <entry>-z</entry>
+      <entry>--zend-extension</entry>
       <entry>
        <para>
         Eine <literal>Zend</literal>-Erweiterung laden. Wenn nur ein Dateiname
@@ -694,11 +746,12 @@ string(15) "doesntmakesense"
      </row>
      <row>
       <entry>-l</entry>
+      <entry>--syntax-check</entry>
       <entry>
        <para>
         Diese Option stellt eine angenehme Methode bereit, nur eine
         Syntaxüberprüfung auf den angegebenen <literal>PHP</literal>-Code
-        auszuführen. Bei Erfolg wird der Text <literal>No syntax errors 
+        durchzuführen. Bei Erfolg wird der Text <literal>No syntax errors 
         detected in &lt;filename&gt;</literal> auf die Standardausgabe
         geschrieben und der Rückgabewert ist <literal>0</literal>. Bei
         Misserfolg wird der Text <literal>Errors parsing 
@@ -720,10 +773,11 @@ string(15) "doesntmakesense"
      </row>
      <row>
       <entry>-m</entry>
+      <entry>--modules</entry>
       <entry>
        <para>
         Wird diese Option benutzt, gibt <literal>PHP</literal> die
-        eingebauten (und geladenen <literal>PHP</literal>- und
+        eingebauten (und geladenen) <literal>PHP</literal>- und
 		<literal>Zend</literal>-Module aus:
         <screen>
 <![CDATA[
@@ -748,6 +802,7 @@ ctype
      </row>
      <row>
       <entry>-i</entry>
+      <entry>--info</entry>
       <entry>
        Diese Kommandozeilenoption ruft <function>phpinfo</function>
        auf und gibt das Ergebnis aus. Wenn <literal>PHP</literal>
@@ -760,6 +815,7 @@ ctype
      </row>
      <row>
       <entry>-r</entry>
+      <entry>--run</entry>
       <entry>
        <para>
         Diese Option erlaubt die Ausführung von <literal>PHP</literal>
@@ -831,11 +887,29 @@ array(370) {
      </row>
      <row>
       <entry>-h</entry>
+      <entry>--help</entry>
       <entry>
        Mit dieser Option bekommen Sie Informationen über die tatsächlichen
        Kommandozeilenoptionen und kurze Beschreibungen dazu.
       </entry>
      </row>
+     <row>
+      <entry>-?</entry>
+      <entry>--usage</entry>
+      <entry>
+       Ein Alias für <literal>--help</literal>.
+      </entry>
+     </row>
+     <!--
+     new, not in PHP 4.3.4, but are in php_cli.c 1.102 or cgi_main.c 1.243
+     -b <address:port>|<port> bindpath Bind Path for external FASTCGI Server mode, only CGI, no Windows
+     -B <begin_code>     process-begin Run PHP <begin_code> before processing input lines
+     -R <code>           process-code  Run PHP <code> for every input line
+     -F <file>           process-file  Parse and execute <file> for every input line
+     -E <end_code>       process-end   Run PHP <end_code> after processing all input lines
+     -H                  hide-args     Hide any passed arguments from external tools.
+     -g                  global        Define global variables on command line
+     -->
     </tbody>
    </tgroup>
   </table>
@@ -854,7 +928,7 @@ array(370) {
  <para>
   Note, that you can always direct the output of the PHP
   executable to an external file with the &gt; character,
-  so <literal>php -q test.php > test.html</literal> will
+  so <literal>php -q test.php &gt; test.html</literal> will
   print out the output of <filename>test.php</filename>
   without HTTP headers to the <filename>test.html</filename>
   file in the same directory.
@@ -1013,19 +1087,21 @@ Usage: php [-q] [-h] [-s [-v] [-i] [-f <file>] |  {<file> [args...]}
  </para>
  -->
  <para>
-  The PHP executable can be used to run PHP scripts absolutely independent
-  from the web server. If you are on a Unix system, you should add a special
-  first line to your PHP script, and make it executable, so the system will
-  know, what program should run the script. On a Windows platform you can
-  associate <literal>php.exe</literal> with the double click option of the
-  <literal>.php</literal> files, or you can make a batch file to run the
-  script through PHP. The first line added to the script to work on Unix won't
-  hurt on Windows, so you can write cross platform programs this way. A simple
-  example of writing a command line PHP program can be found below.
+  Die ausführbare PHP-Version kann benutzt werden, um PHP-Skripte vollkommen
+  unabhängig von einem Webserver auszuführen. Wenn Sie auf einem UNIX-System
+  arbeiten, sollten Sie Ihrem Skript eine spezielle erste Zeile hinzufügen und
+  es ausführbar machen, so dass das System erkennt, welches Programm das Skript
+  ausführen soll. Auf einem Windows-System können Sie <literal>php.exe</literal>
+  mit der Doppelklick-Option von <literal>.php</literal>-Dateien verknüpfen.
+  Sie können auch eine Batchdatei erzeugen, um das Skript von PHP ausführen zu
+  lassen. Die erste Zeile, die dem Skript hinzugefügt wird, damit es unter UNIX
+  läuft, stört unter Windows nicht, so dass Sie auf diese Weise problemlos 
+  plattformübergreifende Programme schreiben können. Sie finden anschließend
+  ein einfaches Beispiel, wie man ein Kommandozeilenprogramm in PHP schreibt.
  </para>
  <para>
   <example>
-   <title>Script intended to be run from command line (script.php)</title>
+   <title>Ein Skript, das von der Kommandozeile aus ausgeführt werden soll (script.php)</title>
    <programlisting role="php">
 <![CDATA[
 #!/usr/bin/php
@@ -1053,50 +1129,49 @@ This is a command line PHP script with one option.
   </example>
  </para>
  <para>
-  In the script above, we used the special first line to indicate
-  that this file should be run by PHP. We work with a CLI version
-  here, so there will be no HTTP header printouts. There are two
-  variables you can use while writing command line applications with
-  PHP: <varname>$argc</varname> and <varname>$argv</varname>. The
-  first is the number of arguments plus one (the name of the script
-  running). The second is an array containing the arguments, starting
-  with the script name as number zero (<varname>$argv[0]</varname>).
+  In dem oben beschriebenen Skript haben wir die erste Zeile dazu benutzt,
+  anzugeben, dass die Datei von PHP ausgeführt werden soll. Wir arbeiten hier
+  mit einer CLI-version, deswegen werden keine HTTP-Header ausgegeben. Es gibt
+  zwei Variablen, die Sie in Kommandozeilen-Applikationen mit PHP benutzen
+  können: <varname>$argc</varname> und <varname>$argv</varname>. Die erste ist
+  die Anzahl der Argumente plus Eins (dem Namen des laufenden Skripts). Die
+  zweite ist ein Array, das die Argumente enthält, beginnend mit dem Skriptnamen
+  als Nummer Null (<varname>$argv[0]</varname>).
  </para>
  <para>
-  In the program above we checked if there are less or more than one
-  arguments. Also if the argument was <literal>--help</literal>,
-  <literal>-help</literal>, <literal>-h</literal> or <literal>-?</literal>,
-  we printed out the help message, printing the script name dynamically.
-  If we received some other argument we echoed that out.
+  In dem oben genannten Programm haben wir überprüft, ob es weniger oder mehr
+  als zwei Argumente gibt. Falls das Argument <literal>--help</literal>,
+  <literal>-help</literal>, <literal>-h</literal> oder <literal>-?</literal>
+  war, haben wir die Hilfe-Nachricht mit dem dynamisch übergebenen 
+  Skriptnamen ausgegeben. Wenn wir ein anderes Argument erhalten haben, haben
+  wir es ausgegeben.
  </para>
  <para>
-  If you would like to run the above script on Unix, you need to
-  make it executable, and simply call it as
-  <literal>script.php echothis</literal> or
-  <literal>script.php -h</literal>. On Windows, you can make a
-  batch file for this task:
+  Wenn Sie das oben genannte Skript unter UNIX laufen lassen wollen, müssen Sie
+  es zuerst ausführbar machen, und es danach einfach als 
+  <literal>script.php echothis</literal> oder
+  <literal>script.php -h</literal> aufrufen. Unter Windows können Sie zu diesem
+  Zweck eine Batchdatei erstellen:
  </para>
  <para>
   <example>
-   <title>Batch file to run a command line PHP script (script.bat)</title>
+   <title>Batchdatei zur Ausführung eines Kommandozeilen-Skripts in PHP (script.bat)</title>
    <programlisting role="shell">
 @c:\php\cli\php.exe script.php %1 %2 %3 %4
    </programlisting>
   </example>
  </para>
  <para>
-  Assuming you named the above program
-  <filename>script.php</filename>, and you have your
-  CLI <filename>php.exe</filename> in
-  <filename>c:\php\cli\php.exe</filename> this batch file
-  will run it for you with your added options:
-  <literal>script.bat echothis</literal> or
-  <literal>script.bat -h</literal>.
+  Angenommen, Sie haben das Programm <filename>script.php</filename> genannt
+  und die CLI-<filename>php.exe</filename> hat den Pfad
+  <filename>c:\php\cli\php.exe</filename>, wird diese Batchdatei es mit den von
+  Ihnen übergebnen Optionen <literal>script.bat echothis</literal> oder
+  <literal>script.bat -h</literal> ausführen.
  </para>
  <para>
-  See also the <link linkend="ref.readline">Readline</link>
-  extension documentation for more functions you can use
-  to enhance your command line applications in PHP.
+  Sehen Sie sich auch die zusätzlichen Funktionen in der Dokumentation der 
+  <link linkend="ref.readline">Readline</link>-Extension an, um Ihre in PHP
+  geschriebenen Kommandozeilenanwendungen weiterzuentwickeln.
  </para>
 </chapter>
 
