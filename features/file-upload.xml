@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.12 $ -->
-<!-- EN-Revision: 1.37 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.13 $ -->
+<!-- EN-Revision: 1.50 Maintainer: tom Status: ready -->
  <chapter id="features.file-upload">
   <title>Steuerung von Dateiuploads</title>
 
@@ -17,6 +17,16 @@
     Dateien hochladen darf und was mit den Dateien geschehen soll,
     wenn der Upload beendet ist.
    </simpara>
+   <note>
+    <title>Diesbezügliche Konfigurationshinweise</title>
+    <para>
+     Siehe auch die Anweisungen
+     <link linkend="ini.file-uploads">file_uploads</link>, 
+     <link linkend="ini.upload-max-filesize">upload_max_filesize</link>,
+     <link linkend="ini.upload-tmp-dir">upload_tmp_dir</link> und
+     <link linkend="ini.post-max-size">post_max_size</link> in der &php.ini;
+    </para>
+   </note>
    <para>
     PHP unterstützt auch Dateiuploads nach der PUT-Methode, die
     beispielsweise vom Netscape Composer und den W3C Amaya
@@ -55,37 +65,27 @@ Send this file: <input name="userfile" type="file">
 
    <para>
     Die für hochgeladene Dateien definierten Variablen sind je nach
-    PHP Version und Konfiguration verschieden. Die folgenden Variablen
-    werden nach einem erfolgreichen Upload innerhalb des empfangenden
-    Skriptes definiert. Ist <link linkend="ini.track-vars">track_vars</link>
-    aktiviert, ist das $HTTP_POST_FILES bzw. $_FILES Array initialisiert.
-    Wenn <link linkend="ini.register-globals">register_globals</link>
-    aktiviert ist, können die entsprechenden Variablen auch als globale
-    Variablen initialisiert werden, auch wenn dies nicht mehr nicht mehr
-    empfohlen wird.
+    PHP Version und Konfiguration verschieden. Die Autoglobale
+    <link linkend="reserved.variables.files">$_FILES</link> existiert
+    seit PHP 4.1.0 und das Array <varname>$HTTP_POST_FILES</varname>
+    seit PHP 4.0.0. Diese Arrays enthalten alle Informationen über
+    Ihre hochgeladenen Dateien. Die Verwendung von
+    <varname>$_FILES</varname> wird bevorzugt. Ist die PHP Anweisung
+    <link linkend="ini.register-globals">register_globals</link> auf
+    <emphasis>on</emphasis>, stehen auch entsprechende Variablennamen
+    zur Verfügung. Seit PHP <ulink url="&url.php.release4.2.0;">4.2.0</ulink>
+    steht <link linkend="ini.register-globals">register_globals</link>
+    standardmäßig  auf <emphasis>off</emphasis>.
    </para>
-   <note>
-    <para>
-    <link linkend="ini.track-vars">track_vars</link> ist seit PHP
-    4.0.3 immer aktiviert, und seit PHP 4.1.0 kann $_FILES statt
-    <varname>$HTTP_POST_FILES</varname> verwendet werden.
-    <varname>$_FILES</varname> ist immer global, weshalb Sie
-    <literal>global</literal> für $_FILES innerhalb von Funktionen
-    vermeiden sollten.
-    </para>
-   </note>
    <para>
-    <varname>$HTTP_POST_FILES</varname>/<varname>$_FILES</varname>
-    beinhalten die Dateiinformationen des Uploads.
-   </para>
-
-   <para>
-    Im Folgenden sind die Inhalte von <varname>$HTTP_POST_FILES</varname>
-    unter der Annahme, dass der Name des Dateiuploads wie in dem obigen
-    Beispielskript 'userfile' ist, aufgelistet:
+    Im Folgenden sind die Inhalte von
+    <link linkend="reserved.variables.files">$_FILES</link> aus unserem
+    Beispielskript aufgelistet. Beachten Sie, dass dies auf der Annahme
+    basiert, dass der Name des Dateiuploads wie in dem obigen
+    Beispielskript <emphasis>userfile</emphasis> ist.
     <variablelist>
      <varlistentry>
-      <term><varname>$HTTP_POST_FILES['userfile']['name']</varname></term>
+      <term><varname>$_FILES['userfile']['name']</varname></term>
       <listitem>
        <para>
         Der ursprüngliche Dateiname auf der Client Maschine.
@@ -93,7 +93,7 @@ Send this file: <input name="userfile" type="file">
       </listitem>
      </varlistentry>
      <varlistentry>
-      <term><varname>$HTTP_POST_FILES['userfile']['type']</varname></term>
+      <term><varname>$_FILES['userfile']['type']</varname></term>
       <listitem>
        <para>
         Der Mime-Type der Datei, falls der Browser diese Information
@@ -103,7 +103,7 @@ Send this file: <input name="userfile" type="file">
       </listitem>
      </varlistentry>
      <varlistentry>
-      <term><varname>$HTTP_POST_FILES['userfile']['size']</varname></term>
+      <term><varname>$_FILES['userfile']['size']</varname></term>
       <listitem>
        <para>
         Die Größe der hochgeladenen Datei in Bytes.
@@ -111,7 +111,7 @@ Send this file: <input name="userfile" type="file">
       </listitem>
      </varlistentry>
      <varlistentry>
-      <term><varname>$HTTP_POST_FILES['userfile']['tmp_name']</varname></term>
+      <term><varname>$_FILES['userfile']['tmp_name']</varname></term>
       <listitem>
        <para>
         Der temporäre Dateiname, unter dem die hochgeladene Datei auf
@@ -119,60 +119,37 @@ Send this file: <input name="userfile" type="file">
        </para>
       </listitem>
      </varlistentry>
+     <varlistentry>
+      <term><varname>$_FILES['userfile']['error']</varname></term>
+      <listitem>
+       <para>
+        Der <link linkend="features.file-upload.errors">Fehlercode</link>
+        im Zusammenhang mit dem hochladen der Datei.
+        <emphasis>['error']</emphasis> wurde in PHP 4.2.0 eingeführt.
+       </para>
+      </listitem>
+     </varlistentry>
     </variablelist>
    </para>
    <note>
     <para>
-     Seit PHP 4.1.0 wird auch die Kurzform <varname>$_FILES</varname>
-     unterstützt. PHP 3 unterstützt <varname>$HTTP_POST_FILES</varname>
-     nicht.
+     In den Versionen vor PHP 4.1.0 war dies
+     <varname>$HTTP_POST_FILES</varname>, und ist keine 
+     <link linkend="language.variables.superglobals">'Autoglobale'</link>
+     Variable wie <varname>$_FILES</varname>. PHP 3 unterstützt
+     <varname>$HTTP_POST_FILES</varname> nicht.
     </para>
    </note>
-
    <para>
-    Wenn <link linkend="ini.register-globals">register_globals</link>
-    in der <filename>php.ini</filename> aktiviert ist, stehen unter der
-    Annahme, dass der Name des Dateiuploads wie in dem obigen Beispielskript
-    'userfile' ist, zur Verfügung:
-
-    <itemizedlist>
-     <listitem>
-      <simpara>
-       <varname>$userfile</varname> - Der temporäre Name, unter dem die
-       hochgeladene Datei auf dem Server gespeichert wurde.
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <varname>$userfile_name</varname> - Der ursprüngliche Dateiname
-       auf dem System des Absenders.
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <varname>$userfile_size</varname> - Größe der hochgeladenen
-       Datei in Bytes.
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <varname>$userfile_type</varname> - Der Mime-Type der Datei, falls
-       der Browser diese Information zur Verfügung gestellt hat. Ein
-       Beispiel wäre "image/gif".
-      </simpara>
-     </listitem>
-    </itemizedlist>
-    Beachten Sie, dass der Teil "<varname>$userfile</varname>" der
-    obigen Variablen den Namen des Dateifeldes &lt;input name="userfile"
-    type="file"&gt; im Uploadformular trägt. In dem obigen Beispiel
-    haben wir es "userfile" genannt.
+    Ist <link linkend="ini.register-globals">register_globals</link>
+    in der &php.ini; aktiviert, stehen zusätzliche Variablen zur Verfügung.
+    Zum Beispiel entspricht <varname>$userfile_name</varname>
+    <varname>$_FILES['userfile']['name']</varname>,
+    <varname>$userfile_type</varname> entspricht
+    <varname>$_FILES['userfile']['type']</varname>, etc. Beachten Sie,
+    dass register_globals standardmäßig  deaktiviert ist, jedoch wird
+    empfohlen, sich nicht darauf zu verlassen.
    </para>
-   <note>
-    <para>
-     <literal>register_globals = On</literal> wird aus Sicherheits- und
-     Performancegründen nicht empfohlen.
-    </para>
-   </note>
    <para>
     Standardmäßig werden Dateien in dem vorgegebenen temporären
     Verzeichnis des Servers gespeichert, außer es wurde mittels
@@ -196,14 +173,14 @@ Send this file: <input name="userfile" type="file">
      <programlisting role="php">
 <![CDATA[
 <?php 
-// In PHP 4.1.0 oder höher sollte $_FILES anstatt $HTTP_POST_FILES verwendet werden.
-if (is_uploaded_file($HTTP_POST_FILES['userfile']['tmp_name'])) {
-    copy($HTTP_POST_FILES['userfile']['tmp_name'], "/place/to/put/uploaded/file");
+// In PHP kleiner als 4.1.0 sollten Sie $HTTP_POST_FILES anstatt $_FILES verwenden.
+if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
+    copy($_FILES['userfile']['tmp_name'], "/place/to/put/uploaded/file");
 } else {
-    echo "Possible file upload attack. Filename: " . $HTTP_POST_FILES['userfile']['name'];
+    echo "Possible file upload attack. Filename: " . $_FILES['userfile']['name'];
 }
 /* ...oder... */
-move_uploaded_file($HTTP_POST_FILES['userfile']['tmp_name'], "/place/to/put/uploaded/file");
+move_uploaded_file($_FILES['userfile']['tmp_name'], "/place/to/put/uploaded/file");
 ?>
 ]]>
      </programlisting>
@@ -212,13 +189,16 @@ move_uploaded_file($HTTP_POST_FILES['userfile']['tmp_name'], "/place/to/put/uplo
    <simpara>
     Das die hochgeladene Datei empfangende Skript sollte die notwendige
     Logik zur Entscheidung enthalten, was mit der hochgeladenen Datei
-    geschehen soll. Sie können
-    zum Beispiel <varname>$HTTP_POST_FILES['userfile']['size']</varname>
-    benutzen, um zu kleine bzw. zu große Dateien wegzuwerfen. Sie können
-    <varname>$HTTP_POST_FILES['userfile']['type']</varname> nutzen, um
-    Dateien eines unerwünschten Typs wegzuwerfen. Egal welche Logik Sie
-    verwenden, Sie sollten die Datei in dem temporären Verzeichnis
-    entweder löschen, oder an einen anderen Ort verschieben.
+    geschehen soll. Sie können zum Beispiel
+    <varname>$_FILES['userfile']['size']</varname> benutzen,
+    um zu kleine bzw. zu große Dateien wegzuwerfen. Sie können
+    <varname>$_FILES['userfile']['type']</varname> nutzen, um Dateien
+    eines unerwünschten Typs wegzuwerfen. Seit PHP 4.2.0 können Sie Ihre
+    Logik auch mittels <varname>$_FILES['userfile']['error']</varname>
+    anhand der <link linkend="features.file-upload.errors">Fehlercodes</link>
+    planen. Egal welche Logik Sie verwenden, Sie sollten die Datei in dem
+    temporären Verzeichnis entweder löschen, oder an einen anderen Ort
+    verschieben.
    </simpara>
    <simpara>
     Wurde die Datei in dem temporären Verzeichnis nicht verschoben oder
@@ -226,6 +206,70 @@ move_uploaded_file($HTTP_POST_FILES['userfile']['tmp_name'], "/place/to/put/uplo
    </simpara>
   </sect1>
  
+  <sect1 id="features.file-upload.errors">
+   <title>Fehlermeldungen erklärt</title>
+   <simpara>
+    Seit PHP 4.2.0 gibt PHP zusammen mit dem Datei-Array entsprechende
+    Fehlermeldungen. Die Fehlermeldung befindet sich im Segment
+    <emphasis>['error']</emphasis> des Datei-Arrays, welches während des
+    Hochladens der Datei erstellt wird. In anderen Worten kann der Fehler
+    in <varname>$_FILES['userfile']['error']</varname> gefunden werden.
+   </simpara>
+   <para>
+    <variablelist>
+     <varlistentry>
+      <term><varname>UPLOAD_ERR_OK</varname></term>
+      <listitem>
+       <para>
+        Wert: 0; Es liegt kein Fehler vor, die Datei wurde erfolgreich hochgeladen.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term><varname>UPLOAD_ERR_INI_SIZE</varname></term>
+      <listitem>
+       <para>
+        Wert: 1; Die hochgeladene Datei überschreitet die in der Anweisung
+        <link linkend="ini.upload-max-filesize">upload_max_filesize</link> 
+        in &php.ini; festgelegte Größe.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term><varname>UPLOAD_ERR_FORM_SIZE</varname></term>
+      <listitem>
+       <para>
+        Wert: 2; Die hochgeladene Datei überschreitet die in dem HTML Formular
+        mittels der Anweisung <emphasis>MAX_FILE_SIZE</emphasis> angegebene
+        maximale Dateigröße.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term><varname>UPLOAD_ERR_PARTIAL</varname></term>
+      <listitem>
+       <para>
+        Wert: 3; Die Datei wurde nur teilweise hochgeladen.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term><varname>UPLOAD_ERR_NO_FILE</varname></term>
+      <listitem>
+       <para>
+        Wert: 4; Es wurde keine Datei hochgeladen.
+       </para>
+      </listitem>
+     </varlistentry>
+    </variablelist>
+   </para>
+   <note>
+    <para>
+     Dies wurden Konstanten in PHP 4.3.0.
+    </para>
+   </note>
+  </sect1>
+
   <sect1 id="features.file-upload.common-pitfalls">
    <title>Häufige Probleme</title>
    <simpara>
@@ -264,6 +308,11 @@ move_uploaded_file($HTTP_POST_FILES['userfile']['tmp_name'], "/place/to/put/uplo
     wegzuschneiden scheint. Solange dies der Fall ist, unterstützt
     CERN httpd keine Dateiuploads.
    </simpara>
+   <simpara>
+    Aufgrund der vielen möglichen Arten der Darstellung von Verzeichnissen
+    können wir nicht garantieren, dass Dateien mit exotischen Namen (wie z.B.
+    mit enthaltenen Leerzeichen) auch wirklich richtig verarbeitet werden.
+   </simpara>
   </sect1>
 
   <sect1 id="features.file-upload.multiple">
@@ -301,34 +350,32 @@ move_uploaded_file($HTTP_POST_FILES['userfile']['tmp_name'], "/place/to/put/uplo
    </para>
    <simpara>
     Wenn das obige Formular übermittelt ist, werden die Arrays
-    <varname>$HTTP_POST_FILES['userfile']</varname>,
-    <varname>$HTTP_POST_FILES['userfile']['name']</varname> und
-    <varname>$HTTP_POST_FILES['userfile']['size']</varname>
-    initialisiert. (Wie auch in $_FILES seit PHP 4.1.0. In PHP 3
-    $HTTP_POST_VARS. Ist <literal>register_globals</literal>
-    aktiviert, werden auch globale Variablen für die hochgeladenen
-    Dateien initialisiert). Jedes von ihnen ist ein numerisch
-    indiziertes Array mit den entsprechenden Werten der
-    hochgeladenen Dateien.
+    <varname>$_FILES['userfile']</varname>,
+    <varname>$_FILES['userfile']['name']</varname> und
+    <varname>$_FILES['userfile']['size']</varname>
+    initialisiert (wie auch in $HTTP_POST_FILES vor PHP Version 4.1.0.).
+    Ist <literal>register_globals</literal> aktiviert, werden auch
+    globale Variablen für die hochgeladenen Dateien initialisiert.
+    Jedes von ihnen ist ein numerisch indiziertes Array mit den
+    entsprechenden Werten für die hochgeladenen Dateien.
    </simpara>
    <simpara>
     Nehmen wir zum Beispiel an, dass die Dateinamen
     <filename>/home/test/review.html</filename> und
     <filename>/home/test/xwp.out</filename> übermittelt wurden.
     In diesem Fall würde
-    <varname>$HTTP_POST_FILES['userfile']['name'][0]</varname>
+    <varname>$_FILES['userfile']['name'][0]</varname>
     <filename>review.html</filename> enthalten, und
-    <varname>$HTTP_POST_FILES['userfile']['name'][1]</varname>
+    <varname>$_FILES['userfile']['name'][1]</varname>
     hätte den Wert <filename>xwp.out</filename>. Genauso würde
-    <varname>$HTTP_POST_FILES['userfile']['size'][0]</varname>
-    die Dateigröße von <filename>review.html</filename> enthalten,
-    usw.
+    <varname>$_FILES['userfile']['size'][0]</varname> die
+    Dateigröße von <filename>review.html</filename> enthalten, usw.
    </simpara>
    <simpara>
-    <varname>$HTTP_POST_FILES['userfile']['name'][0]</varname>,
-    <varname>$HTTP_POST_FILES['userfile']['tmp_name'][0]</varname>,
-    <varname>$HTTP_POST_FILES['userfile']['size'][0]</varname> und
-    <varname>$HTTP_POST_FILES['userfile']['type'][0]</varname> sind
+    <varname>$_FILES['userfile']['name'][0]</varname>,
+    <varname>$_FILES['userfile']['tmp_name'][0]</varname>,
+    <varname>$_FILES['userfile']['size'][0]</varname> und
+    <varname>$_FILES['userfile']['type'][0]</varname> sind
     ebenfalls gesetzt.
    </simpara>
   </sect1>
