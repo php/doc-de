@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+ <reference id="ref.fdf">
+  <title>Forms Data Format Funktionen</title>
+  <titleabbrev>FDF</titleabbrev>
+
+  <partintro>
+   <simpara>
+    Forms Data Format (FDF) ist ein Format zur Verarbeitung von
+    Formularen innerhalb von PDF Dokumenten.  Weiterführende
+    Informationen zu FDF und dessen Verwendung sind unter <ulink
+    url="&spec.pdf.fdf;">&spec.pdf.fdf;</ulink> zu finden.
+   </simpara>
+   <note>
+    <simpara>
+     Bei Problemen mit der Konfiguration der FdfTk-Unterstützung
+     sollte man überprüfen, ob die Datei FdfTk.h sowie die Bibliothek
+     libFdfTk.so im richtigen Verzeichnis zu finden sind. Die
+     korrekten Verzeichnisse sind fdftk-dir/include und
+     fdftk-dir/lib. Das ausschließliche Entpacken der Distribution
+     führt nicht zu dem gewünschten Ergebnis.
+    </simpara>
+   </note>
+   <simpara>
+    Der Ansatz den FDF verfolgt, ist vergleichbar mit dem üblicher
+    HTML Formulare.  Die wesentlichen Unterschiede liegen in der
+    Übertragung der Daten nach Absenden des Formulars (dies ist das
+    eigentliche Form Data Format), sowie in dem Format des Dokuments
+    welches das Formular enthält(PDF).  Die Verarbeitung der FDF Daten
+    ist eine der Möglichkeiten, die die FDF Funktionen bereitstellen.
+    Darüberhinaus kann man beispielsweise innerhalb eines vorhandenen
+    PDF Formulars die Input Felder dynamisch mit Daten füllen, ohne
+    das Formular selbst zu verändern.  Hierzu erzeugt man das FDF
+    Dokument (<function>fdf_create</function>), setzt die Werte der
+    jeweiligen Input Felder (<function>fdf_set_value</function>) und
+    verbindet es mit dem jeweiligen PDF Formular
+    (<function>fdf_set_file</function>).  Nachdem man das FDF
+    Dokument, mit dem passenden MimeType
+    <literal>application/vnd.fdf</literal> versehen, ausgegeben hat,
+    erkennt das Acrobat Reader PlugIn des Browsers den MimeType und
+    füllt das Zielformular mit den Daten des FDF Dokuments.
+   </simpara>
+   <simpara>
+    Betrachtet man ein FDF Dokument mit einem Text Editor, findet sich
+    dort ein Katalog Objekt <literal>FDF</literal>. Dieses Objekt kann
+    mehrere Einträge der Art <literal>Fields</literal>,
+    <literal>F</literal>, <literal>Status</literal> etc..
+    enthalten. Die gebräuchlichsten Einträge sind
+    <literal>Fields</literal>, welches zu einer Anzahl von Input
+    Feldern verweist, sowie <literal>F</literal> das den Dateinamen
+    des zugehörigen PDF Dokuments enthält. Diese Einträge finden sich
+    in der FDF Dokumentation unter /F-Key oder /Status-Key.
+    Modifikationen dieser Einträge werden mit Hilfe der Funktionen
+    <function>fdf_set_file</function> und
+    <function>fdf_set_status</function> vorgenommen.  Felder werden
+    u.a. mit <function>fdf_set_value</function>,
+    <function>fdf_set_opt</function> modifiziert.
+   </simpara>
+   <simpara>
+    Das Beispiel zeigt die Auswertung der Formular Daten.
+   </simpara>
+   <simpara>
+   </simpara>
+   <example>
+    <title>Auswertung eines FDF Dokuments</title>
+    <programlisting role="php">
+<![CDATA[ 
+<?php
+// Speichern der FDF Daten in eine temporäre Datei
+$fdffp = fopen("test.fdf", "w");
+fwrite($fdffp, $HTTP_FDF_DATA, strlen($HTTP_FDF_DATA));
+fclose($fdffp);
+
+// Öffnen der temporären Datei und Auswertung der Daten
+// Das PDF Formular enthält verschiedene Eingabefelder mit den zugehörigen Namen
+// band, datum, kommentar, verleger, bearbeiter, sowie zwei Checkboxen
+// zeige_verleger und zeige_bearbeiter.
+
+$fdf = fdf_open("test.fdf");
+$band = fdf_get_value($fdf, "band");
+echo "Das Feld Band hat den Wert '<B>$band</B>'<BR>";
+
+$datum = fdf_get_value($fdf, "datum");
+echo "Das Feld Datum hat den Wert '<B>$datum</B>'<BR>";
+
+$kommentar = fdf_get_value($fdf, "kommentar");
+echo "Das Feld Kommentar hat den Wert '<B>$kommentar</B>'<BR>";
+
+if (fdf_get_value($fdf, "zeige_verleger") == "On") {
+    $verleger = fdf_get_value($fdf, "verleger");
+    echo "Das Feld Verleger hat den Wert '<B>$verleger</B>'<BR>";
+} else {
+  echo "Verleger soll nicht angezeigt werden.<BR>";
+}
+
+if (fdf_get_value($fdf, "zeige_bearbeiter") == "On") {
+  $bearbeiter = fdf_get_value($fdf, "bearbeiter");
+  echo "Das Feld Bearbeiter hat den Wert '&<B>$bearbeiter</B>'<BR>";
+} else {
+  echo "Bearbeiter soll nicht angezeigt werden.<BR>";
+}
+fdf_close($fdf);
+?>
+]]>
+    </programlisting>
+   </example>
+  </partintro>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+&reference.fdf.functions;
+
+ </reference>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+ -->
+
