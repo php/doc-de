@@ -3,57 +3,55 @@
   <titleabbrev>PHP / Java Integration</titleabbrev>
   <partintro>
    <para>
-    
-
-    There are two possible ways to bridge PHP and Java: you can either 
-    integrate Java into PHP, which is the more stable and efficient 
-    solution, or integrate PHP into a Java Servlet environment.
-    The former is provided by ext/java, the latter by a SAPI module that
-    interfaces with the Servlet server.
+    Es gibt zwei Wege, um die Welten von Java und PHP zu verbinden. Einerseits 
+    besteht die Möglichkeit PHP in eine Java Servlet Umgebung zu integrieren, 
+    andererseits kann man mit der Java Extension aus PHP heraus auf Java Klassen 
+    zugreifen. Die erste der beiden genannten Möglichkeit ist wesentlich 
+    stabiler und performanter als die zweitgenannte Lösung.
    </para>
    <para>
-    PHP 4 ext/java provides a simple and effective means for creating and
-    invoking methods on Java objects from PHP. The JVM is created using JNI,
-    and everything runs in-process. Build instructions for ext/java can be
-    found in php4/ext/java/README.
-
+    Die Java Erweiterung für PHP nutzt das Object Overloading von PHP 4 um auf 
+    Java Klassen zuzugreifen. Die Java Virtual Machine (JVM) wird hierbei über 
+    das Java Native Interface (JNI) erzeugt. Eine detaillierte 
+    Installationsbeschreibung entnehmen Sie bitte der Datei 
+    <filename>php4/ext/java/README</filename>.
     <example>
-     <title>Java Example</title>
+     <title>Zugriff auf Java Klassen aus PHP heraus</title>
      <programlisting role="php">
 &lt;?php
-  // get instance of Java class java.lang.System in PHP
-  $system = new Java("java.lang.System");
+  // In PHP Instanz der Java Klasse java.lang.System erzeugen
+  $system = new Java('java.lang.System');
 
-  // demonstrate property access
-  print "Java version=".$system-&gt;getProperty("java.version")." &lt;br&gt;";
-  print "Java vendor=" .$system-&gt;getProperty("java.vendor")."  &lt;br&gt;";
-  print "OS=".$system-&gt;getProperty("os.name")." ".
-              $system-&gt;getProperty("os.version")." on ".
-              $system-&gt;getProperty("os.arch")." &lt;br&gt;";
+  // Zugriff auf die Objekteigenschaften
+  print 'Java version='.$system-&gt;getProperty('java.version').' &lt;br&gt;';
+  print 'Java vendor=' .$system-&gt;getProperty('java.vendor').'  &lt;br&gt;';
+  print 'OS='.$system-&gt;getProperty('os.name').' '.
+              $system-&gt;getProperty('os.version').' on '.
+              $system-&gt;getProperty('os.arch').' &lt;br&gt;';
 
-  // java.util.Date example
-  $formatter = new Java("java.text.SimpleDateFormat",
+  // java.util.Date Beispiel
+  $formatter = new Java('java.text.SimpleDateFormat',
                         "EEEE, MMMM dd, yyyy 'at' h:mm:ss a zzzz");
 
-  print $formatter-&gt;format(new Java("java.util.Date"));
+  print $formatter-&gt;format(new Java('java.util.Date'));
 ?&gt;
      </programlisting>
     </example>
     <example>
-     <title>AWT Example</title>
+     <title>Zugriff auf Java AWT aus PHP heraus</title>
      <programlisting role="php">
 &lt;?php
-  // This example is only intented to be run as a CGI.
+  // Dieses Beispiel kann nur als CGI ausgeführt werden.
 
-  $frame  = new Java("java.awt.Frame", "Zend");
-  $button = new Java("java.awt.Button", "Hello Java world!");
+  $frame  = new Java('java.awt.Frame', 'PHP');
+  $button = new Java('java.awt.Button', 'Hallo Java Welt!');
 
-  $frame-&gt;add("North", $button);
+  $frame-&gt;add('North', $button);
   $frame-&gt;validate();
   $frame-&gt;pack();
   $frame-&gt;visible = True;
 
-  $thread = new Java("java.lang.Thread");
+  $thread = new Java('java.lang.Thread');
   $thread-&gt;sleep(10000);
 
   $frame-&gt;dispose();
@@ -66,33 +64,32 @@
     <itemizedlist>
      <listitem>
       <simpara>
-       new Java() will create an instance of a class if a suitable constructor
-       is available. If no parameters are passed and the default constructor
-       is useful as it provides access to classes like "java.lang.System"
-       which expose most of their functionallity through static methods.
+       <literal>new Java()</literal> erzeugt eine Instanz der angegebenen Java 
+       Klasse, falls ein geeigneter Konstruktur gefunden wird. Für den Zugriff 
+       auf Klassen mit statischen Methoden benötigt man keinen Parameter.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Accessing a member of an instance will first look for bean properties
-       then public fields. In other words, "print $date.time" will first
-       attempt to be resolved as "$date.getTime()", then as "$date.time";
+       Beim Zugriff auf Mitglieder (Members) einer Instanz wird zunächst nach 
+       Bean Eigenschaften gesucht, danach erst nach öffentlichen (public) 
+       Eigenschaften. Mit anderen Worten: Es wird zuerst versucht werden, zum 
+       Beispiel <literal>print $date.time</literal> als 
+       <literal>$date.getTime()</literal> zu interpretieren, danach erst wird 
+       <literal>$date.time</literal> versucht werden.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Both static and instance members can be accessed on an object with
-       the same syntax. Furthermore, if the java object is of type
-       "java.lang.Class", then static members of the class (fields and
-       methods) can be accessed.
+       Der Zugriff auf statische und Instanzeigenschaften erfolgt mit der selben 
+       Syntax.
       </simpara>
      </listitem>
      <listitem>
       <para>
-       Exceptions raised result in PHP warnings, and null results. The
-       warnings may be eliminated by prefixing the method call with an
-       "@" sign. The following APIs may be used to retrieve and reset
-       the last error:
+       Das Auslösen einer Java Exception resultiert in einer PHP Warnung und 
+       einem NULL Ergebnis. Folgende Funktionen ermöglichen den Zugriff auf die 
+       eigentlichen Exceptions:
 
        <itemizedlist>
         <listitem><simpara><function>java_last_exception_get</function></simpara></listitem>
@@ -102,55 +99,46 @@
      </listitem>
      <listitem>
       <simpara>
-       Overload resolution is in general a hard problem given the
-       differences in types between the two languages. The PHP Java
-       extension employs a simple, but fairly effective, metric for
-       determining which overload is the best match.
-
-       Additionally, method names in PHP are not case sensitive, potentially
-       increasing the number of overloads to select from.
-
-       Once a method is selected, the parameters are cooerced if necessary, 
-       possibly with a loss of data (example: double precision floating point
-       numbers will be converted to boolean).
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       In the tradition of PHP, arrays and hashtables may pretty much
-       be used interchangably. Note that hashtables in PHP may only be
-       indexed by integers or strings; and that arrays of primitive types
-       in Java can not be sparse. Also note that these constructs are
-       passed by value, so may be expensive in terms of memory and time.
+       Traditionell können Arrays und Hashes in PHP weitestgehend als 
+       gleichwertig angesehen werden. Beim Austausch dieser Datentypen zwischen 
+       PHP und Java ist zu beachten, dass Hashes in PHP nur mit Integer- und 
+       Stringwerten indiziert werden können und Arrays von primitiven Datentypen 
+       in Java nicht dünn besetzt sein dürfen. Ferner ist zu beachten, dass 
+       diese Datenstrukturen by-Value übergeben werden, was ungünstig in Bezug 
+       auf Speicher- und Zeitbedarf sein kann.
       </simpara>
      </listitem>
     </itemizedlist>
    </para>
    <para>
-    PHP4 sapi/servlet builds upon the mechanism defined by ext/java to enable
-    the entire PHP processor to be run as a servlet. The primary advanatage
-    of this from a PHP perspective is that web servers which support servlets
-    typically take great care in pooling and reusing JVMs. Build instructions 
-    for the Servlet SAPI module can be found in php4/sapi/README.
+    Das PHP 4 Servlet SAPI Modul baut auf dem von der Java Extension zur 
+    Verfügung gestellten Mechanismus auf, allerdings wird der PHP Prozessor 
+    hierbei von einer Servlet Engine, wie zum Beispiel Apache Jakarta / Tomcat, 
+    ausgeführt. Dies führt zu einer wesentlich höheren Stabilität und besserer 
+    Performance als der umgekehrte Weg, wie in die Java Extension an sich 
+    anbietet. Dies kommt daher, dass die Servlet Engine sich um das Pooling und 
+    die Wiederverwendung von Java Virtual Machines (JVMs) kümmert. Eine 
+    detaillierte Anleitung zur Integration von PHP in eine Servlet Engine 
+    entnehmen Sie bitte der Datei <filename>php4/sapi/README</filename>.
 
-    Notes:
+    Bemerkungen:
 
     <itemizedlist>
      <listitem>
       <simpara>
-       While this code is intended to be able to run on any servlet engine,
-       it has only been tested on Apache's Jakarta/tomcat to date. Bug
-       reports, success stories and/or patches required to get this code
-       to run on other engines would be appreciated.
+       Das Servlet SAPI Modul sollte zwar auf jeder Java Servlet Engine 
+       funktionieren, wurde aber bislang nur in Verbindung mit Apache 
+       Jakarta/Tomcat getestet. Meldungen von Problem - aber auch von 
+       Erfolgserlebnissen - bei der Verendung mit anderen Servlet Engines werden 
+       dankbar aufgenommen.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       PHP has a habit of changing the working directory. sapi/servlet will
-       eventually change it back, but while PHP is running the servlet engine
-       may not be able to load any classes from the CLASSPATH which are
-       specified using a relative directory syntax, or find the work directory
-       used for administration and JSP compilation tasks.
+       PHP hat die Angewohnheit das aktuelle Arbeitsverzeichnis (CWD) zu ändern. 
+       sapi/servlet wird versuchen, den alten Zustand wieder herzustellen. 
+       Während PHP läuft kann es sein, dass die Servlet Engine kann Klassen aus 
+       dem CLASSPATH finden kann, die über relative Pfade angesprochen werden.
       </simpara>
      </listitem>
     </itemizedlist>
@@ -160,10 +148,10 @@
   <refentry id="function.java-last-exception-clear">
    <refnamediv>
     <refname>java_last_exception_clear</refname>
-    <refpurpose>Clear last Java exception</refpurpose>
+    <refpurpose>Letzte Java Exception freigeben</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>void <function>java_last_exception_clear</function></funcdef>
@@ -176,10 +164,10 @@
   <refentry id="function.java-last-exception-get">
    <refnamediv>
     <refname>java_last_exception_get</refname>
-    <refpurpose>Get last Java exception</refpurpose>
+    <refpurpose>Letzte Java Exception holen</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>exception <function>java_last_exception_get</function></funcdef>
@@ -187,27 +175,27 @@
      </funcprototype>
     </funcsynopsis>
     <para>
-     The following example demonstrates the usage of Java's exception 
-     handler from within PHP:
+     Das nachstehende Beispiel demonstriert die Verarbeitung von Java Exceptions 
+     aus PHP heraus:
 
      <example>
-      <title>Java exception handler</title>
+      <title>Verarbeitung von Java Exceptions</title>
       <programlisting role="php">
 <?php
-  $stack = new Java("java.util.Stack");
+  $stack = new Java('java.util.Stack');
   $stack-&gt;push(1);
 
-  // This should succeed
+  // Sollte funktionieren
   $result = $stack->pop();
   $ex = java_last_exception_get();
   if (!$ex) print "$result\n";
 
-  // This should fail (error suppressed by @)
+  // Sollte nicht funktionieren (Fehler mit @ unterdrückt)
   $result = @$stack-&gt;pop();
   $ex = java_last_exception_get();
   if ($ex) print $ex->toString();
 
-  // Clear last exception
+  // Exception freigeben
   java_last_exception_clear();
 ?>
       </programlisting>
