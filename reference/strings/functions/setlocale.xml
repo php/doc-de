@@ -1,57 +1,61 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- splitted from ./de/functions/strings.xml, last change in rev 1.2 -->
-<!-- last change to 'setlocale' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.58/EN.1.2 -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.5 Maintainer: tom Status: ready -->
+<!-- CREDITS: tschuer -->
   <refentry id="function.setlocale">
    <refnamediv>
     <refname>setlocale</refname>
     <refpurpose>Setzt lokale Informationen</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Beschreibung:</title>
+    <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>setlocale</methodname>
-      <methodparam><type>string</type><parameter>category</parameter></methodparam>
+      <methodparam><type>mixed</type><parameter>category</parameter></methodparam>
       <methodparam><type>string</type><parameter>locale</parameter></methodparam>
+      <methodparam choice='opt'><type>string</type><parameter>...</parameter></methodparam>
+     </methodsynopsis>
+     <methodsynopsis>
+      <type>string</type><methodname>setlocale</methodname>
+      <methodparam><type>mixed</type><parameter>category</parameter></methodparam>
+      <methodparam><type>array</type><parameter>locale</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Der String <parameter>category</parameter> enthält die Kategorie
-     der zu ändernden Lokalitäts-Informationen:
+     <parameter>Category</parameter> ist eine benannte Konstante (oder
+     Zeichenkette), welche die Kategorie der von den lokalen Einstellungen
+     betroffenen Funktionen spezifiziert:
      <itemizedlist>
       <listitem>
        <simpara>
-	LC_ALL - alle folgenden Werte
+        LC_ALL für alle folgenden Werte
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	LC_COLLATE - für String-Vergleiche - z.Zt. noch nicht in PHP
-  implementiert
+        LC_COLLATE für String-Vergleiche, siehe
+        <function>strcoll</function>
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	LC_CTYPE - betrifft Klassifizierungen und Umwandlung, z.B. bei
-  <function>strtoupper</function>
+        LC_CTYPE für Klassifizierung und Umwandlung von Zeichen, z.B.
+        <function>strtoupper</function>
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	LC_MONETARY - betrifft localeconv() - z.Zt. noch nicht in PHP
-  implementiert
+        LC_MONETARY für <function>localeconv</function>
        </simpara>
       </listitem>
       <listitem>
-       <simpara> 
-	LC_NUMERIC - für das Dezimal-Trennzeichen
+       <simpara> LC_NUMERIC für das Dezimal-Trennzeichen (Siehe auch
+       <function>localeconv</function>)
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	LC_TIME - betrifft Zeit und Datums-Formatierungen durch
-	<function>strftime</function>
+        LC_TIME für Zeit und Datums-Formatierungen mittels
+        <function>strftime</function>
        </simpara>
       </listitem>
      </itemizedlist>
@@ -59,12 +63,25 @@
     <para>
      Ist <parameter>locale</parameter> als Leer-String definiert, also
      <literal>""</literal>, werden die Werte an Hand der entsprechenden
-     Umgebungs-Variablen gleichen Namens oder von "LANG" bestimmt.
+     Umgebungsvariablen gleichen Namens wie die obigen Kategorien, oder
+     von "LANG" bestimmt.
     </para>
     <para>
      Ist <parameter>locale</parameter> &null; oder <literal>"0"</literal>,
-     werden keine Einstellungen verändert sondern als Ergebnis zurück
-     gegeben.
+     sind keine Einstellungen betroffen, und es wird die aktuelle
+     Einstellung zurückgegeben.
+    </para>
+    <para>
+     Ist <parameter>locale</parameter> ein Array, oder folgen weitere Parameter,
+     dann wird jedes Array Element bzw. jeder Parameter versucht zu stzen, bis
+     es gelingt. Dies ist dann sinnvoll, wenn eine locale auf verschiedenen
+     Systemen unter verschiedenen Namen bekannt ist, oder auch als Fallback
+     für eine eventuell nicht vorhandene locale.
+     <note>
+      <simpara>
+       Das Übergeben von mehreren locales ist erst seit PHP 4.3 verfügbar.
+      </simpara>
+     </note>
     </para>
     <para>
      <function>setlocale</function> gibt die neue Einstellung oder
@@ -72,6 +89,26 @@
      nicht unterstützt wird oder der Kategorie-Wert ungültig ist)
      zurück. Ein ungültiger Kategorie-Name erzeugt auch noch eine
      Warnmeldung.
+    </para>
+    <para>
+     <example>
+      <title><function>setlocale</function> Beispiele</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+    /* locale auf Holland setzen */
+    setlocale (LC_ALL, 'nl_NL');
+
+    /* Ausgabe: vrijdag 22 december 1978 */
+    echo strftime ("%A %e %B %Y", mktime (0, 0, 0, 12, 22, 1978));
+
+    /* versuche verschiedene mögliche locale Namen für Deutsch */
+    $loc_de = setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
+    echo "Preferred locale for german on this system is '$loc_de'";
+?>
+]]>
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
