@@ -1,5 +1,5 @@
  <reference id="ref.imap">
-  <title>IMAP, POP3 and NNTP Funktionen</title>
+  <title>IMAP, POP3 und NNTP Funktionen</title>
   <titleabbrev>IMAP</titleabbrev>
 
   <partintro>
@@ -109,6 +109,30 @@
      durch  <parameter>mbox</parameter> spezifizierte Mailbox an. Wenn
      der optionale <parameter>flags</parameter> spezifiziert wird, so
      werden die Flags der Nachricht in der Mailbox entsprechend gesetzt.
+    </para>
+    <para>     
+     <example>
+      <title><function>imap_append</function> example</title>
+      <programlisting role="php">
+$stream = imap_open("{your.imap.host}INBOX.Drafts","username", "password");
+
+$check = imap_check($stream);
+print "Msg Count before append: ". $check->Nmsgs."&lt;br&gt;\n";
+
+imap_append($stream,"{your.imap.host}INBOX.Drafts"
+                   ,"From: me@my.host\r\n"
+                   ."To: you@your.host\r\n"
+                   ."Subject: test\r\n"
+                   ."\r\n"
+                   ."this is a test message, please ignore\r\n"
+                   );
+
+$check = imap_check($stream);
+print "Msg Count after append : ". $check->Nmsgs.""&lt;br&gt;\n";
+
+imap_close($stream);
+      </programlisting>
+     </example>
     </para>
     <warning>
      <para>
@@ -226,6 +250,29 @@
       </listitem>
      </itemizedlist>
     </para>
+    <para>     
+     <example>
+      <title><function>imap_check</function> example</title>
+      <programlisting role="php">
+$mbox = imap_open("{your.imap.host}INBOX","username", "password")
+      || die("can't connect: ".imap_last_error());
+		
+$check = imap_check($mbox);
+	  
+if($check) {
+  print "Date: "    . $check-&gt;Date    ."&lt;br&gt;\n" ;
+  print "Driver: "  . $check-&gt;Driver  ."&lt;br&gt;\n" ;
+  print "Mailbox: " . $check-&gt;Mailbox ."&lt;br&gt;\n" ;
+  print "Messages: ". $check-&gt;Nmsgs   ."&lt;br&gt;\n" ;
+  print "Recent: "  . $check-&gt;Recent  ."&lt;br&gt;\n" ;
+} else { 
+  print "imap_check() failed: ".imap_lasterror(). "&lt;br&gt;\n"; 
+}
+	  
+imap_close($mbox);	  	 
+      </programlisting> 
+     </example>
+    </para>
    </refsect1>
   </refentry>
 
@@ -309,6 +356,23 @@
      Nachrichten) durch Aufruf der Funktion <function>imap_expunge</function>
      oder durch <function>imap_close</function> mit dem optionalen Flag
      <parameter>CL_EXPUNGE</parameter>.
+    </para>
+    <para>     
+     <example>
+      <title><function>imap_check</function> example</title>
+      <programlisting role="php">
+$mbox = imap_open("{your.imap.host}INBOX","username", "password")
+        || die("can't connect: ".imap_last_error());
+
+$check = imap_mailboxmsginfo($mbox);
+print "Messages before delete: ". $check->Nmsgs   ."&lt;br&gt;\n" ;
+imap_delete($mbox,1);
+print "Messages after  delete: ". $check->Nmsgs   ."&lt;br&gt;\n" ;
+imap_expunge($mbox);
+print "Messages after expunge: ". $check->Nmsgs   ."&lt;br&gt;\n" ;
+imap_close($mbox);
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
@@ -1991,6 +2055,13 @@ imap_close($mbox);
      status->flags wird ebenfalls gesetzt und enthält eine Bitmaske aus den
      oben genannten Werten, die die tatsächlich zurückgegebenen Informationen
      beschreibt.
+    </para>
+    <para>
+     <example>
+      <title><function>imap_check</function> example</title>
+      <programlisting role="php">
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
