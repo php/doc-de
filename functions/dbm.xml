@@ -1,38 +1,43 @@
  <reference id="ref.dbm">
-  <title>dbm functions</title>
+  <title>DBM Datenbankfunktionen</title>
   <titleabbrev>DBM</titleabbrev>
 
   <partintro>
-  <simpara>
-   These functions allow you to store records stored in a dbm-style
-   database. This type of database (supported by the Berkeley db,
-   gdbm, and some system libraries, as well as a built-in flatfile
-   library) stores key/value pairs (as opposed to the full-blown
-   records supported by relational databases).</simpara>
-  <para>
-   <example>
-    <title>dbm example</title>
-    <programlisting role="php">
-$dbm = dbmopen("lastseen", "w");
-if (dbmexists($dbm, $userid)) {
-  $last_seen = dbmfetch($dbm, $userid);
+   <simpara>
+    Diese Funktionen erlauben Ihnen den Zugriff auf Datensätze die
+    im DBM-Format vorliegen.
+
+    Im Gegensatz zu den relationalen Datenbanken (mySQL, etc.)
+    werden die Datensätze in Form von ISAM-Sätzen gespeichert.
+    DBM Datenbanken werden von verschiedenen Systemfunktionen als
+    interne Arbeitsbibliothek benützt. Diese Datenbank-Art wird
+    auch von der Berkeley DB und GDBM verwendet.
+   </simpara>
+   <para>
+    <example>
+     <title>Beispiel für ein DBM Script</title>
+     <programlisting role="php">
+$dbm = dbmopen ("lastseen", "w");
+if (dbmexists ($dbm, $userid)) {
+    $last_seen = dbmfetch ($dbm, $userid);
 } else {
-  dbminsert($dbm, $userid, time());
+    dbminsert ($dbm, $userid, time());
 }
 do_stuff();
-dbmreplace($dbm, $userid, time());
-dbmclose($dbm);
-</programlisting></example>
-  </para>
+dbmreplace ($dbm, $userid, time());
+dbmclose ($dbm);
+     </programlisting>
+    </example>
+   </para>
   </partintro>
 
   <refentry id="function.dbmopen">
    <refnamediv>
     <refname>dbmopen</refname>
-    <refpurpose>opens a dbm database</refpurpose>
+    <refpurpose>Öffnen einer DBM Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>dbmopen</function></funcdef>
@@ -41,34 +46,84 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     The first argument is the full-path filename of the dbm file to be opened
-     and the second is the file open mode which is one of "r", "n", "c" or "w"
-     for read-only, new (implies read-write, and most likely will truncate an
-     already-existing database of the same name), create (implies read-write,
-     and will not truncate an already-existing database of the same name)
-     and read-write respectively.</para>
+     Das erste Argument ist der vollqualifizierte Dateiname der DBM Datenbank,
+     die geöffnet werden soll. Das zweite Argument ist der Modus,
+     mit dem die DBM Datenbank geöffnet werden soll.
+     Es gibt 4 Möglichkeiten, eine DBM Datenbank zu öffnen:
+     <variablelist>
+      <varlistentry>
+       <term>"r" (read-only)</term>
+       <listitem><para>
+        Eine existierende Datenbank soll nur lesend
+        geöffnet werden.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"n" (new)</term>
+       <listitem><para>
+        Eine neue Datenbank soll angelegt werden.
+        Diese wird automatisch als read-write geöffnet.
+        Eine existierende Datenbank wird inhaltlich
+        gelöscht.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"c" (create)</term>
+       <listitem><para>
+        Eine neue Datenbank soll angelegt werden.
+        Diese wird automatisch als read-write geöffnet.
+        Im Gegensatz zu "n" wird eine bereits existierende
+        Datenbank inhaltlich nicht gelöscht, sondern nur
+        "read-writeable" göffnet.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"w" (read-write)</term>
+       <listitem><para>
+        Eine existierende Datenbank soll lesend und
+        schreibend geöffnet werden.</para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </para>
     <para>
-     Returns an identifer to be passed to the other dbm functions on success,
-     or false on failure.</para>
+     Wenn die angegebene DBM Datenbank geöffnet werden konnte,
+     wird ein Identifier zurückgegeben. Dieser Identifier muss
+     für alle weiteren Aufrufe, die an die DBM Datenbank getätigt
+     werden, mitgegeben werden.
+     Wenn das Öffenen der DBM Datenbank fehlgeschlagen ist,
+     wird das Ergebnis FALSE zurückgegeben.
+    </para>
     <para>
-     If ndbm support is used, ndbm will actually create filename.dir and
-     filename.pag files. gdbm only uses one file, as does the internal flat-file
-     support, and Berkeley db creates a filename.db file. Note that PHP does its
-     own file locking in addition to any file locking that may be done by the dbm
-     library itself. PHP does not delete the .lck files it creates. It uses these
-     files simply as fixed inodes on which to do the file locking. For more
-     information on dbm files, see your Unix man pages, or obtain GNU's gdbm from
-     <filename role="url">ftp://prep.ai.mit.edu/pub/gnu</filename>.</para>
+     Wenn die NDBM Unterstützung aktiviert wird, werden jeweils
+     zwei Dateien <filename>filename.dir</filename> und
+     <filename>filename.pag</filename> erzeugt. GDBM, ebenso wie
+     der interne "Flat-File" Mechanismus und die Berkeley DB,
+     verwenden nur eine Datei (und diese heisst bei der Berkeley
+     DB <filename>filename.db</filename>).
+
+     Bitte beachten Sie, dass PHP seine Dateisperren zusätzlich
+     zu den vorhanden DBM-Bibliothekseigenen Routinen verwendet.
+     PHP löscht auch die <filename>.lck</filename> Dateien nicht
+     wieder. Es verwendet diese Datei nur als zusätzliches
+     Mittel für Dateilocking. Wenn Sie mehr über
+     DBM-Datenbanken wissen wollen, sehen Sie in den
+     UNIX-Manualseiten nach, oder schauen bei <ulink
+     url="&url.gdbm;">GNU's GDBM</ulink> nach.
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmclose">
    <refnamediv>
     <refname>dbmclose</refname>
-    <refpurpose>closes a dbm database</refpurpose>
+    <refpurpose>Schließen einer DBM Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>dbmclose</function></funcdef>
@@ -76,17 +131,25 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Unlocks and closes the specified database.</para>
+     Gibt Zugiffssperren auf Datensätze frei und schließt die angegebene
+     DBM Datenbank.
+    </para>
+    <para>
+     Liefert TRUE bei Erfolg bzw. FALSE bei Fehler.
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmexists">
    <refnamediv>
     <refname>dbmexists</refname>
-    <refpurpose>tells if a value exists for a key in a dbm database</refpurpose>
+    <refpurpose>
+     Prüft, ob ein Eintrag für den angegebenen Schlüssel
+     in der DBM Datenbank vorhanden ist.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>dbmexists</function></funcdef>
@@ -95,17 +158,23 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Returns true if there is a value associated with the <parameter>key</parameter>.</para>
+     Wenn in der DBM Datenbank ein Eintrag mit dem angegebenen Schlüssel
+     <parameter>key</parameter> vorhanden ist, wird als Ergebnis
+     TRUE zurückgegeben.
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmfetch">
    <refnamediv>
     <refname>dbmfetch</refname>
-    <refpurpose>fetches a value for a key from a dbm database</refpurpose>
+    <refpurpose>
+     Holt einen Datensatz mit dem angegebenen Schlüssel
+     aus der DBM Datenbank.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>dbmfetch</function></funcdef>
@@ -114,17 +183,22 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Returns the value associated with <parameter>key</parameter>.</para>
+     Liefert den Datensatz, der dem <parameter>key</parameter> in der
+     DBM Datenbank entspricht.
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbminsert">
    <refnamediv>
     <refname>dbminsert</refname>
-    <refpurpose>inserts a value for a key in a dbm database</refpurpose>
+    <refpurpose>
+     Schreibt einen Datensatz mit dem angegebenen Schlüssel
+     in die DBM Datenbank.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>dbminsert</function></funcdef>
@@ -134,21 +208,43 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Adds the value to the database with the specified key.</para>
+     Schreibt den Datensatz mit angegebenen Schlüssel in die
+     Datenbank.
+    </para>
     <para>
-     Returns -1 if the database was opened read-only, 0 if the insert
-     was successful, and 1 if the specified key already exists. (To replace
-     the value, use <function>dbmreplace</function>.)</para>
+     Ergebniswerte:
+     <variablelist>
+      <varlistentry>
+       <term>-1</term>
+       <listitem><simpara>nur Leseberechtigung.</simpara>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>0</term>
+       <listitem><simpara>Aktion erfolgreich beendet.</simpara>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>1</term>
+       <listitem><simpara>Ein Eintrag mit dem angegebenen Schlüssel
+        existiert bereits in der Datenbank.</simpara>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmreplace">
    <refnamediv>
     <refname>dbmreplace</refname>
-    <refpurpose>replaces the value for a key in a dbm database</refpurpose>
+    <refpurpose>
+     Ersetzt einen Datensatz mit dem angegebenen Schlüssel
+     in der DBM Datenbank.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>dbmreplace</function></funcdef>
@@ -158,20 +254,27 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Replaces the value for the specified key in the database.</para>
+     Schreibt einen Datensatz mit dem angegebenen Satzschlüssel in
+     die Datenbank bzw. ersetzt ihn.
+    </para>
     <para>
-     This will also add the key to the database if it didn't already
-     exist.</para>
+     Wenn ein Eintrag mit den angegebenen Schlüssel vorhanden ist,
+     wird dieser überschrieben. Ansonsten wird ein Datensatz mit
+     mit den Schlüssel neu angelegt.
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmdelete">
    <refnamediv>
     <refname>dbmdelete</refname>
-    <refpurpose>deletes the value for a key from a dbm database</refpurpose>
+    <refpurpose>
+     Löscht einen Datensatz mit dem angegebenen Schlüssel
+     aus der DBM Datenbank.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>dbmdelete</function></funcdef>
@@ -180,19 +283,25 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Deletes the value for <parameter>key</parameter> in the database.</para>
+     Löscht einen vorhanden Datensatz, der dem
+     <parameter>key</parameter> entspricht, aus der Datenbank.
+    </para>
     <para>
-     Returns false if the key didn't exist in the database.</para>
+     Wenn kein Datensatz zum Löschen gefunden wurde, wird der
+     Returncode FALSE zurückgegeben.
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmfirstkey">
    <refnamediv>
     <refname>dbmfirstkey</refname>
-    <refpurpose>retrieves the first key from a dbm database</refpurpose>
+    <refpurpose>
+     Gibt den ersten Schlüssel der DBM Datenbank zurück.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>dbmfirstkey</function></funcdef>
@@ -200,19 +309,24 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Returns the first key in the database. Note that no particular order
-     is guaranteed since the database may be built using a hash-table,
-     which doesn't guarantee any ordering.</para>
+     Gibt den ersten Schlüssel der DBM Datenbank zurück.
+    </para>
+    <note><para>Achtung: Es gibt keine Garantie für eine bestimmte Reihenfolge
+              innerhalb der Datenbank, da die Datenbank auf einen
+              Hash-Algorithmus aufgebaut ist.
+    </para></note>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbmnextkey">
    <refnamediv>
     <refname>dbmnextkey</refname>
-    <refpurpose>retrieves the next key from a dbm database</refpurpose>
+    <refpurpose>
+     Stellt den nächsten Schlüssel aus den Datenbank zur Verfügung.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>dbmnextkey</function></funcdef>
@@ -221,30 +335,35 @@ dbmclose($dbm);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Returns the next key after <parameter>key</parameter>. By calling
-     <function>dbmfirstkey</function> followed by successive
-     calls to <function>dbmnextkey</function> it is possible to
-     visit every key/value pair in the dbm database. For example:
-    <example>
-     <title>Visiting every key/value pair in a dbm database.</title>
-     <programlisting>
-$key = dbmfirstkey($dbm_id);
+     Gibt den auf <parameter>key</parameter> folgenden Schlüssel
+     an den Aufrufer zurück. Um alle Schlüssel einer DBM Datenbank
+     auszulesen, wird <function>dbmfirstkey</function>, gefolgt von
+     wiederholten Aufrufen von <function>dbmnextkey</function>
+     verwendet, wie im folgenden Script:
+     <example>
+      <title>Ausgeben aller Schlüssel mit Datensätzen einer DBM Datenbank</title>
+      <programlisting role="php">
+$key = dbmfirstkey ($dbm_id);
 while ($key) {
-    echo "$key = " . dbmfetch($dbm_id, $key) . "\n";
-    $key = dbmnextkey($dbm_id, $key);
+    echo "$key = " . dbmfetch ($dbm_id, $key) . "\n";
+    $key = dbmnextkey ($dbm_id, $key);
 }
      </programlisting>
-    </example></para>
+    </example>
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dblist">
    <refnamediv>
     <refname>dblist</refname>
-    <refpurpose>describes the dbm-compatible library being used</refpurpose>
+    <refpurpose>
+     Liefert eine Beschreibung, welches DBM-Format
+     verwendet wird.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>dblist</function></funcdef>
@@ -266,7 +385,7 @@ sgml-always-quote-attributes:t
 sgml-indent-step:1
 sgml-indent-data:t
 sgml-parent-document:nil
-sgml-default-dtd-file:"../manual.ced"
+sgml-default-dtd-file:"../../manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
