@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.40 Maintainer: samesch Status: ready -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.41 Maintainer: samesch Status: ready -->
  <chapter id="faq.installation">
   <title>Installation</title>
   <titleabbrev>Installation</titleabbrev>
@@ -22,90 +22,36 @@
    <qandaentry id="faq.installation.apache2">
     <question>
      <para>
-      Warum sollte ich Apache 2 nicht in einer Produktions-Umgebung verwenden?
+      Warum sollte ich Apache2 mit threaded MPM nicht in einer
+      Produktions-Umgebung verwenden?
      </para>
     </question>
     <answer>
      <para>
-       Die folgende Antwort ist ein modifizierter Auszug aus einer Mail von
-       Rasmus Lerdorf.
+      PHP ist Klebstoff. Es ist der Klebstoff, der verwendet wird, um coole
+      Web-Anwendungen zu erstellen indem er dutzende von Bibliotheken von
+      Drittanbietern zusammenklebt und sie über eine intuitiv und einfach
+      erlernbare Schnittstelle als zusammenhängende Einheit erscheinen lässt.
+      Die Flexibilität und die Mächtigkeit von PHP sind auf die Stabilität und
+      Robustheit der zugrunde liegenden Plattform angewiesen. Es braucht ein
+      funktionierendes Betriebssystem, einen funktionierenden Webserver und
+      funktionierende Bibliotheken Dritter, um zusammen zu kleben. Wenn eines
+      davon nicht mehr funktioniert, braucht PHP Wege, um die Probleme
+      erkennen und schnell beheben zu können. Wenn Sie das zugrunde liegende
+      Gerüst dadurch komplexer machen, dass Sie keine völlig voneinander
+      getrennten Ausführungsthreads und Speichersegmente und keine starke
+      Sandbox für jede einzelne Anfrage haben, stellen Sie das System von PHP
+      auf tönerne Füße.
      </para>
      <para>
-       Apache 2 ist eine komplette Neufassung und eine komplette
-       Architekturänderung von Apache 1. Es ist nicht wie der Umstieg von PHP
-       3 auf PHP 4 oder von PHP 4 auf PHP 5. Es gibt viel gemeinsamen Code und
-       die Grundarchitektur von PHP hat sich sicherlich seit Jahren nicht
-       geändert. Deshalb hat es keinen Sinn, Apache 1 und Apache 2 mit PHP 4
-       und PHP 5 zu vergleichen. Die Architektur hat sich über die Jahre
-       bewährt und der Code ist, obwohl stellenweise etwas sperrig, ein
-       bekanntes Gebilde. PHP wurde von Anfang an auf die Architektur von
-       Apache 1 ausgelegt und darunter funktioniert es außerordentlich gu.
+      Falls Sie das Gefühl haben, theaded MPM benutzen zu müssen, sollten Sie
+      nach einer FastCGI-Konfiguration schauen, in der PHP in seinem eigenen
+      Speicherbereich läuft.
      </para>
      <para>
-       Die Haupteigenschaft, die Leute zu Apache 2 zieht, ist Threading. Unter
-       Windows, wo die meisten grundlegenden Bibliotheken threadsicher sind
-       und sein müssen, ist Apache 2 wirklich sinnvoll und es wäre gut, die
-       Knoten auf dieser Plattform zu lösen. Unter UNIX gibt es aber eine
-       Menge grundlegender Bibliotheken, bei denen Threadsicherheit eine
-       Unbekannte ist. Dabei handelt es sich nicht um die PHP-Erweiterungen,
-       sondern um die Bibliotheken Dritter, die den hunderten von
-       PHP-Erweiterungen zugrunde liegen. Ob eine Bibliothek von Dritten
-       threadsicher ist, lässt sich sehr schwer feststellen. Es gibt eine
-       Menge Variablen, die einbezogen werden müssen, inklusive welches
-       Betriebssystem, welche Version des Betriebssystems, welche libc, welche
-       Version dieser libc und auf manchen Plattformen sogar die
-       Compiler-Flags, die zum Übersetzen dieser Dinge verwendet wurden. Und
-       damit das Ganze noch lustiger zu wird, ist es fast unmöglich, ein
-       Problem mit der Threadsicherheit ausfindig zu machen. Hunderte von
-       Leute, die vielleicht nur etwa eine Million Seitenaufrufe pro Tag
-       bekommen, mögen nun einwerfen, dass Apache+PHP+ext/foo bei ihnen
-       perfekt funktioniert. Dann kommt ein anderer Benutzer daher, der 100
-       Millionen Seitenaufrufe pro Tag hat und eine schnelle Dual-Prozessor
-       Maschine verwendet und alles geht hoch, weil nun das Fenster für
-       irgendeine winzige Race Condition aufgrund der höheren
-       Prozessor-Geschwindigkeit, des zweiten Prozessors und der höheren
-       Frequenz der Seitenaufrufe viel größer gemacht wurde. Der
-       Fehlerbericht, den wir von diesem Benutzer bekommen, sieht dann
-       ungefähr so aus:
-     </para>
-     <blockquote>
-      <para>
-       Manchmal funktioniert es nicht. Meistens funktioniert es gut, aber
-       gelegentlich funktioniert es einfach nicht. Es ist jedesmal ein anderer
-       Fehler und ich habe keine Ahnung, wie ich ihn reproduzieren kann, aber
-       beheben Sie ihn sofort!!!
-      </para>
-     </blockquote>
-
-     <para>
-      Was können wir bei sowas tun?
-     </para>
-     <para>
-      Es gibt eine Anzahl (behebbarer) technischer Gründe, aufgrund derer
-      Rasmus es für keine gute Idee hält, Apache2+PHP in einer
-      Produktionsumgebung zu verwenden, aber davon abgesehen läuft es auf ein
-      einfaches Konzept hinaus:
-     </para>
-     <para>
-      PHP is glue. It is the glue used to build cool web applications by
-      sticking dozens of 3rd-party libraries together and making it all appear
-      as one coherent entity through an intuitive and easy to learn language
-      interface. The flexibility and power of PHP relies on the stability and
-      robustness of the underlying platform. It needs a working OS, a working
-      web server and working 3rd-party libraries to glue together. When any of
-      these stop working PHP needs ways to identify the problems and fix them
-      quickly. By making the underlying framework more complex by not having
-      completely separate execution threads, completely separate memory
-      segments and a strong sandbox for each request to play in, a feet of
-      clay is introduced into PHP's system.
-     </para>
-     <para>
-      Using the prefork mpm with Apache 2 to avoid the threading is possible,
-      and yes using a standalone fastcgi mechanism to avoid the threading,
-      too, but then defining characteristic of the web server of choice are
-      avoided. At this point in its development, Rasmus still maintains that
-      one is better off simply sticking with Apache 1 for serving up PHP pages
-      with the one caveat that Apache 1 sucks pretty badly on Windows.
+      Und schließlich: diese Warnung gegen die Verwendung von threaded MPM
+      gilt nicht so stark für Windows-Systeme, weil die Bibliotheken auf
+      dieser Plattform tendenziell threadsicher sind.
      </para>
     </answer>
    </qandaentry>
