@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.3 Maintainer: ali Status: ready -->
+<!-- EN-Revision: 1.6 Maintainer: ali Status: ready -->
   <refentry id="function.ftp-nb-get">
    <refnamediv>
     <refname>ftp_nb_get</refname>
@@ -8,7 +8,7 @@
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
-      <type>bool</type><methodname>ftp_nb_get</methodname>
+      <type>int</type><methodname>ftp_nb_get</methodname>
       <methodparam><type>resource</type><parameter>ftp_stream</parameter></methodparam>
       <methodparam><type>string</type><parameter>local_file</parameter></methodparam>
       <methodparam><type>string</type><parameter>remote_file</parameter></methodparam>
@@ -25,26 +25,27 @@
      diese Funktion die Datei asynchron überträgt, so dass das Programm noch andere Operationen
      ausführen kann, während die Datei heruntergeladen wird.
     </para>
-    <para>
-     &return.success;
-    </para>
+    <para>  
+     Gibt <constant>FTP_FAILED</constant>, <constant>FTP_FINISHED</constant>, oder
+     <constant>FTP_MOREDATA</constant> zurück.
+    </para> 
     <para>
      <example>
       <title><function>ftp_nb_get</function> Beispiel</title>
       <programlisting role="php">
 <![CDATA[
-// Initate the download
+// Download initialisieren
 $ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY);
 while ($ret == FTP_MOREDATA) {
    
-   // Do whatever you want
+   // Irgendwas machen ...
    echo ".";
 
-   // Continue downloading...
+   // Download fortsetzen
    $ret = ftp_nb_continue ($my_connection);
 }
 if ($ret != FTP_FINISHED) {
-   echo "There was an error downloading the file...";
+   echo "Es gab einen Fehler bei der Übertragung.";
    exit(1);
 }
 ]]>
@@ -54,21 +55,21 @@ if ($ret != FTP_FINISHED) {
       <title>Ein Download mit <function>ftp_nb_get</function> fortsetzen</title>
       <programlisting role="php">
 <![CDATA[
-// Initate 
+// Initialisieren
 $ret = ftp_nb_get ($my_connection, "test", "README", FTP_BINARY, 
                       filesize("test"));
-// OR: $ret = ftp_nb_get ($my_connection, "test", "README", 
+// ORDER: $ret = ftp_nb_get ($my_connection, "test", "README", 
 //                           FTP_BINARY, FTP_AUTORESUME);
 while ($ret == FTP_MOREDATA) {
    
-   // Do whatever you want
+   // Irgendwas machen ...
    echo ".";
 
-   // Continue downloading...
+   // Download fortsetzen
    $ret = ftp_nb_continue ($my_connection);
 }
 if ($ret != FTP_FINISHED) {
-   echo "There was an error downloading the file...";
+   echo "Es gab einen Fehler bei der Übertragung.";
    exit(1);
 }
 ]]>
@@ -81,16 +82,17 @@ if ($ret != FTP_FINISHED) {
       </title>
       <programlisting role="php">
 <![CDATA[
-// Disable Autoseek
+// Autoseek deaktivieren
 ftp_set_option ($my_connection, FTP_AUTOSEEK, FALSE);
 
-// Initiate
+// Initialisieren
 $ret = ftp_nb_get ($my_connection, "newfile", "README", FTP_BINARY, 100);
 while ($ret == FTP_MOREDATA) {
 
-   ...
+   // Irgendwas machen ...
+   echo ".";
 
-   // Continue downloading...
+   // Download fortsetzen
    $ret = ftp_nb_continue ($my_connection);
 }
 ]]>
