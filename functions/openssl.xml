@@ -1,0 +1,1117 @@
+ <reference id="ref.openssl">
+  <title>OpenSSL Funktionen</title>
+  <titleabbrev>OpenSSL</titleabbrev>
+  <partintro>
+       &warn.experimental;
+  <sect1 id="openssl.intro">
+  <title>Einführung</title>
+  <para>
+   Dieses Modul nutzt die Funktionen von
+   <ulink url="&url.openssl;">OpenSSL</ulink> zur Erzeugung und
+   Überprüfung von Signaturen und zum versiegeln (verschlüsseln) und
+   öffnen (entschlüsseln) von Daten.
+   PHP-4.0.4pl1 setzt OpenSSL &gt;= 0.9.6 voraus, PHP-4.0.5 und
+   folgende funktionieren auch mit OpenSSL &gt;= 0.9.5.
+  </para>
+   <note>
+   <para>Bitte beachten Sie, dass diese Extension immer noch als
+   experimentell einzustufen ist!</para>
+  </note>
+  <para>
+   OpenSSL bietet viele Möglichkeiten die dieses Modul zum jetzigen
+   Zeitpunkt nicht unterstützt. Einige dieser Möglichkeiten werden
+   vielleicht in zukünftigen Versionen zur Verfügung stehen.
+  </para>
+  </sect1>
+  <sect1 id="openssl.certparams">
+  <title>Schlüssel/Zertifikat Parameter</title>
+  <para>
+   Ziemlich viele der OpenSSL Funktionen benötigen einen Schlüssel-
+   oder einen Zertifikatparameter. PHP 4.0.5 und frühere Versionen
+   müssen eine Schlüssel- oder Zertifikatsresource nutzen, die von
+   einer der openssl_get_xxx Funktionen zurückgegeben wird. Spätere
+   Versionen können eine der folgenden Methoden benutzen:
+   <itemizedlist>
+    <listitem>
+     <para>
+      Zertifikate
+      <orderedlist>
+       <listitem><simpara>Eine X.509 Resource die von
+       openssl_x509_read zurückgegeben wird.</simpara></listitem>
+       <listitem><simpara>Eine Zeichenkette mit dem Format
+       <filename>file://pfad/zu/cert.pem</filename>; die angegebene
+       Datei muss ein PEM verschlüsseltes Zertifikat enthalten.
+       </simpara></listitem>
+       <listitem><simpara>Eine Zeichenkette die den Inhalt eines
+       Zertifikats enthält, PEM verschlüsselt.
+       </simpara></listitem>
+      </orderedlist>
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+      Öffentliche/Private Schlüssel
+      <orderedlist>
+       <listitem><simpara>Eine Schlüsselresource die von
+       <function>openssl_get_publickey</function> oder
+       <function>openssl_get_privatekey</function> zurückgegeben
+       wird.</simpara>
+       </listitem>
+       <listitem><simpara>Nur für öffentliche Schlüssel: eine X.509
+       Resource.</simpara></listitem>
+       <listitem><simpara>Eine Zeichenkette mit dem Format
+       <filename>file://pfad/zu/datei.pem</filename> - die angegebene
+       Datei muss ein PEM verschlüsseltes Zertifikat/privaten
+       Schlüssel enthalten (kann auch beides enthalten).
+       </simpara></listitem>
+       <listitem><simpara>Eine Zeichenkette die den Inhalt eines
+       Zertifikats/Schlüssels enthält, PEM verschlüsselt.</simpara>
+       </listitem>
+       <listitem><simpara>Für private Schlüssel können Sie auch die
+       Syntax verwenden <emphasis>array($key, $passphrase)</emphasis>.
+       $key repräsentiert einen Schlüssel, den Sie entweder mit der
+       Notation file:// oder dem textlichen Inhalt wie oben angeben.
+       $passphrase ist eine Zeichenfolge, die die Passphrase für den
+       privaten Schlüssel enthält.
+       </simpara></listitem>
+      </orderedlist>
+     </para>
+    </listitem>
+   </itemizedlist>
+  </para>
+  </sect1>
+  <sect1 id="openssl.cert.verification">
+  <title>Zertifikat Nachweis</title>
+  <para>
+   Wenn Sie eine Funktion aufrufen, die eine Signatur/Zertifikat
+   überprüft, ist der Parameter <emphasis>cainfo</emphasis> ein Array,
+   das Datei- und Verzeichnisnamen enthält, die auf vertrauenswürdige
+   CA Dateien verweisen. Falls Sie ein Verzeichnis angeben, muss dies ein
+   korrekt geformtes gehashedes Verzeichnis sein, in der Art, wie es der Befehl
+   <command>openssl</command> verwenden würde.
+  </para>
+  </sect1>
+  <sect1 id="openssl.pkcs7.flags">
+   <title>PKCS7 Kennzeichen/Konstanten</title>
+   <para>
+    Die S/MIME Funktionen nutzen Kennzeichen die sich dadurch auszeichnen, dass
+    sie ein Bitfeld benutzen, das einen oder mehrere der folgenden Werte
+    enthalten kann:
+
+    <table>
+     <title>PKCS7 KONSTANTEN</title>
+      <tgroup cols="2">
+       <thead>
+        <row>
+         <entry>Konstante</entry>
+         <entry>Beschreibung</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>PKCS7_TEXT</entry>
+         <entry>Fügt den text/plain Inhaltstyp Header einer
+         verschlüsselten/signierten Nachricht hinzu.
+         Wenn Sie entschlüsseln oder überprüfen, werden diese Header
+         von der Ausgabe entfernt - wenn die entschlüsselte oder
+         geprüfte Nachricht nicht dem MIME Typ text/plain entspricht,
+         tritt ein Fehler auf.</entry>
+        </row>
+        <row>
+         <entry>PKCS7_BINARY</entry>
+         <entry>Normalerweise wird die Nachricht in ein "kanonisches"
+         Format konvertiert, das effektiv CR und LF als Zeilende benutzt:
+         wie von der S/MIME Spezifikation gefordert.
+         Wird diese Option angegeben, findet keine Konvertierung statt.
+         Das kann sich als nützlich erweisen, wenn Sie mit binären Daten
+         umgehen, die nicht dem MIME Format entprechen.
+         </entry>
+        </row>
+        <row>
+         <entry>PKCS7_NOINTERN</entry>
+         <entry>Wenn Sie eine Nachricht überprüfen, werden in der Nachricht
+         enthaltene Zertifikate (falls es welche gibt) nach dem 
+         unterzeichnenden Zertifikat durchsucht. Mit dieser Option werden
+         nur Zertifikate benutzt, die mit dem Parameter 
+         <parameter>extracerts</parameter> in der Funktion 
+         <function>openssl_pkcs7_verify</function> angegeben wurden.
+         Die mitgelieferten Zertifikate können aber dennoch als nicht
+         vertrauenswürdige CAs benutzt werden.
+         </entry>
+        </row>
+        <row>
+         <entry>PKCS7_NOVERIFY</entry>
+         <entry>Keine Überprüfung des signierenden Zertifikats
+         einer signierten Nachricht.</entry>
+        </row>
+        <row>
+         <entry>PKCS7_NOCHAIN</entry>
+         <entry>Keine Verknüpfung der Überprüfung des Zertifikats mit den
+         Zertifikaten des Unterzeichners: das bedeutet, die Zertifikate in
+         der signierten Nachricht werden nicht als unvertrauenswürdige CAs
+         benutzt.
+         </entry>
+        </row>
+        <row>
+         <entry>PKCS7_NOCERTS</entry>
+         <entry>Beim Signieren einer Nachricht wird normalerweise das
+         Zertifikat des Unterzeichnenden mit in die Nachricht
+         aufgenommen - mit dieser Option wird das Zertifikat nicht
+         mit aufgenommen. Diese Option verringert die Größe der signierten
+         Nachricht, aber der Überprüfende muss eine lokale Kopie des
+         Zertifikats vom Unterzeichnenden besitzen (zum Beispiel durch Angabe
+         des Parameters <parameter>extracerts</parameter> in der Funktion
+         <function>openssl_pkcs7_verify</function>).
+         </entry>
+        </row>
+        <row>
+         <entry>PKCS7_NOATTR</entry>
+         <entry>Beim Signieren einer Nachricht wird normalerweise eine Reihe
+         von Attributen mit angehängt. Diese enthalten die Zeit der Signierung
+         und die unterstützen symmetrischen Algorithmen. Mit dieser Option werden
+         diese Attribute nicht mit aufgenommen.
+         </entry>
+        </row>
+        <row>
+         <entry>PKCS7_DETACHED</entry>
+         <entry>Beim Signieren einer Nachricht wird Klartext-Signierung
+         verwendet mit MIME Typ multipart/signed. Das ist der Standard,
+         wenn Sie keinen optionalen Parameter <parameter>flags</parameter>
+         an die Funktion <function>openssl_pkcs7_sign</function> übergeben.
+         Wenn Sie diese Option ausschalten wird die Nachricht mit einer 
+         undurchsichtigen Signatur unterzeichnet. Dieses Verhalten ist robuster
+         gegenüber der Übersetzung durch Mail-Relays, kann aber nicht mit
+         Mailprogrammen gelesen werden, die nicht den S/Mime Standard
+         unterstützen.
+         </entry>
+        </row>
+        <row>
+         <entry>PKCS7_NOSIGS</entry>
+         <entry>Kein Versuch und keine Überprüfung der Signaturen einer
+         Nachricht.
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+   </para>
+   <note>
+     <para>Diese Konstanten wurden in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+  </sect1>
+  </partintro>
+  <refentry id="function.openssl-error-string">
+   <refnamediv>
+    <refname>openssl_error_string</refname>
+    <refpurpose>Liefert eine OpenSSL Fehlermeldung</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>mixed <function>openssl_error_string</function>
+      </funcdef>
+      <void/>
+     </funcprototype>
+    </funcsynopsis>
+   &warn.experimental.func;
+    <para>
+     Liefert einen Fehlertext, oder &false;, wenn es keine weiteren
+     Fehler gibt.
+     
+    </para>
+    <para>
+     Die Funktion <function>openssl_error_string</function> liefert den letzten
+     Fehler der OpenSSL Bibliothek. Die Fehlermeldungen werden auf einem Stack
+     abgelegt. Diese Funktion sollte also mehrmals aufgerufen werden, um alle
+     Informationen zu erhalten.
+    </para>
+    <para>
+     <emphasis>Die Parameter/Rückgabewerte dieser Funktion können sich
+      ändern, bevor diese in einer Release Version von PHP zur Verfügung stehen.
+     </emphasis>
+    </para>
+    <para>
+     <example>
+      <title><function>openssl_error_string</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Annahme: Sie haben eine openssl-Funktion aufgerufen, die einen Fehler
+// verursacht hat.
+while($msg = openssl_error_string())
+    echo $msg . "<br>";
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <para>
+      Diese Funktion wurde in 4.0.6 hinzugefügt.
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-free-key">
+   <refnamediv>
+    <refname>openssl_free_key</refname>
+    <refpurpose>Freigabe einer Schlüsselressource</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>openssl_free_key</function></funcdef>
+      <paramdef>resource <parameter>key_identifier</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Die Funktion <function>openssl_free_key</function> löscht den Schlüssel mit dem
+     angegebenen Parameter <parameter>key_identifier</parameter> aus
+     dem Speicher.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-get-privatekey">
+   <refnamediv>
+    <refname>openssl_get_privatekey</refname>
+    <refpurpose>Bereitet einen PEM formatierten privaten Schlüssel zum
+    Gebrauch vor</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>resource <function>openssl_get_privatekey</function>
+      </funcdef>
+      <paramdef>mixed <parameter>key</parameter></paramdef>
+      <paramdef>string <parameter><optional>passphrase</optional>
+      </parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Rückgabewert: im Erfolgsfall eine positive Schlüssel-Resource-Kennung,
+     &false; im Fehlerfall.
+    </para>
+    <para>
+     Die Funktion <function>openssl_get_privatekey</function> analysiert
+     den PEM formatierten privaten Schlüssel der mit dem Parameter
+     <parameter>key</parameter> angegeben wurde und bereitet ihn
+     für den Gebrauch durch andere Funktionen vor.
+     Der optionale Parameter <parameter>passphrase</parameter> muss
+     angegeben werden, falls der Schlüssel selbst verschlüsselt ist
+     (geschützt durch eine Passphrase).
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-get-publickey">
+   <refnamediv>
+    <refname>openssl_get_publickey</refname>
+    <refpurpose>Extrahiert einen öffentlichen Schlüssel aus einem
+    Zertifikat und bereitet ihn für den Gebrauch vor</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>resource <function>openssl_get_publickey</function>
+      </funcdef>
+      <paramdef>mixed <parameter>certificate</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Rückgabewert: im Erfolgsfall eine positive Schlüssel-Resource-Kennung,
+     &false; im Fehlerfall.
+    </para>
+    <para>
+     Die Funktion <function>openssl_get_publickey</function> extrahiert den
+     öffentlichen Schlüssel aus einem X.509 Zertifikat, angegeben
+     durch den Parameter <parameter>certificate</parameter>, und bereitet
+     ihn für den Gebrauch durch andere Funktionen vor.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-open">
+   <refnamediv>
+    <refname>openssl_open</refname>
+    <refpurpose>Öffnet versiegelte Daten</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>openssl_open</function></funcdef>
+      <paramdef>string <parameter>sealed_data</parameter></paramdef>
+      <paramdef>string <parameter>open_data</parameter></paramdef>
+      <paramdef>string <parameter>env_key</parameter></paramdef>
+      <paramdef>mixed <parameter>priv_key_id</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Rückgabewert: &true; im Erfolgsfall, &false; im Fehlerfall. Im
+     Erfolgsfall werden die geöffneten Daten im Parameter <parameter>
+     open_data</parameter> zurückgegeben.
+    </para>
+    <para>
+     Die Funktion <function>openssl_open</function> öffnet (entschlüsselt)
+     <parameter>sealed_data</parameter> unter Verwendung des privaten
+     Schlüsssels, der mit der Schlüsselkennung
+     <parameter>priv_key_id</parameter> und dem Umschlag Schlüssel
+     <parameter>env_key</parameter> verknüpft ist und füllt <parameter>
+     open_data</parameter> mit den entschlüsselten Daten.
+     Der Umschlag Schlüssel wird bei der Versiegelung erzeugt und kann
+     ausschlieslich für einen bestimmten privaten Schlüssel verwendet werden.
+     Mehr Informationen erhalten Sie unter der <function>openssl_seal</function> Funktion.
+    </para>
+    <para>
+     <example>
+      <title><function>openssl_open</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Annahme: $sealed und $env_key enthalten versiegelte Daten
+// und unseren Umschlag Schlüssel; beide haben wir von dem sie 
+// Versiegelnden erhalten
+
+// privaten Schlüssel aus einer Datei holen und vorbereiten
+$fp = fopen("/src/openssl-0.9.6/demos/sign/key.pem", "r");
+$priv_key = fread($fp, 8192);
+fclose($fp);
+$pkeyid = openssl_get_privatekey($priv_key);
+
+// entschlüsseln der Daten und speichern in $open
+if (openssl_open($sealed, $open, $env_key, $pkeyid))
+    echo "Das sind die geöffneten Daten: ", $open;
+else
+    echo "Öffnen der Daten nicht möglich!";
+
+// löschen des privaten Schlüssels aus dem Speicher
+openssl_free_key($pkeyid);
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch <function>openssl_seal</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-seal">
+   <refnamediv>
+    <refname>openssl_seal</refname>
+    <refpurpose>Versiegelt (verschlüsselt) Daten</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>openssl_seal</function></funcdef>
+      <paramdef>string <parameter>data</parameter></paramdef>
+      <paramdef>string <parameter>sealed_data</parameter></paramdef>
+      <paramdef>array <parameter>env_keys</parameter></paramdef>
+      <paramdef>array <parameter>pub_key_ids</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Rückgabewert: im Erolgsfall die Länge der versiegelten Daten,
+     &false; bei einem Fehler.
+     War der Aufruf der Funktion erfolgreich, sind die versiegelten Daten
+     in <parameter>sealed_data</parameter> enthalten und der Umschlag
+     Schlüssel steht in <parameter>env_keys</parameter> zur Verfügung.
+    </para>
+    <para>
+     Die Funktion <function>openssl_seal</function> versiegelt (verschlüsselt)
+     <parameter>data</parameter> unter Verwendung von RC4 mit einem zufällig
+     erzeugten geheimen Schlüssel. Dieser Schlüssel wird mit jedem öffentlichen
+     Schlüssel verschlüsselt, der mit der Kennung in
+     <parameter> pub_key_ids</parameter> verknüpft ist. Jeder verschlüsselte
+     Schlüssel wird in <parameter>env_keys</parameter>zurückgegeben.Das
+     bedeutet, dass Sie versiegelte Daten an mehrere Empfänger versenden können
+     (unter der Vorraussetzung, dass Sie irgendwann die öffentlichen Schlüssel
+     der Empfänger erhalten haben. Jeder Empfänger muss sowohl die versiegelten
+     Daten als auch den entsprechenden Umschlag Schlüssel erhalten, der mit
+     dem öffentlichen Schlüssel des Empfängers versiegelt wurde.
+    </para>
+    <para>
+     <example>
+      <title><function>openssl_seal</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Annahme: $data enthält die zu versiegelnden Daten
+
+// holen und vorbereiten der öffentlichen Schlüssel unserer Empfänger
+$fp = fopen("/src/openssl-0.9.6/demos/maurice/cert.pem", "r");
+$cert = fread($fp, 8192);
+fclose($fp);
+$pk1 = openssl_get_publickey($cert);
+
+// Wiederholung für den zweiten Empfänger
+$fp = fopen("/src/openssl-0.9.6/demos/sign/cert.pem", "r");
+$cert = fread($fp, 8192);
+fclose($fp);
+$pk2 = openssl_get_publickey($cert);
+
+// versiegeln der Nachricht, nur Besitzer von $pk1 und $pk2 können 
+// mit Schlüsseln $sealed entschlüsseln,
+// entsprechendes gilt für $ekeys[0] und $ekeys[1].
+openssl_seal($data, $sealed, $ekeys, array($pk1,$pk2));
+
+// Löschen der Schlüssel aus dem Speicher
+openssl_free_key($pk1);
+openssl_free_key($pk2);
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch <function>openssl_open</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-sign">
+   <refnamediv>
+    <refname>openssl_sign</refname>
+    <refpurpose>Erzeugen einer Unterschrift</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>openssl_sign</function></funcdef>
+      <paramdef>string <parameter>data</parameter></paramdef>
+      <paramdef>string <parameter>signature</parameter></paramdef>
+      <paramdef>mixed <parameter>priv_key_id</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Rückgabewert: &true; im Erfolgsfall, &false; im Fehlerfall.
+     Ist der Aufruf der Funktion erfolgreich, steht die Signatur
+     im Parameter <parameter>signature</parameter> zur Verfügung.
+    </para>
+    <para>
+     Die Funktion <function>openssl_sign</function> errechnet eine
+     Unterschrift für die im Parameter <parameter>data</parameter>
+     angegebenen Daten. Für das hashing der Daten wird SHA1 benutzt und
+     anschliessend wird mit dem privaten Schlüssel verschlüsselt,
+     angegeben mit <parameter>priv_key_id</parameter>. Beachten Sie, dass
+     die Daten selbst nicht verschlüsselt werden.
+    </para>
+    <para>
+     <example>
+      <title><function>openssl_sign</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Annahme: $data enthält die Daten, die signiert werden sollen.
+
+// holen und vorbereiten des privaten Schlüssels aus einer Datei.
+$fp = fopen("/src/openssl-0.9.6/demos/sign/key.pem", "r");
+$priv_key = fread($fp, 8192);
+fclose($fp);
+$pkeyid = openssl_get_privatekey($priv_key);
+
+// errechnen der Unterschrift
+openssl_sign($data, $signature, $pkeyid);
+
+// Löschen des Schlüssels aus dem Speicher
+openssl_free_key($pkeyid);
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch <function>openssl_verify</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-verify">
+   <refnamediv>
+    <refname>openssl_verify</refname>
+    <refpurpose>Überprüft eine Unterschrift</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>openssl_verify</function></funcdef>
+      <paramdef>string <parameter>data</parameter></paramdef>
+      <paramdef>string <parameter>signature</parameter></paramdef>
+      <paramdef>mixed <parameter>pub_key_id</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Rückgabewerte: Bei korrekter Unterschrift wird 1 zurückgegeben,
+     ist die Unterschrift nicht korrekt wird 0 zurückgegeben. Tritt ein 
+     Fehler auf wird -1 zurückgegeben.
+    </para>
+    <para>
+     Die Funktion <function>openssl_verify</function> überprüft
+     die Korrektheit der Unterschrift <parameter>signature</parameter>
+     für die angegebenen Daten <parameter>data</parameter> mit Hilfe des
+     öffentlichen Schlüssels, verknüpft über den Parameter
+     <parameter>pub_key_id</parameter>. Das muss der passende
+     öffentliche zum privaten Schlüssel sein, der für die Unterschrift
+     benutzt wurde.
+    </para>
+
+    <para>
+     <example>
+      <title><function>openssl_verify</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Annahme: $data und $signature enthalten die Daten und die Unterschrift
+
+// holen und vorbereiten des öffentlichen Schlüssels aus dem Zertifikat
+$fp = fopen("/src/openssl-0.9.6/demos/sign/cert.pem", "r");
+$cert = fread($fp, 8192);
+fclose($fp);
+$pubkeyid = openssl_get_publickey($cert);
+
+// feststellen, ob die Unterschrift ok ist oder nicht 
+$ok = openssl_verify($data, $signature, $pubkeyid);
+if ($ok == 1)
+    echo "gut";
+elseif ($ok == 0)
+    echo "schlecht";
+else
+    echo "Mist, Fehler beim Überprüfen der Unterschrift;
+
+// Löschen des Schlüssels aus dem Speicher
+openssl_free_key($pubkeyid);
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch <function>openssl_sign</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-pkcs7-decrypt">
+   <refnamediv>
+    <refname>openssl_pkcs7_decrypt</refname>
+    <refpurpose>Entschlüssen einer S/MIME verschlüsselten Nachricht
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>openssl_pkcs7_decrypt</function>
+      </funcdef>
+      <paramdef>string <parameter>infilename</parameter></paramdef>
+      <paramdef>string <parameter>outfilename</parameter></paramdef>
+      <paramdef>mixed <parameter>recipcert</parameter></paramdef>
+      <paramdef>mixed <parameter>recipkey</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Die Funktion <function>openssl_pkcs7_decrypt</function> entschlüsselt
+     die mit S/MIME verschlüsselte Nachricht, die sich in der
+     Datei befindet, die mit dem Paramter <parameter>infilename</parameter>
+     angegeben wurde. Benutzt wird dafür das Zertifikat, angegeben durch
+     <parameter>recipcert</parameter>, und der damit verknüpfte
+     private Schlüssel, angegeben durch <parameter>recipkey</parameter>.
+    </para>
+    <para>Die entschlüsselte Nachricht wird in die Datei geschrieben, die mit
+     dem Parameter <parameter>outfilename</parameter> angegeben wurde.
+    </para>
+    <para>
+     <example>
+      <title><function>openssl_pkcs7_decrypt</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Annahme: $cert enthält Ihr persönliches Zertifikat und
+// $key Ihr privates Schlüsselpaar. Sie erhalten eine S/MIME Nachricht.
+
+$infilename = "encrypted.msg";  // diese Datei enthält ihre verschlüsselte Nachricht
+$outfilename = "decrypted.msg"; // stellen Sie sicher, dass Sie Schreibrechte haben!
+
+if (openssl_pkcs7_decrypt($infilename, $outfilename, $cert, $key))
+    echo "entschlüsselt!";
+else
+    echo "entschlüsseln fehlgeschlagen!";
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.openssl-pkcs7-encrypt">
+   <refnamediv>
+    <refname>openssl_pkcs7_encrypt</refname>
+    <refpurpose>Verschlüsseln einer S/MIME Nachricht</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>openssl_pkcs7_encrypt</function>
+      </funcdef>
+      <paramdef>string <parameter>infilename</parameter></paramdef>
+      <paramdef>string <parameter>outfilename</parameter></paramdef>
+      <paramdef>mixed <parameter>recipcerts</parameter></paramdef>
+      <paramdef>array <parameter>headers</parameter></paramdef>
+      <paramdef>long <parameter><optional>flags</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+&warn.experimental.func;
+    <para>
+     Die Funktion <function>openssl_pkcs7_encrypt</function> verschlüsselt die
+     Inhalte der Datei, angegeben durch den Pararmeter
+     <parameter>infilename</parameter>. Die Verschlüsselung benutzt
+     eine RC2 40 Bit Chiffre, so dass diese Inhalte nur von den
+     beabsichtigten Empfängern gelesen werden können, die mit dem Parameter
+     <parameter>recipcerts</parameter> angegeben wurden. Der Parameter
+     <parameter>recipcerts</parameter> kann ein einzelnes X.509 Zertifikat
+     oder ein Array von X.509 Zertifikaten enthalten.
+     Der Parameter <parameter>headers</parameter> ist ein Array aus Headern
+     die den Daten vorangestellt wird, nachdem diese verschlüsselt wurden.
+     Das Array <parameter>headers</parameter> kann entweder ein assoziatives
+     Array sein, mit Indizes aus den Headernamen, oder ein indiziertes Array,
+     wobei jedes Element eine einzelne Header-Zeile enthält.
+     Um den Verschlüsselungsprozess zu beeinflussen, können Sie den Paramter
+     <parameter>flags</parameter> benutzen - siehe
+     <link linkend="openssl.pkcs7.flags"> PKCS7 Konstanten</link>.
+    </para>
+    <para>
+     <example>
+      <title><function>openssl_pkcs7_encrypt</function>
+      Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Die Nachricht die Sie verschlüsselt an Ihren Geheimagenten,
+// bekannt als Nachtfalke, schicken wollen.
+// Sein Zertifikat liegt Ihnen in der Datei nighthawk.pem vor.
+$data = <<<EOD
+Nachtfalke,
+
+Streng geheim, nur für Ihre Augen bestimmt!
+
+Der Feind kommt näher! Treffen Sie mich im Cafe um 8.30 abends.
+Sie erhalten Ihren gefälschten Ausweis!
+
+HQ
+EOD;
+// speichern der Nachricht in einer Datei
+$fp = fopen("msg.txt", "w");
+fwrite($fp, $data);
+fclose($fp);
+// verschlüsseln
+if (openssl_pkcs7_encrypt("msg.txt", "enc.txt", "nighthawk.pem",
+    array("To" => "nighthawk@agent.com", // keyed syntax
+          "From: HQ <hq@cia.com>", // indexed syntax
+          "Subject" => "Eyes only")))
+{
+    // Nachricht verschlüsselt - ab damit!
+    exec(ini_get("sendmail_path") . " < enc.txt");
+}
+]]>
+      </programlisting>
+     </example>
+    </para>
+  <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+   </refsect1>
+  </refentry>
+
+ <refentry id="function.openssl-pkcs7-sign">
+  <refnamediv>
+   <refname>openssl_pkcs7_sign</refname>
+   <refpurpose>Unterzeichnen einer S/MIME Nachricht</refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+   <funcsynopsis>
+    <funcprototype>
+     <funcdef>bool <function>openssl_pkcs7_sign</function></funcdef>
+     <paramdef>string <parameter>infilename</parameter></paramdef>
+     <paramdef>string <parameter>outfilename</parameter></paramdef>
+     <paramdef>mixed <parameter>signcert</parameter></paramdef>
+     <paramdef>mixed <parameter>privkey</parameter></paramdef>
+     <paramdef>array <parameter>headers</parameter></paramdef>
+     <paramdef>long
+     <parameter><optional>flags</optional></parameter></paramdef>
+     <paramdef>string
+     <parameter><optional>extracertsfilename</optional></parameter>
+     </paramdef>
+    </funcprototype>
+   </funcsynopsis>
+&warn.experimental.func;
+   <para>
+    Die Funktion <function>openssl_pkcs7_sign</function> unterzeichnet die
+    Inhalte der Datei, angegeben durch den Pararmeter
+    <parameter>infilename</parameter>. Beim Unterzeichnen wird das Zertifikat,
+    angegeben durch <parameter>signcert</parameter>, und der dazu gehörige
+    private Schlüssel, angegeben durch <parameter>privkey</parameter>, benutzt.
+   </para>
+   <para>
+    Der Parameter <parameter>headers</parameter> ist ein Array aus Headern
+    die den Daten vorangestellt werden, nachdem diese unterzeichnet wurden
+    (Für mehr Informationen über das Format dieses Parameters schauen Sie 
+    bei der Funktion <function>openssl_pkcs7_encrypt</function> nach).
+   </para>
+   <para>
+    Der Parameter <parameter>flags</parameter> kann zur Änderung der Ausgabe
+    benutzt werden - siehe
+    <link linkend="openssl.pkcs7.flags">PKCS7 Konstanten</link> - falls
+    nicht angegeben ist die Vorgabe PKCS7_DETACHED.
+   </para>
+   <para>
+    Der Parameter <parameter>extracertsfilename</parameter> gibt den Namen
+    einer Datei an, die ein Bündel von extra Zertifikaten enthält, die in
+    die Unterschrift mit eingefügt werden. Das kann zum Beispiel als Hilfe
+    für einen Empfänger dienen, das von Ihnen benutze Zertifikat zu überprüfen.
+   </para>
+    <para>
+     <example>
+      <title><function>openssl_pkcs7_sign</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+// Die Nachricht die Sie unterschreiben möchten, damit der Empfänger sicher sein,
+// dass diese Nachricht von Ihnen stammt.
+
+$data = <<<EOD
+
+Sie haben meine Erlaubnis 20,000.- DM für Essen auszugeben.
+
+Der CEO
+EOD;
+// Nachricht in einer Datei speichern
+$fp = fopen("msg.txt", "w");
+fwrite($fp, $data);
+fclose($fp);
+// encrypt it
+if (openssl_pkcs7_sign("msg.txt", "signed.txt", "mycert.pem",
+    array("mycert.pem", "mypassphrase"),
+    array("To" => "joes@sales.com", // keyed syntax
+          "From: HQ <ceo@sales.com>", // indexed syntax
+          "Subject" => "Eyes only"))
+{
+    // Nachricht unterschrieben - abschicken!
+    exec(ini_get("sendmail_path") . " < signed.txt");
+}
+]]>
+      </programlisting>
+     </example>
+    </para>
+  <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+  </refsect1>
+ </refentry>
+
+ <refentry id="function.openssl-pkcs7-verify">
+  <refnamediv>
+   <refname>openssl_pkcs7_verify</refname>
+   <refpurpose>Überprüft die Unterschrift einer mit S/MIME 
+    unterschriebenen Nachricht
+   </refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+   <funcsynopsis>
+    <funcprototype>
+     <funcdef>bool <function>openssl_pkcs7_verify</function></funcdef>
+     <paramdef>string <parameter>filename</parameter></paramdef>
+     <paramdef>int <parameter>flags</parameter></paramdef>
+     <paramdef>string <parameter><optional>outfilename</optional>
+     </parameter></paramdef>
+     <paramdef>array <parameter><optional>cainfo</optional>
+     </parameter></paramdef>
+     <paramdef>string <parameter><optional>extracerts</optional>
+     </parameter></paramdef>
+    </funcprototype>
+   </funcsynopsis>
+&warn.experimental.func;
+   <para>
+    Die Funktion <function>openssl_pkcs7_verify</function> liest die
+    S/MIME Nachricht, die in der Datei <parameter>filename</parameter>
+    enthalten ist und untersucht die digitale Unterschrift.
+    Ist die Unterschrift überprüft wird &true; zurückgegeben, falls die
+    Unterschrift nicht korrekt ist &false; (die Nachricht wurde mit dem
+    Zertifikat vermischt oder das unterzeichnende Zertifikat ist ungültig).
+    Tritt ein Fehler auf wird -1 zurückgegeben.
+   </para>
+   <para>
+    Mit dem Parameter <parameter>flags</parameter> könnenn Sie die Art und
+    Weise beeinflussen, wie die Unterschrift überprüft wird - für mehr 
+    Informationen siehe
+    <link linkend="openssl.pkcs7.flags">PKCS7 Konstanten</link>.
+   </para>
+   <para>
+    Wird der Parameter <parameter>outfilename</parameter> angegeben, sollte
+    dies eine Zeichenkette sein, die den Namen einer Datei enthält,
+    in der das Zertifikat der unterzeichnenden Person im PEM Format
+    gespeichert wird.
+   </para>
+   <para>
+    Wird der Parameter <parameter>cainfo</parameter> angegeben, sollten
+    Informationen über die vertrauenswürdigen CA Zertifikate enthalten sein ,
+    die für den Überprüfungsprozess benutzt werden - für mehr Informationen
+    zu diesem Parameter sollten Sie unter
+    <link linkend="openssl.cert.verification">Zertifikat Nachweis</link>
+    nachschauen.
+   </para>
+   <para>
+    Wird der Parameter <parameter>extracerts</parameter> angegeben, ist es der
+    Name einer Datei, die ein Bündel von Zertifikaten enthält, die als
+    nicht vertrauenswürdige CAs genutzt werden.
+   </para>
+  <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+  </refsect1>
+ </refentry>
+
+ <refentry id="function.openssl-x509-checkpurpose">
+  <refnamediv>
+   <refname>openssl_x509_checkpurpose</refname>
+   <refpurpose>Überprüft ob ein Zertifikat für einen bestimmten Zweck benutzt
+    werden kann
+   </refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+   <funcsynopsis>
+    <funcprototype>
+     <funcdef>bool <function>openssl_x509_checkpurpose</function>
+     </funcdef>
+     <paramdef>mixed <parameter>x509cert</parameter></paramdef>
+     <paramdef>int <parameter>purpose</parameter></paramdef>
+     <paramdef>array <parameter>cainfo</parameter></paramdef>
+     <paramdef>string
+     <parameter><optional>untrustedfile</optional></parameter>
+     </paramdef>
+    </funcprototype>
+   </funcsynopsis>
+&warn.experimental.func;
+   <para>
+    Kann das Zertifikat für den beabsichtigten Zweck benutzt werden, gibt
+    diese Funktion &true; zurück; falls nicht &false;, bei einem Fehler -1.
+   </para>
+   <para>
+    Die Funktion <function>openssl_x509_checkpurpose</function> untersucht
+    das mit dem Parameter <parameter>x509cert</parameter> angegebene
+    Zertifikat darauf, ob es für den mit <parameter>purpose</parameter>
+    angegebenen Zweck benutzt werden kann.
+   </para>
+   <para>
+    Der Parameter <parameter>cainfo</parameter> sollte ein Array aus
+    vertrauenswürdigen CA Dateien/Verzeichnissen enthalten.
+    Dieses Array ist genauer beschrieben unter
+    <link linkend="openssl.cert.verification">Zertifikat Nachweis</link>.
+   </para>
+   <para>
+    Der Parameter <parameter>untrustedfile</parameter>, falls angegeben,
+    ist der Name einer PEM verschlüsselten Datei, die Zertifikate enthält,
+    die dazu benutzt werden können, das Zertifikat zu überprüfen, obwohl
+    kein Vertrauen zu diesen Zertifikaten besteht, die aus dieser
+    Datei stammen.
+   </para>
+   <para>
+    <table>
+     <title><function>openssl_x509_checkpurpose</function>
+     Zweck</title>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>Konstante</entry>
+        <entry>Beschreibung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>X509_PURPOSE_SSL_CLIENT</entry>
+        <entry>Client-Seite einer SSL Verbindung?
+        </entry>
+       </row>
+       <row>
+        <entry>X509_PURPOSE_SSL_SERVER</entry>
+        <entry>Server-Seite einer SSL Verbindung?
+        </entry>
+       </row>
+       <row>
+        <entry>X509_PURPOSE_NS_SSL_SERVER</entry>
+        <entry>Netscape SSL Server?
+        </entry>
+       </row>
+       <row>
+        <entry>X509_PURPOSE_SMIME_SIGN</entry>
+        <entry>Unterschreiben einer S/MIME Email?
+        </entry>
+       </row>
+       <row>
+        <entry>X509_PURPOSE_SMIME_ENCRYPT</entry>
+        <entry>Verschlüsseln einer S/MIME Email?</entry>
+       </row>
+       <row>
+        <entry>X509_PURPOSE_CRL_SIGN</entry>
+        <entry>Unterschreiben einer Zertifikats-Widerrufliste(CRL)?
+        </entry>
+       </row>
+       <row>
+        <entry>X509_PURPOSE_ANY</entry>
+        <entry>Beliebige/alle Zwecke?</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    Diese Optionen sind keine Bitfelder - Sie können nur eine einzige angeben!
+   </para>
+   <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+  </refsect1>
+ </refentry>
+
+ <refentry id="function.openssl-x509-free">
+  <refnamediv>
+   <refname>openssl_x509_free</refname>
+   <refpurpose>Freigabe einer Zertifikats Resource</refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+   <funcsynopsis>
+    <funcprototype>
+     <funcdef>void <function>openssl_x509_free</function></funcdef>
+     <paramdef>resource <parameter>x509cert</parameter></paramdef>
+    </funcprototype>
+   </funcsynopsis>
+&warn.experimental.func;
+   <para>
+    Die Funktion <function>openssl_x509_free</function> löscht den
+    Speicherbereich, der von einem Zertifikat, angegeben
+    durch den Parameter <parameter>x509cert</parameter>, belegt wurde.
+   </para>
+  <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+  </refsect1>
+ </refentry>
+
+ <refentry id="function.openssl-x509-parse">
+  <refnamediv>
+   <refname>openssl_x509_parse</refname>
+   <refpurpose>Analyse eines X509 Zertifikats und Rückgabe der Information
+    in einem Array
+   </refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+   <funcsynopsis>
+    <funcprototype>
+     <funcdef>array <function>openssl_x509_parse</function></funcdef>
+     <paramdef>mixed <parameter>x509cert</parameter></paramdef>
+     <paramdef>bool
+     <parameter><optional>shortnames</optional></parameter></paramdef>
+    </funcprototype>
+   </funcsynopsis>
+&warn.experimental.func;
+   <para>
+    Die Funktion <function>openssl_x509_parse</function> liefert Informationen
+    über das angegebene Zertifikat <parameter>x509cert</parameter>. Die
+    Informationen sind: Name des Gegenstands, Name des Herausgebers,
+    Zweck, Zeitangaben, wie gültig seit... gültig bis, usw.
+    Der Parameter <parameter>shortnames</parameter> kontrolliert wie die Daten
+    im Array indiziert werden - wenn <parameter>shortnames</parameter> &true;
+    ist (Standard), werden die Felder in Kurzform indiziert, ansonsten werden
+    lange Namen verwendet - z.B.: CN ist die Kurzform von commonName.
+   </para>
+   <para><emphasis> Die Struktur der zurückgegeben Daten ist bis jetzt
+    (absichtlich) nicht dokumentiert, da es noch vorbehaltliche Änderungen
+    geben wird
+    </emphasis>
+   </para>
+   <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+   </note>
+
+
+  </refsect1>
+ </refentry>
+
+ <refentry id="function.openssl-x509-read">
+  <refnamediv>
+   <refname>openssl_x509_read</refname>
+   <refpurpose>Analysiert ein X.509 Zertitifikat und gibt eine
+   Resource-Kennung zurück</refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+   <funcsynopsis>
+    <funcprototype>
+     <funcdef>resource <function>openssl_x509_read</function>
+     </funcdef>
+     <paramdef>mixed <parameter>x509certdata</parameter></paramdef>
+    </funcprototype>
+   </funcsynopsis>
+&warn.experimental.func;
+   <para>
+    Die Funktion <function>openssl_x509_read</function> analysiert das Zertifikat
+    das mit dem Parameter <parameter>x509certdata</parameter>
+    angegeben wurde und gibt eine Resource-Kennung zurück.
+   </para>
+  <note>
+     <para>Diese Funktion wurde in 4.0.6 hinzugefügt.</para>
+    </note>
+
+
+  </refsect1>
+ </refentry>
+
+
+
+</reference>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
