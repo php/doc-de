@@ -18,224 +18,597 @@
    Da es sehr viele verschiedene Möglichkeiten gibt, PHP zu nutzen,
    gibt es viele Konfigurationseinstellungen, die das Verhalten von
    PHP beeinflussen. Eine große Auswahl an Einstellungen garantiert,
-   daß man PHP für vielerlei Zwecke einsetzen kann, allerdings
-   bedeutet es auch, dass es Kombinationen gibt, die zur Folge haben,
-   daß die Installation nicht genug Sicherheit bietet.
+   dass man PHP für viele Zwecke einsetzen kann. Allerdings
+   bedeutet das auch, dass es Kombinationen gibt, die eine Installation 
+   mit nur ungenügender Sicherheit zur Folge haben.
+  </simpara>
+  <simpara>
+   Die Flexibilität der Konfiguration konkuriert mit der Flexibilität 
+   in der Programmierung. Mit PHP können komplette Server Applikationen 
+   mit allen Möglichkeiten eines Shell Benutzers erstellt werden, oder 
+   auch nur einfache Server Side Includes mit einem minimalen Risiko in 
+   einer streng kontrollierten Umgebung. Wie die Umgebung erstellt wird, 
+   und wie sicher diese ist, ist zu einem großen Teil die Sache des PHP  
+   Entwicklers.
+  </simpara>
+  <simpara>
    Dieses Kapitel beschreibt die verschiedenen Kombinationen der 
    Konfigurationseinstellungen und unter welchen Gegebenheiten sie sicher
-   genutzt werden können.
+   genutzt werden können. Dann beschreibt es verschiedene Überlegungen 
+   zur Programmierung für verschiedene Sicherheitsstufen, und endet mit 
+   einigen generellen Ratschlägen zur Sicherheit.
   </simpara>
 
   <sect1 id="security.cgi">
    <title>CGI-Version</title>
 
-   <sect2 id="security.cgi.attacks">
-    <title>Mögliche Angriffe</title>
+  <sect2 id="security.cgi.attacks">
+   <title>Mögliche Angriffe</title>
+   <simpara>
+    PHP als <acronym>CGI</acronym> zu nutzen, ist eine Möglichkeit
+    für Installationen, bei denen aus irgendwelchen Gründen kein Modul in
+    die Serversoftware eingebunden werden soll (wie beim Apache) oder für
+    Systeme, bei denen verschiedene CGI-Wrapper genutzt werden sollen,
+    um sichere chroot- und setuid-Umgebungen für Skripte zu schaffen.
+    Bei dieser Konfiguration wird das ausführbare PHP-Binary üblicherweise
+    im cgi-bin Verzeichnis des Webservers installiert.
+    CERT advisory <ulink url="&url.cert;">CA-96.11</ulink>
+    spricht sich gegen die Plazierung von Interpretern im cgi-bin
+    Verzeichnis aus. Obwohl das PHP-Binary als eigenständiger Interpreter 
+    verwendet werden kann, wurde PHP so entwickelt, um den durch diese 
+    Konfiguration möglich werdenden Angriffe vorzubeugen:
+   </simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>Zugriff auf Systemdateien:
+        <filename role="url">http://my.host/cgi-bin/php?/etc/passwd</filename>
+      </simpara>
+      <simpara>
+       Die auf ein Fragezeichen (?) folgende Abfrageinformation in einer 
+       URL wird durch das CGI-Interface als Kommandozeilenargument an den 
+       Interpreter weitergereicht. In der Kommandozeile wird üblicherweise 
+       die im ersten Argument angegebene Datei von Interpretern geöffnet 
+       und ausgeführt.
+      </simpara>
+      <simpara>
+       Beim Aufruf als CGI-Binary verweigert PHP die Interpretation der
+       Kommandozeilenargumente.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Zugriff auf beliebige Web-Dokumente auf dem Server: <filename
+       role="url">http://my.host/cgi-bin/php/secret/doc.html</filename>
+      </simpara>
+      <simpara>
+       Der Teil der URL-Pfadinformation nach dem Namen der PHP Binärdatei,
+       <filename role="uri">/secret/doc.html</filename> wird im 
+       allgemeinen benutzt, um den Namen der Datei zu übergeben,
+       die durch das <acronym>CGI</acronym>-Programm geöffnet und
+       interpretiert werden soll.
+       Normalerweise werden einige Einträge in der Konfigurationsdatei
+       des Webservers benutzt (Apache: Action), um Aufrufe von Dokumenten
+       wie <filename role="url">http://my.host/secret/script.php3</filename>
+       an den PHP-Interpreter umzuleiten. Bei dieser Konfiguration
+       überprüft der Webserver zuerst die Zugriffsrechte im Verzeichnis
+       <filename role="uri">/secret</filename> und erstellt anschließend
+       den umgeleiteten Aufruf <filename
+       role="url">http://my.host/cgi-bin/php/secret/script.php</filename>.
+       Unglücklicherweise wird, wenn der Aufruf bereits in dieser Form
+       geschieht, vom Webserver keine Zugriffsüberprüfung der Datei
+       <filename role="uri">/secret/script.php</filename>, sondern
+       lediglich der Datei <filename role="uri">/cgi-bin/php</filename>
+       vorgenommen. So ist
+       jeder Benutzer, der auf <filename role="uri">/cgi-bin/php</filename> 
+       zugreifen darf in der Lage, sich zu jedem geschützten Dokument
+       auf dem Webserver Zugriff zu verschaffen.
+      </simpara>
+      <simpara>
+       Bei PHP können beim compilieren die Konfigurationsoption <link
+       linkend="install.configure.enable-force-cgi-redirect">--enable-force-cgi-redirect</link>
+       und zur Laufzeit die Konfigurationsdirektiven <link
+       linkend="ini.doc-root">doc_root</link> und <link
+       linkend="ini.user-dir">user_dir</link>
+       benutzt werden, um diesen Angriff zu verhindern, falls
+       der Verzeichnisbaum des Servers Verzeichnisse mit 
+       Zugriffsbeschränkungen beinhaltet. 
+       Ausführliche Informationen über die verschiedenen Kombinationen
+       siehe weiter unten.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </sect2>
 
+   <sect2 id="security.cgi.default">
+    <title>Fall 1: Nur öffentliche Dateien vorhanden</title>
     <simpara>
-     PHP als <acronym>CGI</acronym> zu nutzen, ist eine Möglichkeit
-     für Installationen, bei denen aus irgendwelchen Gründen kein Modul in
-     die Serversoftware eingebunden werden soll (wie beim Apache) oder für
-     Systeme, bei denen verschiedene CGI-Wrapper genutzt werden sollen,
-     um sichere chroot- und setuid-Umgebungen für Scripts zu schaffen.
-     Bei dieser Konfiguration wird das ausführbare PHP-Binary üblicherweise
-     im cgi-bin Verzeichnis des Webservers installiert.
-     
-     CERT advisory <ulink url="&url.cert;">CA-96.11</ulink>
-     spricht sich gegen die Plazierung von Interpretern im cgi-bin
-     Verzeichnis aus. Obwohl das PHP-Binary als standalone
-     Interpreter verwendet werden kann, wurde PHP entwickelt, um Angriffe,
-     die durch diese Konfiguration möglich werden, abzuwehren:</simpara>
+     Wenn der Server keine Inhalte hat, die durch Passwort oder
+     IP-basierte Zugriffskontrolle geschützt sind, werden diese
+     Konfigurationsoptionen nicht benötigt.
+     Wenn der Webserver keine Redirects erlaubt oder keine Möglichkeit
+     hat, dem PHP-Binary mitzuteilen dass es sich um eine sicher umgeleitete
+     Anfrage handelt, kann die Option <link
+     linkend="install.configure.enable-force-cgi-redirect">--enable-force-cgi-redirect</link>
+     im configure-Script angegeben werden. Nichtsdestotrotz müssen
+     Sie sicherstellen, dass Ihre PHP-Skripte nicht auf die eine oder
+     andere Art des Aufrufs angewiesen sind, weder direkt durch
+     <filename role="php">http://my.host/cgi-bin/php/dir/script.php</filename>
+     noch durch einen Redirect <filename role="php">http://my.host/dir/script.php</filename>.
+    </simpara>
+    <simpara>
+     Beim Apache kann der Redirect durch den Gebrauch von      
+     AddHandler und Action konfiguriert werden (siehe unten).
+    </simpara>
+   </sect2>
 
-     <itemizedlist>
-      <listitem><simpara>Sytemdatenzugriff:
-        <filename role="url">http://my.host/cgi-bin/php?/etc/passwd</filename></simpara>
-
-       <simpara>
-        Die Abfrageinformation in einer URL, die auf ein Fragezeichen (?)
-        folgt, wird durch das CGI-Interface als Kommandozeilenargument
-        an den Interpreter weitergereicht. Üblicherweise wird von
-        Interpretern die Datei geöffnet und ausgeführt, die als erstes
-        Argument in der Kommandozeile steht.</simpara>
-       <simpara>
-        Beim Aufruf als CGI-Binary verweigert PHP die Interpretierung
-        der Kommandozeilenargumente.
-       </simpara></listitem>
-      <listitem><simpara>Zugriff auf beliebige Web-Dokumente auf dem Server:
-	<filename role="url">http://my.host/cgi-bin/php/secret/doc.html</filename></simpara>
-
-       <simpara>
-        Die Pfadinformation, Teil der URL nach dem PHP-Binarynamen,
-        <filename role="uri">/secret/doc.html</filename> wurde
-        ursprünglich benutzt, um den Namen der Datei zu übergeben,
-        die durch das <acronym>CGI</acronym>-Programm geöffnet und
-        interpretiert werden soll.
-        Normalerweise werden einige Einträge in der Konfigurationsdatei
-        des Webservers benutzt (Apache: Action), um Aufrufe von Dokumenten
-        wie <filename role="url">http://my.host/secret/script.php3</filename>
-        an den PHP-Interpreter umzuleiten. Bei dieser Konfiguration
-        überprüft der Webserver zuerst die Zugriffsrechte im Verzeichnis
-        <filename role="uri">/secret</filename> und erstellt anschließend
-        den umgeleiteten Aufruf
-        <filename role="url">http://my.host/cgi-bin/php/secret/script.php</filename>.
-	Unglücklicherweise wird, wenn der Aufruf bereits in dieser Form
-        geschieht, vom Webserver keine Zugriffsüberprüfung der Datei
-	<filename role="uri">/secret/script.php</filename>, sondern
-        lediglich der Datei <filename role="uri">/cgi-bin/php</filename>
-        vorgenommen. So ist
-        jeder Benutzer, der auf <filename role="uri">/cgi-bin/php</filename> 
-        zugreifen darf, in der Lage, sich zu jedem geschützten Dokument
-        auf dem Webserver Zugriff zu verschaffen.</simpara>
-
-       <simpara>
-        Bei PHP können beim compilieren die Konfigurationsoption
-	<link linkend="enable-force-cgi-redirect">--enable-force-cgi-redirect</link> und zur Laufzeit die Direktiven
-        <link linkend="ini.doc-root">doc_root</link> und <link linkend="ini.user-dir">user_dir</link>
-        benutzt werden, um diesen Angriff zu verhindern, falls
-        der Verzeichnisbaum des Servers Verzeichnisse mit 
-        Zugriffsbeschränkungen beinhaltet. 
-        Ausführliche Informationen über die verschiedenen Kombinationen
-        siehe weiter unten.
-
-       </simpara></listitem>
-     </itemizedlist></sect2>
-
-    <sect2 id="security.cgi.default">
-     <title>Fall 1: Nur öffentliche Dateien vorhanden</title>
-     <simpara>
-      Wenn der Server keine Inhalte hat, die durch Passwort oder
-      IP-basierte Zugriffskontrolle geschützt sind, gibt es für diese
-      Konfiguration keinen Grund.
-      Wenn der Webserver keine Redirects erlaubt oder keine Möglichkeit
-      hat, auf einer sicher umgeleiteten Anfrage mit dem PHP-Binary
-      Verbindung aufzunehmen, kann die Option <link linkend="enable-force-cgi-redirect">--disable-force-cgi-redirect</link>
-      im configure-Script angegeben werden. Nichtsdestotrotz müssen
-      Sie sicherstellenn, daß Ihre PHP-Scripte nicht auf die eine oder
-      anderen Art des Aufrufs angewiesen sind, weder direkt durch
-      <filename role="php">http://my.host/cgi-bin/php/dir/script.php</filename>
-      noch durch einen Redirect <filename role="php">http://my.host/dir/script.php</filename>.</simpara>
-
-     <simpara>
-      Beim Apache kann der Redirect durch den Gebrauch von      
-      AddHandler und Action konfiguriert werden (siehe unten).</simpara></sect2>
-      
-    <sect2 id="security.cgi.force-redirect">
-     <title>Fall 2: --enable-force-cgi-redirect benutzen</title>
-     <simpara>
-      Diese Option, die beim Kompilieren verwendet wird, verhindert
-      grundsätzlich den Aufruf von PHP mit einer URL wie beispielsweise
-      <filename role="php">http://my.host/cgi-bin/php/secretdir/script.php3</filename>.
-      Stattdessen parst PHP in diesem Modus nur dann, wenn der Aufruf
-      durch einen korrekten Redirect des Webservers erfolgte.</simpara>
-     <simpara>
-      Normalerweise wird der Redirect in der Apache-Konfiguration mit den
-      folgenden Einträgen festgelegt:</simpara>
-     <programlisting role="apache-conf">
+   <sect2 id="security.cgi.force-redirect">
+    <title>Fall 2: --enable-force-cgi-redirect benutzen</title>
+    <simpara>
+     Diese beim Kompilieren verwendete Option verhindert grundsätzlich 
+     den Aufruf von PHP mit einer URL wie <filename
+     role="php">http://my.host/cgi-bin/php/secretdir/script.php</filename>.
+     Stattdessen parst PHP in diesem Modus nur dann, wenn der Aufruf
+     durch einen korrekten Redirect des Webservers erfolgte.
+    </simpara>
+    <simpara>
+     Normalerweise wird der Redirect in der Apache-Konfiguration mit den
+     folgenden Einträgen festgelegt:</simpara>
+    <programlisting role="apache-conf">
 Action php-script /cgi-bin/php
 AddHandler php-script .php
-</programlisting>
-
-     <simpara>
-      Diese Option wurde nur mit dem Apache Webserver getestet und
-      ist abhängig davon, wie Apache die nicht standardmäßige 
-      CGI-Umgebungsvariable <envar>REDIRECT_STATUS</envar> bei
-      Redirect-Anfragen setzt.
-      Sollte Ihr Webserver keine Möglichkeit unterstützen, zu übermitteln,
-      ob es sich um einen direkte Aufruf oder einen Redirect handelt,
-      können Sie diese Option nicht verwenden und müssen einen der
-      anderen hier beschriebenen Wege gehen, die CGI-Version zu
-      nutzen.</simpara></sect2>
-      
-    <sect2 id="security.cgi.doc-root">
-     <title>Fall 3: doc_root oder user_dir festlegen</title>
-     <simpara>
-      Aktiven Inhalt, wie beispielsweise Skripts und ausführbare
-      Dateien, in den Dokumentverzeichnissen des Webservers abzulegen,
-      wird manchmal als unsichere Methode angesehen.
-      Wenn, beispielsweise aufgrund von Konfigurationsfehlern, die 
-      Skripte nicht ausgeführt, sodern als reguläres HTML-Dokument
-      angezeigt werden kann dies den Verlust von geistigem Eigentum
-      und Sicherheit (Passwörter!) zur Folge haben.
-      Von daher ziehen es viele Sysadmins vor, eine zweite 
-      Verzeichnisstruktur für Skripte, auf die nur durch das PHP-CGI
-      zugegriffen werden soll, einzurichten. Diese werden dann stets 
-      interpretiert und nicht angezeigt.</simpara>
-      
-     <simpara>
-      Auch wenn die Methode, sicherzustellen, dass die Anfragen nicht
-      umgeleitet werden (wie im vorangegangenen Kapitel beschrieben), nicht
-      verfügbar ist, ist es notwendig, ein doc_root für Scripts 
-      zusätzlich zum Dokumentenverzeichnis einzurichten.</simpara>
-      
-     <simpara>
-      Sie können das PHP-Skriptverzeichnis durch die Direktive
-      <link linkend="ini.doc-root">doc_root</link> in der <link linkend="configuration.file">Konfigurationsdatei</link> ändern, oder Sie setzen
-      die Umgebungsvariable <envar>PHP_DOCUMENT_ROOT</envar>.
-      Wenn sie gesetzt ist, wird die CGI-Version von PHP den Namen der
-      zu öffnenden Datei stets aus <parameter>doc_root</parameter> und der
-      Pfadinformation der Anfrage zusammensetzen, so daß man sicher
-      sein kann, daß ausserhalb dieses Verzeichnisses keine Skripte
-      ausgeführt werden (außer <parameter>user_dir</parameter>,
-      siehe unten).</simpara>
-      
-     <simpara>
-      Eine weitere hier nützliche Option ist <link linkend="ini.user-dir">user_dir</link>. 
-      Wenn das <parameter>user_dir</parameter> nicht gesetzt ist, hat nur <parameter>doc_root</parameter>  
-      Einfluß auf die zu öffnende Datei.
-      Der Aufruf einer URL wie <filename role="url">http://my.host/~user/doc.php3</filename> hat nicht zum Ergebnis, daß
-      eine Datei im Home-Verzeichnis des Benutzers geöffnet wird,
-      sondern eine Datei namens <filename role="uri">~user/doc.php</filename> unterhalb des
-      doc_root (Ja, ein Verzeichnisname, der mit einer Tilde anfängt
-      [<literal>~</literal>]).</simpara>
-      
-     <simpara>
-      Ist das user_dir beispielsweise auf <filename role="dir">public_php</filename> gesetzt,
-      wird eine Anfrage wie <filename role="url">http://my.host/~user/doc.php</filename>
-      eine Datei namens <filename>doc.php</filename> im Verzeichnis
-      <filename role="dir">public_php</filename> im Heimatverzeichnis
-      des Benutzers öffnen.  Wenn das Heimatverzeichnis des Benutzers
-      <filename role="dir">/home/user</filename> ist, so ist die
-      ausgeführte Datei
-      <filename>/home/user/public_php/doc.php</filename>.</simpara>
-      
-     <simpara>
-      Die <parameter>user_dir</parameter>-Expansion erfolgt ohne Berücksichtigung
-      auf die <parameter>doc_root</parameter> Einstellung. So können
-      Zugriffe auf die Dokumenten- und Benutzerverzeichnisse separat
-      gesteuert werden.</simpara></sect2>
-      
-    <sect2 id="security.cgi.shell">
-     <title>Fall 4: PHP-Parser außerhalb des Webverzeichnisbaums</title>
-     <para>
-      Eine sehr sichere Sache ist es, das PHP-Parser-Binary irgendwo
-      außerhalb des Webverzeichnisbaums zu plazieren, beispielsweise
-      in <filename role="dir">/usr/local/bin</filename>.  Der einzige
-      Nachteil dieses Verfahrens ist, dass eine Zeile ähnlich der folgenden:
-      
-      <informalexample>
-       <programlisting>
-#!/usr/local/bin/php
-       </programlisting>
-      </informalexample>
-	
-      als erste Zeile in jeder Datei, die PHP-Tags enthält, stehen muss.
-      Ausserdem muss die Datei ausführbar sein. Ansonsten ist sie genauso
-      zu behandeln wie ein beliebiges CGI-Script in Perl oder sh oder
-      anderen gebräuchlichen Scriptsprachen, die den
-      <literal>#!</literal> shell-escape-Mechanismus nutzen, um sich
-      selbst aufzurufen.</para>
-     <para>
-      Damit PHP bei dieser Konfiguration die <envar>PATH_INFO</envar>- und
-      <envar>PATH_TRANSLATED</envar>-Informationen korrekt auswertet,
-      sollte der PHP-Parser mit der Option <link linkend="enable-discard-path">--enable-discard-path</link>
-      kompiliert werden.</para></sect2></sect1>
-
-   <sect1 id="security.apache">
-    <title>Apache-Modul</title>
+    </programlisting>
     <simpara>
-     Wenn PHP als Apache-Modul eingesetzt wird, übernimmt es die
-     Benutzerrechte des Apache (üblicherweise user "nobody").</simpara></sect1>
+     Diese Option wurde nur mit dem Apache Webserver getestet und
+     ist abhängig davon, wie Apache die nicht standardmäßige 
+     CGI-Umgebungsvariable <envar>REDIRECT_STATUS</envar> bei
+     Redirect-Anfragen setzt.
+     Sollte Ihr Webserver keine Möglichkeit unterstützen, zu übermitteln,
+     ob es sich um einen direkte Aufruf oder einen Redirect handelt,
+     können Sie diese Option nicht verwenden und müssen einen der
+     anderen hier beschriebenen Wege gehen, die CGI-Version zu
+     nutzen.
+    </simpara>
+   </sect2>
+
+   <sect2 id="security.cgi.doc-root">
+    <title>Fall 3: doc_root oder user_dir festlegen</title>
+    <simpara>
+     Aktiven Inhalt, wie beispielsweise Skripts und ausführbare
+     Dateien, in den Dokumentverzeichnissen des Webservers abzulegen,
+     wird manchmal als unsichere Methode angesehen.
+     Wenn, beispielsweise aufgrund von Konfigurationsfehlern, die 
+     Skripte nicht ausgeführt, sondern als reguläre HTML-Dokumente
+     angezeigt werden kann dies ein Durchsickern von geistigem Eigentum
+     und sicherheitsrelevanter Informationen (Passwörter!) zur Folge 
+     haben. Deshalb ziehen es viele Systemadministratoren vor, eine 
+     zweite Verzeichnisstruktur für Skripte einzurichten, auf die nur 
+     durch das PHP-CGI zugegriffen werden kann. Diese werden dann stets 
+     interpretiert und nicht angezeigt.
+    </simpara>
+    <simpara>
+     Auch wenn die Methode zum sichergestellten Verhindern einer Umleitung 
+     von Anfragen (wie im vorangegangenen Kapitel beschrieben) nicht
+     verfügbar ist, ist es notwendig, ein doc_root für Skripte  zusätzlich
+     zum Web-Dokumentenverzeichnis einzurichten.
+    </simpara> 
+    <simpara>
+     Sie können das PHP-Skriptverzeichnis durch die Direktive
+     <link linkend="ini.doc-root">doc_root</link> in der 
+     <link linkend="configuration.file">Konfigurationsdatei</link> 
+     festlegen, oder Sie setzen die Umgebungsvariable 
+     <envar>PHP_DOCUMENT_ROOT</envar>. Wenn sie gesetzt ist, wird die 
+     CGI-Version von PHP den Namen der zu öffnenden Datei stets aus 
+     <parameter>doc_root</parameter> und der Pfadinformation der Anfrage 
+     zusammensetzen, so daß man sicher sein kann, daß ausserhalb dieses 
+     Verzeichnisses keine Skripte ausgeführt werden (außer 
+     <parameter>user_dir</parameter>, siehe unten).
+    </simpara> 
+    <simpara>
+     Eine weitere hier nützliche Option ist <link 
+     linkend="ini.user-dir">user_dir</link>. Wenn das 
+     <parameter>user_dir</parameter> nicht gesetzt ist, hat nur 
+     <parameter>doc_root</parameter> Einfluß auf die zu öffnende Datei.
+     Der Aufruf einer URL wie <filename 
+     role="url">http://my.host/~user/doc.php</filename> hat nicht zum 
+     Ergebnis, daß eine Datei im Home-Verzeichnis des Benutzers geöffnet 
+     wird, sondern eine Datei namens <filename role="uri">~user/doc.php</filename> 
+     unterhalb des doc_root (Ja, ein Verzeichnisname, der mit einer Tilde anfängt
+     [<literal>~</literal>]).
+    </simpara> 
+    <simpara>
+     Ist das user_dir beispielsweise auf <filename role="dir">public_php</filename> gesetzt,
+     wird eine Anfrage wie <filename role="url">http://my.host/~user/doc.php</filename>
+     eine Datei namens <filename>doc.php</filename> im Verzeichnis
+     <filename role="dir">public_php</filename> im Heimatverzeichnis
+     des Benutzers öffnen.  Wenn das Heimatverzeichnis des Benutzers
+     <filename role="dir">/home/user</filename> ist, so ist die
+     ausgeführte Datei
+     <filename>/home/user/public_php/doc.php</filename>.
+    </simpara> 
+    <simpara>
+     Die <parameter>user_dir</parameter>-Expansion erfolgt ohne Berücksichtigung
+     der <parameter>doc_root</parameter> Einstellung. So können Zugriffe 
+     auf die Dokumenten- und Benutzerverzeichnisse separat gesteuert werden.
+    </simpara>
+   </sect2>
+      
+   <sect2 id="security.cgi.shell">
+    <title>Fall 4: PHP-Parser außerhalb des Webverzeichnisbaums</title>
+    <para>
+     Eine sehr sichere Sache ist es, das PHP-Parser-Binary irgendwo
+     außerhalb des Webverzeichnisbaums zu plazieren, beispielsweise
+     in <filename role="dir">/usr/local/bin</filename>.  Der einzige
+     Nachteil dieses Verfahrens ist, dass eine Zeile ähnlich der folgenden:
+     <informalexample>
+      <programlisting>
+#!/usr/local/bin/php
+      </programlisting>
+     </informalexample>
+     als erste Zeile in jeder Datei, die PHP-Tags enthält, stehen muss.
+     Ausserdem muss die Datei ausführbar sein. Ansonsten ist sie genauso
+     zu behandeln wie ein beliebiges CGI-Script in Perl oder sh oder
+     anderen gebräuchlichen Scriptsprachen, die den
+     <literal>#!</literal> shell-escape-Mechanismus nutzen, um sich
+     selbst aufzurufen.
+    </para>
+    <para>
+     Damit PHP bei dieser Konfiguration die <envar>PATH_INFO</envar>- und
+     <envar>PATH_TRANSLATED</envar>-Informationen korrekt auswertet,
+     sollte der PHP-Parser mit der Option <link 
+     linkend="install.configure.enable-discard-path">--enable-discard-path</link>
+     kompiliert werden.
+    </para>
+   </sect2>
+  </sect1>
+
+  <sect1 id="security.apache">
+   <title>Apache-Modul</title>
+   <simpara>
+    Wenn PHP als Apache-Modul eingesetzt wird, übernimmt es die
+    Benutzerrechte des Apache (üblicherweise user "nobody"). Das hat
+    verschiedene Auswirkungen auf Sicherheit und Authentifizierung, z.B.:
+    Wenn Sie PHP zum Zugriff auf eine Datenbank benutzen, es sei denn 
+    diese Datenbank hat eine integrierte Zugriffskontrolle, müssen Sie 
+    dem Benutzer "nobody" Zugriffsrechte auf die Datenbank erteilen. Das
+    heisst, dass ein böswilliges Skript auch Benutzerkennung und Passwort
+    auf die Datenbank zugreifen, und sie verändern könnte. Es ist durchaus 
+    möglich, dass ein Web-Spider über die Webseite eines 
+    Datenbankadministrators stolpert, und alle Ihre Datenbanken löscht.
+    Sie können sich dagegen mit Apache Authentifizierung schützen, oder
+    ein eigenes Zugangsmodell unter Verwendung von LDAP, .htaccess Dateien, 
+    etc. entwerfen, und diesen Code als Teil Ihrer PHP Skripte einbinden.
+   </simpara>
+   <simpara>
+    Often, once security is established to the point where the PHP user
+    (in this case, the apache user) has very little risk, it is
+    discovered that PHP now has been prevented from writing virus files
+    to user directories. Or perhaps it has been prevented from accessing
+    or changing a non-public database. It has equally been secured from
+    writing files that it should, or entering database transactions.
+   </simpara>
+   <simpara>
+    A frequent security mistake made at this point is to allow apache
+    root permissions.
+   </simpara>
+   <simpara>
+    Escalating the Apache user's permissions to root is extremely
+    dangerous and may compromise the entire system, so sudo'ing,
+    chroot'ing ,or otherwise running as root should not be considered by
+    those who are not security professionals.
+   </simpara>
+  </sect1>
+
+  <sect1 id="security.filesystem">
+   <title>Filesystem Security</title>
+   <simpara>
+    PHP is subject to the security built into most server systems with
+    respect to permissions on a file and directory basis. This allows
+    you to control which files in the filesystem may be read. Care
+    should be taken with any files which are world readable to ensure
+    that they are safe for reading by all users who have access to that
+    filesystem.
+   </simpara>
+   <simpara>
+    Since PHP was designed to allow user level access to the filesystem,
+    it's entirely possible to write a PHP script that will allow you
+    to read system files such as /etc/password, modify your ethernet
+    connections, send massive printer jobs out, etc. This has some
+    obvious implications, in that you need to ensure that the files
+    that you read from and write to are the appropriate ones.
+   </simpara>
+   <simpara>
+    Consider the following script, where a user indicates that they'd
+    like to delete a file in their home directory. This assumes a
+    situation where a PHP web interface is regularly used for file
+    management, so the Apache user is allowed to delete files in
+    the user home directories.
+   </simpara>
+   <para>
+    <example>
+     <title>Poor variable checking leads to....</title>
+     <programlisting role="php">
+&lt;?php
+// remove a file from the user's home directory
+$username = $user_submitted_name;
+$homedir = "/home/$username";
+$file_to_delete = "$userfile";
+unlink ($homedir/$userfile);
+echo "$file_to_delete has been deleted!";
+?&gt;
+     </programlisting>
+    </example>
+   Since the username is postable from a user form, they can submit
+   a username and file belonging to someone else, and delete files.
+   In this case, you'd want to use some other form of authentication.
+   Consider what could happen if the variables submitted were
+   "../etc/" and "passwd". The code would then effectively read:
+    <example>
+     <title>... A filesystem attack</title>
+     <programlisting role="php">
+&lt;?php
+// removes a file from anywhere on the hard drive that
+// the PHP user has access to. If PHP has root access:
+$username = "../etc/";
+$homedir = "/home/../etc/";
+$file_to_delete = "passwd";
+unlink ("/home/../etc/passwd");
+echo "/home/../etc/passwd has been deleted!";
+?&gt;
+     </programlisting>
+    </example>   
+    There are two important measures you should take to prevent these
+    issues.
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Only allow limited permissions to the PHP web user binary.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Check all variables which are submitted.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+    Here is an improved script:
+    <example>
+     <title>More secure file name checking</title>
+     <programlisting role="php">
+&lt;?php
+// removes a file from the hard drive that
+// the PHP user has access to. 
+$username = $HTTP_REMOTE_USER; // use an authentication mechanisim
+
+$homedir = "/home/$username";
+
+$file_to_delete = basename("$userfile"); // strip paths
+unlink ($homedir/$file_to_delete);
+
+$fp = fopen("/home/logging/filedelete.log","+a"); //log the deletion
+$logstring = "$HTTP_REMOTE_USER $homedir $file_to_delete";
+fputs ($fp, $logstring);
+fclose($fp);
+
+echo "$file_to_delete has been deleted!";
+?&gt;
+     </programlisting>
+    </example>
+    Alternately, you may prefer to write a more customized check:
+    <example>
+     <title>More secure file name checking</title>
+     <programlisting role="php">
+&lt;?php
+$username = getenv("REMOTE_USER");
+$homedir = "/home/$username";
+
+if (!ereg('^[^./][^/]*$', $userfile))
+    die('bad filename'); //die, do not process
     
+//etc...
+?&gt;
+     </programlisting>
+    </example> 
+    Depending on your operating system, there are a wide variety of files
+    which you should be concerned about, including device entries (/dev/
+    or COM1), configuration files (/etc/ files and the .ini files),
+    well known file storage areas (/home/, My Documents), etc. For this
+    reason, it's usually easier to create a policy where you forbid
+    everything except for what you explicitly allow.
+   </para>   
+  </sect1>
+
+  <sect1 id="security.errors">
+   <title>Error Reporting</title>
+   <simpara>
+    A standard attack tactic involves profiling a system by feeding
+    it improper data, and checking for the kinds, and contexts, of the
+    errors which are returned. This allows the system cracker to probe
+    for information about the server, to determine possible weaknesses.
+   </simpara>
+   <simpara>
+    The PHP errors which are normally returned can be quite helpful to a
+    developer who is trying to debug a script, indicating such things
+    as the function or file that failed, the PHP file it failed in,
+    and the line number which the failure occured in. This is all
+    information that can be exploited.  It is not uncommon for a php
+    developer to use <function>show_source</function>, 
+    <function>highlight_string</function>, or 
+    <function>highlight_file</function> as a debugging measure, but in 
+    a live site, this can expose hidden variables, unchecked syntax, 
+    and other dangerous information.
+   </simpara>
+   <simpara>
+    For example, the very style of a generic error indicates a system
+    is running PHP. If the attacker was looking at an .html page, and
+    wanted to probe for the back-end (to look for known weaknesses in
+    the system), by feeding it the wrong data they may be able to
+    determine that a system was built with PHP.
+   </simpara>
+   <simpara>
+    A function error can indicate whether a system may be running a
+    specific database engine, or give clues as to how a web page or
+    programmed or designed. This allows for deeper investigation into
+    open database ports, or to look for specific bugs or weaknesses
+    in a web page. By feeding different pieces of bad data, for example,
+    an attacker can determine the order of authentication in a script,
+    (from the line number errors) as well as probe for exploits that
+    may be exploited in different locations in the script.
+   </simpara>
+   <simpara>
+    A filesystem or general PHP error can indicate what permissions
+    the webserver has, as well as the structure and organization of
+    files on the web server. Developer written error code can aggravate
+    this problem, leading to easy exploitation of formerly "hidden"
+    information.
+   </simpara>
+   <simpara>
+    There are three major solutions to this issue. The first is to
+    scrutinize all functions, and attempt to compensate for the bulk
+    of the errors. The second is to disable error reporting entirely
+    on the running code. The third is to use PHP's custom error
+    handling functions to create your own error handler. Depending
+    on your security policy, you may find all three to be applicable
+    to your situation.
+   </simpara>
+  </sect1>
+  
+  <sect1 id="security.variables">
+   <title>User Submitted Data</title>
+   <para>
+    The greatest weakness in many PHP programs is not inherent in the
+    language itself, but merely an issue of code not being written with
+    security in mind. For this reason, you should always take the time
+    to consider the implications of a given piece of code, to ascertain
+    the possible damage if an unexpected variable is submitted to it.
+    <example>
+     <title>Dangerous Variable Usage</title>
+     <programlisting role="php">
+&lt;?php
+// remove a file from the user's home directory... or maybe
+// somebody else's?
+unlink ($evil_var);
+
+// Write logging of their access... or maybe not?
+fputs ($fp, $evil_var);
+
+// Execute something trivial.. or rm -rf *?
+system ($evil_var);
+exec ($evil_var);
+
+?&gt;
+     </programlisting>
+    </example>
+    You should always carefully examine your code to make sure that any
+    variables being submitted from a web browser are being properly
+    checked, and ask yourself the following questions:
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Will this script only affect the intended files?
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Can unusual or undesirable data be acted upon?
+      </simpara>
+     </listitem>
+     <listitem>
+     <simpara>
+       Can this script be used in unintended ways?
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Can this be used in conjunction with other scripts in a negative
+       manner?
+      </simpara>
+     </listitem> 
+     <listitem>
+      <simpara>
+       Will any transactions be adequately logged?
+      </simpara>
+     </listitem>
+    </itemizedlist>
+    By adequately asking these questions while writing the script,
+    rather than later, you prevent an unfortunate re-write when you
+    need to increase your security. By starting out with this mindset,
+    you won't guarantee the security of your system, but you can help
+    improve it.
+   </para>
+   <para>
+    You may also want to consider turning off register_globals,
+    magic_quotes, or other convenience settings which may confuse
+    you as to the validity, source, or value of a given variable.
+    Working with PHP in error_reporting(E_ALL) mode can also help warn
+    you about variables being used before they are checked or
+    initialized (so you can prevent unusual data from being
+    operated upon).
+   </para>
+  </sect1>
+
+  <sect1 id="security.general">
+   <title>General considerations</title>
+   <simpara>
+    A completely secure system is a virtual impossibility, so an
+    approach often used in the security profession is one of balancing
+    risk and usability. If every variable submitted by a user required
+    two forms of biometric validation (such as a retinal scan and a
+    fingerprint), you would have an extremely high level of
+    accountability. It would also take half an hour to fill out a fairly
+    complex form, which would tend to encourage users to find ways of
+    bypassing the security.
+   </simpara>
+   <simpara>
+    The best security is often inobtrusive enough to suit the
+    requirements without the user being prevented from accomplishing
+    their work, or over-burdening the code author with excessive
+    complexity. Indeed, some security attacks are merely exploits of
+    this kind of overly built security, which tends to erode over time.
+   </simpara>
+   <simpara>
+    A phrase worth remembering: A system is only as good as the weakest
+    link in a chain. If all transactions are heavily logged based on
+    time, location, transaction type, etc. but the user is only
+    verified based on a single cookie, the validity of tying the users
+    to the transaction log is severely weakened.
+   </simpara>
+   <simpara>
+    When testing, keep in mind that you will not be able to test all
+    possibilities for even the simplest of pages. The input you
+    may expect will be completely unrelated to the input given by
+    a disgruntled employee, a cracker with months of time on their
+    hands, or a housecat walking across the keyboard. This is why it's
+    best to look at the code from a logical perspective, to discern
+    where unexpected data can be introduced, and then follow how it is
+    modified, reduced, or amplified.
+   </simpara>
+   <simpara>
+    The Internet is filled with people trying to make a name for
+    themselves by breaking your code, crashing your site, posting
+    inappropriate content, and otherwise making your day interesting.
+    It doesn't matter if you have a small or large site, you are
+    a target by simply being online, by having a server that can be
+    connected to. Many cracking programs do not discern by size, they
+    simply trawl massive IP blocks looking for victims. Try not to
+    become one.
+   </simpara>
+  </sect1>
+
+  <sect1 id="security.current">
+   <title>Keeping Current</title>
+   <simpara>
+    PHP, like any other large system, is under constant scrutiny and
+    improvement. Each new version will often include both major and
+    minor changes to enhance and repair security flaws, configuration
+    mishaps, and other issues that will affect the overall security
+    and stability of your system.
+   </simpara>
+   <simpara>
+    Like other system-level scripting languages and programs, the best
+    approach is to update often, and maintain awareness of the latest
+    versions and their changes.
+   </simpara>
+  </sect1>
  </chapter>
 
 <!-- Keep this comment at the end of the file
@@ -248,7 +621,7 @@ sgml-always-quote-attributes:t
 sgml-indent-step:1
 sgml-indent-data:t
 sgml-parent-document:nil
-sgml-default-dtd-file:"../manual.ced"
+sgml-default-dtd-file:"../../manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
