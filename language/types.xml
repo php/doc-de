@@ -64,6 +64,9 @@ $a = 0x12; # Zahlenwert im hexadezimal-Format
            # (entspricht 18 im dezimal-Format)
      </programlisting>
     </informalexample>
+    Die Größe eines Integer-Wertes ist plattformabhängig, dennoch
+    beträgt der Maximalwert über 2 Billionen (Vorzeichen-behafteter
+    32-Bit-Wert).
    </para>
   </sect1>
    
@@ -78,7 +81,36 @@ $a = 1.234;
 $a = 1.2e3;
      </programlisting>
     </informalexample>
+    Die Größe einer Fließkomma-Zahl ist plattformabhängig, dennoch
+    stellt ein Maximum von ~1.8e308 mit einer Genauigkeit von 14
+    Nachkomma-Stellen einen üblichen Wert dar (das ist 64-Bit im
+    IEEE-Format).
    </para>
+   <warning id="warn.float.precision">
+    <para>
+     Es ist normal, dass einfache Dezimalzahlen wie
+     <literal>0.1</literal> oder <literal>0.7</literal> nicht in ihre
+     internen binären Entsprechungen konvertiert werden können, ohne
+     einen Teil ihrer Genauigkeit zu verlieren. Das kann zu
+     verwirrenden Ergebnissen führen. So wird <literal>floor ((0.1 +
+     0.7) * 10)</literal> normalerweise <literal>7</literal> statt des
+     erwarteten Wertes <literal>8</literal> zurück geben (als Ergebnis
+     der internen Entsprechung von <literal>7.9999999999...</literal>.
+    </para>
+    <para>
+     Da es unmöglich ist, manche Dezimal-Zahlen durch eine begrenzte
+     Anzahl an Nachkomma-Stellen darzu stellen, ist dies ein Fakt.
+     Dem Wert <literal>1/3</literal> entspricht z.B. der interne
+     Wert von <literal>0.3333333. . .</literal>.
+    </para>
+    <para>
+     Deshalb sollten sie nie den Ergebnissen von Fließkomma-Operationen
+     bis auf die letzte Nachkomma-Stelle glauben oder solche auf
+     Gleichjeit prüfen. Sollten sie einen größere Genauigkeit brauchen,
+     sollten sie die <link linkend="ref.bc"> mathematischen Funktionen
+     beliebiger Genauigkeit </link> benutzen.
+    </para>
+   </warning>
   </sect1>
    
   <sect1 id="language.types.string">
@@ -106,15 +138,15 @@ $a = 1.2e3;
       <tbody>
        <row>
 	<entry><literal>\n</literal></entry>
-	<entry>neue Zeile</entry>
+	<entry>neue Zeile (LF oder 0x0A als ASCII-Code)</entry>
        </row>
        <row>
 	<entry><literal>\r</literal></entry>
-	<entry>Wagenrücklauf / an Zeilenanfang</entry>
+	<entry>Wagenrücklauf (CR oder 0x0D als ASCII-Code)</entry>
        </row>
        <row>
 	<entry><literal>\t</literal></entry>
-	<entry>horizontaler Tabulator</entry>
+	<entry>horizontaler Tabulator (HT oder 0x09 als ASCII-Code</entry>
        </row>
        <row>
 	<entry><literal>\\</literal></entry>
@@ -158,26 +190,56 @@ $a = 1.2e3;
     "\'"-Zeichenfolgen von der Auswertung ausgeschlossen.  Dies dient
     der Erleichterung, so dass sie Single-Quotes und Backslashes in
     einem durch einfache Anführungszeichen begrenzten String benutzen
-    können. Variablen innerhalb von durch Single- Quotes begrenzten
+    können. Variablen innerhalb von durch Single-Quotes begrenzten
     Strings werden <emphasis>nicht</emphasis> ausgewertet.
    </para>
-   <para>
+   <simpara>
     Eine andere Möglichkeit Strings einzufassen, besteht im Gebrauch
     der "here doc"-Syntax ("&lt;&lt;&lt;"). Hierfür ist nach
     <literal>&lt;&lt;&lt;</literal> ein Merker zu setzen. Nun folgt
     der eigentliche String und dann der selbe Merker um den String
     abzuschliessen. Der schliessende Merker <emphasis>muss</emphasis>
     in der ersten Spalte der Zeile stehen.
+   </simpara>
+   <para>
+    "Here doc"-Text funktioniert wie ein Text innnerhalb von '"', aber
+    ohne '"'. Anführungszeichen innerhalb von "here doc"-Texten müssen
+    also keiner Sonderbehandlung (escapen) unterzogen werden. Sie
+    können aber die obigen Escape-Anweisungen verwenden. Variablen
+    werden ausgewertet, aber besondere Aufmerksamkeit muss komplexen
+    Variablen gewidmet werden, genau wie Strings.
     <example>
      <title>
       Beispiel zur String-Festlegung per "here doc"-Methode
      </title>
      <programlisting role="php">
+&lt;?php
 $str = &lt;&lt;&lt;EOD
 Beispiel eines Strings
 über mehrere Script-Zeilen
 durch Gebrauch der here doc-Syntax.
 EOD;
+
+/* komplexeres Beispiel, mit Variablen */
+class foo {
+    var $foo;
+    var $bar;
+
+    function foo() {
+        $this->foo = 'Foo';
+        $this->bar = array('Bar1', 'Bar2', 'Bar3');
+    }
+}
+
+$foo = new foo();
+$name = 'Mein Name';
+
+echo &lt;&lt;&lt;EOT
+Mein Name ist "$name". Ich schreibe einige $foo->foo.
+Nun schreibe ich gerade einige {$foo->bar[1]}.
+Dies sollte ein Kapitel 'A' schreiben: \x41
+EOT;
+?>
      </programlisting>
     </example>
    </para>
