@@ -1,78 +1,95 @@
+
  <reference id="ref.http">
-  <title>HTTP functions</title>
+  <title>HTTP-Funktionen</title>
   <titleabbrev>HTTP</titleabbrev>
 
   <partintro>
-  <simpara>
-   These functions let you manipulate the output sent back to the
-   remote browser right down to the HTTP protocol level.</simpara>
+   <simpara>
+    Diese Funktionen ermöglichen die Manipulation der an den Browser
+    geschickten Informationen bis hinunter auf HTTP-Protokoll-Ebene.
+   </simpara>
   </partintro>
 
   <refentry id="function.header">
    <refnamediv>
     <refname>header</refname>
-    <refpurpose>Send a raw HTTP header</refpurpose>
+    <refpurpose>Sendet einen HTTP-Header</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung:</title>
     <funcsynopsis>
      <funcdef>int <function>header</function></funcdef>
      <paramdef>string <parameter>string</parameter></paramdef>
     </funcsynopsis>
     <para>
-     The <function>Header</function> function is used at the top of an
-     <acronym>HTML</acronym> file to send raw <acronym>HTTP</acronym>
-     header strings.  See the <ulink url="&spec.http1.1;">HTTP 1.1
-     Specification</ulink> for more information on raw http headers.
-     <emphasis>Note:</emphasis> Remember that the
-     <function>Header</function> function must be called before any actual
-     output is sent either by normal HTML tags or from PHP. It is a very
-     common error to read code with <function>include</function> or with 
-     auto_prepend and have spaces or empty lines in this code that force
-     output before <function>header</function> is called.</para>
-
-	<para>
-	 There are two special-case header calls.  The first is the &quot;Location&quot;
-	 header.  Not only does it send this header back to the browser, it also returns
-	 a REDIRECT status code to Apache.  From a script writer's point of view this
-	 should not be important, but for people who understand Apache internals it is
-	 important to understand.
-     <informalexample><programlisting role="php">
-header("Location: http://www.php.net");  /* Redirect browser to PHP web site */
-exit;  /* Make sure that code below does not get executed when we redirect. */
-</programlisting></informalexample></para>
-	<para>
-	 The second special-case is any header that starts with the string, &quot;HTTP/&quot;
-	 (case is not significant).  For example, if you have your ErrorDocument 404 Apache
-	 directive pointed to a PHP script, it would be a good idea to make sure that your
-	 PHP script is actually generating a 404.  The first thing you do in your script should
-	 then be:
-     <informalexample><programlisting role="php">
-header("http/1.0 404 Not Found");
-	 </programlisting></informalexample>
-	</para>
-
+     Die <function>Header</function>-Funktion wird zu Beginn einer
+     <acronym>HTML</acronym>-Datei benutzt um
+     <acronym>HTTP</acronym>-Anfangsinformationen. Siehe <ulink
+     url="&spec.http1.1;">HTTP 1.1 Spezifikationen</ulink> für weitere
+     Informationen.  <emphasis>Hinweis:</emphasis> Beachten sie, dass
+     die <function>Header</function>-Funktion aufgerufen werden muss,
+     bevor irgendeine Ausgabe durch normale HTML-Tags oder PHP erzeugt
+     wird.  Es ist ein häufig anzutreffender Fehler, per
+     <function>include</function> Programm-Code einzubinden (bzw. per
+     auto_prepend) oder Leerzeichen oder -zeilen vor im Code stehen zu
+     haben, die bereits Ausgaben bewirken bevor
+     <function>header</function> aufgerufen wird.
+    </para>
     <para>
-     PHP scripts often generate dynamic HTML that must not be cached
-     by the client browser or any proxy caches between the server and the
-     client browser. Many proxies and clients can be forced to disable
-     caching with
-     <informalexample><programlisting role="php">
-  header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");             // Date in the past
-  header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); // always modified
-  header("Cache-Control: no-cache, must-revalidate");           // HTTP/1.1
-  header("Pragma: no-cache");                                   // HTTP/1.0
-</programlisting></informalexample></para>
+     Es gibt zwei Spezialfälle von Header-Aufrufen. Der Erste ist der
+     &quot;Location&quot;-Header. Es wird nicht nur der Header an den 
+     Browser geschickt, der Apache erhält auch noch den Status-Code
+     REDIRECT. Aus Sicht des Skript-Schreibers ist das nicht wichtig,
+     aber für alle, die die Internas von Apache verstehen wollen, ist
+     dies von Belang.
+     <informalexample>
+      <programlisting role="php">
+header ("Location: http://www.php.net");  /* Umleitung des Browsers
+                                             zur PHP-Web-Seite. */
+exit;  /* Sicher stellen, das nicht trotz Umleitung nachfolgender
+          Code ausgeführt wird. */
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     Der zweite Spezialfall ist ein Header der mit der Zeichenfolge
+     &quot;HTTP/&quot; beginnt (Groß-/Kleinschreibung ist egal). Falls
+     sie z.B. die Dokument-Fehler-Anweisung 404 des Apache auf ein
+     PHP-Skript zeigen lassen, ist es gut, wenn dieses Skript einen
+     404-Fehler erzeugt. In diesem Skript sollten sie also zuerst
+     stehen haben:
+     <informalexample>
+      <programlisting role="php">
+header ("http/1.0 404 Not Found");
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     PHP-Skripte erzeugen oft dynamisches HTML, dass weder vom Browser noch
+     von irgendeinem Proxy zwischen Web-Server und Client-Browser gepuffert
+     ("gecached") werden soll bzw. darf. Bei vielen Proxies und Browsern
+     kann das Cachen unterbunden werden und zwar mit:
+     <informalexample>
+      <programlisting role="php">
+header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT");    // Datum der
+Vergangenheit
+header ("Last-Modified: " . gmdate ("D, d M Y H:i:s") . " GMT"); 
+                                                      // immer geändert
+header ("Cache-Control: no-cache, must-revalidate");  // HTTP/1.1
+header ("Pragma: no-cache");                          // HTTP/1.0
+      </programlisting>
+     </informalexample>
+    </para>
    </refsect1>
   </refentry>
 
   <refentry id="function.setcookie">
    <refnamediv>
     <refname>setcookie</refname>
-    <refpurpose>Send a cookie</refpurpose>
+    <refpurpose>Sendet ein Cookie</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung:</title>
     <funcsynopsis>
      <funcdef>int <function>setcookie</function></funcdef>
      <paramdef>string <parameter>name</parameter></paramdef>
@@ -83,97 +100,102 @@ header("http/1.0 404 Not Found");
      <paramdef>int <parameter>secure</parameter></paramdef>
     </funcsynopsis>
     <para>
-     <function>setcookie</function> defines a cookie to be sent along
-     with the rest of the header information.  Cookies must be sent
-     <emphasis>before</emphasis> any other headers are sent (this is a
-     restriction of cookies, not PHP). This requires you to place
-     calls to this function before any <literal>&lt;html></literal> or
-     <literal>&lt;head></literal> tags.</para>
-
+     <function>Setcookie</function> definiert ein mit den
+     Header-Informationen zu übertragendes Cookie. Cookies müssen
+     <emphasis>vor</emphasis> irgendwelchen anderen Headern gesendet
+     werden (dies ist eine Einschränkung der Cookies, nicht von PHP).
+     Sie müssen deshalb solche Funktionsaufrufe vor irgendwelchen
+     <literal>&lt;html></literal>- oder
+     <literal>&lt;head></literal>-Tags im Skript einsetzen.
+    </para>
     <para>
-     All the arguments except the <parameter>name</parameter> argument are
-     optional.  If only the name argument is present, the cookie by that
-     name will be deleted from the remote client.  You may also replace
-     any argument with an empty string (<emphasis>&quot;&quot;</emphasis>)
-     in order to skip that argument.  The <parameter>expire</parameter>
-     and <parameter>secure</parameter> arguments are integers
-     and cannot be skipped with an empty string.  Use a zero
-     (<emphasis>0</emphasis>) instead.  The <parameter>expire</parameter>
-     argument is a regular Unix time integer as returned by the
-     <function>time</function> or <function>mktime</function> functions.
-     The <parameter>secure</parameter> indicates that the cookie should
-     only be transmitted over a secure HTTPS connection.</para>
-
+     Alle Angaben ausser dem <parameter>name</parameter>-Argument
+     können angegeben werden. Ist nur der Name angegeben wird das
+     Cookie mit diesem Namen auf dem Client gelöscht. Sie können
+     beliebige Argumente auch durch einen Leerstring
+     (<emphasis>&quot;&quot;</emphasis>) ersetzen, um diese Argument
+     zu übergehen. Der <parameter>expire</parameter>-Parameter und das
+     <parameter>secure</parameter>-Argument sind Integer-Werte und
+     können nicht mir einem Leerstring übersprungen werden.  Setzen
+     sie statt dessen Null (<emphasis>0</emphasis>). Der
+     <parameter>expire</parameter>- Parameter ist ein normaler
+     UNIX-Zeitwert als Integer-Zahl, wie er von der
+     <function>time</function> oder
+     <function>mktime</function>-Funktion zurück gegeben wird. Das
+     <parameter>secure</parameter>-Argument bedeutet, dass das Cookie
+     nur über eine sichere HTTP-Verbindung geschickt werden soll.
+    </para>
     <para>  
-     Common Pitfalls:</para>
-
+     Anwendungsbereiche:
+    </para>
     <simpara>
-     Cookies will not become visible until the next loading of a page that 
-     the cookie should be visible for.</simpara> 
-
+     Cokies werden nicht sichtbar, bevor nicht eine Seite geladen
+     wird, in der das Cookie sichtbar sein soll.  
+    </simpara>
     <simpara>
-     Multiple calls to <function>setcookie</function> in the same
-     script will be performed in reverse order. If you are trying to
-     delete one cookie before inserting another you should put the
-     insert before the delete.</simpara>
-
+     Mehrfache Aufrufe der <function>setcookie</function>-Funktion im
+     selben Skript werden in umgekehrter Reihenfolge abgearbeitet.
+     Sollten sie also ein Cookie löschen wollen bevor sie ein anderes
+     setzen, sollten sie das Setzen vor dem Löschen vornehmen.
+    </simpara>
     <para>
-     Some examples follow:
+     Einige Beispiele:
      <example>
-      <title><function>setcookie</function> examples</title>
+      <title><function>Setcookie</function>-Beispiele</title>
       <programlisting role="php">
-setcookie("TestCookie","Test Value");
-setcookie("TestCookie",$value,time()+3600);  /* expire in 1 hour */
-setcookie("TestCookie",$value,time()+3600,"/~rasmus/",".utoronto.ca",1);
-</programlisting></example></para>
-
+setcookie ("TestCookie", "Test Value");
+setcookie ("TestCookie", $value, time()+3600);  /* verfällt in 1 Stunde */
+setcookie ("TestCookie", $value, time()+3600, "/~rasmus/", ".utoronto.ca",1);
+      </programlisting>
+     </example>
+    </para>
     <para>
-     Note that the value portion of the cookie will automatically be
-     urlencoded when you send the cookie, and when it is received, it
-     is automatically decoded and assigned to a variable by the same
-     name as the cookie name.  To see the contents of our test
-     cookie in a script, simply use one of the following examples:
-
-<informalexample><programlisting role="php">
+     Beachten sie, dass der Wertebereich des Cookies automatisch
+     URL-konform codiert (urlencoded) wird, sobald sie das Cookie
+     senden, und wenn es gelesen wird, wird es automatisch URL-konform
+     decodiert und einer Variablen zugewiesen, die den selben Namen
+     wie das Cookie trägt. Um die Inhalte unserer Test-Cookies zu
+     sehen brauchen sie nur eines der folgenden Beispiel zu benutzen:
+     <informalexample>
+      <programlisting role="php">
 echo $TestCookie;
 echo $HTTP_COOKIE_VARS["TestCookie"];
-</programlisting></informalexample></para>
-
-	<para>
-	 You may also set array cookies by using array notation in the
-	 cookie name. This has the effect of setting as many cookies as
-	 you have array elements, but when the cookie is received by your
-	 script, the values are all placed in an array with the cookie's
-	 name:
-	 <informalexample>
-	  <programlisting role="php">
-setcookie( "cookie[three]", "cookiethree" );
-setcookie( "cookie[two]", "cookietwo" );
-setcookie( "cookie[one]", "cookieone" );
-if ( isset( $cookie ) ) {
-   while( list( $name, $value ) = each( $cookie ) ) {
-	  echo "$name == $value&lt;br&gt;\n";
-   }
-}
-	  </programlisting>
-	 </informalexample>
-
-	</para>
-
+      </programlisting>
+     </informalexample>
+    </para>
     <para>
-     For more information on cookies, see Netscape's cookie
-     specification at <ulink url="&spec.cookies;">&spec.cookies;</ulink>.</para>
-
+     Sie können auch ein Array an Cookies setzen, in dem sie die
+     Array-Schreibweise benutzen. Dadurch werden so viele Cookies
+     gesetzt, wie ihr Array Elemente hat. Sobald das Cookie aber von
+     ihrem Skript gelesen wird, werden alle Werte in ein einziges
+     Array mit dem Cookie-Namen eingelesen: 
+     <informalexample>
+      <programlisting role="php">
+setcookie ("cookie[three]", "cookiethree");
+setcookie ("cookie[two]", "cookietwo");
+setcookie ("cookie[one]", "cookieone");
+if (isset ($cookie)) {
+    while (list ($name, $value) = each ($cookie)) {
+        echo "$name == $value&lt;br>\n";
+    }
+}
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     Weitere Informationen zu Cookies und deren Spezifikationen
+     erhalten sie bei Netscape unter <ulink
+     url="&spec.cookies;">&spec.cookies;</ulink>.
+    </para>
     <simpara>
-     Microsoft Internet Explorer 4 with Service Pack 1 applied does
-     not correctly deal with cookies that have their path parameter
-     set.</simpara>
-
+     Microsofts Internet-Explorer 4 mit Servive-Pack 1 geht nicht
+     korrekt mit Cookies um, die den Pfad-Parameter beinhalten.
+    </simpara>
     <simpara>
-     Netscape Communicator 4.05 and Microsoft Internet Explorer 3.x
-     appear to handle cookies incorrectly when the path and time
-     are not set.</simpara>
-
+     Netscape Communicator 4.05 und Microsoft Internet Explorer 3.x
+     scheinen mit Cookies Probleme zu haben, wenn die Argumente für
+     Pfad und Zeit nicht angegeben sind.
+    </simpara>
    </refsect1>
   </refentry>
 
@@ -189,7 +211,7 @@ sgml-always-quote-attributes:t
 sgml-indent-step:1
 sgml-indent-data:t
 sgml-parent-document:nil
-sgml-default-dtd-file:"../manual.ced"
+sgml-default-dtd-file:"../../manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
