@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.20 $ -->
-<!-- EN-Revision: 1.32 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.21 $ -->
+<!-- EN-Revision: 1.68 Maintainer: betz Status: ready -->
  <chapter id="language.variables">
   <title>Variablen</title>
 
@@ -30,7 +30,9 @@
 
    <para>
     <informalexample>
-     <programlisting role="php"> 
+     <programlisting role="php">
+<![CDATA[
+<?php
 $var = "Du";
 $vaR = "und";
 $Var = "ich";
@@ -39,7 +41,9 @@ echo "$var $vaR $Var, $vAr"; // gibt "Du und ich, wir lernen PHP" aus
 
 $4site  = 'nicht jetzt';     // ungültig, da Anfang eine Zahl
 $_4site = 'nicht jetzt';     // gültig, da Unterstrich am Anfang
-$täbyte = 'irgendwas';       // gültig, da 'ä' dem ASCII-Wert 228 entspricht
+$täbyte = 'irgendwas';       // gültig, da 'ä' dem (Erweiterten) ASCII-Wert 228 entspricht
+?>
+]]>
      </programlisting>
     </informalexample>
    </para>
@@ -52,22 +56,26 @@ $täbyte = 'irgendwas';       // gültig, da 'ä' dem ASCII-Wert 228 entspricht
     Variablen erhalten hat, ihren Inhalt behält, auch wenn Sie danach
     den Inhalt der anderen (Quell- / Ursprungs-)Variablen ändern. Die
     Inhalte der Ziel- und Quellvariablen sind also insoweit unabhängig
-    voneinander. Für weitere Informationen lesen Sie bitte <link
+    voneinander. Für weitere Informationen lesen Sie bitte das Kapitel
+    unter <link
     linkend="language.expressions">Expressions / Ausdrücke</link>.
    </para>
    <para>
     PHP 4 bietet eine andere Möglichkeit der Wertzuweisung bei
-    Variablen: <emphasis>Zuweisung durch Referenzierung</emphasis>.
-    Das bedeutet, dass der Wert der neuen Variablen eine Referenz zur
-    Ursprungs-Variablen darstellt (mit anderen Worten: Der Wert ist
-    ein Alias bzw. Zeiger auf den Inhalt der Ursprungsvariablen). Beide
-    Variablen zeigen also auf die selbe(n) Speicherstelle(n).
-    Änderungen der neuen Variablen ändern auch deren Ursprungs-
-    Variable und umgekehrt. Der Wert / Inhalt wird also nicht kopiert. Die
-    Übertragung geschieht dadurch auch schneller als in PHP 3. Dies wird
-    sich aber nur bei umfangreichen Schleifen oder bei der Übertragung
-    von grossen Arrays oder Objekten bemerkbar machen.
+    Variablen: <link linkend="language.references">Zuweisung durch
+    Referenzierung</link>. Das bedeutet, dass der Wert der neuen
+    Variablen eine Referenz zur Ursprungs-Variablen darstellt (mit
+    anderen Worten: Der Wert ist ein Alias bzw. Zeiger auf den Inhalt
+    der Ursprungsvariablen). Beide Variablen zeigen also auf die
+    selbe(n) Speicherstelle(n). Änderungen der neuen Variablen ändern
+    auch deren Ursprungs-Variable und umgekehrt. Der Wert / Inhalt
+    wird also nicht kopiert. Die Übertragung geschieht dadurch auch
+    schneller als in PHP 3. Dies wird sich aber nur bei umfangreichen
+    Schleifen oder bei der Übertragung von grossen <link
+    linkend="language.types.array">Arrays</link> oder <link
+    linkend="language.types.object">Objekten</link> bemerkbar machen.
    </para>
+
    <para>
     Für die Zuweisung per Referenz müssen Sie lediglich ein &amp;
     der (Ausgangs-, Quell-) Variablen voranstellen, die
@@ -79,14 +87,15 @@ $täbyte = 'irgendwas';       // gültig, da 'ä' dem ASCII-Wert 228 entspricht
 <?php
 $foo = 'Bob';             // 'Bob' der Variablen $foo zuweisen.
 $bar = &$foo;             // Zeiger auf $foo in $bar erzeugen.
-$bar = "My name is $bar"; // $bar verändern...
-echo $foo;                // $foo wurde dadurch ebenfalls verändert.
+$bar = "Ich hei&szlig;e $bar";  // $bar verändern...
 echo $bar;
+echo $foo;                // $foo wurde dadurch ebenfalls verändert.
 ?>
 ]]>
      </programlisting>
     </informalexample>
    </para>
+
    <para>
     Zu beachten ist, dass nur Variablenbezeichner referenziert
     werden können.
@@ -102,7 +111,7 @@ function test() {
     return 25;
 }
 
-$bar = &();   // Ungültig.
+$bar = &test();   // Ungültig.
 ?>
 ]]>
      </programlisting>
@@ -118,567 +127,223 @@ $bar = &();   // Ungültig.
     jedoch nicht vollständig erläutert werden, da sie abhängig
     sind vom Web-Server, der Version und dem Setup des Web-
     Servers sowie weiteren Faktoren. Einige dieser Variablen
-    stehen nicht zur Verfügung, wenn PHP-Skripte per Kommando-
-    Zeilen-Aufruf ausgeführt werden.
+    stehen nicht zur Verfügung, wenn PHP-Skripte per <link
+    linkend="features.commandline">Kommando-Zeilen-Aufruf</link>
+    ausgeführt werden. Für eine Liste dieser Variablen lesen Sie bitte
+    den Abschnitt <link linkend="reserved.variables">Vordefinierte
+    Variablen</link>.
    </simpara>
+   <warning>
+    <simpara>
+     Ab PHP 4.2.0 ist der standardmäßige Wert für die PHP-Anweisung
+     <link linkend="ini.register-globals">register_globals</link>
+     <emphasis>off</emphasis>. Dies ist eine wesentliche Änderung in
+     PHP. Die Anweisung register_globals <emphasis>off</emphasis>
+     beeinflusst den Satz von vordefinierten Variablen, die im
+     globalen Bereich verfügbar sind. Um zum Beispiel
+     <varname>DOCUMENT_ROOT</varname> zu bekommen, müssen Sie
+     <varname>$_SERVER['DOCUMENT_ROOT']</varname> statt
+     <varname>$DOCUMENT_ROOT</varname> verwenden oder um
+     <varname>$id</varname> von der URL
+     <literal>http://www.example.com/test.php?id=3</literal> zu
+     bekommen <varname>$_GET['id']</varname> statt
+     <varname>$id</varname> oder <varname>$_ENV['HOME']</varname>
+     statt <varname>$HOME</varname>.
+    </simpara>
+    <simpara>
+     Für diese Änderung betreffende Informationen lesen Sie bitte den
+     Konfigurations-Eintrag für <link
+     linkend="ini.register-globals">register_globals</link>, das
+     Sicherheitskapitel über die <link
+     linkend="security.registerglobals">Verwendung von Register
+     Globals</link> und außerdem die PHP
+     <ulink url="&url.php.release4.1.0;">4.1.0</ulink> und
+     <ulink url="&url.php.release4.2.0;">4.2.0</ulink> Release
+     Announcements.
+    </simpara>
+    <simpara>
+     Die reservierten vordefinierten Variablen, wie die
+     <link linkend="language.variables.superglobals">Superglobalen
+     Arrays</link>, sollten bevorzugt verwendet werden.
+    </simpara>
+   </warning>
    <simpara>
-    Ungeachtet dieser Faktoren folgt nun eine Liste von
-    vordefinierten Variablen innerhalb einer Basis-PHP 3-
-    Installation als Modul und einer Basis-Installation des
-    <ulink url="&url.apache;">Apache</ulink>-Web-Servers in der
-    Vers. 1.3.6.
-   </simpara>
-   <simpara>
-    Eine Liste aller vordefinierten Variablen (und weitere
-    nützliche Informationen) erhalten Sie durch Lesen der Infos
-    zu (und den Gebrauch) der <function>phpinfo</function>-Funktion.
+    Ab Version 4.1.0 stehen in PHP eine zusätzliche Reihe
+    vordefinierter Arrays zur Verfügung, die Variablen vom Webserver
+    (gegebenenfalls), von der Umgebung und von Benutzereingaben
+    enthalten. Diese neuen Arrays sind insofern etwas sehr Spezielles,
+    als sie automatisch global sind -- d.h., sie stehen automatisch in
+    jedem Bereich zur Verfügung. Deshalb sind sie auch bekannt als
+    'Autoglobale' oder 'Superglobale'. (Es gibt in PHP keinen
+    Mechanismus für benutzerdefinierte Superglobale.) Die Superglobale
+    werden nachfolgend aufgelistet, aber für eine Liste ihres Inhalts
+    und die weitere Diskussion vordefinierter Variablen und ihres
+    Wesens lesen Sie bitte den Abschnitt <link
+    linkend="reserved.variables">Reservierte vordefinierte
+    Variablen</link>. Außerdem werden Sie feststellen, dass die alten
+    vordefinierten Variablen (<varname>$HTTP_*_VARS</varname>) noch
+    existieren.
+
+    &avail.register-long-arrays;
    </simpara>
    <note>
-    <simpara>
-     Diese Liste ist weder vollständig noch erhebt sie Anspruch
-     auf Vollständigkeit. Sie dient lediglich als Anleitung zu den
-     möglicherweise zu erwartenden Arten von vordefinierten
-     Variablen und dem Zugriff darauf.
-    </simpara>
+    <title>Variable Variablen</title>
+    <para>
+     Superglobale können nicht als <link
+     linkend="language.variables.variable">Variable Variablen</link>
+     verwendet werden.
+    </para>
    </note>
+   <para>
+    Falls bestimmte Variablen nicht unter <link
+    linkend="ini.variables-order">variables_order</link> angegeben
+    sind, dann bleiben auch ihre entsprechenden vordefinierten Arrays
+    leer.
+   </para>
 
-   <sect2 id="language.variables.predefined.apache">
-    <title>Apache-Variablen</title>
-    <simpara>
-     Diese Variablen werden durch den <ulink
-     url="&url.apache;">Apache</ulink>-Web-Server erzeugt. Sollten
-     Sie einen anderen Web-Server nutzen, gibt es keine Garantie,
-     dass dieser die selben Variablen unterstützt. Es könnten
-     einige sein; es könnten aber auch hier nicht aufgeführte sein.
-     Viele dieser Variablen werden in den <ulink
-     url="&url.cgispec;">CGI 1.1 Spezifikationen</ulink> aufgeführt.
-     Darauf sollten Sie vorbereitet sein.
-    </simpara>
-    <simpara>
-     Beachten Sie, dass nur wenige, wenn überhaupt, dieser Variablen
-     zur Verfügung stehen (oder tatsächlich eine beliebige Bedeutung haben),
-     wenn Sie PHP per Kommandozeile aufrufen.
-    </simpara>
-    <para>
-     <variablelist>
-      <varlistentry>
-       <term>$GATEWAY_INTERFACE</term>
-       <listitem>
-        <simpara>
-         Die Revision der CGI-Spezifikation, die der Web-Server
-         benutzt, z.B. 'CGI/1.1'.
-       </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SERVER_NAME</term>
-       <listitem>
-        <simpara>
-         Der Host-Name des Web-Servers, der das Skript ausführt. Das
-         kann auch der Name eines virtuellen Servers sein.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SERVER_SOFTWARE</term>
-       <listitem>
-        <simpara>
-         Der Identifikations-String des Web-Servers (aus den Headern),
-         sobald er Anforderungen beantwortet.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SERVER_PROTOCOL</term>
-       <listitem>
-        <simpara>
-         Name und Revision des Informations-Protokolls, über das die
-         Seite angefordert wurde, z.B. 'HTTP/1.0'.
-       </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$REQUEST_METHOD</term>
-       <listitem>
-        <simpara>
-         Welche Methode zum Zugriff auf die Seite benutzt wurde,
-         z.B. 'GET', 'HEAD', 'POST', 'PUT'.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$QUERY_STRING</term>
-       <listitem>
-        <simpara>
-         Der Abfrage-(Query-)String (falls vorhanden), mit dem auf
-         die Seite zugegriffen wurde.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$DOCUMENT_ROOT</term>
-       <listitem>
-        <simpara>
-         Das Verzeichnis des gerade ausgeführten Skripts aus Sicht
-         des in der Konfigurations-Datei des Servers definierten
-         Dokument-Wurzel-Verzeichnisses.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_ACCEPT</term>
-       <listitem>
-        <simpara>
-         Inhalt des <literal>Accept:</literal>-Headers der aktuellen
-         Anforderung (so es einen solche Header gibt).
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_ACCEPT_CHARSET</term>
-       <listitem>
-        <simpara>
-         Inhalt des <literal>Accept-Charset:</literal>-Headers der
-         aktuellen Anforderung (sofern es einen gibt).
-         Beispiel: 'iso-8859-1,*,utf-8'.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_ACCEPT_ENCODING</term>
-       <listitem>
-        <simpara>
-         Inhalt des <literal>Accept-Encoding:</literal>-Headers der
-         aktuellen Anforderung (wenn es einen gibt).
-         Beispiel: 'gzip'.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_ACCEPT_LANGUAGE</term>
-       <listitem>
-        <simpara>
-         Inhalt des <literal>Accept-Language:</literal>-Headers in
-         der aktuellen Anforderung, sofern dieser Header existiert.
-         Beispiel: 'en'.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_CONNECTION</term>
-       <listitem>
-        <simpara>
-         Inhalt des <literal>Connection:</literal>-Headers des
-         aktuellen Request, so er vorhanden ist.
-         Beispiel: 'Keep-Alive'.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_HOST</term>
-       <listitem>
+   <variablelist id="language.variables.superglobals">
+    <title>PHP Superglobale</title>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.globals">$GLOBALS</link>
+     </term>
+     <listitem>
+      <simpara>
+       Diese Variable enthält eine Referenz zu jeder Variable, die
+       im globalen Bereich des laufenden Skripts zur Verfügung
+       steht. Die Schlüssel dieses Arrays sind die Namen der globalen
+       Variablen. <varname>$GLOBALS</varname> gibt es seit PHP 3.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.server">$_SERVER</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die vom Webserver gesetzt werden oder anderweitig
+       direkt mit der ausführenden Umgebung des aktuellen Skripts
+       zusammenhängen. Entspricht dem alten
+       <varname>$HTTP_SERVER_VARS</varname>-Array, das zwar noch zur
+       Verfügung steht, aber abzulehnen ist.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><link linkend="reserved.variables.get">$_GET</link></term>
+     <listitem>
+      <simpara>
+       Variablen, die dem Skript über HTTP GET geliefert werden.
+       Entspricht dem alten <varname>$HTTP_GET_VARS</varname>-Array,
+       das zwar noch zur Verfügung steht, aber abzulehnen ist.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.post">$_POST</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die dem Skript über HTTP POST geliefert werden.
+       Entspricht dem alten <varname>$HTTP_POST_VARS</varname>-Array,
+       das zwar noch zur Verfügung steht, aber abzulehnen ist.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.cookies">$_COOKIE</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die dem Skript über HTTP Cookies geliefert werden.
+       Entspricht dem alten
+       <varname>$HTTP_COOKIE_VARS</varname>-Array, das zwar noch zur
+       Verfügung steht, aber abzulehnen ist.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.files">$_FILES</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die dem Skript über HTTP Post Datei-Uploads
+       geliefert werden. Entspricht dem alten
+       <varname>$HTTP_POST_FILES</varname>-Array, das zwar noch zur
+       Verfügung steht, aber abzulehnen ist. Für mehr Informationen
+       lesen Sie bitte <link
+       linkend="features.file-upload.post-method">Dateiuploads mit
+       POST</link>.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.environment">$_ENV</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die dem Skript über die Umgebung geliefert werden.
+       Entspricht dem alten <varname>$HTTP_ENV_VARS</varname>-Array,
+       das zwar noch zur Verfügung steht, aber abzulehnen ist.
+      </simpara>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <link linkend="reserved.variables.request">$_REQUEST</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die dem Skript über die GET-, POST- und
+       COOKIE-Eingabemechanismen geliefert werden und von daher nicht
+       vertrauenswürdig sind. Die Präsenz und die Reihenfolge der
+       Aufnahme der Variablen in dieses Array ist entsprechend der
+       Konfigurationsanweisung <link
+       linkend="ini.variables-order">variables_order</link> definiert.
+       Dieses Array hat in PHP vor Version 4.1.0 keine direkte
+       Entsprechung. Siehe auch
+       <function>import_request_variables</function>.
+      </simpara>
+      <caution>
        <simpara>
-        Inhalt des <literal>Host:</literal>-Headers der aktuellen
-        Anforderung, wenn er existiert.
+        Seit PHP 4.3.0 gibt es in <varname>$_REQUEST</varname> keine
+        FILE-Informationen von <varname>$_FILES</varname> mehr.
        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_REFERER</term>
-       <listitem>
-        <simpara>
-         Die Adresse (URL) - sofern vorhanden - der Seite, von
-         der aus auf die aktuelle Seite gesprungen wurde. Dieser
-         wird vom Browser des Benutzers gesetzt. Nicht alle Browser
-         unterstützen dies.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$HTTP_USER_AGENT</term>
-       <listitem>
-        <simpara>
-         Inhalt der <literal>User_Agent:</literal>-Header-Angabe
-         der aktuellen Anfrage (wenn eine Angabe existiert). Dabei
-         handelt es sich um eine Zeichenkette, welche der Browser
-         benennt, mit dem die aktuelle Seite aufgerufen
-         wurde, z.B. <computeroutput>Mozilla/4.5 [en] (X11; U;
-         Linux 2.2.9 i586)</computeroutput>. Abgesehen von anderen
-         Dingen können Sie diesen Wert zusammen mit der
-         <function>get_browser</function> Funktion dazu verwenden,
-         ihre Web-Seiten in Abhängigkeit von den Möglichkeiten des
-         jeweils benutzten Browsers anzeigen zu lassen.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$REMOTE_ADDR</term>
-       <listitem>
-        <simpara>
-         Die IP-Adresse, von der aus gerade auf die Web-Seite
-         zugegriffen wird.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$REMOTE_PORT</term>
-       <listitem>
-        <simpara>
-         Der Port, der zum Zugriff auf ihren Web-Server seitens
-         des Anwender-Computers benutzt wird.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SCRIPT_FILENAME</term>
-       <listitem>
+      </caution>
+      <note>
        <simpara>
-         Der absolute Pfadname des gerade ausgeführten Skripts.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SERVER_ADMIN</term>
-       <listitem>
-        <simpara>
-         Der Inhalt der in der Konfigurations-Datei des Web-Servers
-         (Apache) stehenden Angabe zum SERVER_ADMIN. Bei virtuellen
-         Hosts der dafür eingetragene Wert.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SERVER_PORT</term>
-       <listitem>
-        <simpara>
-         Der vom Server für den Web-Server benutzte Kommunikations-
-         Port (normalerweise '80'). Verwenden Sie z.B. SSL, wird
-         dieser Port derjenige sein, den Sie für sicheres HTTP
-         definiert haben.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SERVER_SIGNATURE</term>
-       <listitem>
-        <simpara>
-         Sofern eingeschaltet, enthält diese Zeichenkette die Server-
-         Version und den virtuellen Host-Namen. Sie wird den durch
-         den Server generierten Seiten hinzu gefügt.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$PATH_TRANSLATED</term>
-       <listitem>
-        <simpara>
-         In Abhängigkeit vom Datei- / File-System der Pfad des
-         aktuellen Skripts, nachdem der Server das virtuelle
-         Mapping in ein reales Mapping umgesetzt hat (nicht der
-         Dokument-Wurzel-Pfad).
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$SCRIPT_NAME</term>
-       <listitem>
-        <simpara>
-         Enthält den Pfad des aktuellen Skripts. Nützlich für
-         Seiten, die auf sich selbst verweisen müssen.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>$REQUEST_URI</term>
-       <listitem>
-        <simpara>
-         Die URI, die durch den Zugriff auf die aktuelle Seite
-         gegeben ist, z.B. '/index.html'.
-        </simpara>
-       </listitem>
-      </varlistentry>
-     </variablelist>
-    </para>
-   </sect2>
-
-   <sect2 id="language.variables.predefined.environment">
-    <title>Umgebungs- / Environment-Variablen</title>
-    <simpara>
-     Diese Variablen werden aus der Umgebung, in der PHP läuft, in
-     den globalen Namensbereich von PHP importiert. Viele werden
-     durch die jeweilige Shell, in der PHP läuft, unterstützt bzw.
-     gebildet. Da es verschiedenste Systemumgebungen mit den 
-     unterschiedlichsten Shell`s gibt, ist es nicht möglich, eine
-     abschließende Liste der definierten Umgebungs-Variablen
-     aufzustellen. Lesen Sie deshalb in der Anleitung zu ihrer
-     Shell nach, um eine Liste dieser systembezogenen Variablen
-     zu erhalten.
-    </simpara>
-    <simpara>
-     Andere Umgebungs-Variablen beinhalten die CGI-Variablen,
-     die ohne Rücksicht darauf, ob PHP als Web-Server-Modul
-     oder im CGI-Modus läuft, gesetzt werden.
-    </simpara>
-   </sect2>
-
-   <sect2 id="language.variables.predefined.php">
-    <title>PHP-Variablen</title>
-    <simpara>
-     Diese Variablen werden durch PHP selbst erzeugt.
-     <varname>$HTTP_*_VARS</varname> Variablen stehen nur zur Verfügung,
-     wenn die Option <link linkend="ini.track-vars">track_vars</link> in der
-     php.ini auf "on" gesetzt ist. Wenn dies der Fall ist, werden diese Variablen
-     immer gesetzt, selbst wenn es leere Arrays sind. Das verhindert, dass ein
-     böswilliger Nutzer diese Variablen manipuliert.
-    </simpara>
-
-    <note>
-     <para>
-      Seit PHP 4.0.3 ist <link
-      linkend="ini.track-vars">track_vars</link> immer aktiviert,
-      ohne Rücksicht auf die Einstellungen in der Konfigurationsdatei.
-     </para>
-    </note>
-
-    <note>
-     <para>
-      Die neuen "Superglobals" stehen seit der PHP Version 4.1.0. zur
-      Verfügung. Im  <ulink url="&url.php.release4.1.0;">4.1.0 Release
-      Announcement</ulink> können Sie mehr Details nachlesen.
-      Dieses sind die Arrays
-      <varname>$_GET</varname>, <varname>$_POST</varname>,
-      <varname>$_ENV</varname>, <varname>$_SERVER</varname>,
-      <varname>$_COOKIE</varname>, <varname>$_REQUEST</varname>
-      <varname>$_FILES</varname> und <varname>$_SESSION</varname>
-      und werden informell als <emphasis>Superglobals</emphasis> bezeichnet,
-      weil sie immer zur Verfügung stehen, ohne Berücksichtigung des
-      Geltungsbereichs.Damit sind die alten, beziehungsweise die 
-      <varname>$HTTP_*_VARS</varname> Arrays veraltet.
-     </para>
-    </note>
-
-    <para>
-     Wenn <link linkend="ini.register-globals">register_globals</link>
-     aktiviert ist,stehen auch diese Variablen im globalen Namensbereich
-     des Skripts zur Verfügung; z.B. getrennt von den Arrays
-     <varname>$HTTP_*_VARS</varname> und <varname>$_*</varname>.
-     Verwandte Informationen erhalten Sie im Kapitel über Sicherheit
-     unter dem Abschnitt <link linkend="security.registerglobals">
-     Verwendung von Register Globals</link>.
-    </para>
-
-    <para>
-     <variablelist>
-      <varlistentry>
-       <term>$argv</term>
-       <listitem>
-        <simpara>
-         Ein Array von Argumenten, die dem Skript übergeben
-         werden. Wird das Skript an der Befehlszeile aufgerufen,
-         ermöglicht dies C-ähnlichen Zugriff auf die Kommando-
-         Zeilen-Parameter. Beim Aufruf per GET-Methode enthält
-         dieses Array die Abfragewerte.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$argc</term>
-       <listitem>
-        <simpara>
-         Anzahl der per Kommando-Zeile dem Skript übergebenen
-         Parameter (wenn von dort aufgerufen).
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$PHP_SELF</term>
-       <listitem>
-        <simpara>
-         Der Dateiname des gerade ausgeführten Skripts, relativ
-         zum Wurzel-Verzeichnis des Dokuments. Bei Kommando-Zeilen-
-         Aufrufen ist diese Variable nicht verfügbar.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$HTTP_COOKIE_VARS</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array von Variablen, das dem aktuellen Skript
-         über HTTP-Cookies übergeben wurde.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$_COOKIE</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array von Variablen, das dem aktuellen Skript
-         über HTTP-Cookies übergeben wurde. Automatisch global in jedem
-         Geltungsbereich. Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$HTTP_GET_VARS</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array von Variablen, das dem aktuellen
-         Skript per HTTP-GET-Methode übergeben wurde.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$_GET</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array von Variablen, das dem aktuellen
-         Skript per HTTP-GET-Methode übergeben wurde.Automatisch global in
-         jedem Geltungsbereich. Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$HTTP_POST_VARS</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Varaiblen, welches dem aktuellen
-         Skript per HTTP-POST-Methode übergeben wurde.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$_POST</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, welches dem aktuellen
-         Skript per HTTP-POST-Methode übergeben wurde. Automatisch global in
-         jedem Geltungsbereich. Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$HTTP_POST_FILES</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, das Informationen über
-         per HTTP POST-Methode hochgeladene Dateien enthält. Siehe <link
-         linkend="features.file-upload.post-method">Dateiuploads mit POST</link>
-         für Informationen über den Inhalt der
-         <varname>$HTTP_POST_FILES</varname>. Eingeführt in PHP 4.0.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$_FILES</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, das Informationen über
-         per HTTP POST-Methode hochgeladene Dateien enthält. Siehe <link
-         linkend="features.file-upload.post-method">Dateiuploads mit POST</link>
-         für Informationen über den Inhalt der
-         <varname>$_FILES</varname>.Automatisch global in jedem
-         Geltungsbereich. Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$HTTP_ENV_VARS</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, die dem aktuellen Skript
-         über die Umgebung zur Verfügung stehen.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
+        Wenn PHP-Skripte auf der <link
+        linkend="features.commandline">Kommandozeile</link> ausgeführt
+        werden, sind die Einträge <varname>argv</varname> und
+        <varname>argc</varname> <emphasis>nicht</emphasis> in diesem
+        Array enthalten; diese befinden sich im
+        <varname>$_SERVER</varname>-Array.
+       </simpara>
+      </note>
+     </listitem>
+    </varlistentry>
     <varlistentry>
-       <term>$_ENV</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, die dem aktuellen Skript
-         über die Umgebung zur Verfügung stehen. Automatisch global in
-         jedem Geltungsbereich. Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$HTTP_SERVER_VARS</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, die dem aktuellen Skript
-         vom jeweiligen HTTP-Server übermittelt werden. Diese Variablen
-         sind analog zu den oben beschriebenen Apache-Variablen.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
-       <term>$_SERVER</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Variablen, die dem aktuellen Skript
-         vom jeweiligen HTTP-Server übermittelt werden. Diese Variablen
-         sind analog zu den oben beschriebenen Apache-Variablen. Automatisch
-         global in jedem Geltungsbereich. Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-    <varlistentry>
-       <term>$HTTP_SESSION_VARS</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Session-Variablen, die dem aktuellen
-         Skript übergeben wurden.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-    <varlistentry>
-       <term>$_SESSION</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array aus Session-Variablen, die dem aktuellen
-         Skript übergeben wurden. Automatisch global in jedem
-         Geltungsbereich. Werden dem Array $_SESSION neue Einträge
-         hinzugefügt, werden diese automatisch als Session-Variablen
-         registriert, genau so als ob die Funktion
-         <function>session_register</function> aufgerufen worden wäre.
-         Eingeführt in PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-
-    <varlistentry>
-       <term>$_REQUEST</term>
-       <listitem>
-        <simpara>
-         Ein assoziatives Array zusammengesetzt aus den GET, POST und Cookie
-         Variablen. Mit anderen Worten - alle Informationen die vom Nutzer
-         kommen und denen aus Sichtweise der Sicherheit nicht zu trauen ist.
-         Automatisch global in jedem Geltungsbereich. Eingeführt in
-         PHP 4.1.0.
-        </simpara>
-       </listitem>
-      </varlistentry>
-     </variablelist>
-    </para>
-   </sect2>
+     <term>
+      <link linkend="reserved.variables.session">$_SESSION</link>
+     </term>
+     <listitem>
+      <simpara>
+       Variablen, die aktuell in der Session eines Skripts registriert
+       sind. Entspricht dem alten
+       <varname>$HTTP_SESSION_VARS</varname>-Array, das zwar noch zur
+       Verfügung steht, aber abzulehnen ist. Für mehr Informationen
+       lesen Sie bitte den Abschnitt <link
+       linkend="ref.session">Session Funktionen</link>.
+      </simpara>
+     </listitem>
+    </varlistentry>
+   </variablelist>
   </sect1>
-
 
   <sect1 id="language.variables.scope">
    <title>Geltungsbereich von Variablen</title>
@@ -692,8 +357,10 @@ $bar = &();   // Ungültig.
    <informalexample>
     <programlisting role="php">
 <![CDATA[
+<?php
 $a = 1;
 include "b.inc";
+?>
 ]]>
     </programlisting>
    </informalexample>
@@ -707,6 +374,7 @@ include "b.inc";
    <informalexample>
     <programlisting role="php"> 
 <![CDATA[
+<?php
 $a = 1; // globaler Bereich
 
 function test () { 
@@ -714,6 +382,7 @@ function test () {
 } 
 
 test ();
+?>
 ]]>
     </programlisting>
    </informalexample>
@@ -725,26 +394,39 @@ test ();
     Funktionen vorhanden sind, es sei denn, sie werden durch eine
     funktionsinterne Definition überschrieben. Das kann zu Problemen führen,
     denn in PHP müssen global geltende Variablen innerhalb von Funktionen als
-    solche definiert werden. Ein Beispiel:
+    solche definiert werden.
    </simpara>
-   <informalexample>
-    <programlisting role="php">
+
+   <sect2 id="language.variables.scope.global">
+    <title>Das global Schlüsselwort</title>
+    <simpara>
+     Zunächst ein Beispiel für die Verwendung von
+     <literal>global</literal>:
+    </simpara>
+    <para>
+     <example>
+      <title>Die Verwendung von global</title>
+      <programlisting role="php">
 <![CDATA[
+<?php
 $a = 1;
 $b = 2;
 
-function Sum()
+function Summe()
 {
     global $a, $b;
 
     $b = $a + $b;
 } 
 
-Sum();
+Summe();
 echo $b;
+?>
 ]]>
-    </programlisting>
-   </informalexample>
+      </programlisting>
+     </example>
+    </para>
+
    <simpara>
     Das obige Skript gibt &quot;3&quot; aus. Durch das Deklararieren
     der Variablen <varname>$a</varname> und <varname>$b</varname>innerhalb
@@ -757,27 +439,71 @@ echo $b;
     <varname>$GLOBALS</varname> PHP-Array. Das obige Beispiel kann damit
     auch so  geschrieben werden:
    </simpara>
-   <informalexample>
-    <programlisting role="php">
+   <para>
+    <example>
+     <title>
+      Die Verwendung von <varname>$GLOBALS</varname> statt global
+     </title>
+     <programlisting role="php">
 <![CDATA[
+<?php
 $a = 1;
 $b = 2;
 
-function Sum()
+function Summe()
 {
     $GLOBALS["b"] = $GLOBALS["a"] + $GLOBALS["b"];
 } 
 
-Sum();
+Summe();
 echo $b;
+?>
 ]]>
-    </programlisting>
-   </informalexample>
+     </programlisting>
+    </example>
+   </para>
+
    <simpara>
-    Das <varname>$GLOBALS</varname>-Array ist ein assoziatives Array mit dem
-    Bezeichner der globalen Variablen als Schlüssel und dem Inhalt dieser
-    Variablen als Wert des Array-Elements.
+    Das <varname>$GLOBALS</varname>-Array ist ein assoziatives Array
+    mit dem Bezeichner der globalen Variablen als Schlüssel und dem
+    Inhalt dieser Variablen als Wert des Array-Elements. Beachten Sie,
+    dass <varname>$GLOBALS</varname> in jedem Bereich existiert, weil
+    $GLOBALS eine <link
+    linkend="language.variables.superglobals">Superglobale</link> ist.
+    Hier ist ein Beispiel, das die Stärke von Superglobalen
+    demonstriert:
    </simpara>
+   <para>
+    <example>
+     <title>
+      Beispiel zur Demonstration von Superglobalen und Bereich
+     </title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function test_global()
+{
+    // Die meisten vordefinierten Variablen sind nicht "super" und
+    // benötigen 'global', um im lokalen Bereich von Funktionen zur
+    // Verfügung zu stehen.
+    global $HTTP_POST_VARS;
+
+    print $HTTP_POST_VARS['name'];
+
+    // Superglobale stehen in jedem Bereich zur Verfügung und
+    // benötigen kein 'global'. Superglobale stehen seit PHP 4.1.0
+    // zur Verfügung.
+    print $_POST['name'];
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </sect2>
+
+  <sect2 id="language.variables.scope.static">
+   <title>Die Verwendung von statischen Variablen</title>
    <simpara>
     Ein weiterer wichtiger Anwendungszweck von Variablen-Bereichen
     ist die <emphasis>static</emphasis>-Variable. Eine statische
@@ -785,18 +511,26 @@ echo $b;
     Wert geht beim Verlassen dieses Bereichs aber nicht verloren.
     Schauen Sie das folgende Beispiel an:
    </simpara>
-   <informalexample>
-    <programlisting role="php">
+   <para>
+    <example>
+     <title>
+      Beispiel, das die Notwendigkeit von statischen Variablen
+      demonstriert
+     </title>
+     <programlisting role="php">
 <![CDATA[
+<?php
 function test ()
 {
     $a = 0;
     echo $a;
     $a++;
 }
+?>
 ]]>
-    </programlisting>
-   </informalexample>
+     </programlisting>
+    </example>
+   </para>
    <simpara>
     Diese Funktion ist sinnlos, da sie bei jedem Aufruf <varname>$a</varname>
     auf <literal>0</literal> setzt und &quot;0&quot; ausgibt. Die Anweisung
@@ -806,18 +540,23 @@ function test ()
     nicht vergisst, müssen Sie die Variable <varname>$a</varname>als "static"
     deklarieren:
    </simpara>
-   <informalexample>
-    <programlisting role="php">
+   <para>
+    <example>
+     <title>Beispiel zur Verwendung statischer Variablen</title>
+     <programlisting role="php">
 <![CDATA[
+<?php
 function test()
 {
     static $a = 0;
     echo $a;
     $a++;
 }
+?>
 ]]>
-    </programlisting>
-   </informalexample>
+     </programlisting>
+    </example>
+   </para>
    <simpara>
     Jetzt wird bei jedem Aufruf der test()-Funktion der aktuelle
     Wert von <varname>$a</varname> ausgegeben und dann um 1 erhöht.
@@ -828,26 +567,143 @@ function test()
     aufrufen. Hierbei besteht die Gefahr, so genannte Endlos-
     Schleifen zu programmieren. Sie müssen also einen Weg vorsehen,
     diese Rekursion zu beenden. Die folgende einfache Funktion zählt
-    rekursiv bis 10. Die statische Variable <varname>$count</varname>
-    wird benutzt, um die Rekursion zu beenden:
+    rekursiv bis 10. Die statische Variable
+    <varname>$zaehler</varname> wird benutzt, um die Rekursion zu
+    beenden:
+   </simpara>
+   <para>
+    <example>
+     <title>Statische Variablen in rekursiven Funktionen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function test()
+{
+    static $zaehler = 0;
+
+    $zaehler++;
+    echo $zaehler;
+    if ($zaehler < 10) {
+        test ();
+    }
+    $zaehler--;
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </sect2>
+
+  <sect2 id="language.variables.scope.references">
+   <title>Referenzen bei globalen und statischen Variablen</title>
+   <simpara>
+    Die Zend Engine 1, die <literal>PHP4</literal> zugrunde liegt,
+    führt die <link
+    linkend="language.variables.scope.static">static</link>- und
+    <link
+    linkend="language.variables.scope.global">global</link>-Wandler
+    für Variablen in Bezug auf <link
+    linkend="language.references">Referenzen</link> aus. Zum Beispiel
+    erzeugt eine echte globale Variable, die mit der Anweisung
+    <literal>global</literal> in den Funktionsbereich importiert
+    wurde, tatsächlich eine Referenz zur globalen Variable. Das kann
+    zu einem unerwarteten Verhalten führen, auf das im folgenden
+    Beispiel eingegangen wird:
    </simpara>
    <informalexample>
     <programlisting role="php">
 <![CDATA[
-function test()
-{
-    static $count = 0;
-
-    $count++;
-    echo $count;
-    if ($count < 10) {
-        test ();
-    }
-    $count--;
+<?php
+function test_global_ref() {
+    global $obj;
+    $obj = &new stdclass;
 }
+
+function test_global_noref() {
+    global $obj;
+    $obj = new stdclass;
+}
+
+test_global_ref();
+var_dump($obj);
+test_global_noref();
+var_dump($obj);
+>
 ]]>
     </programlisting>
    </informalexample>
+   <simpara>
+    Die Ausführung dieses Beispiels erzeugt die folgende Ausgabe:
+   </simpara>
+   <screen>
+NULL
+object(stdClass)(0) {
+}
+   </screen>
+   <simpara>
+    Ein ähnliches Verhalten gilt auch für die Anweisung
+    <literal>static</literal>. Referenzen werden nicht statisch
+    gespeichert:
+   </simpara>
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function &get_instance_ref() {
+    static $obj;
+
+    echo "Statisches Objekt: ";
+    var_dump($obj);
+   if (!isset($obj)) {
+        // Der statischen Variablen eine Referenz zuweisen
+        $obj = &new stdclass;
+    }
+    $obj->eigenschaft++;
+    return $obj;
+}
+
+function &get_instance_noref() {
+    static $obj;
+
+    echo "Statisches Objekt: ";
+    var_dump($obj);
+    if (!isset($obj)) {
+        // Der statischen Variablen ein Objekt zuweisen
+        $obj = new stdclass;
+    }
+    $obj->eigenschaft++;
+    return $obj;
+}
+
+$obj1 = get_instance_ref();
+$immer_noch_obj1 = get_instance_ref();
+echo "\n";
+$obj2 = get_instance_noref();
+$immer_noch_obj2 = get_instance_noref();
+?>
+]]>
+    </programlisting>
+   </informalexample>
+   <simpara>
+    Die Ausführung dieses Beispiels erzeugt die folgende Ausgabe:
+   </simpara>
+   <screen>
+Statisches Objekt: NULL
+Statisches Objekt: NULL
+
+Statisches Objekt: NULL
+Statisches Objekt: object(stdClass)(1) {
+  ["eigenschaft"]=>
+  int(1)
+}
+   </screen>
+   <simpara>
+    Dieses Beispiel demonstriert, dass die Referenz, die einer
+    statischen Variablen zugewiesen wird, beim zweiten Aufruf der
+    Funktion <literal>&amp;get_instance_ref()</literal> vergessen ist.
+   </simpara>
+   </sect2>
   </sect1>
 
   <sect1 id="language.variables.variable">
@@ -861,7 +717,9 @@ function test()
    <informalexample>
     <programlisting role="php">
 <![CDATA[
+<?php
 $a = "Hallo";
+?>
 ]]>
     </programlisting>
    </informalexample>
@@ -874,7 +732,9 @@ $a = "Hallo";
    <informalexample>
     <programlisting role="php">
 <![CDATA[
+<?php
 $$a = "Welt";
+?>
 ]]>
     </programlisting>
    </informalexample>
@@ -887,7 +747,9 @@ $$a = "Welt";
    <informalexample>
     <programlisting role="php">
 <![CDATA[
+<?php
 echo "$a ${$a}";
+?>
 ]]>
     </programlisting>
    </informalexample>
@@ -897,7 +759,9 @@ echo "$a ${$a}";
    <informalexample>
     <programlisting>
 <![CDATA[
+<?php
 echo "$a $Hallo";
+?>
 ]]>
     </programlisting>
    </informalexample>
@@ -905,15 +769,29 @@ echo "$a $Hallo";
     also zu: <computeroutput>Hallo Welt</computeroutput>.
    </simpara>
    <simpara>
-    Wenn Sie variable Variablen mit Arrays verwenden, müssen Sie
-    eine Doppeldeutigkeit beachten. Wenn Sie nämlich
-    <varname>$$a[1]</varname> schreiben, dann muss der Parser wissen, ob Sie
-    <varname>$a[1]</varname> als Variable oder <varname>$$a</varname> als
-    Variable und dann [1] als Index dieser Variablen verwenden wollen bzw.
-    gemeint haben. Die Syntax zur Lösung dieser Doppeldeutigkeit: Verwenden
-    Sie im ersten Fall <varname>${$a[1]}</varname> und im zweiten Fall
+    Wenn Sie variable Variablen mit Arrays verwenden, müssen Sie eine
+    Doppeldeutigkeit beachten. Wenn Sie nämlich
+    <varname>$$a[1]</varname> schreiben, dann muss der Parser wissen,
+    ob Sie <varname>$a[1]</varname> als Variable oder
+    <varname>$$a</varname> als Variable und dann [1] als Index dieser
+    Variablen verwenden wollen bzw. gemeint haben. Die Syntax zur
+    Lösung dieser Doppeldeutigkeit: Verwenden Sie im ersten Fall
+    <varname>${$a[1]}</varname> und im zweiten Fall
     <varname>${$a}[1]</varname>.
    </simpara>
+   <warning>
+    <simpara>
+     Bitte beachten Sie, dass variable Variablen nicht bei <link
+     linkend="language.variables.superglobals">Superglobalen
+     Arrays</link> verwendet werden können. Das bedeutet, etwas wie
+     <varname>${$_GET}</varname> ist nicht möglich. Wenn Sie nach
+     einer Möglichkeit suchen, die Verfügbarkeit von Superglobalen und
+     den alten <varname>HTTP_*_VARS</varname> zu handhaben, können Sie
+     das mit <link linkend="language.references">referenzieren</link>
+     versuchen.
+    </simpara>
+   </warning>
+
   </sect1>
 
   <sect1 id="language.variables.external">
@@ -922,84 +800,148 @@ echo "$a $Hallo";
    <sect2 id="language.variables.external.form">
     <title>HTML-Formulare (GET and POST)</title>
     <simpara>
-     Sobald ein Formular an ein PHP-Skript übergeben wird, wird
-     jede Variable dieses Formulars dem Skript automatisch 
-     verfügbar gemacht. Dafür sorgt PHP.
-     Falls die Konfigurationsoption
-     <link linkend="ini.track-vars">track_vars</link> auf "on" gesetzt ist,
-     werden diese Variablen in diesen assoziativen Arrays abgelegt
-     <varname>$HTTP_POST_VARS</varname>,
-     <varname>$HTTP_GET_VARS</varname> und/oderr
-     <varname>$HTTP_POST_FILES</varname>, entsprechend der Quelle, aus der
-     die fragliche Variable kommt.
+     Sobald ein Formular an ein PHP-Skript übergeben wird, werden die
+     Informationen dieses Formulars dem Skript automatisch verfügbar
+     gemacht. Es gibt viele Möglichkeiten, auf diese Informationen
+     zuzugreifen, zum Beispiel:
     </simpara>
      
     <para>
-     Für weitere Informationen über diese Variablen lesen Sie bitte den
-     Abschnitt über <link linkend="language.variables.predefined">
-     Vordefinierte Variablen</link>.
+     <example>
+      <title>Ein einfaches HTML-Formular</title>
+      <programlisting role="html">
+<![CDATA[
+<form action="foo.php" method="POST">
+    Name:  <input type="text" name="benutzername"><br>
+    Email: <input type="text" name="email"><br>
+    <input type="submit" name="submit" value="Und ab!">
+</form>
+]]>
+      </programlisting>
+     </example>
     </para>     
      
     <para>
-    <example>
-     <title>Einfache Formular-Variablen</title>
-     <programlisting role="php">
+     Abhängig von Ihrem speziellen Setup und Ihren persönlichen
+     Vorlieben gibt es viele Möglichkeiten, auf die Daten von Ihren
+     HTML-Formularen zuzugreifen. Hier einige Beispiele:
+    </para>
+
+    <para>
+     <example>
+      <title>
+       Zugriff auf die Daten von einem einfachen POST HTML-Formular
+      </title>
+      <programlisting role="html">
 <![CDATA[
-<form action="foo.php" method="post">
-    Name: <input type="text" name="username"><br>
-    <input type="submit">
-</form>
+<?php
+// Seit PHP 4.1.0 verfügbar
+
+   print $_POST['benutzername'];
+   print $_REQUEST['benutzername'];
+
+   import_request_variables('p', 'p_');
+   print $p_benutzername;
+
+// Seit PHP 3 verfügbar. Ab PHP 5.0.0 können diese langen
+// vordefinierten Variablen mit der Anweisung register_long_arrays
+// deaktiviert werden.
+
+   print $HTTP_POST_VARS['benutzername'];
+
+// Verfügbar, falls die PHP-Anweisung register_globals = on. Ab
+// PHP 4.2.0 ist der standardmäßige Wert von register_globals = off.
+// Es ist nicht empfehlenswert, diese Methode zu verwenden, bzw. sich
+// darauf zu verlassen.
+
+   print $benutzername;
+?>
 ]]>
      </programlisting>
     </example>
    </para>
-   <simpara>
-    Wird dieses Formular abgeschickt, steht der Wert des Textfeldes in der
-    Variable <varname>$HTTP_POST_VARS['username']</varname> zur Verfügung.
-    Wenn in der Konfigurationsdatei die Option
-    <link linkend="ini.register-globals">register_globals</link>
-    auf "on" gesetzt ist, steht die Variable auch als
-    <varname>$username</varname> global zur Verfügung.
-   </simpara>
+   <para>
+    Die Verwendung eines GET Formulars ist, davon abgesehen, dass Sie
+    stattdessen die entsprechende vordefinierte GET-Variable erhalten,
+    ähnlich. Außerdem wird GET auch für den QUERY_STRING (die
+    Information nach dem '?' in einer URL) verwendet. So enthält zum
+    Beispiel <literal>http://www.example.com/test.php?id=3</literal>
+    GET-Daten, auf die mit <varname>$_GET['id']</varname> zugegriffen
+    werden kann. Siehe auch <link
+    linkend="reserved.variables.request">$_REQUEST</link> und
+    <function>import_request_variables</function>.
+   </para>
 
-    <note>
-     <para>
-      Die Konfigurationseinstellung zu
-      <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link> 
-      betrifft Get, Post and Cookie Werte. Ist diese Einstellung aktiv
-      wird der Wert (It's "PHP!") automatisch zu (It\'s \"PHP!\").
-      Escaping ist notwendig, wenn Sie ihre Daten in eine Datenbank einfügen
-      wollen. Siehe auch: <function>addslashes</function>,
-      <function>stripslashes</function> und 
-      <link linkend="ini.magic-quotes-sybase">magic_quotes_sybase</link>.
-     </para>
-    </note>
+   <note>
+    <para>
+     <link linkend="language.variables.superglobals">Superglobale
+     Arrays</link> wie <varname>$_POST</varname> und
+     <varname>$_GET</varname> stehen seit PHP 4.1.0 zur Verfügung.
+    </para>
+   </note>
 
+   <para>
+    Wie gezeigt, war <link
+    linkend="ini.register-globals">register_globals</link> vor PHP
+    4.2.0 standardmäßig <emphasis>on</emphasis>. In PHP 3 war es immer
+    aktiviert. Die PHP-Gemeinschaft ermuntert alle, sich nicht auf
+    diese Anweisung zu stützen, weil es vorzuziehen ist, davon
+    auszugehen, dass sie <emphasis>off</emphasis> ist und entsprechend
+    zu programmieren.
+   </para>
+
+   <note>
+    <para>
+     Die Konfigurationseinstellung zu <link
+     linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link> betrifft
+     Get-, Post- und Cookie-Werte. Ist diese Einstellung aktiv, wird
+     der Wert (It's "PHP!") automatisch zu (It\'s \"PHP!\"). Escaping
+     ist notwendig, wenn Sie ihre Daten in eine Datenbank einfügen
+     wollen. Siehe auch <function>addslashes</function>,
+     <function>stripslashes</function> und <link
+     linkend="ini.magic-quotes-sybase">magic_quotes_sybase</link>.
+    </para>
+   </note>
 
    <simpara>
     Im Zusammenhang mit Formular-Variablen versteht PHP auch
     Arrays (siehe auch die <link linkend="faq.html">verwandte Faq</link>).
     Sie können z.B. die betreffenden Variablen gruppieren oder dieses
     Leistungsmerkmal nutzen, um Werte aus Mehrfach-Auswahl-Bereichen
-    zu erhalten.
+    zu erhalten. Schicken wir zum Beispiel ein Formular an sich selbst
+    und lassen nach dem Abschicken die Daten anzeigen:
    </simpara>
    <para>
     <example>
      <title>Komplexere Formular-Variablen</title>
       <programlisting role="php">
 <![CDATA[
-<form action="array.php" method="post">
+<?php
+if (isset($_POST['action']) && $_POST['action'] == 'abgeschickt') {
+    print '<pre>';
+    print_r($_POST);
+    print '<a href="'. $_SERVER['PHP_SELF'] .'">Bitte versuchen Sie es nochmal</a>';
+
+    print '</pre>';
+} else {
+?>
+<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
     Name:  <input type="text" name="personal[name]"><br>
     Email: <input type="text" name="personal[email]"><br>
     Bier: <br>
     <select multiple name="bier[]">
-        <option value="binding">Binding
-        <option value="warsteiner">Warsteiner
-        <option value="stauder">Stauder
-        <option value="stuttgarter">Stuttgarter Schwabenbräu
-    </select>
-    <input type="submit">
+        <option value="binding">Binding</option>
+        <option value="warsteiner">Warsteiner</option>
+        <option value="stauder">Stauder</option>
+        <option value="stuttgarter">Stuttgarter Schwabenbräu</option>
+        <option value="heubacher">Heubacher</option>
+    </select><br>
+    <input type="hidden" name="action" value="abgeschickt">
+    <input type="submit" name="submit" value="Und ab!">
 </form>
+<?php
+}
+?>
 ]]>
       </programlisting>
      </example>
@@ -1018,20 +960,21 @@ echo "$a $Hallo";
       werden, dessen Tag wie folgt aussieht:
      </simpara>
      <informalexample>
-      <programlisting role="php">
+      <programlisting role="html">
 <![CDATA[
 <input type="image" src="image.gif" name="sub">
 ]]>
       </programlisting>
      </informalexample>
      <simpara>
-      Klickt der Benutzer irgendwo auf das Bild, wird das entsprechende
-      Formular an den Web-Server übertragen. Hierbei sind zwei
-      zusätzliche Variablen vorhanden, sub_x und sub_y. Diese enthalten
-      die Koordinaten des Klick-Punktes innerhalb des Bildes. Die
-      Erfahreneren werden sagen, dass die Variablen, die vom Browser gesendet
-      werden einen Punkt enthalten statt eines Unterstrichs. Dieser Punkt
-      wird von PHP automatisch in einen Unterstrich verwandelt.
+      Klickt der Benutzer irgendwo auf das Bild, wird das
+      entsprechende Formular an den Web-Server übertragen. Hierbei
+      sind zwei zusätzliche Variablen vorhanden, sub_x und sub_y.
+      Diese enthalten die Koordinaten des Klick-Punktes innerhalb des
+      Bildes. Die Erfahreneren werden sagen, dass die Variablen, die
+      vom Browser gesendet werden einen Punkt enthalten statt eines
+      Unterstrichs. Dieser Punkt wird von PHP automatisch in einen
+      Unterstrich verwandelt.
      </simpara>
     </sect3>
 
@@ -1042,29 +985,45 @@ echo "$a $Hallo";
     <simpara>
      PHP unterstützt HTTP-Cookies, wie sie in <ulink
      url="&spec.cookies;">Netscape's Spec</ulink> definiert sind.
-     Cookies ermöglichen die Daten-Speicherung innerhalb der jeweiligen
-     Browser-Umgebung zur Weiterleitung oder wiederholten Identifikation von
-     Benutzern. Sie können Cookies erzeugen, indem Sie die Funktion
-     <function>setcookie</function> benutzen. Cookies sind Teil des
-     HTTP-Headers, deshalb muss die setcookie-Funktion aufgerufen werden,
-     bevor irgendeine Ausgabe an den Browser gesendet wird. Dabei handelt es
-     sich um die gleiche Einschränkung, die auch für die
-     <function>header</function>-Funktion gilt. Alle Cookies, die der Client
-     an sie sendet werden in PHP-Variablen umgesetzt, genau wie die Daten
-     bei den GET- und POST-Methoden.
+     Cookies ermöglichen die Daten-Speicherung innerhalb der
+     jeweiligen Browser-Umgebung zur Weiterleitung oder wiederholten
+     Identifikation von Benutzern. Sie können Cookies erzeugen, indem
+     Sie die Funktion <function>setcookie</function> benutzen. Cookies
+     sind Teil des HTTP-Headers, deshalb muss die setcookie-Funktion
+     aufgerufen werden, bevor irgendeine Ausgabe an den Browser
+     gesendet wird. Dabei handelt es sich um die gleiche
+     Einschränkung, die auch für die
+     <function>header</function>-Funktion gilt. Cookie-Daten stehen
+     dann sowohl in den entsprechenden Cookie-Daten-Arrays, wie zum
+     Beispiel <varname>$_COOKIE</varname>,
+     <varname>$HTTP_COOKIE_VARS</varname> als auch in
+     <varname>$_REQUEST</varname> zur Verfügung. Für weitere Details
+     und Beispiele lesen Sie bitte die
+     <function>setcookie</function>-Seite des Handbuchs.
     </simpara>
     <simpara>
-     Wenn Sie einem einzelnen Cookie mehrere Wert zuweisen wollen
-     müssen Sie dem Cookie-Namen <emphasis>[]</emphasis> hinzufügen.
-     Z.B.:
+     Wenn Sie einer einzelnen Cookie-Variable mehrere Werte zuweisen
+     wollen, müssen Sie diese als Array übertragen. Zum Beispiel:
     </simpara>
     <informalexample>
      <programlisting role="php">
 <![CDATA[
-SetCookie ("MeinCookie[]", "Ich teste", time()+3600);
+<?php
+setcookie ("MeinCookie[foo]", "Ich teste 1", time()+3600);
+setcookie ("MeinCookie[bar]", "Ich teste 2", time()+3600);
+?>
 ]]>
      </programlisting>
     </informalexample>
+
+    <simpara>
+     Das erzeugt zwei einzelne Cookies obwohl MeinCookie in Ihrem
+     Skript nun ein einziges Array ist. Wenn Sie nur ein Cookie mit
+     mehreren Werten setzen wollen, sollten Sie zuerst
+     <function>serialize</function> oder <function>explode</function>
+     auf das Array anwenden.
+    </simpara>
+
     <simpara>
      Bedenken Sie, dass ein Cookie ein vorhergehendes Cookie
      gleichen Namens überschreibt, es sei denn, der Pfad oder
@@ -1072,39 +1031,21 @@ SetCookie ("MeinCookie[]", "Ich teste", time()+3600);
      Sie deshalb z.B. einen Zähler bilden und diesen weiterleiten:
     </simpara>
     <example>
-     <title>SetCookie-Beispiel</title>
+     <title>Ein <function>setcookie</function>-Beispiel</title>
      <programlisting role="php">
 <![CDATA[
-$Count++;
-setcookie("Count", $Count, time()+3600);
-setcookie("Cart[$Count]", $item, time()+3600);
+<?php
+if (isset($_COOKIE['zaehler'])) {
+    $zaehler = $_COOKIE['zaehler'] + 1;
+} else {
+    $zaehler = 1;
+}
+setcookie("zaehler", $zaehler, time()+3600);
+setcookie("Cart[$zaehler]", $item, time()+3600);
+?>
 ]]>
      </programlisting>
     </example>
-   </sect2>
-
-   <sect2 id="language.variables.external.environment">
-    <title>Umgebungs- / Environment-Variablen</title>
-
-    <para>
-     PHP sorgt automatisch für die Verfügbarkeit der Umgebungs-
-     Variablen als normale PHP-Variablen.
-     <informalexample>
-      <programlisting role="php">
-<![CDATA[
-echo $HOME;  /* Zeigt die HOME-Umgebungs-Variable (sofern gesetzt). */
-]]>
-      </programlisting>
-     </informalexample>
-    </para>
-    <para>
-     Da Informationen per GET, POST und Cookie-Mechanismen übergeben
-     werden, ist es manchmal das Beste, Umgebungs-Variablen explizit
-     auszulesen. Dadurch wird die richtige Version eingelesen. Hierfür
-     kann die <function>getenv</function>-Funktion genutzt werden. Den
-     Wert einer Umgebungs-Variablen können Sie per <function>putenv</function>-
-     Funktion setzen.
-    </para>
    </sect2>
 
    <sect2 id="language.variables.external.dot-in-names">
@@ -1116,7 +1057,9 @@ echo $HOME;  /* Zeigt die HOME-Umgebungs-Variable (sofern gesetzt). */
      Variablen-Bezeichners ist. Deshalb achten Sie auf folgendes:
      <programlisting role="php">
 <![CDATA[
+<?php
 $varname.ext;  /* ungültiger Variablen-Bezeichner */
+?>
 ]]>
      </programlisting>
      Der PHP-Parser sieht eine Variable namens <varname>$varname</varname>,
@@ -1139,11 +1082,12 @@ $varname.ext;  /* ungültiger Variablen-Bezeichner */
      Da PHP den Typ der Variablen bestimmt und (im Allgemeinen) selbst
      eine entsprechende Umformung vornimmt, ist es nicht immer klar,
      welchen Typ eine Variable gerade hat. PHP beinhaltet einige
-     Funktionen, die dies herausfinden. Als da sind:
-     <function>gettype</function>, <function>is_long</function>,
-     <function>is_double</function>, <function>is_string</function>,
-     <function>is_array</function> und
-     <function>is_object</function>.
+     Funktionen, die dies herausfinden, wie zum Beispiel:
+     <function>gettype</function>, <function>is_array</function>,
+     <function>is_float</function>, <function>is_int</function>,
+     <function>is_object</function> und
+     <function>is_string</function>. Lesen Sie bitte auch das Kapitel
+     über <link linkend="language.types">Typen</link>.
     </para>
    </sect2>
 
@@ -1160,7 +1104,7 @@ $varname.ext;  /* ungültiger Variablen-Bezeichner */
  sgml-always-quote-attributes:t
  sgml-indent-step:1
  sgml-indent-data:t
-indent-tabs-mode:nil
+ indent-tabs-mode:nil
  sgml-parent-document:nil
  sgml-default-dtd-file:"../../manual.ced"
  sgml-exposed-tags:nil
