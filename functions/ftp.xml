@@ -1,6 +1,8 @@
  <reference id="ref.ftp">
   <title>FTP-Funktionen</title>
   <titleabbrev>FTP</titleabbrev>
+  <!-- Anmerkung des Übersetzers:
+       Entspricht der en/functions/ftp.xml 1.9 -->
 
   <partintro>
    <para>
@@ -9,7 +11,44 @@
    </para>
    <para>
     Die folgenden Konstanten sind definiert, sobald das FTP-Modul
-    benutzt wird: FTP_ASCII und FTP_BINARY.
+    benutzt wird: <constant>FTP_ASCII</constant> und 
+    <constant>FTP_BINARY</constant>.
+   </para>
+   <para>
+    <example>
+     <title><function>Ftp</function>-Beispiel:</title>
+      <programlisting>
+&lt;?php
+// Herstellen der Basis-Verbindung
+$conn_id = ftp_connect("$ftp_server"); 
+
+// Einloggen mit Benutzername und Kennwort
+$login_result = ftp_login($conn_id, "$ftp_user_name", "$ftp_user_pass"); 
+
+// Verbindung überprüfen
+if ((!$conn_id) || (!$login_result)) { 
+        echo "Ftp-Verbindung nicht hergestellt!";
+        echo "Verbindung mit $ftp_server als Benutzer $user nicht möglich"; 
+        die; 
+    } else {
+        echo "Verbunden mit $ftp_server als Benutzer $user";
+    }
+
+// Upload der Datei
+$upload = ftp_put($conn_id, "$destination_file", "$source_file", FTP_BINARY); 
+
+// Upload-Status überprüfen
+if (!$upload) { 
+        echo "Ftp upload war fehlerhaft!";
+    } else {
+        echo "Datei $source_file auf $ftp_server als $destination_file geschrieben";
+    }
+
+// Schließen des FTP-Streams
+ftp_quit($conn_id); 
+?>
+     </programlisting>
+    </example>
    </para>
   </partintro>
 
@@ -75,7 +114,7 @@
     <title>Beschreibung:</title>
     <funcsynopsis>
      <funcprototype>
-      <funcdef>int <function>ftp_pwd</function></funcdef>
+      <funcdef>string <function>ftp_pwd</function></funcdef>
       <paramdef>int <parameter>ftp_stream</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
@@ -190,7 +229,7 @@
     <title>Beschreibung:</title>
     <funcsynopsis>
      <funcprototype>
-      <funcdef>int <function>ftp_nlist</function></funcdef>
+      <funcdef>array <function>ftp_nlist</function></funcdef>
       <paramdef>int <parameter>ftp_stream</parameter></paramdef>
       <paramdef>string <parameter>Verzeichnis</parameter></paramdef>
      </funcprototype>
@@ -241,7 +280,7 @@
     <title>Beschreibung:</title>
     <funcsynopsis>
      <funcprototype>
-      <funcdef>int <function>ftp_systype</function></funcdef>
+      <funcdef>string <function>ftp_systype</function></funcdef>
       <paramdef>int <parameter>ftp_stream</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
@@ -304,8 +343,9 @@
      <parameter>remote_file</parameter> vom FTP-Server und speichert
      es unter <parameter>local_file</parameter> auf ihren lokalen
      Arbeitsplatz. Der anzugebende Transfer-Parameter
-     <parameter>mode</parameter> muss entweder FTP_ASCII oder
-     FTP_BINARY sein.
+     <parameter>mode</parameter> muss entweder
+     <constant>FTP_ASCII</constant> oder
+     <constant>FTP_BINARY</constant> sein.
     </para>
    </refsect1>
   </refentry>
@@ -369,7 +409,14 @@
      <parameter>local_file</parameter> bestimmte Datei auf den
      FTP-Server als Datei namens <parameter>remote_file</parameter>.
      Der Übertragungs-Modus-Parameter <parameter>mode</parameter>
-     muss entweder FTP_ASCII oder FTP_BINARY lauten.
+     muss entweder <constant>FTP_ASCII</constant> oder 
+     <constant>FTP_BINARY</constant> lauten.
+     <example>
+      <title><function>Ftp_put</function>-Beispiel:</title>
+      <programlisting role="php">
+$upload = ftp_put ($conn_id, "$destination_file", "$source_file", FTP_ASCII); 
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
@@ -402,7 +449,8 @@
      <parameter>remote_file</parameter> bestimmten Datei auf dem
      FTP-Server gespeichert. Der 
      <parameter>mode</parameter>-Übertragungs-Parameter muss
-     entweder FTP_ASCII oder FTP_BINARY sein.
+     entweder <constant>FTP_ASCII</constant> oder 
+     <constant>FTP_BINARY</constant> sein.
     </para>
    </refsect1>
   </refentry>
@@ -460,6 +508,12 @@
      Auftreten eines Fehlers wird -1 zurück gegeben. Nicht alle
      FTP-Server unterstützen diese Funktionalität.
     </para>
+    <note>
+     <para>
+      <function>Ftp_mdtm</function> funktioniert nicht mit
+      Verzeichnissen.
+     </para>
+    </note>
    </refsect1>
   </refentry>
 
