@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
+<!-- $Revision: 1.4 $ -->
  <reference id="ref.pdf">
   <title>PDF Funktionen</title>
   <titleabbrev>PDF</titleabbrev>
@@ -257,44 +257,47 @@
      Die meisten Funktionen sind sehr einfach zu benutzen. Das Schwierigste
      wird wohl sein, überhaupt ein einfaches PDF-Dokument zu erstellen.
      Das folgende Beispiel soll die ersten Schritte erleichtern.
-     Dieses Skript erstellt die PDF-Datei <filename>test.pdf</filename>,
+     Dieses Skript erstellt die PDF-Datei <filename>hallo.pdf</filename>,
      welche nur aus einer Seite besteht.
-     Auf der Seite befindet sich der Text "Times Roman outlined" in einem
-     outlined, 30pt Zeichensatz. Der Text ist zudem unterstrichen.
+     Auf der Seite befindet sich der Text "Hallo Welt! (sagt PHP)",
+     in einem 30pt Zeichensatz.
     </para>
     <para>
      <example>
       <title>Erstellung eines PDF Dokuments mit pdflib</title>
       <programlisting>
-&lt;?php
-$fp = fopen("test.pdf", "w");
-$pdf = pdf_open($fp);
-pdf_set_info_author($pdf, "Uwe Steinmann");
-pdf_set_info_title($pdf, "Test for PHP wrapper of PDFlib 2.0");
-pdf_set_info_author($pdf, "Name of Author");
-pdf_set_info_creator($pdf, "See Author");
-pdf_set_info_subject($pdf, "Testing");
-pdf_begin_page($pdf, 595, 842);
-pdf_add_outline($pdf, "Page 1");
-pdf_set_font($pdf, "Times-Roman", 30, 4);
-pdf_set_text_rendering($pdf, 1);
-pdf_show_xy($pdf, "Times Roman outlined", 50, 750);
-pdf_moveto($pdf, 50, 740);
-pdf_lineto($pdf, 330, 740);
-pdf_stroke($pdf);
-pdf_end_page($pdf);
-pdf_close($pdf);
+<?php
+
+$fp = fopen("hallo.pdf", "w");
+
+$p = pdf_open($fp);
+PDF_set_info($p, "Creator", "hallo.php");
+PDF_set_info($p, "Author", "Rainer Schaaf");
+PDF_set_info($p, "Title", "Hallo Welt (PHP)");
+
+PDF_begin_page($p, 595, 842);
+
+$font = PDF_findfont($p, "Times-Roman", "host", 0);
+PDF_setfont($p, $font, 30.4);
+
+PDF_set_text_pos($p, 50, 750);
+PDF_show($p, "Hallo Welt!");
+PDF_continue_text($p, "(sagt PHP)");
+
+PDF_end_page($p);
+PDF_close($p);
+
 fclose($fp);
-echo "&lt;A HREF=getpdf.php>finished&lt;/A>";
+echo "<a href=\"fertiges_pdf.php\">Fertig</a>\n";
 ?>
       </programlisting>
       <simpara>
-       Das PHP-Skript <filename>getpdf.php</filename> liefert nur das PDF-Dokument.
+       Das PHP-Skript <filename>fertiges_pdf.php</filename> liefert nur das PDF-Dokument.
       </simpara>
       <informalexample>
        <programlisting>
-&lt;?php
-$fp = fopen("test.pdf", "r");
+<?php
+$fp = fopen("hallo.pdf", "r");
 header("Content-type: application/pdf");
 fpassthru($fp);
 fclose($fp);
@@ -315,102 +318,91 @@ fclose($fp);
      <example>
       <title>pdfclock Beispiel aus der pdflib Distribution</title>
       <programlisting>
-&lt;?php
-$pdffilename = "clock.pdf";
-$radius = 200;
-$margin = 20;
-$pagecount = 40;
+<?php
 
-$fp = fopen($pdffilename, "w");
-$pdf = pdf_open($fp);
-pdf_set_info_creator($pdf, "pdf_clock.php3");
-pdf_set_info_author($pdf, "Uwe Steinmann");
-pdf_set_info_title($pdf, "Analog Clock");
+$RADIUS = 200.0;
+$MARGIN = 20.0;
 
-while($pagecount-- > 0) {
-    pdf_begin_page($pdf, 2 * ($radius + $margin), 2 * ($radius + $margin));
+$fp = fopen("pdf_uhr.pdf", "w");
+$p  = PDF_open($fp);
 
-    pdf_set_transition($pdf, 4);  /* wipe */ 
-    pdf_set_duration($pdf, 0.5);
-  
-    pdf_translate($pdf, $radius + $margin, $radius + $margin);
-    pdf_save($pdf);
-    pdf_setrgbcolor($pdf, 0.0, 0.0, 1.0);
+PDF_set_info($p, "Creator", "pdf_uhr.php");
+PDF_set_info($p, "Author", "Rainer Schaaf");
+PDF_set_info($p, "Title", "PDF Uhr (PHP)");
 
-    /* minute strokes */
-    pdf_setlinewidth($pdf, 2.0);
-    for ($alpha = 0; $alpha &lt; 360; $alpha += 6) {
-        pdf_rotate($pdf, 6.0);
-        pdf_moveto($pdf, $radius, 0.0);
-        pdf_lineto($pdf, $radius-$margin/3, 0.0);
-        pdf_stroke($pdf);
-    }
+PDF_begin_page($p, 2 * ($RADIUS + $MARGIN), 2 * ($RADIUS + $MARGIN));
 
-    pdf_restore($pdf);
-    pdf_save($pdf);
+PDF_translate($p, $RADIUS + $MARGIN, $RADIUS + $MARGIN);
+PDF_setcolor($p, "both", "rgb", 0.0, 0.0, 1.0, 0.0);
+PDF_save($p);
 
-    /* 5 minute strokes */
-    pdf_setlinewidth($pdf, 3.0);
-    for ($alpha = 0; $alpha &lt; 360; $alpha += 30) { 
-        pdf_rotate($pdf, 30.0);
-        pdf_moveto($pdf, $radius, 0.0);
-        pdf_lineto($pdf, $radius-$margin, 0.0);
-        pdf_stroke($pdf);
-    }
-
-    $ltime = getdate();
-
-    /* draw hour hand */
-    pdf_save($pdf);
-    pdf_rotate($pdf,-(($ltime['minutes']/60.0)+$ltime['hours']-3.0)*30.0);
-    pdf_moveto($pdf, -$radius/10, -$radius/20);
-    pdf_lineto($pdf, $radius/2, 0.0);
-    pdf_lineto($pdf, -$radius/10, $radius/20);
-    pdf_closepath($pdf);
-    pdf_fill($pdf);
-    pdf_restore($pdf);
-
-    /* draw minute hand */
-    pdf_save($pdf);
-    pdf_rotate($pdf,-(($ltime['seconds']/60.0)+$ltime['minutes']-15.0)*6.0);
-    pdf_moveto($pdf, -$radius/10, -$radius/20);
-    pdf_lineto($pdf, $radius * 0.8, 0.0);
-    pdf_lineto($pdf, -$radius/10, $radius/20);
-    pdf_closepath($pdf);
-    pdf_fill($pdf);
-    pdf_restore($pdf);
-
-    /* draw second hand */
-    pdf_setrgbcolor($pdf, 1.0, 0.0, 0.0);
-    pdf_setlinewidth($pdf, 2);
-    pdf_save($pdf);
-    pdf_rotate($pdf, -(($ltime['seconds'] - 15.0) * 6.0));
-    pdf_moveto($pdf, -$radius/5, 0.0);
-    pdf_lineto($pdf, $radius, 0.0);
-    pdf_stroke($pdf);
-    pdf_restore($pdf);
-
-    /* draw little circle at center */
-    pdf_circle($pdf, 0, 0, $radius/30);
-    pdf_fill($pdf);
-
-    pdf_restore($pdf);
-
-    pdf_end_page($pdf);
+PDF_setlinewidth($p, 2.0);
+for ($alpha = 0; $alpha < 360; $alpha += 6) {
+	PDF_rotate($p, 6.0);
+	PDF_moveto($p, $RADIUS, 0.0);
+	PDF_lineto($p, $RADIUS-$MARGIN/3, 0.0);
+	PDF_stroke($p);
 }
 
-$pdf = pdf_close($pdf);
+PDF_restore($p);
+PDF_save($p);
+
+PDF_setlinewidth($p, 3.0);
+for ($alpha = 0; $alpha < 360; $alpha += 30) {
+	PDF_rotate($p, 30.0);
+	PDF_moveto($p, $RADIUS, 0.0);
+	PDF_lineto($p, $RADIUS-$MARGIN, 0.0);
+	PDF_stroke($p);
+}
+
+$ltime = getdate();
+
+PDF_save($p);
+PDF_rotate($p, -(($ltime['minutes']/60.0)+$ltime['hours']-3.0)*30.0);
+PDF_moveto($p, -$RADIUS/10, -$RADIUS/20);
+PDF_lineto($p, $RADIUS/2, 0.0);
+PDF_lineto($p, -$RADIUS/10, $RADIUS/20);
+PDF_closepath($p);
+PDF_fill($p);
+PDF_restore($p);
+
+PDF_save($p);
+PDF_rotate($p, -(($ltime['seconds']/60.0)+$ltime['minutes']-15.0)*6.0);
+PDF_moveto($p, -$RADIUS/10, -$RADIUS/20);
+PDF_lineto($p, $RADIUS * 0.8, 0.0);
+PDF_lineto($p, -$RADIUS/10, $RADIUS/20);
+PDF_closepath($p);
+PDF_fill($p);
+PDF_restore($p);
+
+PDF_setcolor($p, "both", "rgb", 1.0, 0.0, 0.0, 0.0);
+PDF_setlinewidth($p, 2);
+PDF_save($p);
+PDF_rotate($p, -(($ltime['seconds'] - 15.0) * 6.0));
+PDF_moveto($p, -$RADIUS/5, 0.0);
+PDF_lineto($p, $RADIUS, 0.0);
+PDF_stroke($p);
+PDF_restore($p);
+
+PDF_circle($p, 0, 0, $RADIUS/30);
+PDF_fill($p);
+
+PDF_restore($p);
+PDF_end_page($p);
+
+PDF_close($p);
+
 fclose($fp);
-echo "&lt;A HREF=getpdf.php?filename=".$pdffilename.">finished&lt;/A>";
+echo "<a href=\"fertiges_pdf.php\">Fertig</a>\n";
 ?>
       </programlisting>
       <simpara>
-       Das PHP-Skript <filename>getpdf.php</filename> liefert wiederum nur
+       Das PHP-Skript <filename>fertiges_pdf.php</filename> liefert wiederum nur
        das Dokument.
       </simpara>
       <programlisting>
-&lt;?php
-$fp = fopen($filename, "r");
+<?php
+$fp = fopen("pdf_uhr.pdf", "r");
 header("Content-type: application/pdf");
 fpassthru($fp);
 fclose($fp);
