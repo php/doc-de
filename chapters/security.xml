@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.20 $ -->
-<!-- EN-Revision: 1.47 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.21 $ -->
+<!-- EN-Revision: 1.49 Maintainer: tom Status: ready -->
 <chapter id="security">
   <title>Sicherheit</title>
 
@@ -403,7 +403,7 @@ AddHandler php-script .php
 <![CDATA[
 <?php
 // Löschen einer Datei aus dem Heimatverzeichnis des Users
-$username = $HTTP_POST_VARS['user_submitted_name'];
+$username = $_POST['user_submitted_name'];
 $homedir = "/home/$username";
 $file_to_delete = "$userfile";
 unlink ($homedir/$userfile);
@@ -456,8 +456,8 @@ echo "/home/../etc/passwd wurde gelöscht!";
 <?php
 // löscht eine Datei von der Festplatte, auf die
 // der PHP user Zugriff hat. 
-$username = $HTTP_SERVER_VARS['REMOTE_USER']; // verwendet eine 
-                                              // Authentifizierungsmethode
+$username = $_SERVER['REMOTE_USER']; // verwendet eine 
+                                     // Authentifizierungsmethode
 $homedir = "/home/$username";
 
 $file_to_delete = basename("$userfile"); // den Pfad entfernen
@@ -1089,7 +1089,7 @@ if ($good_login == 1) { // Wenn der obige Test fehlschlägt, ist vor der
     Während dies den benötigten Aufwand mit PHP zu arbeiten leicht erhöht 
     ist dargelegt, dass die Vorteile gegenüber dem Aufwand klar überwiegen.
     <example>
-     <title>Ohne register_globals=off arbeiten</title>
+     <title>Mit register_globals=on arbeiten</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -1109,7 +1109,7 @@ if ($good_login == 1) { // kann vom User mit get/post/cookies übermittelt werden
      <programlisting role="php">
 <![CDATA[
 <?php
-if($HTTP_COOKIE_VARS['username']){
+if($_COOKIE['username']){
     // kann nur von einem Cookie kommen
     $good_login = 1;
     fpassthru ("/highly/sensitive/data/index.html");
@@ -1130,14 +1130,14 @@ if($HTTP_COOKIE_VARS['username']){
      <programlisting role="php">
 <![CDATA[
 <?php
-if ($HTTP_COOKIE_VARS['username'] &&
-    !$HTTP_POST_VARS['username'] &&
-    !$HTTP_GET_VARS['username'] ) {
+if ($_COOKIE['username'] &&
+    !$_POST['username'] &&
+    !$_GET['username'] ) {
     // Durchführen anderer Checks, ob der Benutzername gültig ist...
     $good_login = 1;
     fpassthru ("/highly/sensitive/data/index.html");
 } else {
-   mail("admin@example.com", "Possible breakin attempt", $HTTP_SERVER_VARS['REMOTE_ADDR']);
+   mail("admin@example.com", "Possible breakin attempt", $_SERVER['REMOTE_ADDR']);
    echo "Security violation, admin has been alerted.";
    exit;
 }
