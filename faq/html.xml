@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
-<!-- EN-Revision: 1.19 Maintainer: wiesemann Status: ready -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.29 Maintainer: wiesemann Status: ready -->
  <chapter id="faq.html">
   <title>PHP und HTML</title>
   <titleabbrev>PHP und HTML</titleabbrev>
@@ -52,7 +52,7 @@
         <programlisting role="php">
 <![CDATA[
 <?php
-    echo "<input type=hidden value=\"" . htmlspecialchars($data) . "\">\n";
+    echo "<input type='hidden' value='" . htmlspecialchars($data) . "' />\n";
 ?>
 ]]>
         </programlisting>
@@ -72,7 +72,7 @@
         <programlisting role="php">
 <![CDATA[
 <?php
-    echo "<textarea name=mydata>\n";
+    echo "<textarea name='mydata'>\n";
     echo htmlspecialchars($data)."\n";
     echo "</textarea>";
 ?>
@@ -97,8 +97,8 @@
         <programlisting role="php">
 <![CDATA[
 <?php
-    echo "<a href=\"" . htmlspecialchars("/nextpage.php?stage=23&data=" .
-        urlencode($data)) . "\">\n";
+    echo "<a href='" . htmlspecialchars("/nextpage.php?stage=23&data=" .
+        urlencode($data)) . "'>\n";
 ?>
 ]]>
         </programlisting>
@@ -145,7 +145,7 @@
       Standard-Submit-Buttons zu verwenden, indem Sie ein Tag wie das folgende verwenden:
       <programlisting role="html">
 <![CDATA[
-<input type="image" src="image.gif" name="foo">
+<input type="image" src="image.gif" name="foo" />
 ]]>
       </programlisting>
       Wenn der Benutzer irgendwo auf das Bild klickt, wird das zugehörige Formular
@@ -160,6 +160,11 @@
       Variablen also genauso wie im Abschnitt <link
       linkend="language.variables.external">Variablen außerhalb von PHP</link>
       zugreifen, z.B. <varname>$_GET['foo_x']</varname>.  
+      <note>
+       <para>
+         Leerzeichen in Namen von Formularelementen werden in Unterstriche konvertiert.
+       </para>
+      </note>
      </para>
     </answer>
    </qandaentry>
@@ -175,10 +180,10 @@
       or &lt;textarea&gt;-Felder wie folgt benennen:
       <programlisting role="html">
 <![CDATA[
-<input name="MeinArray[]">
-<input name="MeinArray[]">
-<input name="MeinArray[]">
-<input name="MeinArray[]">
+<input name="MeinArray[]" />
+<input name="MeinArray[]" />
+<input name="MeinArray[]" />
+<input name="MeinArray[]" />
 ]]>
       </programlisting>
       Beachten Sie die eckigen Klammern hinter dem Variablen-Namen, denn dadurch wird
@@ -186,10 +191,10 @@
       wenn Sie verschiedenen Feldern die gleichen Namen geben:
       <programlisting role="html">
 <![CDATA[
-<input name="MeinArray[]">
-<input name="MeinArray[]">
-<input name="MeinAnderesArray[]">
-<input name="MeinAnderesArray[]">
+<input name="MeinArray[]" />
+<input name="MeinArray[]" />
+<input name="MeinAnderesArray[]" />
+<input name="MeinAnderesArray[]" />
 ]]>
       </programlisting>
       Daraus werden zwei Arrays, <varname>MeinArray</varname> und
@@ -197,10 +202,10 @@
       Schlüssel anzugeben:
       <programlisting role="html">
 <![CDATA[
-<input name="AnderesArray[]">
-<input name="AnderesArray[]">
-<input name="AnderesArray[email]">
-<input name="AnderesArray[telefon]">
+<input name="AnderesArray[]" />
+<input name="AnderesArray[]" />
+<input name="AnderesArray[email]" />
+<input name="AnderesArray[telefon]" />
 ]]>
       </programlisting>
       Das Array <varname>AnderesArray</varname> enthält daraufhin die Schlüssel
@@ -210,11 +215,11 @@
       <para>
        <note>
         <para>
-        Die Angabe eines Array-Schlüssels ist in HTML optional. Wenn Sie keinen
-        Schlüssel angeben, wird das Array in der Formular-Reihenfolge gefüllt.
-        Im ersten Beispiel enthält das Array <varname>MeinArray</varname> also
-        die Schlüssel <literal>0</literal>, <literal>1</literal>, <literal>2</literal>
-        und <literal>3</literal>.
+         Die Angabe eines Array-Schlüssels ist in HTML optional. Wenn Sie keinen
+         Schlüssel angeben, wird das Array in der Formular-Reihenfolge gefüllt.
+         Im ersten Beispiel enthält das Array <varname>MeinArray</varname> also
+         die Schlüssel <literal>0</literal>, <literal>1</literal>, <literal>2</literal>
+         und <literal>3</literal>.
         </para>
        </note>
       </para>
@@ -239,7 +244,7 @@
       Namen übergeben werden, z.B.:
       <programlisting role="html">
 <![CDATA[
-<select name="var" multiple>
+<select name="var" multiple="yes">
 ]]>
       </programlisting>
       Jede ausgewählte Option wird übergeben als:
@@ -278,6 +283,55 @@ variable = documents.forms[0].elements['var[]'];
      </para>
     </answer>
    </qandaentry>
+
+   <qandaentry id="faq.html.javascript-variable">
+    <question>
+     <para>
+      Wie kann ich eine Variable von JavaScript an PHP übergeben?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Da JavaScript (normalerweise) nur auf dem Client läuft, während
+      PHP (normalerweise) auf Servern läuft, und da HTTP ein "status-loses"
+      Protokoll ist, können zwischen den beiden Sprachen keine Variablen
+      direkt ausgetauscht werden.
+     </para>
+     <para>
+      Allerdings ist es trotzdem möglich, Variablen zwischen den beiden
+      zu übergeben. Eine Möglichkeit ist, den JavaScript-Code mit PHP
+      zu generieren. Außerdem muss die angezeigte Seite sich regelmäßig
+      selbst aktualisieren und dabei bestimmte Variablen an das PHP-Skript
+      übergeben. Das folgende Beispiel zeigt wie Sie dies tun können --
+      es ermöglicht PHP, die Bildschirmauflösung (Höhe und Breite) zu
+      ermitteln, was normalerweise nur Client-seitig möglich ist.
+     </para>
+     <para>
+      <programlisting role="php">
+<![CDATA[
+<?php
+if (isset($_GET['width']) AND isset($_GET['height'])) {
+  // Ausgabe der beiden Größenangaben
+  echo "Die Bildschirmbreite ist: ". $_GET['width'] ."<br />\n";
+  echo "Die Bildschirmhöhe ist: ". $_GET['height'] ."<br />\n";
+} else {
+  // Übergabe der Größenangaben
+  // (der ursprüngliche 'QUERY_STRING' wird beibehalten;
+  //  POST-Variablen müssen anders behandelt werden)
+
+  echo "<script language='javascript'>\n";
+  echo "  location.href=\"${_SERVER['SCRIPT_NAME']}?${_SERVER['QUERY_STRING']}"
+            . "&width=\" + screen.width + \"&height=\" + screen.height;\n";
+  echo "</script>\n";
+  exit();
+}
+?>
+]]>
+      </programlisting>
+     </para>
+    </answer>
+   </qandaentry>
+
   </qandaset>
  </chapter>
 
