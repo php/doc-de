@@ -1,0 +1,469 @@
+ <reference id="ref.regex">
+  <title>Reguläre Ausdrücke Funktionen (POSIX erweitert)</title>
+  <titleabbrev>Regexps</titleabbrev>
+
+  <partintro>
+   <para>
+    Reguläre Ausdrücke werden für komplexe Manipulationen an Zeichenfolgen mit
+    PHP verwendet. Folgende Funktionen unterstützen reguläre Ausdrücke:
+    <itemizedlist>
+     <listitem>
+      <simpara><function>ereg</function></simpara>
+     </listitem>
+     <listitem>
+      <simpara><function>ereg_replace</function></simpara>
+     </listitem>
+     <listitem>
+      <simpara><function>eregi</function></simpara>
+     </listitem>
+     <listitem>
+      <simpara><function>eregi_replace</function></simpara>
+     </listitem>
+     <listitem>
+      <simpara><function>split</function></simpara>
+     </listitem>
+     <listitem>
+      <simpara><function>spliti</function></simpara>
+     </listitem>
+    </itemizedlist>
+    Alle diese Funktionen nehmen als erstes Argument einen regulären Ausdruck
+    an. PHP verwendet durch POSIX 1003.2 definierte POSIX erweiterte reguläre
+    Ausdrücke. Eine vollständige Beschreibung der POSIX regulären Ausdrücke
+    finden Sie im Regex-Verzeichnis der PHP-Distribution in den Regex man pages.
+    Da sie im manpage-Fomat vorliegt, sollten Sie einen Befehl der Art <command>
+    man /usr/local/src/regex/regex.7</command> verwenden, um sie zu lesen.
+    
+    <!-- Should add discussion of PCRE functions here. -->
+
+   </para>
+   <para>
+    <example>
+     <title>Beispiele regulärer Ausdrücke</title>
+     <programlisting role="php">
+ereg (&quot;abc&quot;, $string);            
+/* Gibt true zurück, falls &quot;abc&quot;
+   irgendwo in $string gefunden wird. */
+
+ereg (&quot;^abc&quot;, $string);
+/* Gibt true zurück, falls &quot;abc&quot;
+   am Anfang von $string gefunden wird. */
+
+ereg ("abc$", $string);
+/* Gibt true zurück, falls &quot;abc&quot;
+   am Ende von $string gefunden wird. */
+
+eregi ("(ozilla.[23]|MSIE.3)", $HTTP_USER_AGENT);  
+/* Gibt true zurück, falls es sich beim Client Browser
+   um Netscape 2, 3 oder MSIE 3 handelt. */
+
+ereg ("([[:alnum:]]+) ([[:alnum:]]+) ([[:alnum:]]+)", $string,$regs); 
+/* Setzt drei Wörter, die durch Leerzeichen getrennt
+   sind, in $regs[1], $regs[2] und $regs[3] ein. */
+
+$string = ereg_replace ("^", "&lt;BR&gt;", $string); 
+/* Setzt ein &lt;BR&gt; Tag vor $string. */
+ 
+$string = ereg_replace ("$", "&lt;BR&gt;", $string); 
+/* Setzt ein &lt;BR&gt; Tag hinter $string. */
+
+$string = ereg_replace ("\n", "", $string);
+/* Entfernt alle Zeilenumbrüche aus $string. */
+     </programlisting>
+    </example>
+   </para>
+  </partintro>
+
+  <refentry id="function.ereg">
+   <refnamediv>
+    <refname>ereg</refname>
+    <refpurpose>
+     Sucht Übereinstimmungen mit einem regulären Ausdruck
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ereg</function></funcdef>
+      <paramdef>string <parameter>Suchmuster</parameter></paramdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+      <paramdef>array 
+       <parameter><optional>regs</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Sucht in <parameter>Zeichenfolge</parameter> nach Übereinstimmungen mit dem
+     regulären Ausdruck, der in <parameter>Suchmuster</parameter> angegeben
+     wurde.
+    </simpara>
+    <simpara>
+     Wenn Übereinstimmungen mit eingeklammerten Teilzeichenfolgen von
+     <parameter>Suchmuster</parameter> gefunden werden und die Funktion mit dem
+     dritten Argument <parameter>regs</parameter> aufgerufen wurde, werden die
+     Übereinstimmungen in den Elementen des Arrays <parameter>regs</parameter>
+     gespeichert. $regs[1] enthält dann die Teilzeichenfolge der ersten Klammer,
+     $regs[2] die Teilzeichenfolge der zweiten usw. $regs[0] enthält eine Kopie
+     von <parameter>Zeichenfolge</parameter>.
+    </simpara>
+    <simpara>
+     Wenn <function>ereg</function> irgendwelche Übereinstimmungen findet, wird
+     $regs mit genau zehn Elementen gefüllt, auch wenn es tatsächlich mehr oder
+     weniger Übereinstimmungen mit den eingeklammerten Teilzeichenfolgen gibt.
+     Dies wirkt sich aber nicht auf <function>ereg</function>s Fähigkeit aus,
+     mehr übereinstimmende Teilzeichenfolgen zu finden. Falls keine
+     Übereinstimmungen gefunden werden, wird $regs nicht von
+     <function>ereg</function> verändert.
+    </simpara>
+    <simpara>
+     Die Suche unterscheidet zwischen Groß und Kleinschreibung.
+    </simpara>
+    <simpara>
+     Gibt true zurück, wenn in <parameter>Zeichenfolge</parameter> eine
+     Übereinstimmung mit <parameter>Suchmuster</parameter> gefunden wurde oder
+     false, wenn keine Übereinstimmung gefunden wurde oder wenn ein Fehler
+     aufgetreten ist.
+    </simpara>
+    <para>
+     Der folgende Code-Schnipsel mimmt ein Datum im ISO-Format (JJJJ-MM-TT) und
+     gibt es im Format TT.MM.JJJJ aus:
+     <example>
+      <title><function>Ereg</function> Beispiel</title>
+      <programlisting role="php">
+if (ereg ("([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})", $date, $regs)) {
+    echo "$regs[3].$regs[2].$regs[1]";
+} else {
+    echo "Ungültiges Datumsformat: $date";
+}
+      </programlisting>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch: <function>eregi</function>,
+     <function>ereg_replace</function> und
+     <function>eregi_replace</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.ereg-replace">
+   <refnamediv>
+    <refname>ereg_replace</refname>
+    <refpurpose>Ersetzt einen regulären Ausdruck</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ereg_replace</function></funcdef>
+      <paramdef>string <parameter>Suchmuster</parameter></paramdef>
+      <paramdef>string <parameter>Ersatz</parameter></paramdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Diese Funktion durchsucht <parameter>Zeichenfolge</parameter> nach
+     Übereinstimmungen mit <parameter>Suchmuster</parameter> und ersetzt dann
+     den übereinstimmenden Text durch <parameter>Ersatz</parameter>.
+    </simpara>
+    <simpara>
+     Zurückgegeben wird die geänderte Zeichenfolge, was auch bedeuten könnte,
+     dass die ursprüngliche Zeichenfolge zurückgegeben wird, wenn es keine zu
+     ersetzenden Übereinstimmungen gibt.
+    </simpara>
+    <simpara>
+     Wenn <parameter>Suchmuster</parameter> eingeklammerte Teilzeichenfolgen
+     enthält, darf <parameter>Ersatz</parameter> Teilzeichenfolgen der Form
+     <literal>\\<replaceable>Ziffer</replaceable></literal> enthalten, die dann
+     durch die Ziffer'ste Teilzeichenfolge ersetzt werden.
+     <literal>\\0</literal> erzeugt den gesamten Inhalt der durchsuchten
+     Zeichenfolge. Bis zu neun Teilzeichenfolgen dürfen verwendet werden.
+     Klammern dürfen geschachtelt werden und werden in diesem Fall anhand der
+     öffnenden Klammern gezählt.
+    </simpara>  
+    <simpara>
+     Wenn in <parameter>Zeichenfolge</parameter> keine Übereinstimmungen
+     gefunden werden, wird <parameter>Zeichenfolge</parameter> unverändert
+     zurückgegeben.
+    </simpara>
+    <para>
+     Der folgende Code-Schnipsel gibt zum Beispiel dreimal "Das war ein Test"
+     aus:
+     <example>
+      <title><function>Ereg_replace</function> Beispiel</title>
+      <programlisting>
+$string = "Das ist ein Test";
+echo ereg_replace (" ist", " war", $string);
+echo ereg_replace ("( )ist", "\\1war", $string);
+echo ereg_replace ("(( )ist)", "\\2war", $string);
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Folgendes ist zu beachten: Wenn Sie als <parameter>Ersatz</parameter> einen
+     ganzzahligen Wert verwenden, bekommen sie vielleicht nicht das erwartete
+     Ergebnis. Das liegt daran, dass <function>ereg_replace</function> die Zahl
+     als Ordinalwert eines Zeichens betrachtet und dieses verwendet. Zum
+     Beispiel:
+     <example>
+      <title><function>ereg_replace</function> Beispiel</title>
+      <programlisting>
+&lt;?php
+/* Dieses funktioniert nicht wie erwartet. */
+$zahl = 4;
+$zeichenfolge = "Diese Zeichenfolge hat vier Wörter.";
+$zeichenfolge = ereg_replace('vier', $zahl, $zeichenfolge);
+echo $zeichenfolge;   /* Ausgabe: 'Diese Zeichenfolge hat   Wörter.' */
+
+/* Dieses funktioniert. */
+$num = '4';
+$string = "Diese Zeichenfolge hat vier Wörter.";
+$zeichenfolge = ereg_replace('vier', $zahl, $zeichenfolge);
+echo $string;   /* Output: 'Diese Zeichenfolge hat 4 Wörter.' */
+?>
+      </programlisting>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch: <function>ereg</function>, <function>eregi</function>
+     und <function>eregi_replace</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.eregi">
+   <refnamediv>
+    <refname>eregi</refname>
+    <refpurpose>
+     Sucht Übereinstimmung mit regulärem Ausdruck ohne Berücksichtigung von
+     Groß-/Kleinschreibung
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>eregi</function></funcdef>
+      <paramdef>string <parameter>Suchmuster</parameter></paramdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+      <paramdef>array 
+       <parameter><optional>regs</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion entspricht <function>ereg</function> mit dem Unterschied,
+     dass sie übereinstimmende Buchstaben nicht nach Groß- und Kleinschreibung
+     unterscheidet.
+    </para>
+    <para>
+     Siehe auch: <function>ereg</function>,
+     <function>ereg_replace</function> und
+     <function>eregi_replace</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.eregi-replace">
+   <refnamediv>
+    <refname>eregi_replace</refname>
+    <refpurpose>Ersetzt einen regulären Ausdrück ohne Berücksichtigung von
+     Groß-/Kleinschreibung
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>eregi_replace</function></funcdef>
+      <paramdef>string <parameter>Suchmuster</parameter></paramdef>
+      <paramdef>string <parameter>Ersatz</parameter></paramdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion entspricht <function>ereg_replace</function> mit dem
+     Unterschied, dass sie übereinstimmende Buchstaben nicht nach Groß- und
+     Kleinschreibung unterscheidet.
+    </para>
+    <para>
+     Siehe auch: <function>ereg</function>, <function>eregi</function> und
+     <function>ereg_replace</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.split">
+   <refnamediv>
+    <refname>split</refname>
+    <refpurpose>
+     Zerlegt eine Zeichenfolge anhand eines regulären Ausdrucks in ein Array
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>split</function></funcdef>
+      <paramdef>string <parameter>Suchmuster</parameter></paramdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+      <paramdef>int 
+       <parameter><optional>Beschränkung</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Gibt ein Array mit Zeichenfolgen zurück, die jeweils eine Teilzeichenfolge
+     von <parameter>Zeichenfolge</parameter> sind und durch deren Zerlegung an
+     den durch <parameter>Suchmuster</parameter> des regulären Ausdrucks
+     bestimmten Stellen entstehen.
+     Wenn <parameter>Beschränkung</parameter> gesetzt wurde, enthält das
+     zurückgegebene Array höchstens <parameter>Beschränkung</parameter>
+     Elemente, von denen das letzte den ganzen Rest von
+     <parameter>Zeichenfolge</parameter> enthält. Bei Auftreten eines Fehlers
+     gibt <function>split</function> false zurück.
+    </para>
+    <para>
+     Um die ersten fünf Felder einer Zeile von <filename>/etc/passwd</filename>
+     zu erhalten:
+     <example>
+      <title><function>Split</function> Beispiel</title>
+      <programlisting role="php">
+$passwd_list = split (":", $passwd_line, 5);
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Um ein Datum zu analysieren, das durch Schrägstriche, Punkte oder
+     Bindestriche getrennt ist:
+     <example>
+      <title><function>Split</function> Beispiel</title>
+      <programlisting role="php">
+$datum = "04/30/1973";  // Trennzeichen darf ein Schrägstrich, Punkt oder
+                        // Bindestrich sein
+list ($monat, $tag, $jahr) = split ('[/.-]', $datum);
+echo "Monat: $monat; Tag: $tag; Jahr: $jahr&lt;br&gt;\n";
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Beachten Sie, dass <parameter>Suchmuster</parameter> Groß- und
+     Kleinschreibung berücksichtigt.
+    </para>
+    <para>
+     Beachten Sie: wenn Sie die Fähigkeiten regulärer Ausdrücke nicht benötigen,
+     ist die Verwendung von <function>explode</function> schneller, weil
+     diese Funktion nicht unter der Last der Engine für reguläre Ausdrücke
+     steht.
+    </para>
+    <para>
+     Bitte beachten Sie, dass <parameter>Suchmuster</parameter> ein regulärer
+     Ausdruck ist. Wenn Sie eine Zerlegung an Zeichen vornehmen, die in
+     regulären Ausdrücken als besondere Zeichen betrachtet werden, müssen Sie
+     diese entsprechend kennzeichnen. Wenn Sie der Ansicht sind,
+     <function>split</function> (oder, bei diesem Thema, eine andere
+     Regex-Funktion) verhalte sich seltsam, lesen Sie bitte die Datei
+     <filename>regex.7</filename>, die sich im <filename>regex/</filename>
+     Unterverzeichnis ihrer PHP-Distribution befindet. Da sie im manpage-Fomat
+     vorliegt, sollten Sie einen Befehl der Art <command>man
+     /usr/local/src/regex/regex.7</command> verwenden, um sie zu lesen.
+    </para>
+    <para>
+     Siehe auch: <function>spliti</function>,
+     <function>explode</function> und <function>implode</function>.
+    </para>
+   </refsect1>
+  </refentry>
+  
+  <refentry id="function.spliti">
+   <refnamediv>
+    <refname>spliti</refname>
+    <refpurpose>
+     Zerlegt eine Zeichenfolge anhand eines regulären Ausdrucks ohne
+     Berücksichtigung von Groß-/Kleinschreibung in ein Array
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>split</function></funcdef>
+      <paramdef>string <parameter>Suchmuster</parameter></paramdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+      <paramdef>int 
+       <parameter><optional>Beschränkung</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion entspricht <function>split</function> mit dem Unterschied,
+     dass sie übereinstimmende Buchstaben nicht nach Groß- und Kleinschreibung
+     unterscheidet.
+    </para>
+    <para>
+     Siehe auch: <function>split</function>,
+     <function>explode</function> und <function>implode</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.sql-regcase">
+   <refnamediv>
+    <refname>sql_regcase</refname>
+    <refpurpose>
+     Erstellt einen regulären Ausdruck für eine Suche nach Übereinstimmungen
+     ohne Berücksichtigung von Groß-/Kleinschreibung
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>sql_regcase</function></funcdef>
+      <paramdef>string <parameter>Zeichenfolge</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Gibt einen korrekten regulären Ausdruck zurück, der mit
+     <parameter>Zeichenfolge</parameter> ohne Berücksichtigung von
+     Groß-/Kleinschreibung übereinstimmt. Dieser Ausdruck entspricht
+     <parameter>Zeichenfolge</parameter>, wobei jedes Zeichen in einen
+     Klammerausdruck umgewandelt wird. Die Klammer enthält dieses Zeichen, wenn
+     möglich, in groß- und kleingeschriebener Form, andernfalls enthält sie
+     das ursprüngliche Zeichen zweimal.
+     <example>
+      <title><function>Sql_regcase</function> Beispiel</title>
+      <programlisting role="php">
+echo sql_regcase ("Foo bar");
+      </programlisting>
+     </example>
+     Gibt <screen>[Ff][Oo][Oo][  ][Bb][Aa][Rr]</screen> aus.
+    </para>
+    <para>
+     Dies kann bei Produkten, die nur reguläre Ausdrücke mit Berücksichtigung
+     von Groß-/Kleinschreibung unterstützen, verwendet werden, um eine
+     Übereinstimmung mit Suchmustern ohne Berücksichtigung von
+     Groß-/Kleinschreibung zu erreichen.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+ </reference>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
