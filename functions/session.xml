@@ -126,13 +126,14 @@ $count++;
     URLs.
    </para>
    <para>
-    Wenn PHP mit <literal>--enable-trans-sid</literal> kompiliert
-    wurde, kann es dies transparent machen. Wenn sie diese Option
-    aktivieren, werden die URIs automatisch geändert, sodass sie die
-    Session-ID enthalten.  Alternativ können sie die Konstante
+    Wenn PHP mit <link linkend="install.configure.enable-trans-sid">
+    <literal>--enable-trans-sid</literal></link> kompiliert
+    wurde, kann es dies transparent machen. Wenn Sie diese Option
+    aktivieren, werden relative URIs automatisch geändert, sodass sie
+    die Session-ID enthalten.  Alternativ können sie die Konstante
     <literal>SID</literal> verwenden, die definiert wird, falls vom
-    Client keinen passendes Cookie gesendet
-    wurde. <literal>SID</literal> hat entweder die Form
+    Client keinen passendes Cookie gesendet wurde.
+    <literal>SID</literal> hat entweder die Form
     <literal>session_name=session_id</literal> oder ist eine leere
     Zeichenkette.
    </para>
@@ -162,7 +163,8 @@ Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
    </para>
    <para>
     Das <literal>&lt;?=SID?&gt;</literal> ist nicht nötig, wenn PHP mit
-    <literal>--enable-trans-sid</literal> kompiliert wurde.
+    <link linkend="install.configure.enable-trans-sid">
+    <literal>--enable-trans-sid</literal></link> kompiliert wurde.
    </para>
    <note>
     <para>
@@ -321,6 +323,22 @@ Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
        <literal>180</literal>.
       </simpara>
      </listitem>
+     <listitem>
+      <simpara>
+       <literal>session.use_trans_sid</literal> whether transient sid
+       support is enabled or not if enabled by compiling with
+       <link linkend="install.configure.enable-trans-sid">
+       <literal>--enable-trans-sid</literal></link>.
+       Defaults to <literal>1</literal> (enabled).
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <literal>url_rewriter.tags</literal> spefifies which html tags are
+       rewritten to include session id if transient sid support is enabled. 
+       Defaults to <literal>a=href,area=href,frame=src,input=src,form=fakeentry</literal>
+      </simpara>
+     </listitem>
     </itemizedlist>
     <note>
      <para>
@@ -344,9 +362,9 @@ Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
      </funcprototype>
     </funcsynopsis>
     <simpara>
-     <function>session_start</function> erzeugt eine Session (oder nimmt die
-     aktuelle, basierend auf der Session-ID, die über eine GET-Variable
-     oder ein Cookie übermittelt wurde, wieder auf).
+     <function>session_start</function> erzeugt eine Session (oder
+     nimmt die aktuelle, basierend auf der Session-ID, die über eine
+     GET-Variable oder ein Cookie übermittelt wurde, wieder auf).
     </simpara>
     <simpara>
      Diese Funktion gibt immer &true; zurück.
@@ -549,6 +567,24 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
      Diese Funktion gibt &true; zurück, wenn die Variable erfolgreich in
      der Session registriert wurde.
     </para>
+    <note>
+     <para>
+      It is not currently possible to register resource variables in a
+      session.  For example, you can not create a connection to a
+      database and store the connection id as a session variable and
+      expect the connection to still be valid the next time the
+      session is restored.  PHP functions that return a resource are
+      identified by having a return type of
+      <literal>resource</literal> in their function definitions.  A
+      list of functions that return resources are available in the
+      <link linkend="resource">resource types</link> appendix.
+     </para>
+    </note>
+    <note>
+     <para>
+      This function was added in PHP 4.0.
+     </para>
+    </note>
    </refsect1>
   </refentry>
 
@@ -938,6 +974,64 @@ echo "Die Cacheverwaltung ist jetzt auf $cacheverwaltung gesetzt&lt;p&gt;";
    </refsect1>
   </refentry>
 
+  <refentry id="function.session-write-close">
+   <refnamediv>
+    <refname>session_write_close</refname>
+    <refpurpose>
+     Speichert die Session-Daten und beendet die Session
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>session_write_close</function></funcdef>
+      <void/>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     End the current session and store session data.
+    </para>
+    <para>
+     Session data is usually stored after your script terminated
+     without the need to call
+     <function>session_write_close</function>, but as session data is
+     locked to prevend concurrent writes only one script may operate
+     on a session at any time. When using framesets together with
+     sessions you will experience the frames loading one by one due to
+     this locking. You can reduce the time needed to load all the
+     frames by ending the session as soon as all changes to session
+     variables are done.
+    </para>
+<!-- commented out until final decision on implementation
+    <para>
+     See also: <function>session_readonly</function>.
+    </para>
+-->
+   </refsect1>
+  </refentry>
+
+<!-- commented out until final decision on implementation
+  <refentry id="function.session-readonly">
+   <refnamediv>
+    <refname>session_readonly</refname>
+    <refpurpose>Begin session - reinitializes freezed variables, but no writeback on request end</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>session_readonly</function></funcdef>
+      <void/>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Read in session data without locking the session data. Changing
+     session data is not possible, but frameset performance will be improved.
+    </para>
+   </refsect1>
+  </refentry>
+-->
  </reference>
 
 <!-- Keep this comment at the end of the file
