@@ -1,95 +1,112 @@
  <chapter id="features.persistent-connections">
-  <title>Persistent database connections</title>
+  <title>Persistente Datenbankverbindungen</title>
 
   <simpara>
-   Persistent connections are SQL links that do not close when the
-   execution of your script ends. When a persistent connection is
-   requested, PHP checks if there's already an identical persistent
-   connection (that remained open from earlier) - and if it exists, it
-   uses it. If it does not exist, it creates the link. An 'identical'
-   connection is a connection that was opened to the same host, with
-   the same username and the same password (where applicable).</simpara>
+   Persistente Verbindungen sind SQL-Verbindungen, die nach
+   Abarbeitung des Skriptes nicht geschlossen werden. Wenn eine
+   persistente Verbindung angefordert wird, prüft PHP zuerst, ob
+   bereits eine identische persistente Verbindung (die vielleicht
+   vorher offen geblieben ist) existiert und benutzt sie in diesem Fall.
+   Sollte keine Verbindung existieren, wird eine hergestellt. Eine
+   'identische' Verbindung ist eine Verbindung, die zu dem
+   gleichen Host mit dem gleichen Usernamen und Passwort
+   hergestellt wurde.</simpara>
 
   <simpara>
-   People who aren't thoroughly familiar with the way web servers work
-   and distribute the load may mistake persistent connects for what
-   they're not. In particular, they do <emphasis>not</emphasis> give
-   you an ability to open 'user sessions' on the same SQL link, they
-   do <emphasis>not</emphasis> give you an ability to build up a
-   transaction efficently, and they don't do a whole lot of other
-   things. In fact, to be extremely clear about the subject, persistent
-   connections don't give you <emphasis>any</emphasis> functionality
-   that wasn't possible with their non-persistent brothers.</simpara>
+   Wer nicht durchgängig mit der Art und Weise, wie
+   Webserver arbeiten und die Last verteilen, vertraut ist, könnte
+   missverstehen, wofür persistente Verbindungen gedacht sind.
+   Im Besonderen bieten sie <emphasis>keine</emphasis>
+   Möglichkeit, 'Benutzersitzungen' auf der gleichen SQL-Verbindung
+   zu öffnen und <emphasis>keine</emphasis> Möglichkeit, eine
+   leistungsstartke Transaktion aufzubauen, und sie können viele
+   andere Sachen nicht. Um absulute Klarheit zu schaffen:
+   Persistente Verbindungen bieten <emphasis>keine</emphasis>
+   Funktionalität, die nicht auch von nicht-persistenten Verbindungen
+   bereitgestellt wird.</simpara>
 
   <simpara>
-   Why?</simpara> 
+   Warum?</simpara> 
 
   <simpara>
-   This has to do with the way web servers work. There are three ways
-   in which your web server can utilize PHP to generate web pages.</simpara>
+   Das hat mit der Arbeitsweise con Webservern zu tun. Es gibt drei
+   Möglichkeiten, wie ein Webserver PHP zur Generierung von
+   Webseiten einsetzen kann.</simpara>
 
   <simpara>
-   The first method is to use PHP as a CGI "wrapper". When run this
-   way, an instance of the PHP interpreter is created and destroyed for
-   every page request (for a PHP page) to your web server.  Because it
-   is destroyed after every request, any resources that it acquires
-   (such as a link to an SQL database server) are closed when it is
-   destroyed. In this case, you do not gain anything from trying to use
-   persistent connections -- they simply don't persist.</simpara>
+   Die erste Methode ist, PHP als CGI-'Wrapper' zu benutzen. 
+   Wenn diese Methode eingesetzt wird, wird für jede Anfrage 
+   nach einer PHP-Seite vom Webserver eine Instanz des PHP-
+   Interpreters gestartet und anschliessend wieder beendet. 
+   Durch die Beendigung des Interpreters nach abgeschlossener
+   Anfrage werden alle Ressourcen, auf die zugegriffen wurde 
+   ( wie beispielsweise eine Verbindung zu einem SQL-
+   Datenbankserver) wieder geschlossen. In diesem
+   Fall erreicht man nichts, wenn man persistente Verbindungen
+   benutzt - sie sind eben nicht beständig.</simpara>
 
   <simpara>
-   The second, and most popular, method is to run PHP as a module in
-   a multiprocess web server, which currently only includes Apache. A
-   multiprocess server typically has one process (the parent) which
-   coordinates a set of processes (its children) who actually do the work
-   of serving up web pages. When each request comes in from a a client,
-   it is handed off to one of the children that is not already serving
-   another client. This means that when the same client makes a second
-   request to the server, it may be serviced by a different child process
-   than the first time. What a persistent connection does for you in
-   this case it make it so each child process only needs to connect to
-   your SQL server the first time that it serves a page that makes us of
-   such a connection. When another page then requires a connection to the
-   SQL server, it can reuse the connection that child established earlier.</simpara>
+   Die zweite und populärere Methode ist der Einsatz von PHP als
+   Modul in einem Multiprozess-Webserver, was momentan nur
+   auf den Apache zutrifft. Typischerweise hat ein Multiprozess-
+   Webserver einen Prozess (den 'Eltern' Prozess), der einen Satz
+   weiterer Prozesse (die 'Kinder') koodiniert, die die eigentliche Arbeit
+   des Bereitstellens der Seiten übenehmen. Jede Anfrage, die von
+   einen Client erfolgt, wird an einen untergeordneten Prozess, der
+   noch keine andere Anfrage bearbeitet, weitergereicht. Das bedeutet,
+   dass eine zweite Anfrage des Clients an den Server unter
+   Umständen von einem anderen untergeordneten Prozess als die
+   erste Anfrage bearbeitet wird. In diesem Fall sorgt eine persistente
+   Verbindung dafür, dass jeder untergeordnete Prozess sich nur 
+   einmal mit dem SQL-Server verbinden muss, wenn eine solche
+   benötigt wird. Benötigt dann eine weitere Seite die Verbindung mit 
+   dem SQL-Server, kann auf die zurückgegriffen werden,
+   die der untergeordnete Prozess vorher hergestellt hat.</simpara>
 
   <simpara>
-   The last method is to use PHP as a plug-in for a multithreaded web
-   server. Currently this is only theoretical -- PHP does not yet work
-   as a plug-in for any multithreaded web servers. Work is progressing
-   on support for ISAPI, WSAPI, and NSAPI (on Windows), which will
-   all allow PHP to be used as a plug-in on multithreaded servers like
-   Netscape FastTrack, Microsoft's Internet Information Server (IIS),
-   and O'Reilly's WebSite Pro. When this happens, the behavior will be
-   essentially the same as for the multiprocess model described before.</simpara>
+   Die letzte Methode ist, PHP als Plug-in für einen Multithread-
+   Webserver zu benutzen. Momentan ist dies noch Theorie - PHP
+   arbeitet noch nicht als Plug-in für irgedeinen dieser Server. An
+   der Unterstützung für ISAPI, WSAPI und NSAPI wird gearbeitet,
+   so dass die Nutzung von PHP mit Multithread-Serven wie
+   Netscape Fast Track, Microsoft Internet Information Server (IIS)
+   und O'Reilly's WebSite Pro möglich wird. Wenn es soweit ist,
+   wird das Verhalten im wesentlichen dem oben
+   beschriebenen Multiprozess-Modell entsprechen.</simpara>
 
   <simpara>
-   If persistent connections don't have any added functionality, what
-   are they good for?</simpara>
+   Wozu dienen persistente Verbindungen, wenn sie keine 
+   zusätzliche Funktionalität bieten?</simpara>
 
   <simpara>
-   The answer here is extremely simple -- efficiency. Persistent
-   connections are good if the overhead to create a link to your SQL
-   server is high. Whether or not this overhead is really high depends
-   on many factors. Like, what kind of database it is, whether or not it
-   sits on the same computer on which your web server sits, how loaded
-   the machine the SQL server sits on is and so forth. The bottom line
-   is that if that connection overhead is high, persistent connections
-   help you considerably. They cause the child process to simply connect
-   only once for its entire lifespan, instead of every time it processes
-   a page that requires connecting to the SQL server. This means that
-   for every child that opened a persistent connection will have its own
-   open persistent connection to the server. For example, if you had 20
-   different child processes that ran a script that made a persistent
-   connection to your SQL server, you'd have 20 different connections
-   to the SQL server, one from each child.</simpara>
+   Die Antwort ist ausserordentlich einfach: Effizienz. Persistente
+   Verbindungen sind nützlich, wenn die Notwendigkeit, eine
+   Verbindung zu einem SQL-Server herzustellen, hoch ist.
+   Ob dies der Fall ist oder nicht, hängt von vielen Faktoren ab -
+   zum Beispiel, um was für eine Datenbank es sich handelt, ob
+   sie auf dem gleichen Rechner wie der Webserver läuft oder
+   welche Last die SQL-Maschine zu bewältigen hat usw.
+   Grundsätzlich gilt, dass, wenn viele Verbindungen hergestellt
+   werden müssen, persistente Verbindungen ausserordentlich 
+   hilfreich sind. Sie veranlassen den untergeordneten Prozess, 
+   sich während seiner gesamten Lebensdauer lediglich einmal mit
+   dem SQL-Server zu verbinden, anstatt jedesmal beim Aufruf
+   einer Seite, die eine Verbindung benötigt. Das heisst, dass
+   jeder untergeordneten Prozess, der eine persistente
+   Verbindung öffnet, eine eigene dauerhafte Verbindung zum 
+   Server hat. Bei 20 untergeordnete Prozessen, die ein Skript 
+   ausführen, das eine persistente Verbindung zum SQL-Server 
+   herstellt, hat man beispielsweise 20 verschiedene Verbindungen 
+   zum SQL-Server - eine für jeden untergeordneten Prozess.</simpara>
 
   <simpara>
-   An important summary. Persistent connections were designed to have
-   one-to-one mapping to regular connections. That means that you should
-   <emphasis>always</emphasis> be able to replace persistent connections
-   with non-persistent connections, and it won't change the way your
-   script behaves. It <emphasis>may</emphasis> (and probably will)
-   change the efficiency of the script, but not its behavior!</simpara>
+   Eine wichtige Zusammenfassung. Persistente Verbindungen wurden
+   entwickelt, um eins-zu-eins Abbildungen auf reguläre Verbindungen 
+   zu haben. Das heisst, dass man <emphasis>immer</emphasis> in der 
+   Lage sein sollte, die persistenten Verbindungen durch nicht-persistente
+   zu ersetzten, ohne dass dies den Skriptablauf verändert. Es <emphasis>
+   kann</emphasis> (und wird vermutlich auch) die Effizienz des Skriptes
+   beeinflussen, aber nicht dessen Verhalten.</simpara>
 
  </chapter>
 
