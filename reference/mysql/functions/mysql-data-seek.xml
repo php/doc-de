@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.7 $ -->
-<!-- EN-Revision: 1.10 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.8 $ -->
+<!-- EN-Revision: 1.11 Maintainer: betz Status: ready -->
 
   <refentry id="function.mysql-data-seek">
    <refnamediv>
@@ -45,16 +45,19 @@
       <programlisting role="php">
 <![CDATA[
 <?php
-$link = mysql_connect("localhost", "mysql_user", "mysql_password")
-    or die("Keine Verbindung möglich: " . mysql_error());
-
-mysql_select_db("samp_db")
-    or die("Auswahl der Datenbank nicht möglich: " . mysql_error());
-
-$query = "SELECT nach_name, vor_name FROM freunde";
-$result = mysql_query($query)
-    or die("Anfrage fehlgeschlagen");
-
+$link = mysql_connect('localhost', 'mysql_user', 'mysql_password');
+if (!$link) {
+    die('Keine Verbindung möglich: ' . mysql_error());
+}
+$db_selected = mysql_select_db('sample_db');
+if (!$db_selected) {
+    die('Auswahl der Datenbank nicht möglich: ' . mysql_error());
+}
+$query = 'SELECT nach_name, vor_name FROM freunde';
+$result = mysql_query($query);
+if (!$result) {
+    die('Anfrage fehlgeschlagen: ' . mysql_error());
+}
 /* holen der Zeilen in umgekehrter Reihenfolge */
 for ($i = mysql_num_rows($result) - 1; $i >= 0; $i--) {
     if (!mysql_data_seek($result, $i)) {
@@ -62,13 +65,14 @@ for ($i = mysql_num_rows($result) - 1; $i >= 0; $i--) {
         continue;
     }
 
-    if (!($row = mysql_fetch_object($result)))
+    if (!($row = mysql_fetch_assoc($result))) {
         continue;
+    }
 
-        echo "$row->nach_name $row->vor_name<br />\n";
+    echo $row['nach_name'] . ' ' . $row['vor_name'] . "<br />\n";
 }
 
-mysql_free_result ($result);
+mysql_free_result($result);
 ?>
 ]]>
       </programlisting>
