@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.7 $ -->
-<!-- EN-Revision: 1.9 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.8 $ -->
+<!-- EN-Revision: 1.11 Maintainer: betz Status: ready -->
 
   <refentry id="function.microtime">
    <refnamediv>
@@ -26,7 +26,7 @@
      die Zeichenkette "msec sec" zurück. Dabei entspricht sec der aktuellen
      Zeit, ausgedrückt als Anzahl der Sekunden seit Beginn der UNIX-Epoche
      (0:00:00 January 1, 1970 GMT), msec stellt den Mikrosekunden-Teil dar.
-     Beide Teile des Strings werden in Sekunden zurückgegen.
+     Beide Teile des Strings werden in Sekundeneinheiten zurückgegeben.
     </para>
     <para>
      Wird <parameter>get_as_float</parameter> angegeben und als &true;
@@ -35,46 +35,52 @@
     </para>
     <note>
      <simpara>
-      Der Parameter <parameter>get_as_float</parameter> wurde in 
-      <literal>PHP 5.0.0</literal> eingeführt.
+      Der Parameter <parameter>get_as_float</parameter> wurde in
+      PHP 5.0.0 eingeführt.
      </simpara>
     </note>
     <para>
      <example>
-      <title><function>microtime</function> Beispiel</title>
+      <title>Zeitmessung einer Skriptausführung mit <function>microtime</function></title>
       <programlisting role="php">
 <![CDATA[
 <?php
-function getmicrotime()
+/**
+ * Simple function to replicate PHP5 behaviour
+ */
+function microtime_float()
 {
-    list($usec, $sec) = explode(" ",microtime()); 
-    return ((float)$usec + (float)$sec); 
+    list($usec, $sec) = explode(" ", microtime());
+    return ((float)$usec + (float)$sec);
 }
 
-$time_start = getmicrotime();
-    
-for ($i=0; $i < 1000; $i++) {
-    //mach nichts,1000 mal
-}
+$time_start = microtime_float();
 
-$time_end = getmicrotime();
+// Sleep for a while
+usleep(100);
+
+$time_end = microtime_float();
+$time = $time_end - $time_start;
+
+echo "Did nothing in $time seconds\n";
+?>
+]]>
+      </programlisting>
+     </example>
+     <example>
+      <title>Zeitmessung einer Skriptausführung in PHP5</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$time_start = microtime(true);
+
+// Sleep for a while
+usleep(100);
+
+$time_end = microtime(true);
 $time = $time_end - $time_start;
 
 echo "Nichts getan in $time Sekunden\n";
-
-// mit PHP 5 erreichen Sie das Gleich auf folgende Art und Weise:
-
-$time_start = microtime(1);
-
-for ($i=0; $i < 1000; $i++) {
-    //mach nichts,1000 mal
-}
-
-$time_end = microtime(1);
-$time = $time_end - $time_start;
-
-echo "Nichts getan in $time Sekunden\n";
-
 ?>
 ]]>
       </programlisting>
