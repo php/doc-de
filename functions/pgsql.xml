@@ -36,17 +36,17 @@
       <tbody>
        <row>
 	<entry>postmaster &</entry>
-	<entry>pg_connect("", "", "", "", "dbname");</entry>
+	<entry>pg_connect("dbname=MyDbName");</entry>
 	<entry>OK</entry>
        </row>
        <row>
 	<entry>postmaster -i &</entry>
-	<entry>pg_connect("", "", "", "", "dbname");</entry>
+	<entry>pg_connect("dbname=MyDbName");</entry>
 	<entry>OK</entry>
        </row>
        <row>
 	<entry>postmaster &</entry>
-	<entry>pg_connect("localhost", "", "", "", "dbname");</entry>
+	<entry>pg_connect("host=localhost dbname=MyDbName");</entry>
 	<entry>	 
 	 Unable to connect to PostgreSQL server: connectDB() failed:
 	 Is the postmaster running and accepting TCP/IP (with -i)
@@ -56,7 +56,7 @@
        </row>
        <row>
 	<entry>postmaster -i &</entry>
-	<entry>pg_connect("localhost", "", "", "", "dbname");</entry>
+	<entry>pg_connect("host=localhost dbname=MyDbName");</entry>
 	<entry>OK</entry>
        </row>
       </tbody>
@@ -65,8 +65,16 @@
    </para>
    <para>
     Eine Verbindung läßt sich auch mit folgendem Befehl herstellen:
-    <command>$conn = pg_Connect("host=localhost port=5432
-    dbname=chris");</command>
+    <command>$conn = pg_Connect("host=myHost port=myPort tty=myTTY
+    options=myOptions user=myUser password=myPassword dbname=myDB");
+    </command>
+   </para>
+   <para>
+    Die bisherige Syntax:
+    <command>$conn = pg_connect ("host", "port", "options", "tty",
+    "dbname")
+    </command>
+    ist veraltet und sollte nicht weiter verwendet werden.
    </para>
    <para>
     Um die Large Object-Schnittstelle zu benutzen, ist es nötig, diese
@@ -98,7 +106,7 @@
   <refentry id="function.pg-close">
    <refnamediv>
     <refname>pg_Close</refname>
-    <refpurpose>Schliesst eine PostgreSQL-Verbindung</refpurpose>
+    <refpurpose>Schließt eine PostgreSQL-Verbindung</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -109,9 +117,9 @@
      </funcprototype>
     </funcsynopsis>
     <para>
-     Gibt false zurück, wenn die Verbindung zur Datenbank keine
+     Liefert FALSE zurück, wenn die Verbindung zur Datenbank keine
      gültige Kennung hat, ansonsten ist der Rückgabewert
-     true.  Schliesst eine PostgreSQL Datenbank-Verbindung mit der
+     TRUE.  Schließt eine PostgreSQL Datenbank-Verbindung mit der
      angegebenen Verbindungskennung.
     </para>
    </refsect1>
@@ -161,32 +169,53 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>pg_connect</function></funcdef>
-      <paramdef>string <parameter>host</parameter></paramdef>
-      <paramdef>string <parameter>port</parameter></paramdef>
-      <paramdef>string <parameter>options</parameter></paramdef>
-      <paramdef>string <parameter>tty</parameter></paramdef>
-      <paramdef>string <parameter>dbname</parameter></paramdef>
+      <paramdef>string <parameter>conn_string</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
      Öffnet eine Verbindung zu einer PostgreSQL-Datenbank und liefert
-     bei Erfolg die Verbindungskennung zurück - oder false, falls
-     keine Verbindung hergestellt werden konnte.  Jedes der Argumente,
-     inklusive der Portnummer, sollte ein in Anführungszeichen
-     gesetzter String sein. Die options- und tty-Argumente sind
-     optional und können ausgelassen werden. Die von dieser Funktion
+     bei Erfolg die Verbindungskennung zurück - oder FALSE, falls
+     keine Verbindung hergestellt werden konnte. 
+     Alle Verbindungsdaten sind in dem String
+     <parameter>conn_string</parameter> zusammengefasst.
+     <example>
+     <title>Gebrauch von <function>pg_connect</function></title>
+     <programlisting role="php">
+&lt;?php
+$dbconn = pg_Connect ("dbname=mary");
+//connect to a database named "mary"
+$dbconn2 = pg_Connect ("host=localhost port=5432 dbname=mary");
+//connect to a database named "mary" on "localhost" at port "5432"
+$dbconn3 = pg_Connect ("user=lamb passwd=baaaa dbname=mary ");
+//connect to a database named "mary" with a username and password
+?>
+     </programlisting>
+     </example>
+     Die von dieser Funktion
      zurückgelieferte Verbindungskennung wird von anderen
      PostgreSQL-Funktionen benötigt.  Es ist auch möglich, mehrere
      Verbindungen gleichzeitig zu öffnen.
     </para>
     <para>
-     Eine Verbindung kann auch mit folgendem Befehl hergestellt
-     werden: <command>$conn = pg_connect("dbname=marliese
-     port=5432");</command> Weitere Parameter neben
-     <parameter>dbname</parameter> und <parameter>port</parameter>
-     sind <parameter>host</parameter>, <parameter>tty</parameter>,
-     <parameter>options</parameter>, <parameter>user</parameter> und
-     <parameter>password</parameter>.
+     Die möglichen Argumente der Verbindungsdaten sind
+     <parameter>dbname</parameter> 
+     <parameter>port</parameter>, <parameter>host</parameter>, 
+     <parameter>tty</parameter>, <parameter>options</parameter>,
+     <parameter>user</parameter>, und <parameter>password</parameter>.
+    </para>
+    <para>
+     Die alte Syntax
+     <funcsynopsis>
+      <funcprototype>
+       <funcdef>int <function>pg_connect</function></funcdef>
+       <paramdef>string <parameter>host</parameter></paramdef>
+       <paramdef>string <parameter>port</parameter></paramdef>
+       <paramdef>string <parameter>options</parameter></paramdef>
+       <paramdef>string <parameter>tty</parameter></paramdef>
+       <paramdef>string <parameter>dbname</parameter></paramdef>
+      </funcprototype>
+     </funcsynopsis>
+     sollte nicht mehr verwendet werden.
     </para>
     <para>
      Siehe auch <function>pg_pConnect</function>.
@@ -209,7 +238,7 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
     </funcsynopsis>
     <para>
      Gibt den Namen der Datenbank, deren Verbindungskennung übergeben
-     wurde, aus - oder false, wenn es sich um eine ungültige Kennung
+     wurde, aus - oder FALSE, wenn es sich um eine ungültige Kennung
      handelt.
     </para>
    </refsect1>
@@ -218,10 +247,10 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
   <refentry id="function.pg-end-copy">
    <refnamediv>
     <refname>pg_end_copy</refname>
-    <refpurpose>Sync with PostgreSQL backend</refpurpose>
+    <refpurpose>Syncronisation mit dem PostgreSQL backend</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>pg_end_copy</function></funcdef>
@@ -231,13 +260,14 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>pg_end_copy</function> syncs PostgreSQL frontend with
-     the backend after doing a copy operation. It must be issued or
-     the backend may get "out of sync" with the frontend. Returns
-     TRUE if successfull, FALSE otherwise.
+     <function>pg_end_copy</function> syncronisiert das PostgreSQL
+     frontend mit dem
+     backend nach einer Kopier-Operation. Die Funktion muss aufgerufen werden,
+     damit das backend mit dem frontend synchronisiert bleibt.
+     Liefert TRUE im Erfolgsfall, sonst FALSE.
     </para>
     <para>
-     For further details and an example, see also
+     Weiter Details und ein Beispiel finden Sie bei der Funktion
      <function>pg_put_line</function>.
     </para>
    </refsect1>
@@ -257,7 +287,7 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
      </funcprototype>
     </funcsynopsis>
     <para>
-     Liefert einen String, der die Fehlermeldung enthält oder false
+     Liefert einen String, der die Fehlermeldung enthält oder FALSE
      bei Versagen.  Details über den Fehler können aber eher
      nicht durch pg_errormessage bezogen werden. Wenn der Fehler bei
      der letzten Datenbank-Aktion, für die eine gültige Kennung
@@ -283,7 +313,7 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
     </funcsynopsis>
     <para>
      Gibt eine Ergebniskennung zurück, wenn die Abfrage ausgeführt
-     wurde oder false bei gescheiterter Abfrage oder ungültiger
+     wurde oder FALSE bei gescheiterter Abfrage oder ungültiger
      Verbindungskennung. (Details über den Fehler kann man bei
      gültiger Verbindung durch den Gebrauch von
      <function>pg_ErrorMessage</function> erhalten).  Diese Funktion
@@ -326,7 +356,7 @@ echo $cmdtuples . " &lt;- cmdtuples affected.";
     </funcsynopsis>
     <para>
      Rückgabewert: Ein Array, das mit der eingelesenen Reihe identisch
-     ist, oder false, wenn keine Reihe mehr gelesen werden kann.
+     ist, oder FALSE, wenn keine Reihe mehr gelesen werden kann.
     </para>
     <para>
      <function>pg_fetch_array</function> ist eine erweiterte Version
@@ -404,7 +434,7 @@ echo $arr["autor"] . " &lt;- array\n";
     </funcsynopsis>
     <para>
      Rückgabewert: Ein Objekt, dessen Eigenschaften mit denen der
-     Felder des erhaltenen Datensatzes übereinstimmen oder false, wenn
+     Felder des erhaltenen Datensatzes übereinstimmen oder FALSE, wenn
      kein Datensatz mehr zurückgegeben wird.
     </para>
     <para>
@@ -500,7 +530,7 @@ pg_close ($db_conn);
     </funcsynopsis>
     <para>
      Rückgabewert: Ein Array, das mit dem gelesenen Datensatz
-     übereinstimmt oder false, wenn kein Datensatz mehr zurückgegeben
+     übereinstimmt oder FALSE, wenn kein Datensatz mehr zurückgegeben
      wird.
     </para>
     <para>
@@ -511,7 +541,7 @@ pg_close ($db_conn);
     </para>
     <para>
      Ein nachfolgender Aufruf von <function>pg_fetch_row</function>
-     wird den nächste Datensatz im Ergebnissatz ausgeben, oder false,
+     wird den nächste Datensatz im Ergebnissatz ausgeben, oder FALSE,
      wenn keine auszugebender Datensatz mehr vorhanden ist.
     </para>
     <para>
@@ -665,7 +695,7 @@ echo $row[1] . " &lt;- row\n";
      Speichergröße (in Bytes) des angegebenen Feldes in dem durch die
      Kennung definierten Ergebnis. Die Feldnumerierung beginnt
      bei 0. Eine Feldgröße von -1 deutet auf ein Feld mit variabler
-     Länge hin.  Diese Funktion gibt im Fehlerfall false
+     Länge hin.  Diese Funktion gibt im Fehlerfall FALSE
      zurück.
     </para>
    </refsect1>
@@ -772,7 +802,7 @@ echo $row[1] . " &lt;- row\n";
   <refentry id="function.pg-loclose">
    <refnamediv>
     <refname>pg_loclose</refname>
-    <refpurpose>Schliesst ein großes Objekt</refpurpose>
+    <refpurpose>Schließt ein großes Objekt</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -783,7 +813,7 @@ echo $row[1] . " &lt;- row\n";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>pg_loclose</function> schliesst ein Inversion Large
+     <function>pg_loclose</function> schließt ein Inversion Large
      Object. <parameter>fd</parameter> ist der Dateibeschreiber des mit
      <function>pg_loopen</function> geöffneten Objekts.
     </para>
@@ -822,7 +852,7 @@ echo $row[1] . " &lt;- row\n";
     <refpurpose>export a large object to file</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>pg_loexport</function></funcdef>
@@ -853,7 +883,7 @@ echo $row[1] . " &lt;- row\n";
     <refpurpose>import a large object from file</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>pg_loimport</function></funcdef>
@@ -990,7 +1020,7 @@ echo $row[1] . " &lt;- row\n";
      <function>pg_lowrite</function> schreibt aus einer Variablen
      höchstens <parameter>buf</parameter> in ein grosses Objekt und
      liefert die Anzahl der tasächlich geschriebenen Bytes zurück,
-     oder false, wenn ein Fehler auftritt.  <parameter>fd</parameter>
+     oder FALSE, wenn ein Fehler auftritt.  <parameter>fd</parameter>
      ist der Dateibeschreiber des grossen Objektes aus
      <function>pg_loopen</function>.
     </para>
@@ -1071,33 +1101,45 @@ echo $row[1] . " &lt;- row\n";
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>pg_pconnect</function></funcdef>
-      <paramdef>string <parameter>host</parameter></paramdef>
-      <paramdef>string <parameter>port</parameter></paramdef>
-      <paramdef>string <parameter>options</parameter></paramdef>
-      <paramdef>string <parameter>tty</parameter></paramdef>
-      <paramdef>string <parameter>dbname</parameter></paramdef>
+      <paramdef>string <parameter>conn_string</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
-     Gibt bei Erfolg eine Verbindungskennung zurück, false, wenn die
-     Verbindung nicht hergestellt werden konnte. Eine persistente
-     Verbindung zu einer PostgreSQL Datenbank wird geöffnet. Jedes
-     der Argumente, inklusive der Portnummer, sollte ein in
-     Anführungszeichen gesetzter String sein. Die options- und
-     tty-Argumente sind optional und können ausgelassen werden.  Diese
-     Funktion liefert eine Verbindungskennung zurück, die von anderen
-     PostgreSQL-Funktionen benötigt wird. Es können mehrere
-     persistente Verbindungen gleichzeitig geöffnet werden. Siehe auch
-     <function>pg_Connect</function>.
+     Öffnet eine persistente Verbindung zu einer PostgreSQL-Datenbank
+     und liefert bei Erfolg die Verbindungskennung zurück - oder FALSE,
+     falls keine Verbindung hergestellt werden konnte. 
+     Alle Verbindungsdaten sind in dem String
+     <parameter>conn_string</parameter> zusammengefasst.
     </para>
     <para>
-     Eine Verbindung kann auch mit dem folgenden Befehl hergestellt
-     werden: <command>$conn = pg_pconnect("dbname=marliese
-     port=5432");</command> Weitere Parameter neben
-     <parameter>dbname</parameter> und <parameter>port</parameter>
-     sind <parameter>host</parameter>, <parameter>tty</parameter>,
-     <parameter>options</parameter>, <parameter>user</parameter> und
-     <parameter>password</parameter>.
+     Die von dieser Funktion
+     zurückgelieferte Verbindungskennung wird von anderen
+     PostgreSQL-Funktionen benötigt.  Es ist auch möglich, mehrere
+     Verbindungen gleichzeitig zu öffnen.
+    </para>
+    <para>
+     Die möglichen Argumente der Verbindungsdaten sind
+     <parameter>dbname</parameter> 
+     <parameter>port</parameter>, <parameter>host</parameter>, 
+     <parameter>tty</parameter>, <parameter>options</parameter>,
+     <parameter>user</parameter>, und <parameter>password</parameter>.
+    </para>
+    <para>
+     Die alte Syntax
+     <funcsynopsis>
+      <funcprototype>
+       <funcdef>int <function>pg_pconnect</function></funcdef>
+       <paramdef>string <parameter>host</parameter></paramdef>
+       <paramdef>string <parameter>port</parameter></paramdef>
+       <paramdef>string <parameter>options</parameter></paramdef>
+       <paramdef>string <parameter>tty</parameter></paramdef>
+       <paramdef>string <parameter>dbname</parameter></paramdef>
+      </funcprototype>
+     </funcsynopsis>
+     sollte nicht mehr verwendet werden.
+    </para>
+    <para>
+     Siehe auch <function>pg_connect</function>.
     </para>
    </refsect1>
   </refentry>
@@ -1125,38 +1167,39 @@ echo $row[1] . " &lt;- row\n";
   <refentry id="function.pg-put-line">
    <refnamediv>
     <refname>pg_put_line</refname>
-    <refpurpose>Send a NULL-terminated string to PostgreSQL backend</refpurpose>
+    <refpurpose>Sendet eine NULL-terminierte Zeichenkette zum PostgreSQL backend</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>pg_put_line</function></funcdef>
       <paramdef>resource
        <parameter><optional>connection_id</optional></parameter>
       </paramdef>
-      <paramdef>string <parameter>data</parameter></paramdef>
+      <paramdef>string <parameter>Daten</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>pg_put_line</function> sends a NULL-terminated string
-     to the PostgreSQL backend server. This is useful for example for
-     very high-speed inserting of data into a table, initiated by
-     starting a PostgreSQL copy-operation. That final NULL-character
-     is added automatically. Returns TRUE if successfull, FALSE
-     otherwise.
+     <function>pg_put_line</function> sendet eine NULL-terminierte
+     Zeichenkette 
+     an den  PostgreSQL backend server. Nützliche ist die Funktion um
+     bespielsweise Daten mit hoher Geschnwindigkeit in eine Datenbanktabelle
+     einzufügen, wenn dieser Vorgang mit einer PostgreSQL copy-Operation
+     begonnen wurde. 
+     Der abschließende NULL-character
+     wird automatisch hinzugefügt. Liefert TRUE im Erfolgsfall, sonst FALSE.
     </para>
     <note>
-     <para> 
-      Note the application must explicitly send the two characters "\."
-      on a final line to indicate to the backend that it has finished
-      sending its data.
+     <para>
+      Beachten sie, dass die Anwendung explizit die beiden Zeichen "\."
+      in der letzten Zeile senden muss, um damit dem backend das Datenende
+      anzuzeigen.
      </para>
     </note>
     <para>
-     See also <function>pg_end_copy</function>.
      <example>
-      <title>High-speed insertion of data into a table</title>
+      <title>Schnelles Einfügen von Daten in eine Tabelle</title>
       <programlisting role="php">
 &lt;?php 
     $conn = pg_pconnect ("dbname=foo");
@@ -1169,6 +1212,9 @@ echo $row[1] . " &lt;- row\n";
 ?>
       </programlisting>
      </example>
+    </para>
+    <para>
+     Siehe auch <function>pg_end_copy</function>.
     </para>
    </refsect1>
   </refentry>
@@ -1217,7 +1263,7 @@ echo $row[1] . " &lt;- row\n";
     <refpurpose>Trace a connection to PostgreSQL server</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>pg_trace</function></funcdef>
@@ -1252,7 +1298,7 @@ echo $row[1] . " &lt;- row\n";
      logging, FALSE otherwise.
     </para>
     <para>
-     See also <function>fopen</function> and <function>pg_untrace</function>.
+     Siehe auch <function>fopen</function> and <function>pg_untrace</function>.
     </para>
    </refsect1>
   </refentry>
@@ -1284,7 +1330,7 @@ echo $row[1] . " &lt;- row\n";
     <refpurpose>Stop tracing a connection to PostgreSQL server</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>pg_untrace</function></funcdef>
@@ -1302,7 +1348,7 @@ echo $row[1] . " &lt;- row\n";
      Returns always TRUE.
     </para>
     <para>
-     See also <function>pg_trace</function>.
+     Siehe auch <function>pg_trace</function>.
     </para>
    </refsect1>
   </refentry>
