@@ -290,7 +290,7 @@ if (!copy ($file, $file.'.bak')) {
      Unter Windows wird sowohl der Slash (<literal>/</literal>) als
      auch der Backslash (<literal>\</literal>) als Trennzeichen bei
      Pfadangaben benutzt. Unter anderen Betriebssystemen hingegen nur
-     der Slash (<literal>/</literal>)
+     der Slash (<literal>/</literal>).
     </para>
     <para>
      <example>
@@ -361,9 +361,8 @@ $df = diskfreespace("/"); // $df hält die Anzahl an freien Bytes
     </para>
     <para>
      Der Datei-Zeiger muss gültig sein, d.h. die Datei, auf die
-     gezeigt wird muss zuvor mit <function>fopen</function>,
-     <function>popen</function> oder <function>fsockopen</function>
-     geöffnet worden sein.  
+     gezeigt wird muss zuvor mit <function>fopen</function>
+     oder <function>fsockopen</function> geöffnet worden sein.  
     </para>
    </refsect1>
   </refentry>
@@ -399,10 +398,10 @@ $df = diskfreespace("/"); // $df hält die Anzahl an freien Bytes
   <refentry id="function.fflush">
    <refnamediv>
     <refname>fflush</refname>
-    <refpurpose>Flushes the output to a file</refpurpose>
+    <refpurpose>Schreibt den Ausgabepuffer in eine Datei</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>fflush</function></funcdef>
@@ -410,15 +409,14 @@ $df = diskfreespace("/"); // $df hält die Anzahl an freien Bytes
      </funcprototype>
     </funcsynopsis>
     <para>
-     This function forces a write of all buffered output to the 
-     to the resource pointed to by the file handle 
-     <parameter>fp</parameter>. Returns true if succesful, false
-     otherwise.
+     Diese Funktion erzwingt das Schreiben des gesamten Ausgabepuffers 
+     in die von dem Dateizeiger <parameter>fp</parameter> angegebenen 
+     Datei. Gibt bei Erfolg TRUE, andernfalls FALSE zurück.
     </para>
     <para>
-     The file pointer must be valid, and must point to a file
-     successfully opened by <function>fopen</function>,
-     <function>popen</function>, or <function>fsockopen</function>.
+     Der Dateizeiger muss gültig sein, und auf eine mittels 
+     <function>fopen</function>, <function>popen</function>, oder 
+     <function>fsockopen</function> erfolgreich geöffnete Datei zeigen.
     </para>
    </refsect1>
   </refentry>
@@ -552,12 +550,12 @@ fclose ($fp);
      </funcprototype>
     </funcsynopsis>
     <para>
-     Gibt eine Zeile zurück mit einer in <parameter>length</parameter>
-     definierten Länge -1 Byte, welche aus der Datei von der aktuellen
-     Position des Dateizeigers <parameter>fp</parameter> aus
-     ausgelesen wird. Die Zeile endet an einem Zeilenumbruch, EOF
-     (Ende der Datei) oder bei <parameter>lenght</parameter> Zeichen
-     (Je nachdem, was eher auftritt).
+     Gibt eine Zeile bis zu <parameter>length</parameter> -1 Bytes 
+     Länge zurück, welche aus der Datei von der aktuellen Position des 
+     Dateizeigers <parameter>fp</parameter> aus ausgelesen wird. Die 
+     Zeile endet an einem Zeilenumbruch (welcher im Rückgabewert enthalten 
+     ist), EOF (Ende der Datei) oder bei <parameter>length</parameter> 
+     - 1 Bytes (Je nachdem, was eher auftritt).
     </para>
     <para>
      Wenn ein Fehler auftritt, wird FALSE zurückgegeben.
@@ -591,9 +589,10 @@ fclose ($fd);
      </example>
     </para>
     <para> 
-     Siehe auch <function>fread</function>,
-     <function>fopen</function>, <function>popen</function>,
-     <function>fgetc</function> und <function>fsockopen</function>.
+     Siehe auch <function>fread</function>, <function>fopen</function>, 
+     <function>popen</function>, <function>fgetc</function>,
+     <function>fsockopen</function>, und 
+     <function>socket_set_timeout</function>.
     </para>
    </refsect1>
   </refentry>
@@ -671,7 +670,7 @@ fclose ($fd);
      Zeilenumbruch bleibt erhalten.
     </para>
     <para>
-     Optional kann der zweiter Parameter benutzt und auf '1' gesetzt
+     Optional kann der zweite Parameter benutzt und auf '1' gesetzt
      werden, wenn in dem <link
      linkend="ini.include-path">include_path</link> ebenfalls nach der
      Datei gesucht werden soll.
@@ -694,7 +693,8 @@ $fcontents = join ('', file ('http://www.php.net'));
     </para>
     <para> 
      Siehe auch <function>readfile</function>,
-     <function>fopen</function>, and <function>popen</function>.
+     <function>fopen</function>, <function>fsockopen</function>, und 
+     <function>popen</function>.
     </para>
    </refsect1>
   </refentry>
@@ -754,6 +754,21 @@ $fcontents = join ('', file ('http://www.php.net'));
      Siehe <function>clearstatcache</function> für weitere
      Einzelheiten.
     </simpara>
+    <simpara>
+     Anmerkung: Die atime einer Datei vorgesehen sich immer zu ändern, 
+     sobald Datenblöcke einer Datei geändert werden. Das kann sich 
+     folgenschwer auf die Performance auswirken, wenn eine Anwendung 
+     regelmässig auf eine grosse Anzahl Dateien oder Verzeichnisse zugreift.
+     Manche Unix Dateisysteme können mit deaktivierter atime-Aktualisierung 
+     gemountet werden, um die Performance solcher Applikationen zu erhöhen; 
+     USENET news spools sind ein häufiges Beispiel. Auf solchen 
+     Dateisystemen wird diese Funktion nutzlos.
+    </simpara>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
    </refsect1>
   </refentry>
 
@@ -783,6 +798,24 @@ $fcontents = join ('', file ('http://www.php.net'));
      Siehe <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <para>
+     Anmerkung: Bei den meisten Unix Dateisystemen gilt eine Datei als
+     geändert, sobald ihre Inode-Daten geändert wurden; d.h. wenn die
+     Rechte, Eigentümer, Grupp, oder andere Metadaten des Inodes 
+     aktualisiert werden. Siehe auch <function>filemtime</function> (das 
+     ist was Sie suchen, wenn Sie Fusszeilen mit "Zuletzt Aktualisiert"
+     für Webseiten erstellen möchten) und <function>fileatime</function>.
+    </para>
+    <para>Beachten Sie auch, dass in einigen Unix-Texten ctime als die Zeit 
+     der Erstellung der Datei beschrieben wird. Das ist falsch. Bei den 
+     meisten Unix Dateisystemen gibt es keine Zeitangabe für die Erstellung
+     von Unix Dateien.
+    </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
    </refsect1>
   </refentry>
 
@@ -816,6 +849,11 @@ $fcontents = join ('', file ('http://www.php.net'));
     <note>
      <simpara>
       Diese Funktion hat unter Windows-Systemen keinen Effekt.
+     </simpara>
+     <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
      </simpara>
     </note>
    </refsect1>
@@ -876,6 +914,17 @@ $fcontents = join ('', file ('http://www.php.net'));
      Siehe <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
+    <para>Anmerkung: Diese Funktion gibt den Zeitpunkt zurück, an dem in 
+     die Datenblöcke einer Datei geschrieben wurde; d.h. den Zeitpunkt der 
+     Änderung des Inhalts der Datei. Verwenden Sie <function>date</function>, 
+     um das Ergebnis dieser Funktion in ein ausgabefähiges Änderungsdatum 
+     für z.B. Fusszeilen in Webseiten zu erhalten.
+    </para>
    </refsect1>
   </refentry>
 
@@ -904,6 +953,11 @@ $fcontents = join ('', file ('http://www.php.net'));
      Siehe <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
     <note>
      <simpara>
       Diese Funktion hat unter Windows keinen Effekt.
@@ -929,6 +983,11 @@ $fcontents = join ('', file ('http://www.php.net'));
      Gibt die Zugriffsrechte einer Datei zurück, oder FALSE wenn ein
      Fehler auftrat.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
     <para>
      Das Ergebnis dieses Funktionsaufrufes wird zwischengespeichert.
      Siehe <function>clearstatcache</function> für weitere
@@ -959,6 +1018,11 @@ $fcontents = join ('', file ('http://www.php.net'));
      Siehe <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
    </refsect1>
   </refentry>
 
@@ -987,6 +1051,11 @@ $fcontents = join ('', file ('http://www.php.net'));
      Siehe <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
    </refsect1>
   </refentry>
 
@@ -1002,6 +1071,11 @@ $fcontents = join ('', file ('http://www.php.net'));
       <funcdef>bool <function>flock</function></funcdef>
       <paramdef>int <parameter>fp</parameter></paramdef>
       <paramdef>int <parameter>operation</parameter></paramdef>
+      <paramdef>int 
+       <parameter>
+        <optional>wouldblock</optional>
+       </parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <simpara>
@@ -1021,40 +1095,54 @@ $fcontents = join ('', file ('http://www.php.net'));
       <listitem>
        <simpara>
         Um eine verteilte, nur lesende Verriegelung zu erhalten,
-        setzten Sie <parameter>operation</parameter> auf 1.
+        setzten Sie <parameter>operation</parameter> auf LOCK_SH (bzw. 
+        1 vor PHP 4.0.1).
        </simpara>
       </listitem>
       <listitem>
        <simpara>
         Um eine exklusive, nur schreibende Verriegelung zu erhalten,
-        setzen Sie <parameter>operation</parameter> auf 2.
+        setzen Sie <parameter>operation</parameter> auf LOCK_EX (bzw. 
+        2 vor PHP 4.0.1).
        </simpara>
       </listitem>
       <listitem>
        <simpara>
         Um eine Verriegelung freizugeben (lesend oder schreibend),
-        setzten Sie <parameter>operation</parameter> auf 3.
+        setzten Sie <parameter>operation</parameter> auf LOCK_UN (bzw. 
+        3 vor PHP 4.0.1).
        </simpara>
       </listitem>
       <listitem>
        <simpara>
         Wenn Sie Zugriffe während der Verriegelung durch
-        <function>flock</function> erlauben wollen, fügen Sie 4 zu
-        <parameter>operation</parameter> hinzu.
+        <function>flock</function> erlauben wollen, fügen Sie LOCK_NB 
+        (bzw. 4 vor PHP 4.0.1) zu <parameter>operation</parameter> hinzu.
        </simpara>
       </listitem>
      </itemizedlist>
     </para>
     <simpara>
      <function>flock</function> erlaubt es Ihnen ein einfaches
-     Leser/Schreiber Modell zu erstellen, welches auf fast jedem
-     Betriebsystem benutzt werden kann (UNICES- und Windows- Systeme).
+     Leser/Schreiber Modell zu erstellen, welches auf fast jeder Plattform
+     benutzt werden kann (inkl. den meisten UNICES- und Windows-Systemen). 
+     Das optionale dritte Argument ist auf TRUE gesetzt, wenn die 
+     Verriegelung sperren sollte (EWOULDBLOCK errno Bedingung).
     </simpara>
     <simpara>
      <function>flock</function> gibt TRUE bei Erfolg, FALSE wenn ein
      Fehler auftrat (z.B. wenn eine Verriegelung nicht erstellt werden
      konnte) zurück.
     </simpara>
+    <warning>
+     <para>
+      Bei den meisten Betriebssystemen ist <function>flock</function> 
+      auf dem Prozesslevel implementiert. Wenn Sie ein multithreaded 
+      Server API wie ISAPI benutzen können Sie sich nicht auf 
+      <function>flock</function> verlassen, um Dateien vor anderen PHP-Scripten
+      zu schützen, welche in parallelen Threads der gleichen Server-Instanz laufen!
+     </para>
+    </warning>
    </refsect1>
   </refentry>
 
@@ -1092,7 +1180,7 @@ $fcontents = join ('', file ('http://www.php.net'));
     <simpara>
      Wenn <parameter>filename</parameter> mit "ftp://" (nicht case
      sensitive) beginnt, wird eine ftp-Connection zu dem
-     spezifiziertem Server geöffnet und ein Zeiger auf die
+     spezifizierten Server geöffnet und ein Zeiger auf die
      angeforderte Datei zurückgegeben.  Wenn der Server keinen
      passiven FTP-Modus unterstützt, wird diese Methode
      fehlschlagen. Sie können Dateien entweder zum Schreiben oder zum
@@ -1163,9 +1251,9 @@ $fcontents = join ('', file ('http://www.php.net'));
      </itemizedlist>
      Zusätzlich kann <parameter>mode</parameter> der Buchstabe 'b'
      hinzugefügt werden, der die Behandlung von Binär-Dateien
-     erlaubt. Dieses ist sinnvoll auf Systemen, welche zwischen Binär-
-     und Text-Dateien unterscheiden. Wenn das Feature nicht gebraucht
-     wird, wird es einfach ignoriert.
+     erlaubt. Dies ist nur auf Systemen sinnvoll, welche zwischen Binär-
+     und Text-Dateien unterscheiden (z.B. Windows. Ist bei Unix sinnlos). 
+     Wenn das Feature nicht gebraucht wird, wird es einfach ignoriert.
     </para>
     <para>
      Sie können optional ein dritten Parameter benutzen und diesen auf
@@ -1185,8 +1273,8 @@ $fp = fopen ("ftp://user:password@example.com/", "w");
      </example>
     </para>
     <simpara>
-     Wenn Sie Probleme haben mit dem Lesen oder Schreiben von Dateien
-     (Wenn Sie PHP als Servermodul benutzen), stellen Sie zunächst
+     Wenn Sie Probleme mit dem Lesen oder Schreiben von Dateien haben 
+     und PHP als Servermodul benutzen, stellen Sie zunächst
      sicher, dass die Dateien und Verzeichnisse die Sie benutzen
      wollen auch für den Server-Prozeß zugänglich sind
      (Rechtevergabe).
@@ -1204,7 +1292,9 @@ $fp = fopen ("c:\\data\\info.txt", "r");
     </para>
     <simpara>
      Siehe auch <function>fclose</function>,
-     <function>fsockopen</function> und <function>popen</function>.
+     <function>fsockopen</function>, 
+     <function>socket_set_timeout</function>, und 
+     <function>popen</function>.
     </simpara>
    </refsect1>
   </refentry>
@@ -1289,7 +1379,7 @@ $fp = fopen ("c:\\data\\info.txt", "r");
   <refentry id="function.fread">
    <refnamediv>
     <refname>fread</refname>
-    <refpurpose>Liest Binär-Dateien aus einer Datei</refpurpose>
+    <refpurpose>Liest Binärdaten aus einer Datei</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -1315,11 +1405,28 @@ fclose ($fd);
       </programlisting>
      </informalexample>
     </para>
+    <note>
+     <para>
+      Auf Systemen, welche zwischen Binär- und Textdateien (z.B. Windows)
+      unterscheiden, muß die Datei mit 'b' im <function>fopen</function> 
+      Mode-Parameter geöffnet werden.
+     </para>
+    </note>
+    <para>
+     <informalexample>
+      <programlisting role="php">
+$filename = "c:\\files\\somepic.gif";
+$fd = fopen ($filename, "rb");
+$contents = fread ($fd, filesize ($filename));
+fclose ($fd);
+      </programlisting>
+     </informalexample>
+    </para>
     <simpara>
-     Siehe auch <function>fwrite</function>,
-     <function>fopen</function>, <function>fsockopen</function>,
-     <function>popen</function>, <function>fgets</function>,
-     <function>fgetss</function>, <function>file</function> und
+     Siehe auch <function>fwrite</function>, <function>fopen</function>, 
+     <function>fsockopen</function>, <function>popen</function>,
+     <function>fgets</function>, <function>fgetss</function>,
+     <function>fscanf</function>, <function>file</function> und
      <function>fpassthru</function>.
     </simpara>
    </refsect1>
@@ -1328,10 +1435,11 @@ fclose ($fd);
   <refentry id="function.fscanf">
    <refnamediv>
     <refname>fscanf</refname>
-    <refpurpose>Parses input from a file according to a format</refpurpose>
+    <refpurpose>Interpretiert den Input einer Datei entsprechend einem 
+    angegebenen Format </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>mixed <function>fscanf</function></funcdef>
@@ -1343,22 +1451,21 @@ fclose ($fd);
      </funcprototype>
     </funcsynopsis>
     <para>
-     The function <function>fscanf</function> is similar to
-     <function>sscanf</function>, but it takes its input from a file
-     associated with <parameter>handle</parameter> and interprets the
-     input according to the specified
-     <parameter>format</parameter>. If only two parameters were passed
-     to this function, the values parsed will be returned as an array.
-     Otherwise, if optional parameters are passed, the function will
-     return the number of assigned values. The optional parameters
-     must be passed by reference.
+     Die Funktion <function>fscanf</function> ist 
+     <function>sscanf</function> ähnlich, wobei sie ihren Input aus 
+     der mit <parameter>handle</parameter> angegebenen Datei nimmt, und
+     entsprechend dem angegebenen <parameter>format</parameter>
+     interpretiert. Sind nur 2 Parameter angegeben, werden die analysierten 
+     Werte als Array zurückgegeben. Werden auch optionale Parameter 
+     übergeben, gibt die Funktion die Anzahl der ermittelten Werte zurück. 
+     Die optionalen Parameter müssen refenziert übergeben werden. 
      <example>
-      <title><function>Fscanf</function> Example</title>
+      <title><function>Fscanf</function> Beispiel</title>
       <programlisting role="php">
 $fp = fopen ("users.txt","r");
 while ($userinfo = fscanf ($fp, "%s\t%s\t%s\n")) {
     list ($name, $profession, $countrycode) = $userinfo;
-    //... do something with the values
+    //... Tue etwas mit den Werten
 }
 fclose($fp);
       </programlisting>
@@ -1374,9 +1481,9 @@ luigi   florist it
      </example>
     </para>
     <para>
-     See also <function>fread</function>, <function>fgets</function>,
+     Siehe auch <function>fread</function>, <function>fgets</function>,
      <function>fgetss</function>, <function>sscanf</function>,
-     <function>printf</function>, and <function>sprintf</function>.
+     <function>printf</function>, und <function>sprintf</function>.
     </para>
    </refsect1>
   </refentry>
@@ -1427,6 +1534,12 @@ luigi   florist it
      durch die Verwendung von "http://" oder "ftp://" bei der Funktion
      <function>fopen</function> erhalten wurden.
     </para>
+    <note>
+     <para>
+      Das <parameter>whence</parameter>-Argument wurde nach PHP 4.0 RC1 
+      eingeführt.
+     </para>
+    </note>
     <para>
      Siehe auch <function>ftell</function> und
      <function>rewind</function>.
@@ -1438,7 +1551,7 @@ luigi   florist it
    <refnamediv>
     <refname>fstat</refname>
     <refpurpose>
-     Gets information about a file using an open file pointer
+     Übergibt Informationen über eine Datei mit offenem Dateizeiger
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -1450,33 +1563,33 @@ luigi   florist it
      </funcprototype>
     </funcsynopsis>
     <para>
-     Gathers the statistics of the file opened by the file
-     pointer fp.  This function is similar to the
-     <function>stat</function> function except that it operates
-     on an open file pointer instead of a filename.
+     Trägt die Statistiken der mittel des Dateizeigers fp geöffneten 
+     Datei zusammen. Diese Funktion ist ähnlich der Funktion 
+     <function>stat</function>, außer dass sie mit einem offenen
+     Dateizeiger anstatt eines Dateinamens arbeitet.
     </para>
     <para>
-     Returns an array with the statistics of the file with the
-     following elements:
+     Gibt die Statistiken einer Datei in Form eines Arrays mit den 
+     folgenden Elementen zurück:
      <orderedlist>
-      <listitem><simpara>device</simpara></listitem>
-      <listitem><simpara>inode</simpara></listitem>
-      <listitem><simpara>number of links</simpara></listitem>
-      <listitem><simpara>user id of owner</simpara></listitem>
-      <listitem><simpara>group id owner</simpara></listitem>
-      <listitem><simpara>device type if inode device *</simpara></listitem>
-      <listitem><simpara>size in bytes</simpara></listitem>
-      <listitem><simpara>time of last access</simpara></listitem>
-      <listitem><simpara>time of last modification</simpara></listitem>
-      <listitem><simpara>time of last change</simpara></listitem>
-      <listitem><simpara>blocksize for filesystem I/O *</simpara></listitem>
-      <listitem><simpara>number of blocks allocated</simpara></listitem>
+      <listitem><simpara>Gerät</simpara></listitem>
+      <listitem><simpara>Inode</simpara></listitem>
+      <listitem><simpara>Anzahl Links</simpara></listitem>
+      <listitem><simpara>User id des Eigentümers</simpara></listitem>
+      <listitem><simpara>Gruppen id Eigentümer</simpara></listitem>
+      <listitem><simpara>Gerätetype wenn ein Inode-Gerät *</simpara></listitem>
+      <listitem><simpara>Größe in Bytes</simpara></listitem>
+      <listitem><simpara>Zeit des letzten Zugriffs</simpara></listitem>
+      <listitem><simpara>Zeit der letzten Modifikation</simpara></listitem>
+      <listitem><simpara>Zeit der letzten Änderung</simpara></listitem>
+      <listitem><simpara>Blockgröße für Dateisystem I/O *</simpara></listitem>
+      <listitem><simpara>Anzahl der Blöcke</simpara></listitem>
      </orderedlist>
-     * - only valid on systems supporting the st_blksize type--other
-     systems (i.e. Windows) return -1</para>
+     * - nur gültig bei Systemen, welche den st_blksize Typ unterstützen, andere 
+     Systeme (z.B. Windows) geben -1 zurück</para>
     <para>
-     The results of this function are cached. See
-     <function>clearstatcache</function> for more details.
+     Das Ergebnis dieses Funktionsaufrufes wird zwischengespeichert. Siehe
+     <function>clearstatcache</function> für weitere Einzelheiten.
     </para>
    </refsect1>
   </refentry>
@@ -1506,8 +1619,8 @@ luigi   florist it
     </para>
     <para>
      Der Dateizeiger muss gültig sein und auf eine erfolgreich durch
-     <function>fopen</function>, <function>popen</function> oder
-     <function>fsockopen</function> geöffnete Datei zeigen.
+     <function>fopen</function> oder <function>popen</function>
+     geöffnete Datei zeigen.
     </para>
     <para> 
      Siehe auch <function>fopen</function>,
@@ -1521,7 +1634,7 @@ luigi   florist it
    <refnamediv>
     <refname>ftruncate</refname>
     <refpurpose>
-     Truncates a file to a given length.
+     Kürzt eine Datei auf die angegebene Länge
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -1534,8 +1647,9 @@ luigi   florist it
      </funcprototype>
     </funcsynopsis>
     <para>
-     Takes the filepointer, fp, and truncates the file to length, size.
-     This function returns true on success and false on failure.
+     Nimmt den Dateizeiger <parameter>fp</parameter>, und verkürzt die 
+     Datei auf die Länge <parameter>size</parameter>.
+     Diese Funktion gibt bei Erfolg TRUE, ansonsten FALSE zurück.
     </para>
    </refsect1>
   </refentry>
@@ -1576,6 +1690,13 @@ luigi   florist it
      von der Zeichenkette <parameter>string</parameter> entfernt
      werden.
     </simpara>
+    <note>
+     <para>
+      Auf Systemen, welche zwischen Binär- und Textdateien (z.B. Windows)
+      unterscheiden, muß die Datei mit 'b' im <function>fopen</function> 
+      Mode-Parameter geöffnet werden.
+     </para>
+    </note>
     <simpara>
      Siehe auch <function>fread</function>,
      <function>fopen</function>, <function>fsockopen</function>,
@@ -1601,22 +1722,40 @@ luigi   florist it
      </funcprototype>
     </funcsynopsis>
     <simpara>
+     Eine Ausgabe mittels <function>fwrite</function> wird normalerweise 
+     mit 8k gepuffert. Das heißt, dass wenn zwei Prozesse in den gleichen
+     Output Stream (eine Datei) schreiben wollen, jeder nach 8k Daten
+     unterbrochen wird, um den anderen schreiben zu lassen. 
      <function>set_file_buffer</function> setzt die Pufferung für
-     Schreiboperationen eines gegebenen Dateizeigers
+     Schreiboperationen des gegebenen Dateizeigers
      <parameter>fp</parameter> auf <parameter>buffer</parameter>
-     Bytes. Wenn <parameter>buffer</parameter> auf 0 gesetzt ist oder
-     0 ist, wird die Schreibpufferung ausgeschaltet.
+     Bytes. Wenn <parameter>buffer</parameter> 0 ist, erfolgen die 
+     Schreiboperationen ungepuffert. Dies stellt sicher, dass alle 
+     Schreiboperationen mit <function>fwrite</function> abgeschlossen 
+     werden, bevor andere Prozesse in diesen Output Stream schreiben können.
     </simpara>
     <simpara>
-     Die Funktion gibt 0 bei Erfolg, oder EOF wenn die Anfrage nicht
-     erfolgreich war zurück.
+     Die Funktion gibt bei Erfolg 0, oder EOF wenn die Anfrage nicht
+     erfolgreich war, zurück.
     </simpara>
+    <para>
+     Das folgende Beispiel zeigt, wie man mittels
+     <function>set_file_buffer</function> einen ungepufferten Stream
+     generiert.
+     <example>
+      <title><function>set_file_buffer</function> Beispiel</title>
+      <programlisting role="php">
+$fp=fopen($file, "w");
+if($fp){
+  set_file_buffer($fp, 0);
+  fputs($fp, $output);
+  fclose($fp);
+}
+      </programlisting>
+     </example>
+    </para>
     <simpara>
-     Bedenken Sie, dass der Standartwert beim Aufruf von
-     <function>fopen</function> mit set_file_buffer immer 8K ist.
-    </simpara>
-    <simpara>
-     Siehe auch <function>fopen</function>.
+     Siehe auch <function>fopen</function>, <function>fwrite</function>.
     </simpara>
    </refsect1>
   </refentry>
@@ -1675,6 +1814,11 @@ luigi   florist it
      Siehe auch <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
     <para>
      Siehe auch <function>is_file</function> und
      <function>is_link</function>.
@@ -1717,7 +1861,7 @@ luigi   florist it
    <refnamediv>
     <refname>is_link</refname>
     <refpurpose>
-     Ermittelt, ob der Dateiname ein synmbolischer Link ist
+     Ermittelt, ob der Dateiname ein symbolischer Link ist
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -1741,6 +1885,11 @@ luigi   florist it
      Siehe auch <function>is_dir</function> und
      <function>is_file</function>.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
     <note>
      <simpara>
       Diese Funktion hat auf Windows-Systemen keinen Effekt. 
@@ -1778,15 +1927,20 @@ luigi   florist it
      Siehe auch <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
     <para>
-     Siehe auch <function>is_writeable</function>.
+     Siehe auch <function>is_writable</function>.
     </para>
    </refsect1>
   </refentry>
 
-  <refentry id="function.is-writeable">
+  <refentry id="function.is-writable">
    <refnamediv>
-    <refname>is_writeable</refname>
+    <refname>is_writable</refname>
     <refpurpose>
      Ermittelt, ob in eine Datei geschrieben werden kann
     </refpurpose>
@@ -1795,15 +1949,16 @@ luigi   florist it
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
-      <funcdef>bool <function>is_writeable</function></funcdef>
+      <funcdef>bool <function>is_writable</function></funcdef>
       <paramdef>string <parameter>filename</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
      Gibt TRUE zurück, wenn die Datei existiert und nicht
-     schreibgeschützt ist. Das Dateinamen-Argument kann ein
-     Verzeichnisname sein. So können Sie überprüfen, ob in ein
-     Verzeichnis geschrieben werden kann.
+     schreibgeschützt ist. Das Dateinamen-Argument 
+     <parameter>filename</parameter> kann ein Verzeichnisname
+     sein. So können Sie überprüfen, ob in ein Verzeichnis
+     geschrieben werden kann.
     </para>
     <para>
      Bedenken Sie, dass PHP mit der Benutzer ID auf die Datei
@@ -1816,8 +1971,32 @@ luigi   florist it
      Siehe auch <function>clearstatcache</function> für weitere
      Einzelheiten.
     </para>
+    <simpara>
+     Diese Funktion ist nicht für <link 
+     linkend="features.remote-files">remote Dateien</link> geeignet, die zu 
+     prüfende Datei muss über das Dateisystem des Servers verfügbar sein.
+    </simpara>
     <para>
      Siehe auch <function>is_readable</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.is-writeable">
+   <refnamediv>
+    <refname>is_writeable</refname>
+    <refpurpose>Ermittelt, ob in eine Datei geschrieben werden kann</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>is_writeable</function></funcdef>
+      <paramdef>string <parameter>filename</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Dies ist ein Alias für <function>is_writable</function>
     </para>
    </refsect1>
   </refentry>
@@ -1825,41 +2004,38 @@ luigi   florist it
   <refentry id="function.is-uploaded-file">
    <refnamediv>
     <refname>is_uploaded_file</refname>
-    <refpurpose>Tells whether the file was uploaded via HTTP POST.</refpurpose>
+    <refpurpose>Ermittelt, ob die Datei mittels HTTP POST 
+     upgeloaded wurde.</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>is_uploaded_file</function></funcdef>
       <paramdef>string <parameter>filename</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
-
     <para>
-     This function is available only in versions of PHP 3 after PHP
-     3.0.16, and in versions of PHP 4 after 4.0.2.
+     Diese Funktion ist nur in PHP 3 Versionen nach PHP 3.0.16, und
+     PHP 4 Versionen nach PHP 4.0.2 verfügbar.
     </para>
 
     <para>
-     Returns true if the file named by <varname>filename</varname> was
-     uploaded via HTTP POST. This is useful to help ensure that a
-     malicious user hasn't tried to trick the script into working on
-     files upon which it should not be working--for instance,
-     <filename>/etc/passwd</filename>.
+     Gibt TRUE zurück, wenn die Datei <varname>filename</varname> mittels
+     HTTP POST upgeloaded wurde. Das ist hilfreich sicherzustellen, daß 
+     kein böswilliger User versucht hat das Script zu überlisten, indem 
+     er es Dateien bearbeiten lässt, die es gar nicht bearbeiten sollte. 
+     Zum Beispiel <filename>/etc/passwd</filename>.
     </para>
-
     <para>
-     This sort of check is especially important if there is any chance
-     that anything done with uploaded files could reveal their
-     contents to the user, or even to other users on the same
-     system.
+     Diese Prüfung ist speziell dort interessant, wo irgendeine Aktion mit 
+     upgeloadeten Dateien deren Inhalt dem User zugänglich machen könnte 
+     (oder auch anderen Usern auf dem selben System).
     </para>
-
     <para>
-     See also <function>move_uploaded_file</function>, and the section
-     <link linkend="features.file-upload">Handling file uploads</link>
-     for a simple usage example.
+     Siehe auch <function>move_uploaded_file</function>, und das Kapitel
+     <link linkend="features.file-upload">Steuerung von Dateiuploads</link>
+     für ein einfaches Anwendungsbeispiel.
     </para>
    </refsect1>
   </refentry>
@@ -1969,10 +2145,11 @@ mkdir ("/path/to/my/dir", 0700);
   <refentry id="function.move-uploaded-file">
    <refnamediv>
     <refname>move_uploaded_file</refname>
-    <refpurpose>Moves an uploaded file to a new location.</refpurpose>
+    <refpurpose>Verschiebt eine upgeloadete Datei an einen neuen Ort.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>move_uploaded_file</function></funcdef>
@@ -1980,45 +2157,44 @@ mkdir ("/path/to/my/dir", 0700);
       <paramdef>string <parameter>destination</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
-
     <para>
-     This function is available only in versions of PHP 3 after PHP
-     3.0.16, and in versions of PHP 4 after 4.0.2.
+     Diese Funktion ist nur in PHP 3 Versionen nach PHP 3.0.16, und
+     PHP 4 Versionen nach PHP 4.0.2 verfügbar.
+    </para>
+    <para>
+     Diese Funktion prüft, ob die mit <parameter>filename</parameter>
+     bezeichnete Datei eine gültige Upload-Datei ist (d.h., dass sie
+     mittels PHP's HTTP POST Upload-Mechanismus upgeloaded wurde).
+     Ist die Datei gültig, wird sie zum in 
+     <parameter>destination</parameter> bezeichneten Dateinamen 
+     verschoben. 
     </para>
 
     <para>
-     This function checks to ensure that the file designated by
-     <parameter>filename</parameter> is a valid upload file (meaning
-     that it was uploaded via PHP's HTTP POST upload mechanism). If
-     the file is valid, it will be moved to the filename given by
-     <parameter>destination</parameter>.
+     Wenn <parameter>filename</parameter> keine gültige Datei ist, wird
+     keine Aktion ausgeführt, und 
+     <function>move_uploaded_file</function> gibt
+     <literal>false</literal> zurück. 
     </para>
 
     <para>
-     If <parameter>filename</parameter> is not a valid upload file,
-     then no action will occur, and
-     <function>move_uploaded_file</function> will return
-     <literal>false</literal>. 
+     Wenn <parameter>filename</parameter> eine gültige Datei ist, jedoch
+     aus irgendeinem Grund nicht verschoben werden kann, wird keine 
+     Aktion ausgeführt, und <function>move_uploaded_file</function> 
+     gibt <literal>false</literal> zurück. Zusätzlich wird eine Warnung 
+     ausgegeben.
     </para>
 
     <para>
-     If <parameter>filename</parameter> is a valid upload file, but
-     cannot be moved for some reason, no action will occur, and
-     <function>move_uploaded_file</function> will return
-     <literal>false</literal>. Additionally, a warning will be issued.
+     Diese Prüfung ist speziell dort interessant, wo irgendeine Aktion mit 
+     upgeloadeten Dateien deren Inhalt dem User zugänglich machen könnte 
+     (oder auch anderen Usern auf dem selben System).
     </para>
 
     <para>
-     This sort of check is especially important if there is any chance
-     that anything done with uploaded files could reveal their
-     contents to the user, or even to other users on the same
-     system.
-    </para>
-
-    <para>
-     See also <function>is_uploaded_file</function>, and the section
-     <link linkend="features.file-upload">Handling file uploads</link>
-     for a simple usage example.
+     Siehe auch <function>is_uploaded_file</function>, und das Kapitel
+     <link linkend="features.file-upload">Steuerung von Dateiuploads</link>
+     für ein einfaches Anwendungsbeispiel.
     </para>
    </refsect1>
   </refentry>
@@ -2027,7 +2203,7 @@ mkdir ("/path/to/my/dir", 0700);
   <refentry id="function.pathinfo">
    <refnamediv>
     <refname>pathinfo</refname>
-    <refpurpose>Returns information about a file path</refpurpose>
+    <refpurpose>Gibt Informationen über den Dateipfad</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Description</title>
@@ -2038,15 +2214,16 @@ mkdir ("/path/to/my/dir", 0700);
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>pathinfo</function> returns an associative array
-     containing information about <parameter>path</parameter>.  The
-     following array elements are returned:
-     <parameter>dirname</parameter>, <parameter>basename</parameter>
-     and <parameter>extension</parameter>.
+     <function>pathinfo</function> gibt ein assoziatives Array
+     mit Informationen über den Pfad <parameter>path</parameter>
+     zurück. Die folgenden Arrayelemente werden zurückgegeben:
+     den Verzeichnisnamen <parameter>dirname</parameter>, den Dateinamen 
+     <parameter>basename</parameter>, und die Dateinamenserweiterung 
+     <parameter>extension</parameter>.
     </para>
     <para>
      <example>
-      <title><function>pathinfo</function> Example</title>
+      <title><function>pathinfo</function> Beispiel</title>
       <programlisting role="php">
 &lt;?php
 
@@ -2061,7 +2238,7 @@ echo $path_parts["extension"] . "\n";
      </example>
     </para>
     <para>
-     Would produce:
+     Würde ausgeben:
      <informalexample>
       <programlisting>
 /www/htdocs
@@ -2071,8 +2248,8 @@ html
      </informalexample>
     </para>
     <para>
-     See also <function>dirname</function>,
-     <function>basename</function> and <function>realpath</function>.
+     Siehe auch <function>dirname</function>,
+     <function>basename</function> und <function>realpath</function>.
     </para>
    </refsect1>
   </refentry>
@@ -2295,7 +2472,7 @@ $fp = popen ("/bin/ls", "r");
      <parameter>fp</parameter> an den Anfang des Dateistreams.
     </para>
     <para>
-     Wenn ein Fehler auftritt, gibt der Funktionsaufruf 0 zurück.
+     Wenn ein Fehler auftritt, gibt die Funktion 0 zurück.
     </para>
     <para>
      Der Dateizeiger muss gültig sein und auf eine Datei zeigen, die
@@ -2414,7 +2591,7 @@ $fp = popen ("/bin/ls", "r");
    <refnamediv>
     <refname>lstat</refname>
     <refpurpose>
-     Ermittelt Informationen über einen symbolischen Link.
+     Gibt Informationen über eine Datei oder einen symbolischen Link.
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -2426,12 +2603,13 @@ $fp = popen ("/bin/ls", "r");
      </funcprototype>
     </funcsynopsis>
     <para>
-     Ermittelt statistische Informationen über einen symbolischen Link
-     spezifiziert in <parameter>filename</parameter>. Diese Funktion
-     ist identisch mit der Funktion <function>stat</function> ausser
-     dass, wenn der Parameter <parameter>filename</parameter> ein
-     symbolischer Link ist, dessen Status zurückgegeben wird und nicht
-     der Status der Datei, auf die der symbolische Link zeigt.
+     Ermittelt statistische Informationen über eine Datei oder  
+     symbolischen Link, spezifiziert in <parameter>filename</parameter>. 
+     Diese Funktion ist identisch mit der Funktion 
+     <function>stat</function>, ausser dass wenn der Parameter 
+     <parameter>filename</parameter> ein symbolischer Link ist, dessen 
+     Status zurückgegeben wird und nicht der Status der Datei, auf die 
+     der symbolische Link zeigt.
     </para>
     <para>
      Gibt einen Array mit statistischen Informationen über die Datei
@@ -2488,10 +2666,10 @@ $fp = popen ("/bin/ls", "r");
   <refentry id="function.realpath">
    <refnamediv>
     <refname>realpath</refname>
-    <refpurpose>Return canonicalized absolute pathname</refpurpose>
+    <refpurpose>Erzeugt einen kanonisch absoluten Pfadnamen</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>realpath</function></funcdef>
@@ -2499,16 +2677,16 @@ $fp = popen ("/bin/ls", "r");
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>realpath</function> expands all symbolic links and
-     resolves references to '/./', '/../' and extra '/' characters in
-     the input <parameter>path</parameter> and return the canonicalized
-     absolute pathname.  The resulting path will have no symbolic link,
-     '/./' or '/../' components.
+     <function>realpath</function> expandiert alle symbolischen Links, und 
+     beseitigt Verweise zu '/./', '/../' und extra '/' Zeichen im Input 
+     <parameter>path</parameter>, und gibt den absoluten Pfadnamen 
+     kanonisch zurück. Der Pfad im Ergebnis enthält keine Komponenten 
+     eines symbolischen Links mehr, wie '/./' or '/../'. 
     </para>
 
     <para>
      <example>
-      <title><function>realpath</function> example</title>
+      <title><function>realpath</function> Beispiel</title>
       <programlisting role="php">
 $real_path = realpath("../../index.php");
       </programlisting>
@@ -2564,7 +2742,7 @@ $real_path = realpath("../../index.php");
      </funcprototype>
     </funcsynopsis>
     <para>
-     Erzeugt einen eindeutigen einmaligen temporären Dateinamen in dem
+     Erzeugt einen eindeutigen temporären Dateinamen in dem
      spezifizierten Verzeichnis. Wenn das Verzeichnis nicht existiert,
      wird <function>tempnam</function> einen Dateinamen im temporären
      Verzeichnis des Systems erstellen.
@@ -2589,6 +2767,15 @@ $tmpfname = tempnam ("/tmp", "FOO");
       </programlisting>
      </example>
     </para>
+    <note>
+     <simpara>
+      Diese Funktion hat ihr Verhalten seit PHP 4.0.3 geändert. 
+      Die temporäre Datei wird ebenfalls angelegt um eine 
+      "Hetzsituation" zu vermeiden, wo in der Zeit nach dem Generieren
+      des Strings, und bevor das Script dazukommt die Datei anzulegen, 
+      die Datei im Dateisystem erscheinen könnte.
+     </simpara>
+    </note>
 	<para>
 	 Siehe auch <function>tmpfile</function>.
 	</para>
@@ -2700,6 +2887,11 @@ if (touch ($DateiName)) {
      <function>Umask</function> ohne Argumente gibt einfach die
      aktuelle umask zurück.
     </para>
+    <note>
+     <simpara>
+      Diese Funktion hat auf Windows-Systemen keinen Effekt.
+     </simpara>
+    </note>
    </refsect1>
   </refentry>
 
@@ -2728,7 +2920,7 @@ if (touch ($DateiName)) {
     </para>
     <note>
      <simpara>
-      Diese Funktion bleibt unter Windows-Systemen ohne Effekt.
+      Diese Funktion könnte auf Windows-Systemen ohne Effekt bleiben.
      </simpara>
     </note>
    </refsect1>
