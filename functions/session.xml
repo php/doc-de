@@ -70,10 +70,12 @@
       <link linkend="ini.track-vars"><literal>track_vars</literal></link>
      </title>
      <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 session_register("count");
 $HTTP_SESSION_VARS["count"]++;
-?&gt;
+?>
+]]>
      </programlisting>
     </example>
    </para>
@@ -147,20 +149,22 @@ $count++;
     <example>
      <title>Zählen der Seitenaufrufe eines einzelnen Benutzers</title>
      <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 session_register ("count");
 $count++;
-?&gt;
+?>
 
-Hallo Besucher, Sie haben diese Seite &lt;?php echo $count; ?&gt; Mal
-aufgerufen.&lt;p&gt;
+Hallo Besucher, Sie haben diese Seite <?php echo $count; ?> Mal
+aufgerufen.<p>
 
-&lt;?php
+<?php
 # für den Fall, dass der Benutzer Cookies deaktiviert hat,
-# ist das &lt;?=SID?&gt; nötig, um die Session-ID zu erhalten
-?&gt;
+# ist das <?=SID?> nötig, um die Session-ID zu erhalten
+?>
 
-Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
+Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
+]]>
      </programlisting>
     </example>
    </para>
@@ -314,8 +318,8 @@ Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
       <simpara> 
        <literal>session.cache_limiter</literal> spezifiziert die
        Methode der Cacheverwaltung, die bei Session-Seiten benutzt
-       wird (nocache/private/public). Grundeinstellung
-       <literal>nocache</literal>.
+       wird (nocache/private/private_no_expire/public).
+       Grundeinstellung <literal>nocache</literal>.
       </simpara>
      </listitem>
      <listitem> 
@@ -419,7 +423,8 @@ Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
      <example>
       <title>Löschen einer Session</title>
       <programlisting role="php">
-&lt;?php
+<![CDATA[
+<?php
 # Initialisierung der Session.
 # Wenn Sie session_name("something") verwenden, vergessen Sie es jetzt
 # nicht!
@@ -428,7 +433,8 @@ session_start();
 session_unset();
 # Zum Schluß, löschen der Session.
 session_destroy();
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -471,14 +477,13 @@ session_destroy();
     <example>
      <title><function>session_name</function> Beispiele</title>
      <programlisting role="php">
-&lt;?php
-
+<![CDATA[
+<?php
 # den Session-Namen auf WebsiteID setzen
-
 $previous_name = session_name ("WebsiteID");
-
-echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
-?&gt;
+echo "Der vorhergehende Session-Name war $previous_name<p>";
+?>
+]]>
      </programlisting>
     </example>
    </refsect1>
@@ -497,14 +502,14 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
      <funcprototype>
       <funcdef>string <function>session_module_name</function></funcdef>
       <paramdef>string 
-       <parameter><optional>module</optional></parameter>
+       <parameter><optional>Modul</optional></parameter>
       </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
      <function>session_module_name</function> gibt den Namen des
      aktuellen Session-Moduls zurück. Wenn
-     <parameter>module</parameter> angegeben wird, wird stattdessen
+     <parameter>Modul</parameter> angegeben wird, wird stattdessen
      dieses Modul verwendet.
     </para>
    </refsect1>
@@ -593,16 +598,46 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_register</function> variable Anzahl von
-     Argumenten die jeweils entweder eine Zeichenkette sein können,
-     die den Variablennamen trägt, oder ein Array, das aus solchen
-     Variablennamen oder anderen Arrays besteht. Für jeden
-     Variablennamen registriert <function>session_register</function>
-     die globale Variable in der aktuellen Session unter diesem Namen.
+     <function>session_register</function> akzeptiert eine variable
+     Anzahl von Argumenten, die jeweils entweder eine Zeichenkette
+     sein können, die den Namen einer Variablen trägt, oder ein Array,
+     das aus solchen Variablennamen oder anderen Arrays besteht. Für
+     jeden Namen registriert <function>session_register</function>
+     die globale Variable mit diesem Namen in der aktuellen Session.
+    </para>
+    <caution>
+     <para>
+      This registers a <emphasis>global</emphasis> variable. If you
+      want to register a session variable inside a function, you need
+      to make sure to make it global using <function>global</function>
+      or use the session arrays as noted below.
+     </para>
+    </caution>
+    <para>
+     Diese Funktion gibt &true; zurück, wenn alle Variablen
+     erfolgreich in der Session registriert wurden.
     </para>
     <para>
-     Diese Funktion gibt &true; zurück, wenn die Variable erfolgreich in
-     der Session registriert wurde.
+     If <function>session_start</function> was not called before this function
+     is called, an implicit call to <function>session_start</function> with no
+     parameters will be made.
+    </para>
+    <para>
+     You can also create a session variable by simply setting the appropriate
+     member of the $HTTP_SESSION_VARS or $_SESSION (PHP >= 4.1.0) array.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+$barney = "A big purple dinosaur.";
+session_register("barney");
+
+$HTTP_SESSION_VARS["zim"] = "An invader from another planet.";
+
+# the auto-global $_SESSION array was introduced in PHP 4.1.0
+$_SESSION["spongebob"] = "He's got square pants.";
+]]>
+      </programlisting>
+     </informalexample>
     </para>
     <note>
      <para>
@@ -618,11 +653,10 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
       <link linkend="resource">Liste von PHP Ressourcen</link>.
      </para>
     </note>
-    <note>
-     <para>
-      This function was added in PHP 4.0.
-     </para>
-    </note>
+    <para>
+     Siehe auch: <function>session_is_registered</function> und
+     <function>session_unregister</function>.
+    </para>
    </refsect1>
   </refentry>
 
@@ -734,17 +768,17 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
      <itemizedlist>
       <listitem>      
        <simpara>
-        "lifetime" -  Die Lebensdauer des Cookies.
+        "lifetime" - Die Lebensdauer des Cookies.
        </simpara>     
       </listitem>
       <listitem>
        <simpara>
-        "path" -  Der Pfad, unter dem Informationen gespeichert sind.
+        "path" - Der Pfad, unter dem Informationen gespeichert sind.
        </simpara>
       </listitem>     
       <listitem>
        <simpara>      
-        "domain" -  Die Domain des Cookies.
+        "domain" - Die Domain des Cookies.
        </simpara>
       </listitem>
       <listitem>
@@ -774,7 +808,7 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
        <function>session_set_cookie_params</function>
       </funcdef>
       <paramdef>
-       int <parameter>lifetime</parameter>
+       int <parameter>Lebensdauer</parameter>
       </paramdef>
       <paramdef> 
        string <parameter><optional>Pfad</optional></parameter>
@@ -804,12 +838,12 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_decode</function></funcdef>
-      <paramdef>string <parameter>data</parameter></paramdef>
+      <paramdef>string <parameter>Daten</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
      <function>session_decode</function> dekodiert die Daten der
-     Session in <parameter>data</parameter> und setzt die Variablen,
+     Session in <parameter>Daten</parameter> und setzt die Variablen,
      die in der Session gespeichert sind.
     </para>
    </refsect1>
@@ -900,8 +934,8 @@ echo "Der vorhergehende Session-Name war $previous_name&lt;p&gt;";
        <function>session_set_save_handler</function> Beispiel
       </title>
       <programlisting role="php">
-&lt;?php
-
+<![CDATA[
+<?php
 function open ($save_path, $session_name) {
   global $sess_save_path, $sess_session_name;
 
@@ -960,8 +994,8 @@ session_set_save_handler ("open", "close", "read", "write", "destroy",
 session_start();
 
 // verfahren Sie mit Sessions wie gewohnt
-
-?&gt;
+?>
+]]>
       </programlisting>
      </example>
     </para>
@@ -1028,13 +1062,14 @@ session_start();
     <example>
      <title><function>session_cache_limiter</function> Beispiel</title>
      <programlisting role="php">
-&lt;?php
-
+<![CDATA[
+<?php
 # setzen der Cacheverwaltung auf 'private'
 session_cache_limiter('private');
 $cacheverwaltung = session_cache_limiter();
-echo "Die Cacheverwaltung ist jetzt auf $cacheverwaltung gesetzt&lt;p&gt;";
-?&gt;
+echo "Die Cacheverwaltung ist jetzt auf $cacheverwaltung gesetzt<p>";
+?>
+]]>
      </programlisting>
     </example>
    </refsect1>
@@ -1101,6 +1136,7 @@ echo "Die Cacheverwaltung ist jetzt auf $cacheverwaltung gesetzt&lt;p&gt;";
      See also: <function>session_readonly</function>.
     </para>
 -->
+
    </refsect1>
   </refentry>
 
@@ -1108,8 +1144,10 @@ echo "Die Cacheverwaltung ist jetzt auf $cacheverwaltung gesetzt&lt;p&gt;";
   <refentry id="function.session-readonly">
    <refnamediv>
     <refname>session_readonly</refname>
-    <refpurpose>Begin session - reinitializes freezed variables, but no
-writeback on request end</refpurpose>
+    <refpurpose>
+     Begin session - reinitializes freezed variables, but no writeback
+     on request end
+    </refpurpose>
    </refnamediv>
    <refsect1>
     <title>Description</title>
