@@ -1,9 +1,273 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
+<!-- $Revision: 1.4 $ -->
  <reference id="ref.odbc">
   <title>ODBC Funktionen</title>
   <titleabbrev>ODBC</titleabbrev>
+  <partintro>
+   <section id="odbc.intro">
+    &reftitle.intro;
+    <para>
+     Zusätzlich zur normalen ODBC-Unterstützung bieten die 
+     ODBC-Funktionen in PHP auch Schnittstellen zu einigen
+     Datenbanken, die Ihre API der Semantik der ODBC-API 
+     nachempfunden haben. Statt vielen nahezu identischen
+     Datenbanktreibern wurden diese Treiber zu einer einzigen
+     Gruppe von ODBC-Funktionen zusammengefasst. 
+    </para>
+    <para>
+     Die folgenden Datenbanken werden von den ODBC-Funktionen
+     unterstützt: <ulink url="&url.adabas;">Adabas D</ulink>,
+     <ulink url="&url.ibmdb2;">IBM DB2</ulink>,
+     <ulink url="&url.iodbc;">iODBC</ulink>,
+     <ulink url="&url.solid;">Solid</ulink> und
+     <ulink url="&url.sybase;">Sybase SQL Anywhere</ulink>.
+    </para>
+    <note>
+     <para>
+      Es ist kein echtes ODBC in die Kommunikation mit oben 
+      genannten
+      Datenbanken involviert. Es handelt sich um echte native 
+      Datenbankschnittstellen, die den Funktionsnamen
+      und den Funktionssyntax der ODBC-Funktionen nutzen.
+      Die Ausnahme ist iODBC. Wenn PHP mit iODBC-Unterstützung 
+      kompiliert wird, können alle ODBC-kompatiblen Treiber mit 
+      PHP genutzt werden. iODBC wird von 
+      <ulink url="&url.openlink;"> OpenLink Software</ulink>
+      betreut. Mehr Informationen zu iODBC, unter anderem 
+      eine HOWTO, finden Sie auf <ulink url="&url.iodbc;">www.iodbc.org</ulink>.
+     </para>
+    </note>
+   </section>
 
+   <section id="odbc.requirements">
+    &reftitle.required;
+    <para>
+     Um die Datenbanken mit PHP nutzen zu können, sollten 
+     die dafür benötigten Bibliotheken installiert sein.
+    </para>
+   </section>
+   
+   <section id="odbc.installation">
+    &reftitle.install;
+    <para>
+     Bitte schauen Sie sich den Abschnitt <link
+      linkend="install.configure.databases">
+      Installationsoptionen für Datenbanken</link> an, 
+     dort finden Sie zusätzliche Informationen wie 
+     PHP für diese Datenbanken konfiguriert werden muss.
+    </para>
+   </section>
+   
+   <section id="odbc.configuration">
+    &reftitle.runtime;
+    <para>
+     Das Verhalten der ODBC-Funktionen wird von den Einstellungen
+     in der globalen <link
+      linkend="configuration.file">Konfigurationsdatei</link> 
+     &php.ini; bestimmt.
+     <table>
+      <title>ODBC-Konfigurationsoptionen</title>      
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Name</entry>
+         <entry>Standard</entry>
+         <entry>Einstellbar in</entry>
+        </row>
+       </thead>
+         <tbody>
+        <row>
+         <entry>odbc.default_db *</entry>
+         <entry>NULL</entry>
+         <entry>PHP_INI_ALL</entry>
+        </row>
+        <row>
+         <entry>odbc.default_user *</entry>
+         <entry>NULL</entry>
+         <entry>PHP_INI_ALL</entry>
+        </row>
+        <row>
+         <entry>odbc.default_pw *</entry>
+         <entry>NULL</entry>
+         <entry>PHP_INI_ALL</entry>
+        </row>
+        <row>
+         <entry>odbc.allow_persistent</entry>
+         <entry>"1"</entry>
+         <entry>PHP_INI_SYSTEM</entry>
+        </row>
+        <row>
+         <entry>odbc.check_persistent</entry>
+         <entry>"1"</entry>           
+         <entry>PHP_INI_SYSTEM</entry>
+        </row>
+        <row>
+         <entry>odbc.max_persistent</entry>
+         <entry>"-1"</entry>
+         <entry>PHP_INI_SYSTEM</entry>
+        </row>
+        <row>
+         <entry>odbc.max_links</entry>
+         <entry>"-1"</entry>
+         <entry>PHP_INI_SYSTEM</entry>
+        </row>
+        <row>
+         <entry>odbc.defaultlrl</entry>
+         <entry>"4096"</entry>
+         <entry>PHP_INI_ALL</entry>
+        </row>
+        <row>
+         <entry>odbc.defaultbinmode</entry>
+         <entry>"1"</entry>
+         <entry>PHP_INI_ALL</entry>
+        </row>
+       </tbody>
+      </tgroup>        
+     </table>
+     <note>
+      <simpara>
+       Mit * markierte Einträge sind noch nicht implementiert.
+      </simpara>
+     </note>
+     Weitere Informationen und Definitionen der PHP_INI_*-
+     Einstellungen finden Sie bei 
+     <function>ini_set</function>.
+    </para>
+    <para>
+     Hier eine kurze Erklärung der Konfigurationsoptionen:
+     <variablelist>
+      <varlistentry id="ini.uodbc.default-db">
+       <term>
+        <parameter>odbc.default_db</parameter>
+        <type>string</type>
+       </term>
+       <listitem>
+        <para>
+         Standard-ODBC-Datenquelle, wenn in 
+         <function>odbc_connect</function> oder
+         <function>odbc_pconnect</function> keine definiert wird.
+        </para>
+       </listitem>
+      </varlistentry>
+      
+      <varlistentry id="ini.uodbc.default-user">
+       <term>
+        <parameter>odbc.default_user</parameter>
+        <type>string</type>
+       </term>
+       <listitem>
+       <para>
+        Nutzername, wenn in 
+        <function>odbc_connect</function> oder
+        <function>odbc_pconnect</function> keiner angegeben wird.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.default-pw">
+      <term>
+       <parameter>odbc.default_pw</parameter>
+       <type>string</type>
+      </term>
+      <listitem>
+       <para>
+         Passwort, wenn keines in 
+        <function>odbc_connect</function> oder
+        <function>odbc_pconnect</function> angegeben wird.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.allow-persistent">
+      <term>
+       <parameter>odbc.allow_persistent</parameter>
+       <type>boolean</type>
+      </term>
+      <listitem>
+       <para>
+         Einstellung, ob persistente ODBC-Verbindungen 
+         genutzt werden sollen.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.check-persistent">
+      <term>
+       <parameter>odbc.check_persistent</parameter>
+       <type>boolean</type>
+      </term>
+      <listitem>
+       <para>
+         Aktiviert eine Überprüfung, ob eine persistente 
+         Datenbankverbindung noch aktiv ist, bevor 
+         sie weitergenutzt wird.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.max-persistent">
+      <term>
+       <parameter>odbc.max_persistent</parameter>
+       <type>integer</type>
+      </term>
+      <listitem>
+       <para>
+         Die maximale Anzahl von persistenten ODBC-Verbindungen
+         pro Prozess.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.max-links">
+      <term>
+       <parameter>odbc.max_links</parameter>
+       <type>integer</type>
+      </term>
+      <listitem>
+       <para>
+         Die maximale Anzahl von ODBC-Verbindungen pro Prozess, 
+         inklusive persistenten Verbindungen.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.defaultlrl">
+      <term>
+       <parameter>odbc.defaultlrl</parameter>
+       <type>integer</type>
+      </term>
+      <listitem>
+       <para>
+         Bestimmt die Anzahl Bytes, mit denen ein 
+         LONG-Feld an PHP übergeben wird. 
+        </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry id="ini.uodbc.defaultbinmode">
+      <term>
+       <parameter>odbc.defaultbinmode</parameter>
+       <type>integer</type>
+      </term>
+      <listitem>
+       <para>
+         Definiert die Behandlung von Binärdaten. 
+       </para>
+      </listitem>
+     </varlistentry>
+
+    </variablelist>
+    </para>
+   </section>
+
+   <section id="odbc.resources">
+    &reftitle.resources;
+    &no.resource;
+   </section>
+
+   &reference.uodbc.constants;
+
+  </partintro>
 &reference.uodbc.functions;
 
  </reference>
