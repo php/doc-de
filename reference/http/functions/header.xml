@@ -1,85 +1,244 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- splitted from ./de/functions/http.xml, last change in rev 1.10 -->
-<!-- last change to 'header' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.13/EN.1.2 -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.6 Maintainer: tom Status: ready -->
+<!-- CREDITS: tschuer -->
   <refentry id="function.header">
    <refnamediv>
     <refname>header</refname>
     <refpurpose>Sendet einen HTTP-Header</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Beschreibung:</title>
+    <title>Beschreibung</title>
      <methodsynopsis>
       <type>int</type><methodname>header</methodname>
       <methodparam><type>string</type><parameter>string</parameter></methodparam>
+      <methodparam choice="opt"><type>bool</type><parameter>replace</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>http_reponse_code</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Die <function>header</function>-Funktion wird zu Beginn einer
-     <acronym>HTML</acronym>-Datei benutzt um
-     <acronym>HTTP</acronym>-Anfangsinformationen zu senden. Siehe
-     <ulink url="&spec.http1.1;">HTTP 1.1 Spezifikationen</ulink> für
-     weitere Informationen.  <emphasis>Hinweis:</emphasis> Beachten
-     sie, dass die <function>header</function>-Funktion aufgerufen
-     werden muss, bevor irgendeine Ausgabe durch normale HTML-Tags
-     oder PHP erzeugt wird.  Es ist ein häufig anzutreffender Fehler,
-     per <function>include</function> Programm-Code einzubinden (bzw.
-     per auto_prepend) oder Leerzeichen oder -zeilen vor dem Code
-     stehen zu haben, die bereits Ausgaben bewirken (auch wenn diese
-     leer sind) bevor <function>header</function> aufgerufen wird.
+     <function>header</function> wird zum Senden von
+     <acronym>HTTP</acronym> Anfangsinformationen (Headern) benutzt.
+     Weitere Informationen über <acronym>HTTP</acronym> Header finden
+     Sie unter <ulink url="&spec.http1.1;">HTTP/1.1 specification</ulink>.
     </para>
     <para>
-     Es gibt zwei Spezialfälle von Header-Aufrufen. Der Erste ist der
-     &quot;Location&quot;-Header. Es wird nicht nur der Header an den 
-     Browser geschickt, der Apache erhält auch noch den Status-Code
-     REDIRECT. Aus Sicht des Skript-Schreibers ist das nicht wichtig,
-     aber für alle, die die Internas von Apache verstehen wollen, ist
-     dies von Belang.
+     Der optionale Parameter <parameter>replace</parameter> gibt an, ob der
+     Header einen vorhergehenden Header ersetzten soll, oder ob ein zweiter
+     Header des selben Typs hinzugefügt werden soll. Standardmäßig wird
+     ersetzt. Sie können jedoch als das zweite Argument &false; übergeben,
+     und so mehrere Header desselben Typs erzwingen. Zum Beispiel:
      <informalexample>
       <programlisting role="php">
 <![CDATA[
-header ("Location: http://www.example.com");  // Umleitung des Browsers
-exit;  // Sicher stellen, dass nicht trotz Umleitung nachfolgender Code ausgeführt wird. 
+<?php
+header('WWW-Authenticate: Negotiate');
+header('WWW-Authenticate: NTLM', FALSE);
+?>
 ]]>
       </programlisting>
      </informalexample>
     </para>
     <para>
-     Der zweite Spezialfall ist ein Header der mit der Zeichenfolge
-     &quot;HTTP/&quot; beginnt (Groß-/Kleinschreibung ist egal). Falls
-     sie z.B. die Dokument-Fehler-Anweisung 404 des Apache auf ein
-     PHP-Skript zeigen lassen, ist es gut, wenn dieses Skript einen
-     404-Fehler erzeugt. In diesem Skript sollten sie also zuerst
-     stehen haben:
+     Der zweite optionale Parameter <parameter>http_response_code</parameter>
+     spezifiziert den HTTP Response Code. (Dieser Parameter ist in PHP 4.3.0
+     und höher verfügbar.)
+    </para>
+    <para>
+     Es gibt zwei Spezialfälle von Header-Aufrufen. Der erste ist ein
+     Header, der mit "<literal>HTTP/</literal>" beginnt (ob groß- oder
+     Kleinschreibung ist nicht relevant) und zum Herausfinden des zu
+     sendenden HTTP Statuscodes verwendet wird. Wenn Sie zum Beispiel
+     Apache konfiguriert haben, um ein PHP Skript zum Bearbeiten von
+     Anforderungen fehlender Dateien (mittels der
+     <literal>ErrorDocument</literal> Direktive) zu verwenden, möchten
+     Sie bestimmt sicherstellen, dass Ihr Skript den passenden Statuscode
+     generiert.
      <informalexample>
       <programlisting role="php">
 <![CDATA[
-header ("HTTP/1.0 404 Not Found");
+<?php
+  header("HTTP/1.0 404 Not Found");
+?>
+]]>
+      </programlisting>
+     </informalexample>
+     <note>
+      <para>
+       Die HTTP Status Header Zeile wird immer die erste zum Client
+       gesendete sein, egal ob der aktuelle <function>header</function>
+       - Aufruf der erste ist oder nicht. Der Status kann mittels
+       <function>header</function> jederzeit mit einer neuen Statuszeile
+       überschrieben werden, es sei denn, dass die HTTP Header bereits
+       gesendet wurden.
+      </para>
+     </note>
+     <note>
+      <para>
+       In PHP 3 funktioniert dies nur, wenn PHP als Apache Modul kompiliert
+       wurde. Sie können den gleichen Effekt erzielen, wenn Sie den
+       <literal>Status</literal> Header verwenden.
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+header("Status: 404 Not Found");
+?>
+]]>
+        </programlisting>
+       </informalexample>
+      </para>
+     </note>
+    </para>
+    <para>
+     Der zweite Spezialfall ist der "Location:" Header. Es wird nicht nur
+     der Header an den Browser geschickt, sondern auch ein
+     <literal>REDIRECT</literal> (302) Statuscode, wenn nicht bereits ein
+     <literal>3xx</literal> Statuscode gesendet wurde.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+header("Location: http://www.example.com/"); // Umleitung des Browsers
+exit;                                        // Sicherstellen, dass nicht trotz Umleitung
+                                             // der nachfolgende Code ausgeführt wird. 
+?>
 ]]>
       </programlisting>
      </informalexample>
     </para>
+    <note>
+     <para>
+      HTTP/1.1 verlangt einen absoluten <acronym>URI</acronym> inkl. dem
+      Schema, Hostnamen und absoluten Pfad als Argument
+      von <ulink url="&spec.http1.1;-sec14.html#sec14.30">Location:</ulink>,
+      aber manche Clients akzeptieren auch relative URIs. Gewöhnlich können
+      Sie mittels <literal>$_SERVER['HTTP_HOST']</literal>,
+      <literal>$_SERVER['PHP_SELF']</literal> und <function>dirname</function>
+      aus einem relativen Link einen absoluten URI selbst erstellen:
+      <informalexample>
+       <programlisting>
+<![CDATA[
+<?php
+header("Location: http://".$_SERVER['HTTP_HOST']
+                      .dirname($_SERVER['PHP_SELF'])
+                      ."/".$relative_url);
+?>
+]]>
+       </programlisting>
+      </informalexample>
+     </para>
+    </note>
     <para>
-     PHP-Skripte erzeugen oft dynamisches HTML, das weder vom Browser noch
-     von irgendeinem Proxy zwischen Web-Server und Client-Browser gepuffert
-     ("gecached") werden soll bzw. darf. Bei vielen Proxies und Browsern
-     kann das Cachen unterbunden werden und zwar mit:
+     PHP-Skripte erzeugen oft dynamische Inhalte, die weder vom Browser
+     noch von irgendeinem Proxy zwischen Web-Server und Client-Browser
+     gepuffert ("gecached") werden sollen bzw. dürfen. Bei vielen Proxies
+     und Browsern kann das Cachen wie folgt unterbunden werden:
      <informalexample>
       <programlisting role="php">
 <![CDATA[
-header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT");    // Datum der
-Vergangenheit
-header ("Last-Modified: " . gmdate ("D, d M Y H:i:s") . " GMT"); 
-                                                      // immer geändert
-header ("Cache-Control: no-cache, must-revalidate");  // HTTP/1.1
-header ("Pragma: no-cache");                          // HTTP/1.0
+<?php
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");    // Datum aus Vergangenheit
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
+                                                     // immer geändert
+header("Cache-Control: no-store, no-cache, must-revalidate");  // HTTP/1.1
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");                          // HTTP/1.0
+?>
 ]]>
       </programlisting>
      </informalexample>
+     <note>
+      <para>
+       Es könnte auch sein, dass Ihre Seiten nicht zwischengespeichert
+       werden, auch wenn Sie obigen Header nicht ausgeben. Es gibt eine
+       Anzahl Optionen, welche die Benutzer in deren Browser einstellen
+       können, um das standardmäßige Verhalten bezüglich des Caching zu
+       verändern. Durch das Senden obiger Header sollten Sie irgendwelche
+       Einstellungen, welche die Ausgabe Ihres Skriptes zwischenspeichern
+       würden, außer Kraft setzen.
+      </para>
+      <para>
+       Weiters können Sie <function>session_cache_limiter</function> und
+       die Konfigurationsoption <literal>session.cache_limiter</literal>
+       verwenden, um die korrekten Header bezüglich Caching automatisch
+       generieren zu lassen, sollten Sie Sessions benutzen.
+      </para>
+     </note>
     </para>
     <para>
-     Siehe auch: <function>headers_sent</function>.
+     Beachten Sie, dass <function>header</function> aufgerufen werden muss,
+     bevor eine Ausgabe gesendet wurde, egal ob normale HTML Tags, leere
+     Zeilen in einer Datei oder von PHP. Ein weit verbreiteter Fehler ist
+     mittels <function>include</function>, <function>require</function>,
+     oder anderen Dateizugriffsmethoden Code zu lesen, und so unbewusst
+     Leerzeichen oder Leerzeilen auszugeben, bevor <function>header</function>
+     aufgerufen wird. Das gleiche Problem besteht auch bei Verwendung einer
+     einzigen PHP/HTML Datei.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+
+<?php header ("Content-type: audio/x-pn-realaudio"); ?>
+// Funktioniert nicht, beachten Sie die obige Leerzeile
+]]>
+      </programlisting>
+     </informalexample>
+     <note>
+      <para>
+       In PHP 4 können Sie dieses Problem umgehen, indem Sie Output
+       Buffering benutzen (mit dem Overhead, dass alle Ihre Ausgaben an
+       den Browser gepuffert werden, bis Sie diese Senden). Um dies zu tun,
+       verwenden Sie in Ihrem Skript <function>ob_start</function> und
+       <function>ob_end_flush</function>, oder setzten die
+       Konfigurationsdirektive <literal>output_buffering</literal> in der
+       &php.ini; bzw. in den Server Konfigurationsdateien.
+      </para>
+     </note>
+    </para>    
+    <para>
+     Wollen Sie den Benutzer auffordern, die von Ihnen gesendeten Daten
+     wie z.B. eine generierte PDF Datei zu speichern, können Sie den
+     Header <ulink url="&url.rfc2183;">Content-Disposition</ulink> verwenden,
+     um einen empfohlenen Dateinamen anzubieten und den Browser zu zwingen,
+     den Dialog zum Speichern anzuzeigen.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Wir werden eine PDF Datei ausgeben
+header("Content-type: application/pdf");
+
+// Es wird downloaded.pdf benannt
+header("Content-Disposition: attachment; filename=downloaded.pdf");
+
+// Die originale PDF Datei heißt original.pdf
+readfile('original.pdf');
+?>
+]]>
+      </programlisting>
+     </informalexample>
+     <note>
+      <para>
+       Der Microsoft Internet Explorer 4.01 hat einen Bug, der diese
+       Funktionalität verhindert, und es gibt keinen Workaround. Auch
+       in Microsoft Internet Explorer 5.5 existiert ein Bug, der dies
+       behindert, dieser kann jedoch mittels einem Upgrade auf Service
+       Pack 2 oder neuer behoben werden.
+      </para>
+     </note>
+    </para>
+    <note>
+     <simpara>
+      Ist <link linkend="ini.safe-mode">safe mode</link> aktiviert, wird
+      die UID des Skriptes dem <literal>realm</literal> Teil des Headers
+      <literal>WWW-Authenticate</literal> (für HTTP Authentifizierung
+      verwendet) hinzugefügt, sollten Sie diesen Header setzen.
+     </simpara>
+    </note>
+    <para>
+     Siehe auch <function>headers_sent</function>,
+     <function>setcookie</function> und den Teil 
+     <link linkend="features.http-auth">HTTP Authentifizierung</link>.
     </para>
    </refsect1>
   </refentry>
