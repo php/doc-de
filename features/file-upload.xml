@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.14 $ -->
-<!-- EN-Revision: 1.54 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.15 $ -->
+<!-- EN-Revision: 1.55 Maintainer: tom Status: ready -->
  <chapter id="features.file-upload">
   <title>Steuerung von Dateiuploads</title>
 
@@ -42,7 +42,7 @@
      <programlisting role="html">
 <![CDATA[
 <form enctype="multipart/form-data" action="_URL_" method="post">
-<input type="hidden" name="MAX_FILE_SIZE" value="1000">
+<input type="hidden" name="MAX_FILE_SIZE" value="30000">
 Send this file: <input name="userfile" type="file">
 <input type="submit" value="Send File">
 </form>
@@ -165,22 +165,29 @@ Send this file: <input name="userfile" type="file">
     <example>
      <title>Dateiuploads prüfen</title>
      <para>
-      Die folgenden Beispiele sind für PHP Versionen größer als PHP
-      4.0.2. Funktionsbeschreibungen finden Sie für 
+      Weitere Informationen finden Sie auch in den Beschreibunge für
       <function>is_uploaded_file</function> und
-      <function>move_uploaded_file</function>.
+      <function>move_uploaded_file</function>. Das folgende Beispiel
+      verarbeitet einen von einem HTML-Formular kommenden Dateiupload.
      </para>
      <programlisting role="php">
 <![CDATA[
 <?php 
 // In PHP kleiner als 4.1.0 sollten Sie $HTTP_POST_FILES anstatt $_FILES verwenden.
-if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
-    copy($_FILES['userfile']['tmp_name'], "/place/to/put/uploaded/file");
+// In PHP kleiner als 4.0.3 verwenden Sie copy() und is_uploaded_file() anstatt von
+// move_uploaded_file()
+
+$uploaddir = '/var/www/uploads/';
+
+print "<pre>";
+if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaddir . $_FILES['userfile']['name'])) {
+    print "File is valid, and was successfully uploaded.  Here's some more debugging info:\n";
+    print_r($_FILES);
 } else {
-    echo "Possible file upload attack. Filename: " . $_FILES['userfile']['name'];
+    print "Possible file upload attack!  Here's some debugging info:\n";
+    print_r($_FILES);
 }
-/* ...oder... */
-move_uploaded_file($_FILES['userfile']['tmp_name'], "/place/to/put/uploaded/file");
+
 ?>
 ]]>
      </programlisting>
