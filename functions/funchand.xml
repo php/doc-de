@@ -1,0 +1,443 @@
+ <reference id="ref.funchand">
+  <title>Function Handling functions</title>
+  <titleabbrev>Functions</titleabbrev>
+
+  <partintro>
+   <para>
+    These functions all handle various operations involved in working
+    with functions.
+   </para>
+  </partintro>
+  
+  <refentry id="function.call-user-func">
+   <refnamediv>
+    <refname>call_user_func</refname>
+    <refpurpose>Aufruf einer benutzerdefinierten Funktion</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>mixed 
+       <function>call_user_func</function>
+      </funcdef>
+      <paramdef>string 
+       <parameter>function_name</parameter>
+      </paramdef>
+      <paramdef>mixed 
+       <parameter><optional>parameter</optional></parameter>
+      </paramdef>
+      <paramdef>mixed 
+       <parameter><optional>...</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Ruft die Funktion mit Namen <parameter>function_name</parameter>
+     mit den Parametern <parameter>parameters</parameter> auf.
+     <informalexample>
+      <programlisting role="php">
+function friseur ($type) {
+    print "Sie möchten einen $type-Kopf, kein Problem&lt;br>";
+}
+call_user_func ('friseur', "Bubi");
+call_user_func ('friseur', "Pilz");
+      </programlisting>
+     </informalexample>
+    </para>
+   </refsect1>
+  </refentry>
+  
+  <refentry id="function.create-function">
+   <refnamediv>
+    <refname>create_function</refname>
+    <refpurpose>
+     Erzeugen einer anonymen / temporären (Lambda-Stil) Funktion
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>create_function</function></funcdef>
+      <paramdef>string <parameter>args</parameter></paramdef>
+      <paramdef>string <parameter>code</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Erzeugt eine anonyme Funktion an Hand der übergebenen Parameter und
+     gibt einen eindeutigen Namen für diese zurück. Normalerweise sind
+     die <parameter>args</parameter> als mit "'" begrenzte Strings zu
+     übergeben. Dies gilt auch für <parameter>code</parameter>. Dadurch
+     werden die Variablen vor dem Parsen geschützt. Falls sie """
+     verwenden, müssen sie die Variablen-Namen "escapen", wie z.B. 
+	   <literal>\$avar</literal>.
+	  </para>
+	  <para>
+     Dieser Befehl kann z.B. verwendet werden, um eine Funktion an Hand
+     von Informationen zu erzeugen, die erst zur Laufzeit vorliegen.
+     <example>
+      <title>
+       Erzeugen einer anonymen / temporären Funktion per
+       <function>create_function</function>:
+      </title>
+      <programlisting role="php">
+$newfunc = create_function('$a,$b','return "ln($a) + ln($b) = ".log($a * $b);');
+echo "Neue Temp-Funktion: $newfunc\n";
+echo $newfunc(2,M_E)."\n";
+// Ausgabe:
+// Neue Temp-Funktion: lambda_1
+// ln(2) + ln(2.718281828459) = 1.6931471805599
+      </programlisting>
+     </example>
+     Sie können auch eine allgemeine Handhabungs-Funktion erstellen, die
+     einen mehr oder weniger große Anzahl an Operationen mit einer Liste
+     von Parametern durchführt.
+     <example>
+      <title>
+       Beispiel zum o.a. Verwendungszweck:
+	    </title>
+      <programlisting role="php">
+function process($var1, $var2, $farr) {
+    for ($f=0; $f &lt; count($farr); $f++)
+        echo $farr[$f]($var1,$var2)."\n";
+}
+
+// Erzeugung eines Bündels an mathematischen Funktionen
+$f1 = 'if ($a &gt;=0) {return "b*a^2 = ".$b*sqrt($a);} else {return false;}';
+$f2 = "return \"min(b^2+a, a^2,b) = \".min(\$a*\$a+\$b,\$b*\$b+\$a);";
+$f3 = 'if ($a &gt; 0 &amp;&amp; $b != 0) {return "ln(a)/b = ".log($a)/$b;} else {return false;}';
+$farr = array(
+    create_function('$x,$y', 'return "als trig: ".(sin($x) + $x*cos($y));'),
+    create_function('$x,$y', 'return "als Hypotenuse: ".sqrt($x*$x + $y*$y);'),
+    create_function('$a,$b', $f1),
+    create_function('$a,$b', $f2),
+    create_function('$a,$b', $f3)
+    );
+
+echo "\nGebrauch des ersten Arrays der anonymen Funktionen\n";
+echo "Parameter: 2.3445, M_PI\n";
+process(2.3445, M_PI, $farr);
+
+// Erzeugung eines Bündels an String-Behandlungs-Routinen
+$garr = array(
+    create_function('$b, $a','if (strncmp ($a, $b, 3) == 0) return "** \"$a\" '.
+        'und \"$b\"\n** Sieht für mich gleich aus! (ansehen der ersten 3 Zeichen)";'),
+    create_function('$a, $b','; return "CRCs: ".crc32($a)." , ".crc32(b);'),
+    create_function('$a, $b','; return "ähnlich(a, b) = ".similar_text($a, $b, &$p)."($p%)";')
+    );
+echo "\nGebrauch des zweiten Arrays der anonymen Funktionen\n";
+process("Twas brilling and the slithy toves", "Twas the night", $garr);
+	    </programlisting>
+     </example>
+     wenn sie nun den o.a Code ausführen lassen, wird folgendes
+     ausgegeben	 :
+     <informalexample>
+      <programlisting>
+Gebrauch des ersten Arrays der anonymen Funktionen
+Parameter: 2.3445, M_PI
+als trig: -1.6291725057799
+als Hypotenuse: 3.9199852871011
+b*a^2 = 4.8103313314525
+min(b^2+a, a^2,b) = 8.6382729035898
+ln(a/b) = 0.27122299212594
+
+Gebrauch des zweiten Arrays der anonymen Funktionen
+** "Twas the night" und "Twas brilling and the slithy toves"
+** Sieht für mich gleich aus! (ansehen der ersten 3 Zeichen)
+CRCs: -725381282 , 1908338681
+ähnlich(a,b) = 11(45.833333333333%)
+	    </programlisting>
+	   </informalexample>
+     Möglicherweise liegt der häufigste Anwendungsfall für Funktionen im
+     Lambda-Stil (anonym) bei den Callback-Funktionen, also z.B. beim
+     Gebrauch von <function>array_walk</function> oder
+     <function>usort</function>.
+     <example>
+      <title>
+       Gebrauch der anonymen Funktionen als Callback-Funktion:
+      </title>
+	    <programlisting role="php">
+$av = array("der ","ein ","dieser ","jener ");
+array_walk($av, create_function('&$v,$k','$v = $v."Zug";'));
+print_r($av);  // mit PHP3 benutzen sie bitte var_dump()
+// Ausgaben:
+// Array
+// (
+//     [0] =&gt; der Zug
+//     [1] =&gt; ein Zug
+//     [2] =&gt; dieser Zug
+//     [3] =&gt; jener Zug
+// )
+
+// Ein Array aus Strings nach Länge geordnet
+$sv = array("kurz","länger","noch länger","dieser ist am längsten");
+print_r($sv);
+// Ausgaben:
+// Array
+// (
+//     [0] =&gt; kurz
+//     [1] =&gt; länger
+//     [2] =&gt; noch länger
+//     [3] =&gt; dieser ist am längsten
+// )
+
+// Sortierung von lang nach kurz
+usort($sv, create_function('$a,$b','return strlen($b) - strlen($a);'));
+print_r($sv);
+// Ausgabe:
+// Array
+// (
+//     [0] =&gt; dieser ist am längsten
+//     [1] =&gt; noch länger
+//     [2] =&gt; länger
+//     [3] =&gt; kurz
+// )
+	    </programlisting>
+	   </example>
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.func-get-arg">
+   <refnamediv>
+    <refname>func_get_arg</refname>
+    <refpurpose>
+     Gibt einen Eintrag aus einer Liste von Argumenten zurück
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>func_get_arg</function></funcdef>
+      <paramdef>int <parameter>arg_num</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Gibt das Argument des an der <parameter>arg_num</parameter>
+     stehenden Stelle in eine benutzer-definierte Liste zurück.  Der
+     Zähler hierfür beginnt bei 0. Der Aufruf von
+     <function>func_get_arg</function> ausserhalb einer
+     Funktions-Definition erzeugt eine Warnung.
+    </simpara>
+    <simpara>
+     Ist <parameter>arg_num</parameter> grösser als die Anzahl der
+     vorhandenen Argumente, wird eine Warnung aus- und false zurück
+     gegeben.
+    </simpara>
+    <para>
+     <informalexample>
+      <programlisting role="php">
+&lt;?php
+function foo() {
+    $numargs = func_num_args();
+    echo "Anzahl der Argumente: $numargs&lt;br&gt;\n";
+    if ($numargs &gt;= 2) {
+        echo "Das 2. Argument ist: " . func_get_arg (1) . "&lt;br&gt;\n";
+    }
+} 
+
+foo (1, 2, 3);
+?&gt;
+      </programlisting>
+     </informalexample>
+    </para>
+    <simpara>
+     <function>func_get_arg</function> kann in Verbindung mit
+     <function>func_num_args</function> und
+     <function>func_get_args</function> gebraucht werden, um
+     benutzer-definierte Funktionen mit variabler Argument-Liste zu
+     erstellen.
+    </simpara>
+    <note>
+     <simpara>
+      <emphasis>Diese Funktion steht ab PHP 4 zur Verfügung.</emphasis>
+     </simpara>
+    </note>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.func-get-args">
+   <refnamediv>
+    <refname>func_get_args</refname>
+    <refpurpose>
+     Gibt ein Array zurück, das die Liste der einer Funktion übergebenen
+     Argumente enthält
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>func_get_args</function></funcdef>
+      <paramdef>void <parameter></parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     In einem Array wird jedes Element zurück gegeben, das einer
+     benutzer-definierten Funktion übergeben wurde. Sollten sie
+     dies ausserhalb einer eigenen (benutzer-definierten) Funktion
+     anwenden, wird eine Warnung ausgegeben.
+    </simpara>
+    <para>
+     <informalexample>
+      <programlisting role="php">
+&lt;?php
+function foo() {
+    $numargs = func_num_args();
+    echo "Anzahl der Argumente: $numargs&lt;br&gt;\n";
+    if ($numargs &gt;= 2) {
+        echo "Das 2. Argument ist: " . func_get_arg (1) . "&lt;br&gt;\n";
+    }
+    $arg_list = func_get_args();
+    for ($i = 0; $i &lt; $numargs; $i++) {
+        echo "Argument $i ist: " . $arg_list[$i] . "&lt;br&gt;\n";
+    }
+} 
+
+foo (1, 2, 3);
+?&gt;
+      </programlisting>
+     </informalexample>
+    </para>
+    <simpara>
+     <function>Func_get_args</function> kann in Verbindung mit
+     <function>func_num_args</function> und
+     <function>func_get_arg</function> verwendet werden, um einer
+     benutzer-definierten Funktion eine Argument-Liste mit variabler
+     Länge zu übergeben.
+    </simpara>
+    <note>
+     <simpara>
+      Diese Funktion steht ab PHP 4 zur Verfügung.
+     </simpara>
+    </note>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.func-num-args">
+   <refnamediv>
+    <refname>func_num_args</refname>
+    <refpurpose>
+     Gibt die Anzahl der einer Funktion übergebenen Argumente zurück
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>func_num_args</function></funcdef>
+      <paramdef>void <parameter></parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Die einer benutzer-definierten Funktion übergebene Anzahl an
+     Argumenten wird zurück gegeben. Falls
+     <function>func_num_args</function> ausserhalb einer
+     benutzer-definierten Funktion Verwendung findet, wird eine
+     Warnung ausgegeben.
+    </simpara>
+    <para>
+     <informalexample>
+      <programlisting role="php">
+&lt;?php
+function foo() {
+    $numargs = func_num_args();
+    echo "Anzahl der Argumente: $numargs\n";
+} 
+
+foo (1, 2, 3);  // Ausgabe: 'Anzahl der Argumente: 3'
+?&gt;
+      </programlisting>
+     </informalexample>
+    </para>
+    <simpara>
+     <function>func_num_args</function> kann in Verbindung mit
+     <function>func_get_arg</function> und
+     <function>func_get_args</function> benutzt werden, um einer
+     benutzer-definerten Funktion eine variable Anzahl von Argumenten
+     zu übergeben.
+    </simpara>
+    <note>
+     <simpara>
+      Diese Funktion wurde in PHP 4 hinzu gefügt.
+     </simpara>
+    </note>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.function-exists">
+   <refnamediv>
+    <refname>function_exists</refname>
+    <refpurpose>
+     Falls die angegebene Funktion definiert ist, wird true zurück
+     gegeben
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>function_exists</function></funcdef>
+      <paramdef>string <parameter>function_name</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Prüft die Liste der definierten Funktionen auf das Vorhanden sein
+     der Funktion mit dem Namen <parameter>function_name</parameter> .
+     Sofern vorhanden wird true, sonst false zurück gegeben.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.register-shutdown-function">
+   <refnamediv>
+    <refname>register_shutdown_function</refname>
+    <refpurpose>
+     Registriert eine Funktion zur Ausführung beim Skript-Abschluss
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int 
+       <function>register_shutdown_function</function>
+      </funcdef>
+      <paramdef>string <parameter>func</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Die mit <parameter>func</parameter> benannte Funktion wird im
+     Skript zwecks Ausführung an dessen Ende eingetragen.
+    </simpara>
+    <para>
+     Bekannte Problemfälle:
+    </para>
+    <simpara>
+     Da innerhalb dieser Funktion keinerlei Ausgabe im Browser erzeugt
+     werden, können sie die registrierte Funktion nicht mit print oder
+     echo usw. debuggen.
+    </simpara>
+   </refsect1>
+  </refentry>
+  
+ </reference>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
