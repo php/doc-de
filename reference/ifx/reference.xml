@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
-<!-- EN-Revision 1.5: Maintainer: conni Status: ready -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision 1.6: Maintainer: conni Status: ready -->
  <reference id="ref.ifx">
   <title>Informix Funktionen</title>
   <titleabbrev>Informix</titleabbrev>
@@ -52,137 +52,7 @@
     </note>
    </section>
 
-   <section id="ifx.configuration">
-    &reftitle.runtime;
-    <note>
-     <para>
-      Die Umgebungsvariablen INFORMIXDIR und INFORMIXSERVER müssen für den
-      PHP-Treiber verfügbar sein und das INFORMIX bin-Verzeichnis muss im
-      Pfad enthalten sein. Prüfen Sie diese Voraussetzungen mit einem Skript,
-      das einen Aufruf von <function>phpinfo</function> enthält, bevor Sie
-      testen. Die Ausgabe von <function>phpinfo</function> sollte diese
-      Umgebungsvariablen auflisten. Dies ist sowohl für CGI PHP als auch
-      Apache mod_php &true;. Möglicherweise müssen Sie diese
-      Umgebungsvariablen in Ihrem Apache Startskript setzen.
-     </para>
-     <para>
-      Die Informix shared libraries sollten für den Lader ebenfalls verfügbar
-      sein (überprüfen Sie den LD_LINBRARY_PATH oder ld.so.conf/ldconfig).
-     </para>
-    </note>
-    <note>
-     <title>
-      Einige Anmerkungen zum Gebrauch von BLOBs (TEXT- und BYTE Felder)
-     </title>
-     <para>
-      BLOBs werden normalerweise durch BLOB-Identifikatoren adressiert.
-      Select Abfragen geben eine "blob id" für alle TEXT- und BYTE-Felder
-      zurück. Sie können die Inhalte mit "string_var =
-      ifx_get_blob($blob_id);" auslesen, falls Sie angeben, dass Sie die
-      BLOBS in den Speicher schreiben möchten (mit "ifx_blobinfile(0);").
-      Wenn Sie die Inhalte von BLOB-Felder lieber in eine Datei ausgeben
-      möchten, benutzen Sie "ifx_blobinfile(1);" und mit
-      "ifx_get_blob($blob_id);" ermitteln Sie den Dateinamen. Benutzen Sie
-      normale Datei I/O-Routinen, um die Inhalte von BLOBs zu erhalten. 
-     </para>
-     <para>
-      Bei insert/update Abfragen müssen Sie diese "blob id's" mit der
-      Funktion "<function>ifx_create_blob</function>;" selber erzeugen.
-      Danach schreiben Sie die blob id's in ein Array und ersetzen die
-      BLOB-Felder durch ein Fragezeichen (?) im Abfragestring. Für die
-      Inhalte der BLOBs, die mit der Funktion
-      <function>ifx_update_blob</function> gesetzt werden, sind Sie bei
-      updates/inserts selber verantwortlich. 
-     </para>
-     <para>
-      Das Verhalten einer BLOB-Spalte kann auch zur Laufzeit durch
-      Konfigurationsvariablen verändert werden.  
-     </para>
-     <para>
-      Konfigurationsvariable : ifx.textasvarchar
-     </para>
-     <para>
-      Konfigurationsvariable : ifx.byteasvarchar
-     </para>
-     <para>
-      Laufzeitfunktionen :
-     </para>
-     <para>
-      ifx_textasvarchar(0) : benutzt bei SELECT Abfragen von TEXT-Felder die blob-id  
-     </para>
-     <para>
-      ifx_byteasvarchar(0) : benutzt bei SELECT Abfragen von BYTE-Felder die blob-id  
-     </para>
-     <para>
-      ifx_textasvarchar(1) : gibt TEXT-Felder so zurück, als wären es VARCHAR Felder, so dass Sie keine blob-is für select Abfragen brauchen.  
-     </para>
-     <para>
-      ifx_byteasvarchar(1) : gibt BYTE-Felder so zurück, als wären es VARCHAR Felder, so dass Sie keine blob-is für select Abfragen brauchen.  
-     </para>
-     <para>
-      Konfigurationsvariable : ifx.blobinfile
-     </para>
-     <para>
-      Laufzeitfunktionen :
-     </para>
-     <para>
-      ifx_blobinfile_mode(0) : gibt BYTE-Felder in den Speicher zurück, mit
-      der blob-id können Sie auf den Inhalt zugreifen. 
-     </para>
-     <para>
-      ifx_blobinfile_mode(1) : gibt BYTE-Felder in einer Datei zurück, mit
-      der blob-id können Sie den Dateinamen ermitteln. 
-     </para>
-     <para>
-      Wenn Sie ifx_text/byteasvarchar auf 1 setzen, können Sie TEXT- und
-      BYTE-Felder in select Abfragen genauso benutzen, wie normale
-      (allerdings sehr lange) VARCHAR-Felder. Da alle Zeichenketten in PHP
-      "gezählt" werden, bleibt dies "binary safe". Es bleibt Ihnen
-      überlassen, korrekt damit umzugehen. Die zurückgegebenen Daten können
-      alles mögliche enthalten, so dass Sie für die Inhalte verantwortlich
-      sind. 
-     </para>
-     <para>
-      Wenn Sie ifx_blobinfile auf 1 setzen, benutzen Sie den Dateinamen, der
-      von ifx_get_blob(..) zurückgegeben wird, um auf den Inhalt des BLOB
-      zuzugreifen. Beachten Sie, dass Sie in diesem Fall FÜR DAS LÖSCHEN DER
-      TEMPORÄREN DATEIEN, DIE VON INFORMIX ERSTELLT WERDEN VERANTWORTLLICH
-      SIND, wenn sie ein Tupel auslesen. Jedes neue Tupel, das gelesen wird,
-      erzeugt für jedes BYTE-Feld eine neue temporäre Datei.   
-     </para>
-     <para>
-      Der Speicherort für die temporären Dateien kann mit der
-      Umgebungsvariablen "blobdir" beeinflusst werden, die
-      Standardeinstellung ist "." (das aktuelle Verzeichnis). Etwas Ähnliches
-      wie : putenv(blobdir=tmpblob"); erleichtert das Bereinigen der
-      temporären Dateien, die versehentlich stehen geblieben sind (ihre Namen
-      beginnen alle mit "blb").   
-     </para>
-    </note>
-    <note>
-     <title>Automatisches Abschneiden von Leerzeichen bei "char" (SQLCHAR und
-     SQLNCHAR) Daten </title>
-     <para>
-      Dies kann mit einer Konfigurationsvariablen eingestellt werden
-     </para>
-     <para>
-      ifx.charasvarchar : falls auf 1 gesetzt, werden abschliessende
-      Leerzeichen automatisch abgeschnitten. Dies erspart den Aufruf der
-      chop() Funktion. 
-     </para>
-    </note>
-    <note>
-     <title>&null;-Werte</title>
-     <para>
-      Wenn die Konfigurationsvariable ifx.nullformat (und die
-      Laufzeitfunktion <function>ifx_nullformat</function>) auf &true;
-      gesetzt sind, werden &null;-werte in Spalten als Zeichenkette &null;
-      zurückgegeben, wenn die Variable auf &false; gesetzt ist, werden leere
-      Strings für &null;werte zurückgegeben. So können sie zwischen
-      &null;werten und leeren Spalten unterscheiden. 
-     </para>
-    </note>
-   </section>
+   &reference.ifx.ini;
 
    <section id="ifx.resources">
     &reftitle.resources;
@@ -194,8 +64,6 @@
     &reftitle.constants;
     &no.constants;
    </section>
-
-
 
   </partintro>
 
@@ -223,3 +91,4 @@ vim: et tw=78 syn=sgml
 vi: ts=1 sw=1
 -->
 
+   
