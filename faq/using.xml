@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.20 Maintainer: wiesemann Status: ready -->
+<chapter id="faq.using">
+  <title>PHP benutzen</title>
+  <titleabbrev>PHP benutzen</titleabbrev>
+
+  <para>
+   Diese Rubrik behandelt die beim Schreiben von PHP-Skripten am häufigsten
+   auftretenden Fehler.
+  </para>
+
+  <qandaset>
+   <qandaentry id="faq.using.anyform">
+    <question>
+     <para>
+      Ich möchte ein PHP-Skript schreiben, das Daten von beliebigen Formularen
+      verarbeiten kann. Woher weiß ich, welche Variablen über die POST-Methode verfügbar sind?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Stellen Sie sicher, dass <link linkend="ini.track-vars">track_vars</link>
+      in Ihrer &php.ini; aktiviert ist (Standardeinstellung seit PHP 4.0.3).
+      Wenn <literal>track_vars</literal> aktiviert ist, erstellt PHP einige
+      assoziative Arrays. Das wichtige Array ist in diesem Fall <literal>$_POST</literal>
+      (in PHP-Versionen vor 4.1.0 war der Name hierfür <literal>$HTTP_POST_VARS</literal>).
+      Wenn Sie ein PHP-Skript schreiben möchten, das die Variablen, die über die
+      POST-Methode verfügbar sind, verarbeitet, dann müssen Sie ähnlich wie im folgenden
+      Beispiel vorgehen:
+      <programlisting role="php">
+<![CDATA[
+foreach ($_POST as $var => $value) {
+    echo "$var = $value<br>\n";
+}
+]]>
+      </programlisting>
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.singlequotes">
+    <question>
+     <para>
+      Ich möchte alle einfachen Anführungszeichen (') in einen Backslash
+      gefolgt von einem einfachen Anführungszeichen konvertieren. Wie kann ich
+      das mit einem regulären Ausdruck machen?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Schauen Sie sich die <function>addslashes</function>-Funktion an, die
+      genau das macht. Sie sollten sich ebenfalls die
+      <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>-Direktive
+      in Ihrer &php.ini; anschauen.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.wrong-order">
+    <question>
+     <para>
+      Wenn ich den folgenden Code ausführe, wird die Ausgabe in der
+      falschen Reihenfolge ausgegeben:
+     <programlisting role="php">
+function myfunc($argument)
+{
+    echo $argument + 10;
+}
+$variable = 10;
+echo "myfunc($variable) = " . myfunc($variable);
+    </programlisting>
+     Woran liegt das?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Um das Ergebnis Ihrer Funktion in einem Ausdruck verwenden zu können
+      (um es z.B. wie im obigen Beispiel mit dem anderen String zu verbinden),
+      müssen Sie den Wert mit <function>return</function> zurückgeben und
+      ihn nicht mit <function>echo</function> ausgeben.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.newlines">
+    <question>
+     <para>
+      Wo sind meine Zeilenumbrüche geblieben?
+      <programlisting role="php">
+<![CDATA[
+<pre>
+<?php echo "Das soll die erste Zeile sein."; ?>
+<?php echo "Das soll nach dem obigen Zeilenumbruch erscheinen."; ?>
+</pre>
+]]>
+      </programlisting>
+     </para>
+    </question>
+    <answer>
+     <para>
+      In PHP können Code-Blöcke entweder mit "?&gt;" oder mit "?&gt;\n"
+      enden (\n steht für Zeilenumbruch). Im obigen Beispiel sind
+      die ausgegebenen Zeilen daher in einer Zeile, denn PHP lässt
+      die Zeilenumbrüche nach den Block-Ende-Zeichen weg.
+      Wenn Sie möchten, dass PHP einen Zeilenumbruch ausgibt, müssen Sie nach
+      jedem Code-Block einen zusätzlichen Zeilenumbruch einfügen.
+     </para>
+     <para>
+      Warum macht PHP das so? Wenn Sie normales HTML formatieren,
+      erleichert PHP Ihnen die Arbeit, da Sie meist diesen Zeilenumbruch
+      gar nicht haben möchten. Würde PHP diesen Zeilenumbruch ausgeben,
+      müssten Sie sehr lange Zeilen schreiben und Ihren Code damit
+      unlesbar machen.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.headers-sent">
+    <question>
+     <para>
+      Ich bekommen die Meldung 'Warning: Cannot send session cookie - headers already
+      sent...' oder 'Cannot add header information - headers already sent...'.
+     </para>
+    </question>
+    <answer>
+     <para>
+      Die Funktionen <function>header</function>, 
+      <function>setcookie</function> und die Session-Funktionen müssen Header
+      dem Output-Stream hinzufügen. Header können aber nur gesendet werden, wenn Sie
+      vor allen anderen Daten gesendet werden. Prüfen Sie also, ob Ihr Skript Header
+      sendet, nachdem bereits irgendetwas ausgegeben wurde.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.header">
+    <question>
+     <para>
+      Wie kann ich auf Informationen aus dem Request-Header zugreifen?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Wenn Sie PHP als Apache-Modul laufen lassen, liefert Ihnen die
+      <function>getallheaders</function>-Funktion die gewünschten Informationen.
+      Der folgende Code gibt alle Request-Header aus:
+      <programlisting role="php">
+<![CDATA[
+$headers = getallheaders();
+foreach ($headers as $name => $content) {
+    echo "headers[$name] = $content<br>\n";
+}
+]]>
+      </programlisting>
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.authentication">
+    <question>
+     <para>
+      Wenn ich versuche, Authentifikation mit IIS zu nutzen, bekomme ich die
+      Meldung 'No Input file specified'.
+     </para>
+    </question>
+    <answer>
+     <para>
+      Das Sicherheitsmodell des IIS hat Unrecht. Dies ist ein Problem,
+      das alle CGI-Programme, die unter dem IIS laufen, haben.
+      Als Workaround können Sie eine leere HTML-Datei, die nicht von PHP
+      geparst wird, als Eingangsseite in ein per Authenfikation geschütztes
+      Verzeichnis erzeugen. Anschließend leiten Sie den Browser durch ein
+      META-Tag auf die PHP-Seite weiter oder sie setzen einen Link auf
+      die PHP-Seite. PHP erkennt dann die Authentifizierung korrekt.
+      Dieses Problem tritt mit dem ISAPI-Modul nicht auf. Auch auf anderen
+      NT-Web-Servern sollte dieses Problem nicht auftauchen. Weitere
+      Informationen finden Sie auch hier:
+      <ulink url="&faqurl.iis;">&faqurl.iis;</ulink>.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.netscape">
+    <question>
+     <para>
+      Mein PHP-Skript funktioniert unter IE und Lynx, aber unter Netscape
+      fehlt ein Teil meiner Ausgabe. Wenn ich mir den Quelltext anschaue,
+      sehe ich die Ausgabe unter IE, aber nicht unter Netscape.
+     </para>
+    </question>
+    <answer>
+     <para>
+      Netscape verarbeitet HTML-Tags (z.B. Tabellen) strenger als der IE.
+      Meist ist es hilfreich, wenn Sie Ihre HTML-Ausgabe mit einem
+      HTML-Validator (z.B.
+      <ulink url="&faqurl.w3.validator;">validator.w3.org</ulink>)
+      prüfen. Z.B. kann ein fehlendes &lt;/table&gt; den Fehler verursachen.
+     </para>
+     <para>
+      IE und Lynx ignorieren auch NULs (<literal>\0</literal>) im HTML-Stream,
+      Netscape nicht. Um dies zu überprüfen, kompilieren Sie am besten die
+      <link linkend="features.commandline">Kommandozeilen</link>-Version 
+      von PHP (auch bekannt als die CGI-Version) und führen Sie Ihr Skript
+      auf der Kommandozeile aus. Unter Unix pipen Sie es durch
+      <literal>od -c</literal> und schauen Sie nach <literal>\0</literal>
+      Zeichen.
+      Unter Windows müssen Sie einen Editor oder ein anderes Programm benutzen,
+      das es Ihnen ermöglicht, binäre Dateien anzuschauen.
+      Wenn Netscape ein NUL in einer Datei findet, gibt es normalerweise in dieser
+      Zeile nichts mehr aus, während IE und Lynx die Zeile normal ausgeben.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.mixml">
+    <question>
+     <para>
+      Wie kann ich XML und PHP mischen? PHP beschwert sich über meine
+      &lt;?xml&gt;-Tags!
+     </para>
+    </question>
+    <answer>
+     <para>
+      Sie müssen die Kurzform der öffnenden PHP-Tags abschalten, indem
+      Sie in Ihrer &php.ini; <link linkend="ini.short-open-tag">short_tags</link>
+      auf 0 setzen oder indem Sie die gleichwertige Apache-Direktive benutzen.
+      Sie können dies auch innerhalb einer &lt;File&gt;-Sektion machen.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.editor">
+    <question>
+     <para>
+      Wie kann ich mit PHP mit Frontpage oder einem anderen HTML-Editor,
+      der meinen Code verschiebt, benutzen?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Die einfachste Möglichkeit ist, ASP-Tags in Ihrem PHP-Code zu aktivieren.
+      Sie können dann &lt;% und %&gt; zur Begrenzung Ihres Codes verwenden.
+      Viele HTML-Editoren verarbeiten solche Code-Blöcke intelligenter.
+      Um die ASP-Tags zu aktiveren, müssen Sie in Ihrer &php.ini;
+      <link linkend="ini.asp-tags">asp_tags</link> auf <literal>On</literal>
+      setzen oder die gleichwertige Apache-Direktive verwenden.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.variables">
+    <question>
+     <para>
+      Wo kann ich eine komplette Liste der mir zur Verfügung stehenden Variablen
+      finden und warum sind diese Variablen nicht in der PHP-Dokumentation
+      zu finden?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Die beste Lösung ist, <literal>&lt;?php phpinfo(); ?&gt;</literal>
+      in ein PHP-Skript einzufügen und sich die Ausgabe anschauen.
+      Sie finden dort dann viele Informationen über Ihr PHP-Setup und
+      eine Liste sowohl der Umgebungsvariablen als auch der speziellen
+      Variablen, die Ihr Webserver zur Verfügung stellt.
+      Diese Liste kann nicht in der PHP-Dokumentation dokumentiert werden,
+      da sie stark vom verwendet Server abhängt.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.using.cgi-vars">
+    <question>
+     <para>
+      Ich versuche, auf eine der Standard-CGI-Variablen (wie
+      $DOCUMENT_ROOT oder $HTTP_REFERER) in einer selbst-definierten
+      Funktion zuzugreifen, aber anscheinend kann ich nicht darauf zugreifen.
+      Was mache ich falsch?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Umgebungsvariablen sind normale Variablen. Sie müssen diese Variablen
+      daher entweder in Ihrer Funktion als globale Variable deklarieren (z.B.
+      mit "<literal>global $DOCUMENT_ROOT;</literal>") oder das globale
+      Variablen-Array benutzen (z.B. "<literal>$GLOBALS["DOCUMENT_ROOT"]</literal>").
+     </para>
+     <note>
+      <para>
+       Seit PHP 4.1.0 können Sie auch das superglobale Array
+       <literal>$_SERVER</literal> benutzen. Dieses Array steht Ihnen innerhalb
+       jeder Funktion zur Verfügung. Statt auf <literal>$DOCUMENT_ROOT</literal>
+       können Sie also auf <literal>$_SERVER["DOCUMENT_ROOT"]</literal> zugreifen.
+      </para>
+     </note>
+    </answer>
+   </qandaentry>
+
+  </qandaset>
+ </chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
