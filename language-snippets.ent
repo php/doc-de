@@ -1,6 +1,103 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 1.31 Maintainer: mk Status: ready -->
+<!-- EN-Revision: 1.110 Maintainer: betz Status: ready -->
+<!-- CREDITS: mk -->
+
+<!-- Notes -->
+
+<!ENTITY note.bin-safe '<note><simpara>Diese Funktion ist binary safe.</simpara></note>'>
+
+<!ENTITY note.not-bin-safe '<warning><simpara>Diese Funktion ist (bis jetzt)
+nicht binary safe!</simpara></warning>'>
+
+<!ENTITY note.clearstatcache '<note><simpara>Die Ergebnisse dieser Funktion
+werden gecached. Weitere Details erhalten Sie bei
+<function>clearstatcache</function>.</simpara></note>'>
+
+<!ENTITY note.context-support '<note><simpara>Context Unterstützung gibt es
+seit PHP 5.0.0.</simpara></note>'>
+
+<!ENTITY note.exec-bg '<note><para>Falls Sie diese Funktion benutzen, um ein
+Programm zu starten und im Hintergrund weiterlaufen lassen möchten,
+müssen Sie sicherstellen, dass die Ausgabe des Programms in eine Datei oder
+einen anderen Ausgabestream umgeleitet wird. Anderenfalls wird PHP solange
+hängen, bis das Programm zu Ende ausgeführt wurde.</para></note>'>
+
+<!ENTITY note.func-callback '<note><simpara>Anstelle eines Funktionsnamens
+kann auch ein Array mit einer Objekt-Referenz und dem Namen einer Methode
+angegeben werden.</simpara></note>'>
+
+<!ENTITY note.line-endings '<note><simpara>Wenn Sie Probleme damit haben, dass
+PHP Zeilenendezeichen nicht erkennt, entweder beim Lesen von Dateien auf einem
+Macintosh oder bei Dateien die auf einem Macintosh erstellt wurden, können Sie
+die Option <link linkend="ini.auto-detect-line-endings">
+auto_detect_line_endings</link> aktivieren.</simpara></note>'>
+
+<!ENTITY note.magicquotes.gpc '<note><title>Hinweis zu magic_quotes_gpc
+</title><para>Die PHP Konfigurationsoption <link linkend="ini.magic-quotes-gpc">
+magic_quotes_gpc</link> ist im Standard auf <literal>on</literal> gesetzt. Das
+bedeutet, dass <function>addslashes</function> für alle GET, POST, und COOKIE
+Daten automatisch ausgeführt wird. Sie können <function>stripslashes</function>
+verwenden um diese Slashes zu entfernen.</para></note>'>
+
+<!ENTITY note.no-remote '<note><simpara>Diese Funktion kann nicht mit
+<link linkend="features.remote-files">entfernten Dateien</link> arbeiten, da
+der Zugriff auf die Datei, die bearbeitet werden soll, über das Dateisystem des
+Servers möglich sein muss.</simpara></note>'>
+
+<!ENTITY note.no-windows '<note><simpara>Diese Funktion ist auf
+Windows-Plattformen nicht implementiert.</simpara></note>'>
+
+<!ENTITY note.no-windows.extension '<note><simpara>Diese Erweiterung steht auf
+Windowsbetriebssystemen nicht zur Verfügung.</simpara></note>'>
+
+<!ENTITY note.randomseed '<note><simpara>Seit PHP 4.2.0 besteht keine
+Notwendigkeit mehr, den Zufallsgenerator für Zahlen mit
+<function>srand</function> oder <function>mt_srand</function> zu füttern, das
+geschieht nun automatisch.</simpara></note>'>
+
+<!ENTITY note.registerglobals '<note><title>register_globals: Wichtiger
+Hinweis</title><para>Seit PHP 4.2.0 ist die Standardeinsteillung für die
+Konfigurationsoption <link linkend="ini.register-globals">
+register_globals</link> <emphasis>off</emphasis>. Die PHP Community ermutigt
+Alle, sich nicht auf diese Option zu verlassen und Alternativen wie
+&link.superglobals; zu verwenden.</para></note>'>
+
+<!ENTITY note.superglobals '<note><title>Superglobals: Hinweis zur
+Verfügbarkeit</title><para>Seit PHP 4.1.0 stehen superglobale Arrays wie
+<varname>$_GET</varname>, <varname>$_POST</varname>,<varname>$_SERVER</varname>, 
+etc. zur Verfügung. Weitere Informationen können Sie dem Abschnitt zu 
+&link.superglobals; entnehmen.</para></note>'>
+
+
+<!-- Tips -->
+
+<!ENTITY tip.fopen-wrapper '<tip><simpara>Mit dieser Funktion können Sie eine
+URL als Dateinamen verwenden, falls Sie <link linkend="ini.allow-url-fopen">
+fopen wrappers</link> ermöglicht haben. Mehr Details dazu, wie Sie den
+Dateinamen angeben müssen finden Sie bei <function>fopen</function>. Eine
+Liste der unterstützten URL Protokolle finden Sie unter
+<xref linkend="wrappers"/>.</simpara></tip>'>
+
+<!ENTITY tip.fopen-wrapper.stat '<tip><simpara>Seit PHP 5.0.0 kann diese
+Funktion mit <emphasis>einigen</emphasis> URL-Wrappern benutzt werden. Schauen
+Sie in der Liste unter <xref linkend="wrappers"/> nach, welcher Wrapper die
+Funktionalität von <function>stat</function> unterstützt.</simpara></tip>'>
+
+<!ENTITY tip.ob-capture '<tip><simpara>Bei allem, dessen Ergebnisausgabe direkt
+im Browser angezeigt wird, können Sie die
+<link linkend="ref.outcontrol">Funktionen zur Ausgabesteuerung</link> verwenden.
+Damit lässt sich die Ausgabe dieser Funktion erfassen, und - zum Beispiel -
+in einem <type>string</type> speichern.</simpara></tip>'>
+
+
+<!-- Warnings -->
+
+<!ENTITY warn.escapeshell '<warning><para>Falls Sie es erlauben, dass Daten von 
+Usereingaben an diese Funktion weitergereicht werden, sollten Sie
+<function>escapeshellarg</function> oder <function>escapeshellcmd</function>
+verwenden. Bei Verwendung dieser Funktionen stellen Sie sicher, dass kein
+Benutzer Ihr System überlisten kann beliebige Kommandos auszuführen</para></warning>'>
 
 <!ENTITY warn.experimental '<warning><simpara>Diese Erweiterung ist
 <emphasis>EXPERIMENTELL</emphasis>. Das Verhalten dieser Erweiterung,
@@ -15,60 +112,101 @@ Andere was hier dokumentiert ist, kann sich in zukünftigen PHP-Versionen ohne
 Ankündigung ändern. Seien Sie gewarnt und verwenden Sie diese Funktion auf
 eigenes Risiko.</simpara></warning>'>
 
-<!ENTITY warn.undocumented.func '<warning><simpara>Diese Funktion ist
-bis jetzt nicht dokumentiert. Es steht nur die Liste der Argumente zur Verfügung.
+<!ENTITY warn.imaprecodeyaz '<warning><simpara>Die <link
+linkend="ref.imap">IMAP</link> Erweiterung kann nicht zusammen mit 
+<link linkend="ref.recode">recode</link> oder <link linkend="ref.yaz">YAZ</link>
+verwendet werden. Diese Tatsache liegt darin begründet, dass
+beide Erweiterungen gleiche interne Symbole benutzen.</simpara></warning>'>
+
+<!ENTITY warn.no-win32-fopen-wrapper '<warning><para>PHP Versionen kleiner 4.3.0
+für Windows, erlauben den Zugriff auf Remote-Dateien mit dieser Funktion nicht,
+selbst wenn <link linkend="ini.allow-url-fopen">allow_url_fopen</link> aktiviert
+ist.</para></warning>'>
+
+<!ENTITY warn.ssl-non-standard '<warning><para>Bei SSL-Verbindungen zusammen
+mit Microsoft IIS hält sich dieser Webserver nicht an das Protokoll und
+schließt die Verbindung ohne ein close_notify zu senden. PHP quittiert dieses
+Fehlverhalten mit "SSL: Fatal Protocol Error", wenn das Ende der Daten erreicht
+ist. Eine mögliche Lösung besteht darin, das Level von
+<link linkend="ini.error-reporting">error_reporting</link> herabzusetzten und
+warnings auzuschließen. Ab PHP 4.3.7 kann PHP fehlerhafte IIS Serversoftware
+erkennen, wenn Sie einen Stream mit dem https:// Wrapper öffnen und unterdrückt
+die Warnung für Sie. Falls Sie <function>fsockopen</function> benutzen um einen
+ssl:// Socket zu öffnen, müssen Sie selbst dafür Sorge tragen, die Warnung zu
+erkennen und diese zu unterdrücken.</para></warning>'>
+
+<!ENTITY warn.undocumented.func '<warning><simpara>Diese Funktion ist bis jetzt
+nicht dokumentiert. Es steht nur die Liste der Argumente zur Verfügung.
 </simpara></warning>'>
 
-<!ENTITY warn.no-win32-fopen-wrapper '<warning><para>Windows <literal>PHP</literal>
-Versionen, kleiner als PHP 4.3, erlauben den Zugriff auf Remote-Dateien mit
-dieser Funktion nicht, selbst wenn
-<link linkend="ini.allow-url-fopen">allow_url_fopen</link> aktiviert ist.
-</para></warning>'>
 
-<!ENTITY tip.ob-capture '<tip><simpara>Bei allem, dessen Ausgabe des Ergebnisses
-direkt im Browser angezeigt wird, können Sie die
-<link linkend="ref.outcontrol">Funktionen zur Ausgabesteuerung</link> verwenden.
-Damit lässt sich die Ausgabe dieser Funktion erfassen, und - zum Beispiel - in einem
-<type>string</type> speichern.</simpara></tip>'>
+<!-- Misc -->
 
-<!ENTITY tip.fopen-wrapper '<tip><simpara>Mit dieser Funktion können Sie eine URL als
-Dateinamen verwenden, falls Sie <link linkend="ini.allow-url-fopen"
->fopen wrappers</link> ermöglicht haben.
-Mehr Details, wie Sie den Dateinamen angeben müssen finden Sie bei
-<function>fopen</function>. Eine Liste der unterstützten URL Protokolle
-finden Sie unter <xref linkend="wrappers"/>.
-</simpara></tip>'>
+<!ENTITY array.resetspointer '<note><simpara>Diese Funktion setzt
+(<function>reset</function>) nach Verwendung den <type>array</type>-Zeiger
+zurück.</simpara></note>'>
 
 <!ENTITY return.success 'Gibt bei Erfolg &true; zurück, im Fehlerfall &false;.'>
 
-<!ENTITY return.falseproblem '<warning><simpara>Diese Funktion kann das Boolsche
-&false; zurückliefern, kann aber auch einen nicht-Boolschen Wert zurückgeben, der
-von einem einfachen if-Statement als &false; ausgewertet wird, wie zum Beispiel
-<literal>0</literal> oder &quot;&quot;. Weitere Informationen entnehmen Sie bitte dem
-Abschnitt über <link linkend="language.types.boolean">Boolsche Typen</link>.
-Benutzen Sie deshalb bitte <link linkend="language.operators.comparison">den === Operator</link>
+<!ENTITY return.falseproblem '<warning><simpara>Diese Funktion kann sowohl das
+Boolsche &false; zurückliefern, als auch einen nicht-Boolschen Wert, wie zum
+Beispiel<literal>0</literal> oder &quot;&quot;. der von einem einfachen
+if-Statement als &false; ausgewertet wird. Weitere Informationen entnehmen Sie
+bitte dem Abschnitt über die <link linkend="language.types.boolean">
+Boolsche Typen</link>. Benutzen Sie deshalb
+<link linkend="language.operators.comparison">den === Operator</link>
 um den Rückgabewert dieser Funktion zu überprüfen.</simpara></warning>'>
 
-<!-- Various notes -->
-<!ENTITY note.not-bin-safe '<warning><simpara>Diese Funktion ist (bis jetzt) nicht binary safe!</simpara></warning>'>
+<!ENTITY avail.register-long-arrays 'Seit PHP 5.0.0 können Sie die
+Registrierung der langen von PHP <link linkend="language.variables.predefined">
+vordefinierten Arrays</link> mit der Konfigurationsoption 
+<link linkend="ini.register-long-arrays">register_long_arrays</link>
+abschalten.'>
 
-<!ENTITY note.bin-safe '<note><simpara>Diese Funktion ist binary safe.</simpara></note>'>
+<!-- Image (GD) Notes -->
+<!ENTITY note.config.t1lib '<note><simpara>Diese Funktion steht nur zur
+Verfügung, wenn PHP mit der Option <option role="configure">--with-t1lib[=DIR]
+</option> übersetzt wurde.</simpara></note>'>
 
-<!ENTITY note.line-endings '<note><simpara>Wenn Sie Probleme damit haben, dass
-<literal>PHP</literal> Zeilenendezeichen nicht erkennt, entweder beim Lesen von
-Dateien auf einem Macintosh oder bei Dateien die auf einem Macintosh erstellt wurden,
-können Sie die Option <link linkend="ini.auto-detect-line-endings">
-auto_detect_line_endings</link> aktivieren.</simpara>
-</note>'>
+<!ENTITY note.bundled.gd '<note><simpara>Diese Funktion steht nur zur Verfügung,
+wenn PHP mit der GD Bibliothek übersetzt wurde, die mit PHP zusammen erhältlich
+ist.</simpara></note>'>
 
-<!ENTITY note.no-windows '<note><simpara>Diese Funktion ist auf Windows-Plattformen nicht implementiert.</simpara></note>'>
+<!ENTITY note.gd.2 '<note><simpara>Diese Funktion setzt die GD Bibliothek in
+der Version 2.0.1 oder höher voraus.</simpara></note>'>
 
-<!ENTITY note.no-windows.extension '<note><simpara>This extension is not
-available on Windows platforms.</simpara></note>'>
+<!-- DomXml Notes -->
+<!ENTITY node.inserted 'Dieser Knoten wird in Ihrem Dokument nicht sichtbar
+sein, bis dieser zum Beispiel mit der Funktion <function>domnode_append_child
+</function> eingefügt wird.'>
 
-<!ENTITY note.func-callback '<note><simpara>Anstelle eines Funktionsnamens kann auch
-ein Array mit einer Objekt-Referenz und dem Namen einer Methode angegeben werden.</simpara></note>'>
+<!-- Dom Notes -->
+<!ENTITY dom.node.inserted 'Dieser Knoten wird in Ihrem Dokument nicht sichtbar
+sein, bis dieser zum Beispiel mit der Funktion
+<link linkend="function.dom-domnode-appendchild">DOMNode->appendChild()</link>
+eingefügt wird.'>
 
+<!-- FileSystem entities -->
+<!ENTITY fs.validfp.all '<para>Der Zeiger auf eine Datei muss gültig sein und
+auf eine Datei verweisen, die vorher erfolgreich mit <function>fopen</function>
+oder <function>fsockopen</function> geöffnet wurde.</para>'>
+
+<!-- Oracle -->
+<!ENTITY oci.charset "<para>Wenn Sie den Oracle Server in der Version 9.2 oder
+höher benutzen, können Sie den Zeichensatz, der für eine neue Verbindung
+genutzt werden soll, mit dem <parameter>charset</parameter> Parameter angeben.
+Verwenden Sie Oracle in einer Version &lt; 9.2 wird dieser Parameter ignoriert
+und stattdessen die Umgebungsvariable NLS_LANG benutzt.
+</para>">
+
+<!-- PCNTL Notes -->
+<!ENTITY pcntl.parameter.status '<para>Der <parameter>status</parameter>
+Parameter entspricht dem Statusparameter der für einen erfolgreichen Aufruf
+von <function>pcntl_waitpid</function> verwendet wird.</para>'>
+
+<!-- XSLT Notes -->
+<!ENTITY note.xslt.windows '<note><para>Wenn Sie Windows verwenden, beachten
+Sie bitte, vor Pfadangaben <emphasis>file://</emphasis> zu schreiben.</para></note>'>
 
 <!-- Notes for safe-mode limited functions: -->
 <!ENTITY note.sm.disabled '<note><simpara>&sm.disabled;</simpara></note>'>
@@ -76,30 +214,51 @@ ein Array mit einer Objekt-Referenz und dem Namen einer Methode angegeben werden
 <!ENTITY note.sm.uidcheck '<note><simpara>Wenn <link 
 linkend="features.safe-mode">Safe Mode</link> aktiviert ist, überprüft PHP, 
 ob die Dateien/Verzeichnisse die mit dem Skript bearbeitet werden sollen, 
-die gleiche UID haben wie das Skript selbst.</simpara></note>'>
+die gleiche UID (Eigentümer) haben wie das Skript selbst.</simpara></note>'>
 
 <!ENTITY note.sm.uidcheck.dir '<note><simpara>Wenn <link 
-linkend="features.safe-mode">Safe Mode</link> aktiviert ist, überprüft PHP 
-ob das Verzeichnis in dem das Skript ausgeführt werden soll, die gleiche UID
-hat wie das Skript selbst.</simpara></note>'>
+linkend="features.safe-mode">Safe Mode</link> aktiviert ist überprüft PHP ob
+das Arbeitsverzeichnis, die gleiche UID (Eigentümer) hat wie das Skript selbst.
+</simpara></note>'>
+
+<!ENTITY note.language-construct '<note><simpara>Da dies ein Sprachkonstrukt
+und keine Funktion ist, deshalb können Sie dieses nicht mit
+<link linkend="functions.variable-functions">Variablenfunktionen</link>
+verwenden.</simpara></note>'>
 
 <!-- Common pieces in features/safe-mode.xml 
-     Jade doesn't allow in-line entities, so I put them here... Though they 
-     should have been inline in safe-mode.xml -->
+Jade doesn't allow in-line entities, so I put them here... Though they 
+should have been inline in safe-mode.xml 
+-->
+
 <!ENTITY sm.uidcheck 'Überprüft ob die Dateien/Verzeichnisse, die mit dem Skript
-bearbeitet werden sollen, die gleiche UID haben wie das Skript selbst.'>
+bearbeitet werden sollen, die gleiche UID Eigentümer haben wie das Skript
+selbst.'>
+
+<!ENTITY warn.sm.exec '<warning><simpara>Mit aktiviertem <link
+linkend="features.safe-mode">Safe Mode</link> werden alle Wörter, die dem
+anfänglichen Kommando folgen als ein Kommando interpretiert. Deshalb wird
+<command>echo y | echo x</command> zu <literal>echo "y | echo x"</literal>.
+</simpara></warning>'>
+
+<!ENTITY note.exec-path '<note><simpara>Mit aktiviertem <link
+linkend="features.safe-mode">Safe Mode</link> können Sie nur Programme
+ausführen, die im Verzeichnis liegen, das mit <link
+linkend="ini.safe-mode-exec-dir">safe_mode_exec_dir</link> angegeben wurde. Aus
+praktischen Gründen ist es gegenwärtig nicht erlaubt, dass der Pfad zu einem
+Programm <literal>..</literal> enthält.</simpara></note>'>
 
 <!ENTITY sm.uidcheck.dir 'Überprüft ob das Verzeichnis in dem das Skript
-ausgeführt werden soll, die gleiche UID hat wie das Skript selbst.'>
+ausgeführt werden soll, die gleiche UID (Eigentümer) hat wie das Skript selbst.'>
 
-<!ENTITY sm.disabled 'Diese Funktion ist bei Verwendung von <link 
-linkend="features.safe-mode">Safe Mode</link> deaktiviert.'>
+<!ENTITY sm.disabled 'Diese Funktion steht im <link 
+linkend="features.safe-mode">Safe Mode</link> nicht zur Verfügung.'>
 
 <!-- Common pieces in partintro-sections -->
 <!ENTITY no.config '<para>Diese Erweiterung definiert keine Konfigurationseinstellungen in der &php.ini;.</para>'>
 <!ENTITY no.resource '<para>Diese Erweiterung definiert keine Resource-Typen.</para>'>
 <!ENTITY no.constants '<para>Diese Erweiterung definiert keine Konstanten.</para>'>
-<!ENTITY no.requirement '<para>Diese Erweiterung benötigt zur Erstellung keine externen Bibliotheken.</para>'>
+<!ENTITY no.requirement '<para>Diese Erweiterung benötigt keine externen Bibliotheken.</para>'>
 <!ENTITY no.install '<para>Für diese Funktionen ist keine Installation erforderlich, 
 diese gehören zum Grundbestand von PHP.</para>'>
 
@@ -107,44 +266,139 @@ diese gehören zum Grundbestand von PHP.</para>'>
 <!ENTITY ini.descriptions.title '<para>Hier eine kurze Erklärung der
 Konfigurationsoptionen:</para>'>
 
+<!-- Common pieces for reference part BEGIN-->
+
 <!-- Used in reference/$extname/ini.xml -->
-<!ENTITY extension.runtime '<simpara>
-Das Verhalten dieser Funktionen wird von Einstellungen
-in der &php.ini; bestimmt.
-</simpara>'>
+<!ENTITY extension.runtime '<simpara> Das Verhalten dieser Funktionen wird
+durch Einstellungen in der &php.ini; beeinflusst.</simpara>'>
 
 <!-- Used in reference/$extname/constants.xml -->
-<!ENTITY extension.constants '<simpara>
-Folgende Konstanten werden von dieser Erweiterung definiert und
-stehen nur zur Verfügung, wenn die Erweiterung entweder statisch
-in PHP kompiliert oder dynamisch zur Laufzeit geladen wurde.
+<!ENTITY extension.constants '<simpara>Folgende Konstanten werden von dieser
+Erweiterung definiert und sind nur definiert, wenn die Erweiterung entweder
+statisch in PHP kompiliert oder dynamisch zur Laufzeit geladen wurde.
 </simpara>'>
 
 <!-- For STANDARD Constants used in reference/$extname/constants.xml -->
-<!ENTITY extension.constants.core '<simpara>
-Die aufgelisteten Konstanten stehen immer zur Verfügung, da sie zum
-Grundbestand von PHP gehören.
-</simpara>'>
+<!ENTITY extension.constants.core '<simpara>Die aufgelisteten Konstanten
+stehen immer zur Verfügung, da sie zum Grundbestand von PHP gehören.</simpara>'>
 
 <!-- Used in reference/$extname/classes.xml -->
-<!ENTITY extension.classes '<simpara>
-Folgende Klassen werden von dieser Erweiterung definiert und
-stehen nur zur Verfügung, wenn die Erweiterung entweder statisch
-in PHP kompiliert oder dynamisch zur Laufzeit geladen wurde.
+<!ENTITY extension.classes '<simpara>Folgende Klassen werden von dieser
+Erweiterung definiert und stehen nur zur Verfügung, wenn die Erweiterung
+entweder statisch in PHP kompiliert oder dynamisch zur Laufzeit geladen wurde.
 </simpara>'>
 
-<!ENTITY windows.builtin '<simpara> The windows version of <literal>PHP</literal>
-has built in support for this extension. You do not need to load any additional
-extension in order to use these functions.</simpara>'>
+<!ENTITY note.extension.php5 '<note><simpara> Diese Erweiterung benötigt
+PHP 5.</simpara></note>'>
 
-<!-- These are using in reference/$extname/reference.xml and other
-supplemental files to mark section titles -->
-<!ENTITY reftitle.intro     '<title>Einführung</title>'>
-<!ENTITY reftitle.required  '<title>Anforderungen</title>'>
-<!ENTITY reftitle.install   '<title>Installation</title>'>
-<!ENTITY reftitle.runtime   '<title>Laufzeit Konfiguration</title>'>
-<!ENTITY reftitle.resources '<title>Resource Typen</title>'>
-<!ENTITY reftitle.constants '<title>Vordefinierte Konstanten</title>'>
-<!ENTITY reftitle.classes   '<title>Vordefinierte Klassen</title>'>
-<!ENTITY reftitle.examples  '<title>Beispiele</title>'>
-<!ENTITY reftitle.seealso   '<title>Siehe auch</title>'>
+<!ENTITY note.pecl-php5 '<note><simpara>
+Diese Erweiterung wurde aus der Distribution von PHP 5 entfernt und steht in
+<ulink url="&url.pecl;">PECL</ulink> zur Verfügung.</simpara></note>'>
+
+<!-- Common pieces for reference part END -->
+
+<!ENTITY windows.builtin '<simpara>Die Windowsversion von PHP enthält diese
+Erweiterung. Um diese Funktionen zu verwenden, müssen Sie keine zusätzlichen
+Erweiterungen aktivieren.</simpara>'>
+
+<!-- These are here as helpers for manual consistency and brievety-->
+<!ENTITY safemode '<link linkend="ini.safe-mode">Safe Mode</link>'>
+
+<!-- Notes for SAPI/Apache -->
+<!ENTITY note.apache.nsapi-module '<note><para>Ab PHP 4.3.3 können Sie diese
+Funktion auch mit dem <link linkend="ref.nsapi">NSAPI Server Modul</link> für
+Netscape/iPlanet/SunONE Webserver nutzen.</para></note>'>
+
+<!-- SimpleXML Notes -->
+<!ENTITY simplexml.iteration '<note><simpara>SimpleXML definiert für die
+meisten Methoden Regeln für das Hinzufügen von iterativen Eigenschaften. Diese
+können weder mit <function>var_dump</function> oder auf andere Weise angezeigt
+werden.</simpara></note>'>
+
+<!-- SQLite Notes -->
+<!ENTITY sqlite.no-unbuffered '<note><para>Diese Funktion kann nicht mit
+ungepufferten Ergebnishandlern benutzt werden.</para></note>'>
+
+<!-- Database Notes -->
+<!ENTITY database.field-case '<note><simpara>Feldnamen, die von dieser Funktion
+zurückgegeben werden, unterscheiden sich in der
+<emphasis>Groß-/Kleinschreibung</emphasis>.</simpara></note>'>
+
+<!ENTITY database.fetch-null '<note><simpara>Diese Funktion setzt NULL Felder
+auf den PHP Wert &null;.</simpara></note>'>
+
+<!-- Sybase Notes -->
+<!ENTITY sybase.ct.only '<note><simpara>Diese Funktion steht nur zur Verfügung,
+wenn Sie die CT Bibliothek als Schnittstelle zu Sybase verwenden.
+</simpara></note>'>
+
+<!ENTITY sybase.db.only '<note><simpara>Diese Funktion steht nur zur Verfügung,
+wenn Sie die DB Bibliothek als Schnittstelle zu Sybase verwenden.</simpara></note>'>
+
+<!-- CPDF Unit length -->
+<!ENTITY cpdf.ul '<para>Der optionale Parameter <parameter>mode</parameter>
+bestimmt die Länge der Einheit. Ist dieser gleich 0 oder nicht angegeben,
+wird die Standardeinheit benutztz die für die Seite angegeben wurde.
+Andernfalls werden die Koordinaten in Postscript Punkten ohne Beachtung der
+aktuellen Einheit gemessen.</para>'>
+
+<!-- Notes for IPv6 -->
+<!ENTITY ipv6.brackets '<note><simpara>Wenn Sie eine numerische IPv6 Adresse
+angeben, z.B.: fe80::1, müssen Sie die IP in eckige Klammern schreiben, z.B:
+<literal>tcp://[fe80::1]:80</literal>.</simpara></note>'>
+
+<!ENTITY ipv6.php5 '<note><simpara>IPv6 Unterstützung steht seit PHP 5.0.0 zur
+Verfügung.</simpara></note>'>
+
+<!-- Notes for tidy -->
+<!ENTITY note.tidy.ze2 '<note><simpara> Diese Funktion wird nur von der Zend
+Engine 2 unterstützt, d.h. PHP &gt;= 5.0.0.</simpara></note>'>
+
+<!ENTITY note.tidy.1only '<note><simpara>Diese Funktion steht nur in Tidy 1.0
+zur Verfügung. In Tidy 2.0 ist diese Funktion obsolet und wurde entfernt.
+</simpara></note>'>
+
+<!ENTITY note.tidy.2only '<note><simpara>Die optionalen Parameter
+<parameter>config</parameter> und <parameter>encoding</parameter> stehen seit
+Tidy 2.0 zur Verfügung.</simpara></note>'>
+
+<!ENTITY tidy.conf-enc '<para>Den <parameter>config</parameter> Parameter
+können Sie entweder als Array oder String übergeben. Bei der Übergabe als
+String wird dieser als Name der Konfigurationsdatei interpretiert, bei der
+Übergabe als Array als die Optionen selbst. Für möegliche Optionen und deren
+Bedeutung sollten Sie sich <ulink url="&url.tidy.conf;">&url.tidy.conf;</ulink>
+anschauen.</para><para>Der <parameter>encoding</parameter> Parameter bestimmt
+die Kodierung für die Ein- und Ausgabe von Dokumenten. Mögliche Werte für
+<parameter>encoding</parameter>: ascii, latin0, latin1, raw, utf8, iso2022, mac,
+win1252, ibm858, utf16, utf16le, utf16be, big5 und shiftjis.</para>'>
+
+<!-- Snippets for the installation section -->
+<!ENTITY warn.apache2.compat '<warning><para>Verwenden Sie Apache 2.0.x und PHP
+weder unter Unix noch Windows in einer Produktivumgebung. Für weitere
+Informationen und Gründe lesen Sie bitte diesen
+<link linkend="faq.installation.apache2">FAQ Eintrag.</link></para></warning>'>
+
+<!ENTITY note.apache.slashes '<note><simpara>Beachten Sie bitte, dass Sie bei
+Pfadangaben in der Apachekonfigurationsdatei unter Windows alle Backslashes,
+wie z.B. <filename>c:\directory\file.ext</filename>, in Schrägstriche umwandeln
+müssen: <filename>c:/directory/file.ext</filename>.</simpara></note>'>
+
+<!-- Snippets and titles for the contributors section -->
+<!ENTITY Credit.Authors.and.Editors 'Authoren und Editoren'>
+
+<!ENTITY Credit.Past.Authors.Text 'Obwohl im Augenblick nicht aktiv, haben
+folgende Personen in der Vergangenheit wesentlichen Inhalt zum Handbuch
+beigetragen:'>
+
+<!ENTITY Credit.Past.Editors.Text 'Obwohl im Augenblick nicht aktiv, haben
+folgende Personen in der Vergangenheit durch Ihre Editionsarbeit wesentlich zum
+Handbuch beigetragen:'>
+
+<!ENTITY Credit.Note.Editors.Title 'User Note Betreuer'>
+
+<!ENTITY Credit.Note.Editors.Active 'Zur Zeit aktive Betreuer:'>
+
+<!ENTITY Credit.Note.Editors.Inactive 'Folgende Personen haben in der
+Vergangenheit einiges an Mühe und Zeit zur Betreuung der User Notes investiert:'>
+
+<!ENTITY listendand ' und'>
