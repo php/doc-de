@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.73 Maintainer: betz Status: ready -->
+<!-- EN-Revision: 1.82 Maintainer: betz Status: ready -->
  <chapter id="language.types">
   <title>Typen</title>
 
@@ -269,7 +269,7 @@ if ($show_separators) {
 
     <para>
      Siehe auch:
-     <link linkend="ref.gmp">Beleibig präzise Ganzzahlen</link> und
+     <link linkend="ref.gmp">Ganzzahlen beliebiger Länge</link> und
      <link linkend="language.types.float">Fließkomma-Zahlen</link>
     </para>
 
@@ -981,10 +981,6 @@ $last = $str{strlen($str)-1};    // $last enthält "."
      werden. Der Exponent besteht aus einem 'e' oder 'E', gefolgt von einer
      oder mehreren Zahlen.
     </para>
-    <simpara>
-     Sobald der erste Ausdruck ein String ist, hängt der Typ der
-     Variablen vom zweiten Ausdruck ab.
-    </simpara>
     <informalexample>
      <programlisting role="php">
 <![CDATA[
@@ -993,10 +989,10 @@ $foo = 1 + "-1.3e3";             // $foo ist float   (-1299)
 $foo = 1 + "bob-1.3e3";          // $foo ist integer (1)
 $foo = 1 + "bob3";               // $foo ist integer (1)
 $foo = 1 + "10 Kleine Schweine"; // $foo ist integer (11)
-$foo = 1 + "10 Ferkel";          // $foo ist integer (11)
+$foo = 4 + "10.2 Ferkel";        // $foo ist float   (14.2)
 $foo = "10 Schweine " + 1;       // $foo ist integer (11)
 $foo = "10.0 Schweine " + 1;     // $foo ist float   (11)
-$foo = "10 Schweine " + 1.0;     // $foo ist float   (11)
+$foo = "10.0 Schweine " + 1.0;   // $foo ist float (11)
 ]]>
      </programlisting>
     </informalexample>
@@ -1011,7 +1007,7 @@ $foo = "10 Schweine " + 1.0;     // $foo ist float   (11)
      <informalexample>
       <programlisting role="php">
 <![CDATA[
-echo "\$foo==$foo; Typ ist " . gettype ($foo) . "<br>\n";
+echo "\$foo==$foo; Typ ist " . gettype ($foo) . "<br />\n";
 ]]>
       </programlisting>
      </informalexample>
@@ -1162,6 +1158,9 @@ unset( $a[2] );
     <sect3 id="language.types.array.foo-bar">
      <title>Warum ist <literal>$foo[bar]</literal> falsch?</title>
      <para>
+      Sie sollten immer Anführungszeichen für einen assoziativen Index
+      eines Arrays benutzen. Zum Beispiel sollten Sie $foo['bar'] und nicht
+      $foo[bar] benutzen. Aber warum ist $foo[bar] falsch?
       Vieleicht kennen Sie folgende Syntax aus alten Skripts:
       <informalexample>
        <programlisting role="php">
@@ -1173,10 +1172,17 @@ echo $foo[bar];
        </programlisting>
       </informalexample>
       Es ist falsch, funktioniert aber. Warum ist es dann falsch?
-      Der Grund ist folgender: Wie im Abschnitt
-      <link linkend="language.types.array.syntax">syntax</link> ausgeführt,
-      muss zwischen den eckigen Klammern
-      ('<literal>[</literal>' und '<literal>]</literal>')ein Ausdruck stehen.
+      Der Grund ist, dass dieser Code eine undefinierte Konstante enthält
+      (bar) anstatt eines Strings ('bar'- beachten Sie die
+      Anführungszeichen) und PHP könnte in Zukunft Konstanten definieren,
+      die unglücklicherweise für Ihren Code, den gleichen Namen verwenden.
+      Es funktioniert, weil die undefinierte Konstante in einen String mit
+      gleichem Namen umgewandelt wird.
+     </para>
+     <para>
+      Wie im Abschnitt <link linkend="language.types.array.syntax">Syntax</link>
+      ausgeführt, muss zwischen den eckigen Klammern
+      ('<literal>[</literal>' und '<literal>]</literal>') ein Ausdruck stehen.
       Das heißt, dass Sie Dinge ähnlich diesen schreiben können:
       <informalexample>
        <programlisting role="php">
@@ -1229,19 +1235,15 @@ $error_descriptions[8] = "Das ist nur eine informelle Notiz";
        <literal>empty</literal> und <literal>default</literal> auf diese Art
        nicht benutzen, weil es speziele Schlüsselwörter sind.
       </para>
-      <para>
-       Und, falls diese Argumente nicht ausreichen: diese Syntax ist schlicht
-       veraltet und könnte irgendwann nicht mehr funktionieren.
-      </para>
       <note>
        <simpara>
         Wenn Sie
         <link linkend="function.error-reporting">error_reporting</link>
-        auf <literal>E_ALL</literal> setzen, werden sie bemerken, dass PHP
-        jedesmal eine Warnung ausgibt, wenn Sie dieses Konstrukt benutzen.
-        Das gilt ebenso für andere veraltete 'Features'.
+        auf <literal>E_ALL</literal> setzen, werden Sie bemerken, dass PHP
+        jedesmal Notices ausgibt, wenn Sie einen
+        <literal>index</literal> benutzen, der nicht definiert wurde.
         (Fügen Sie die Zeile <literal>error_reporting(E_ALL);</literal>
-        in Ihr Skript ein.)
+        in Ihr Skript ein).
        </simpara>
       </note>
       <note>
@@ -1284,8 +1286,9 @@ $a[]            = 4;          // Schlüssel ist 0
 $b[] = 'a';
 $b[] = 'b';
 $b[] = 'c';
-// ergibt das Array: array( 0 => 'a' , 1 => 'b' , 2 => 'c' ),
-// oder einfacher: array('a', 'b', 'c')
+/* ergibt das Array: array( 0 => 'a' , 1 => 'b' , 2 => 'c' ),
+   oder einfacher: array('a', 'b', 'c')
+*/
 ]]>
        </programlisting>
       </informalexample>
