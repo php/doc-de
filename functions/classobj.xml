@@ -1,6 +1,281 @@
  <reference id="ref.classobj">
-  <title>Klassen- und Objekt Funktionen</title>
+  <title>Klassen- und Objekt-Funktionen</title>
   <titleabbrev>Klassen/Objekte</titleabbrev>
+
+  <partintro>
+   <sect1 id="classobj.partintro">
+    <title>Introduction</title>
+    <sect2 id="classobj.intro">
+     <title>About</title>
+     <para>
+      Diese Funktionen ermöglichen Ihnen den Zugriff auf Informationen über
+      Klassen und Objektinstanzen. Sie können den Namen der Klasse ermitteln,
+      zu der ein Objekt gehört, sowie ihre Eigenschaften und
+      -methoden. Mit diesen Funktionen können Sie nicht nur die 
+      Klassenmitgliedschaft eines Objektes herausfinden, sondern auch
+      ihre Abstammung (d. h. welche Klasse die des Objektes erweitert).
+     </para>
+    </sect2>
+    <sect2>
+     <title>Anwendungsbeispiel</title>
+     <para>
+      In diesem Beispiel definieren wir zuerst eine Basisklasse und eine
+      Erweiterung dieser Klasse. Die Basisklasse beschreibt ein beliebiges
+      Gemüse, ob es eßbar ist oder nicht, sowie seine Farbe. Die Subklasse
+      <varname>Spinat</varname> fügt eine Methode hinzu, um sie zu kochen
+      und eine weitere, um herauszufinden, ob sie gekocht ist.
+     </para>
+     <para>
+      <example>
+       <title>classes.inc</title>
+       <programlisting role="php">
+&lt;?php
+
+// Basisklasse mit Eigenschaften und Methoden
+class Gemuese {
+
+    var $essbar;
+    var $farbe;
+
+    function Gemuese( $essbar, $farbe=&quot;grün&quot; ) {
+        $this-&gt;essbar = $essbar;
+        $this-&gt;farbe = $farbe;
+    }
+
+    function ist_essbar() {
+        return $this-&gt;essbar;
+    }
+
+    function welche_farbe() {
+        return $this-&gt;farbe;
+    }
+    
+} // Ende der Klasse Gemuese
+
+
+// erweitert die Basisklasse
+class Spinat extends Gemuese {
+
+    var $gekocht = false;
+
+    function Spinat() {
+        $this-&gt;Gemuese( true, &quot;grün&quot; );
+    }
+
+    function koche_es() {
+        $this-&gt;gekocht = true;
+    }
+
+    function ist_gekocht() {
+        return $this-&gt;gekocht;
+    }
+    
+} // Ende der Klasse Spinat
+
+?&gt;
+       </programlisting>
+      </example>
+     </para>
+     <para>
+      Jetzt instantiieren wir zwei Objekte von diesen Klassen und geben
+      Informationen über sie aus, einschließlich ihrer Abstammung.
+      Wir definieren auch einige Hilfsfunktionen, hauptsächlich um eine
+      hübsche Ausgabe der Variablen zu erhalten.
+     </para>
+     <para>
+      <example>
+       <title>test_script.php</title>
+       <programlisting role="php">
+&lt;pre&gt;
+&lt;?php
+
+include &quot;classes.inc&quot;;
+
+// utility functions
+
+function zeige_vars($obj) {
+    $arr = get_object_vars($obj);
+    while (list($prop, $val) = each($arr))
+        echo &quot;\t$prop = $val\n&quot;;
+}
+
+function zeige_methoden($obj) {
+    $arr = get_class_methods(get_class($obj));
+    foreach ($arr as $method)
+        echo &quot;\tfunction $method()\n&quot;;
+}
+
+function klassen_abstammung($obj, $class) {
+    global $$obj;
+    if (is_subclass_of($$obj, $class)) {
+        echo &quot;Objekt $obj gehört zur Klasse &quot;.get_class($$obj);
+        echo &quot; einer Subklasse von $class\n&quot;;
+    } else {
+        echo &quot;Object $obj gehört nicht zu einer Subklasse von $class\n&quot;;
+    }
+}
+
+// Instantiiere zwei Objekte
+
+$veggie = new Gemuese(true,&quot;blau&quot;);
+$leafy = new Spinat();
+
+// Informationen über die Objekte ausgeben
+echo &quot;veggie: KLASSE &quot;.get_class($veggie).&quot;\n&quot;;
+echo &quot;leafy: KLASSE &quot;.get_class($leafy);
+echo &quot;, ELTERN &quot;.get_parent_class($leafy).&quot;\n&quot;;
+
+// Zeige Eigenschaften von veggie
+echo &quot;\nveggie: Eigenschaften\n&quot;;
+zeige_vars($veggie);
+
+// und Methoden von leafy
+echo &quot;\nleafy: Methoden\n&quot;;
+zeige_methoden($leafy);
+
+echo &quot;\nAbstammung:\n&quot;;
+klassen_abstammung(&quot;leafy&quot;, &quot;Spinat&quot;);
+klassen_abstammung(&quot;leafy&quot;, &quot;Gemuese&quot;);
+?&gt;
+&lt;/pre&gt;
+       </programlisting>
+      </example>
+     </para>
+     <para>
+      Wichtig ist in diesem Beispiel, daß das Objekt <varname>$leafy</varname> 
+      eine Instanz der Klasse <varname>Spinat</varname> ist, die eine Subklasse
+      von <varname>Gemuese</varname> ist. Darum gibt der letzte Teil des
+      obigen Skripts folgendes aus:
+     </para>
+     <para>
+      <informalexample>
+       <programlisting>
+       [...]
+Abstammung:
+Objekt leafy gehört nicht zu einer Subklasse von Spinat
+Objekt leafy gehört zur Klasse spinat einer Subklasse von Gemuese
+       </programlisting>
+      </informalexample>
+     </para>
+    </sect2>
+   </sect1>
+  </partintro>
+
+  <refentry id="function.call-user-method">
+   <refnamediv>
+    <refname>call_user_method</refname>
+    <refpurpose>
+     Aufruf einer benutzerdefinierten Methode eines bestimmten Objektes
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>mixed 
+       <function>call_user_method</function>
+      </funcdef>
+      <paramdef>string 
+       <parameter>method_name</parameter>
+      </paramdef>
+      <paramdef>object 
+       <parameter>obj</parameter>
+      </paramdef>
+      <paramdef>mixed 
+       <parameter><optional>parameter</optional></parameter>
+      </paramdef>
+      <paramdef>mixed 
+       <parameter><optional>...</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Ruft die durch <parameter>method_name</parameter> angegebene Methode des
+     benutzerdefinierten Objektes <parameter>obj</parameter> auf. Ein
+     Anwendungsbeispiel sehen Sie unten, wo wir eine Klasse definieren,
+     ein Objekt instantiieren und <function>call_user_method</function>
+     benutzen, um seine Methode <varname>zeige_info</varname> indirekt
+     aufzurufen.
+     <informalexample>
+      <programlisting role="php">
+&lt;?php
+class Land {
+    var $NAME;
+    var $TLD;
+    
+    function Land($name, $tld) {
+        $this-&gt;NAME = $name;
+        $this-&gt;TLD = $tld;
+    }
+
+    function zeige_info($prestr=&quot;&quot;) {
+        echo $prestr.&quot;Land: &quot;.$this-&gt;NAME.&quot;\n&quot;;
+        echo $prestr.&quot;Top-Level-Domain: &quot;.$this-&gt;TLD.&quot;\n&quot;;
+    }
+}
+
+$cntry = new Land(&quot;Peru&quot;,&quot;pe&quot;);
+
+echo &quot;* Direkter Aufruf der Methode\n&quot;;
+$cntry-&gt;zeige_info();
+
+echo &quot;\n* Indirekter Aufruf derselben Methode\n&quot;;
+call_user_method (&quot;zeige_info&quot;, $cntry, &quot;\t&quot;);
+?&gt;
+      </programlisting>
+     </informalexample>
+    </para>
+    <simpara>
+     Siehe auch <function>call_user_func</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.class-exists">
+   <refnamediv>
+    <refname>class_exists</refname>
+    <refpurpose>Prüft, ob eine Klasse definiert ist</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>class_exists</function></funcdef>
+      <paramdef>string <parameter>class_name</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion ergibt true, falls eine Klasse mit dem Namen
+     <parameter>class_name</parameter> definiert ist,
+     ansonsten false.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.get-class">
+   <refnamediv>
+    <refname>get_class</refname>
+    <refpurpose>Gibt den Namen der Klasse eines Objektes zurück</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>get_class</function></funcdef>
+      <paramdef>object <parameter>obj</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion gibt den Namen der Klasse zurück, von der
+     <parameter>obj</parameter> eine Instanz ist.
+    </para>
+    <simpara>
+     Siehe auch <function>get_parent_class</function>,
+     <function>is_subclass_of</function>
+    </simpara>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.get-class-methods">
    <refnamediv>
     <refname>get_class_methods</refname>
@@ -48,6 +323,37 @@
    </refsect1>
   </refentry>
 
+  <refentry id="function.get-declared-classes">
+   <refnamediv>
+    <refname>get_declared_classes</refname>
+    <refpurpose>Gibt ein Array mit den Namen der definierten Klassen zurück</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>get_declared_classes</function></funcdef>
+      <paramdef>void</paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion gibt ein Array mit den Namen aller im aktuellen Skript
+     definierten Klassen zurück.
+    </para>
+    <note>
+     <para>
+      In PHP 4.0.1pl2 werden drei zusätzliche Klassen am Anfang des Array
+      zurückgegeben: <classname>stdClass</classname> (definiert in 
+      <filename>Zend/zend.c</filename>),
+      <classname>OverloadedTestClass</classname> (definiert in
+      <filename>ext/standard/basic_functions.c</filename>) 
+      und <classname>Directory</classname>
+      (definiert in <filename>ext/standard/dir.c</filename>).
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.get-object-vars">
    <refnamediv>
     <refname>get_object_vars</refname>
@@ -62,10 +368,115 @@
      </funcprototype>
     </funcsynopsis>
     <para>
-     Diese Funktion liefert ein String-Array zurück, das mit den
-     Namen aller Elemente des in <parameter>obj</parameter> 
-     übergebenen Objekts gefüllt ist.
+     Diese Funktion gibt ein assoziatives Array der für das angegebene
+     Objekt <parameter>obj</parameter> definierten Eigenschaften zurück.
+     Wenn Variablen der Klasse, von der <parameter>obj</parameter> eine
+     Instanz ist, kein Wert zugewiesen wurde, werden diese nicht im
+     Array zurückgegeben.
+     <example>
+      <title>Gebrauch von <function>get_object_vars</function></title>
+      <programlisting role="php">
+&lt;?php
+class Punkt2D {
+    var $x, $y;
+    var $bezeichnung;
+
+    function Punkt2D($x, $y) {
+        $this-&gt;x = $x;
+        $this-&gt;y = $y;
+    }
+
+    function setzeBezeichnung($bezeichnung) {
+        $this-&gt;bezeichnung = $bezeichnung;
+    }
+
+    function gibPunkt() {
+        return array("x" =&gt; $this-&gt;x,
+                     "y" =&gt; $this-&gt;y,
+                     "bezeichnung" =&gt; $this-&gt;bezeichnung);
+    }
+}
+
+$p1 = new Punkt2D(1.233, 3.445);
+print_r(get_object_vars($p1));
+// "$bezeichnung" ist deklariert, aber nicht definiert
+// Array
+// (
+//     [x] =&gt; 1.233
+//     [y] =&gt; 3.445
+// )
+
+$p1-&gt;setzeBezeichnung("point #1");
+
+print_r(get_object_vars($p1));
+// Array
+// (
+//     [x] =&gt; 1.233
+//     [y] =&gt; 3.445
+//     [bezeichnung] =&gt; point #1
+// )
+
+?&gt;
+      </programlisting>
+     </example>
     </para>
+    <simpara>
+     Siehe auch <function>get_class_methods</function>,
+     <function>get_class_vars</function>
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.get-parent-class">
+   <refnamediv>
+    <refname>get_parent_class</refname>
+    <refpurpose>Gibt den Namen der Elternklasse eines Objektes zurück</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>get_parent_class</function></funcdef>
+      <paramdef>object <parameter>obj</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion gibt den Namen der Elternklasse der Klasse zurück,
+     von der <parameter>obj</parameter> eine Instanz ist.
+    </para>
+    <simpara>
+     Siehe auch <function>get_class</function>,
+     <function>is_subclass_of</function>
+    </simpara>
+   </refsect1>
+  </refentry>
+
+ <refentry id="function.is-subclass-of">
+   <refnamediv>
+    <refname>is_subclass_of</refname>
+    <refpurpose>
+     Bestimmt, ob ein Objekt zu einer Subklasse der angegebenen
+     Klasse gehört
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>is_subclass_of</function></funcdef>
+      <paramdef>object <parameter>obj</parameter></paramdef>
+      <paramdef>string <parameter>superclass</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Diese Funktion ergibt true, falls das Objekt <parameter>obj</parameter>
+     zu einer Subklasse von <parameter>superclass</parameter> gehört,
+     ansonsten false.
+    </para>
+    <simpara>
+     Siehe auch <function>get_class</function>,
+     <function>get_parent_class</function>
+    </simpara>
    </refsect1>
   </refentry>
 
