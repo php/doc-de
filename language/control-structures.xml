@@ -1,5 +1,6 @@
  <chapter id="control-structures">
   <title>Kontroll-Strukturen</title>
+<!-- entspricht en/language/control-structures.xml 1.16 -->
 
   <simpara>
    Jedes PHP-Skript besteht aus einer Reihe von Anweisungen. Eine
@@ -20,7 +21,7 @@
     Möglichkeiten vieler Programmier-Sprachen, PHP eingeschlossen.
     Er erlaubt die bedingte Ausführung von Programmteilen. PHP
     beinhaltet eine <literal>if</literal>-Struktur, die ähnlich der
-    von C ist:
+    C-Programmiersprache ist:
     <informalexample>
      <programlisting>
 if (expr)
@@ -866,6 +867,11 @@ require ("file.inc");
     diese Möglichkeit nicht mehr. Wenn sie diese dennoch benötigen, sehen
     sie unter <function>include</function> nach.
    </simpara>
+   <simpara>
+    Siehe auch <function>include</function>, <function>require_once</function>,
+    <function>include_once</function>, <function>readfile</function>
+    und <function>virtual</function>.
+   </simpara>
   </sect1>
  
   <sect1 id="function.include">
@@ -1048,40 +1054,181 @@ include ("file.inc");
     Das oben Gesagte behält seine Gültigkeit.
    </simpara>
    <simpara>
-    Siehe auch <function>readfile</function>,
-    <function>require</function> und <function>virtual</function>.
+    Siehe auch <function>require</function>, 
+    <function>require_once</function>,
+    <function>include_once</function>,
+    <function>readfile</function> und <function>virtual</function>.
    </simpara>
   </sect1>
  
   <sect1 id="function.require-once">
    <title><function>require_once</function></title>
-   <simpara>
-    Wird noch erweitert:
+   <para>
     Die <function>require_once</function>-Anweisung ersetzt sich selbst
     durch die angegebene Datei (ähnlich der C-Preprozessor-Anweisung
-    <literal>#include</literal>).
-   </simpara>
+    <literal>#include</literal>), funktioniert also ähnlich wie die
+    <function>require</function>-Anweisung. Der Hauptunterschied dazu
+    liegt in der Tatsache, dass bei <function>require_once</function>
+    der einzubindende Code genau einmal in das Skript eingefügt wird.
+   </para>
+   <para>
+    Sie erzeugen beispielsweise die folgenden zwei Include-Dateien
+    <literal>utils.inc</literal> und <literal>foolib.inc</literal>:
+    <example>
+     <title>utils.inc</title>
+     <programlisting role="php">
+&lt;?php
+define(PHPVERSION, floor(phpversion()));
+echo "GLOBALE SIND GUT\n";
+function guterTee() {
+    return "Oolong-Tee schmeckt gut!";
+}
+?&gt;
+     </programlisting>
+    </example>
+    <example>
+     <title>foolib.inc</title>
+     <programlisting role="php">
+&lt;?php
+require ("utils.inc");
+function zeigeVar($var) {
+    if (PHPVERSION == 4) {
+        print_r($var);
+    } else {
+        dump_var($var);
+    }
+}
+
+// es folgen weiter Funktionen ...
+?&gt;
+     </programlisting>
+    </example>
+    Nun schreiben sie ein Skript
+    <literal>cause_error_require.php</literal>:
+    <example>
+     <title>cause_error_require.php</title>
+     <programlisting role="php">
+&lt;?php
+require("foolib.inc");
+/* das Folgende erzeugt einen Fehler */
+require("utils.inc");
+$foo = array("1",array("complex","quaternion"));
+echo "dies erfordert utils.inc, das auch\n";
+echo "in foolib.inc erforderlich ist\n";
+echo "Aufruf von guterTee: ".guterTee()."\n";
+echo "Ausgabe foo: \n";
+showVar($foo);
+?&gt;
+     </programlisting>
+    </example>
+    Wenn sie letzteres starten, wird folgende Ausgabe erzeugt (gilt für
+    PHP 4.01pl2):
+	  <informalexample>
+     <programlisting>
+GLOBALE SIND GUT
+GLOBALE SIND GUT
+
+Fatal error:  Cannot redeclare causeerror() in utils.inc on line 5
+     </programlisting>
+    </informalexample>
+    Durch Umschreiben von <literal>foolib.inc</literal> und
+	  <literal>cause_errror_require.php</literal> (Gebrauch von
+    <function>require_once</function> statt 
+    <function>require</function>) und Umbenennung des letzten Skriptes
+    zu literal>avoid_error_require_once.php</literal> haben wir nun:
+    <example>
+     <title>foolib.inc (fixed)</title>
+     <programlisting role="php">
+...
+require_once("utils.inc");
+function showVar($var) {
+...
+     </programlisting>
+    </example>
+    <example>
+     <title>avoid_error_require_once.php</title>
+     <programlisting role="php">
+...
+require_once("foolib.inc");
+require_once("utils.inc");
+$foo = array("1",array("complex","quaternion"));
+...
+     </programlisting>
+    </example>
+    Beim nachfolgenden Aufruf wird folgende Ausgabe erzeugt (bei PHP 
+    4.0.1pl2):
+    <informalexample>
+     <programlisting>
+GLOBALE SIND GUT
+dies erfordert utils.inc, das auch
+in foolib.inc erforderlich ist
+Aufruf von guterTee: Oolong-Tee schmeckt gut!.
+Ausgabe foo:
+Array
+(
+    [0] =&gt; 1
+    [1] =&gt; Array
+        (
+            [0] =&gt; complex
+            [1] =&gt; quaternion
+        )
+
+)
+     </programlisting>
+    </informalexample>
+   </para>
+   <para>
+    Beachten sie, dass analog zum Verhalten von 
+    <literal>#include</literal> im C-Preprozessor diese Anweisung zur
+    Zeit der Skript-"Compilierung" ausgewertet wird; sollten sie also
+    z.B. das Skript vor dessen Ausführung parsen und bei der Ausführung
+    keinen Gebrauch machen wollen von dynamisch einzuschließenden 
+    Teilen, sollten sie <function>include_once</function> oder 
+    <function>include</function> verwenden.
+   </para>
+   <para>
+    Weiter Beispiele zu <function>require_once</function> und 
+    <function>include_once</function> können sie dem PEAR-Code 
+    entnehmen, welcher im aktuellsten PHP-Source-Code enthalten ist.
+   </para>
    <para>
     Siehe auch: <function>require</function>,
     <function>include</function>, <function>include_once</function>,
-    <function>get_required_files</function> und
-    <function>get_included_files</function>.
+    <function>get_required_files</function>,
+    <function>get_included_files</function>, 
+    <function>readfile</function>,
+    und <function>virtual</function>.
    </para>
   </sect1>
   
   <sect1 id="function.include-once">
    <title><function>include_once</function></title>
-   <simpara>
-    Wird noch erweitert:
-    Die <function>include_once</function>-Anweisung ersetzt sich selbst
-    durch die angegebene Datei (ähnlich der C-Preprozessor-Anweisung
-    <literal>#include</literal>).
-   </simpara>
+   <para>
+    Die Anweisung <function>include_once</function> schließt zur 
+    Ausführungszeit das angegebene Skript ein und führt es aus. Dies 
+    ist ähnlich der <function>include</function>-Anweisung; mit dem
+    Unterschied, dass einmal "includierter" Code nicht nochmals 
+    eingebunden wird.
+   </para>
+   <para>
+    Wie in der Beschreibung zu <function>require_once</function>
+    bereits angemerkt, soll <function>include_once</function> in den
+    Fällen verwendet werden, wo die selbe Datei mehr als einmal
+    während der Ausführung eingebunden werden soll und sie 
+    Wiederholungen bei den Funktions-Definitionen und Wertzuweisungen
+    zu Variablen usw. vermeiden müssen.
+   </para>
+   <para>
+    Weiter Beispiele zu <function>require_once</function> und 
+    <function>include_once</function> können sie dem PEAR-Code 
+    entnehmen, welcher im aktuellsten PHP-Source-Code enthalten ist.
+   </para>
    <para>
     Siehe auch: <function>require</function>,
     <function>include</function>, <function>require_once</function>,
-    <function>get_required_files</function> und
-    <function>get_included_files</function>.
+    <function>get_required_files</function>, 
+    <function>get_included_files</function>, 
+    <function>readfile</function> und <function>virtual</function>.
    </para>
   </sect1>
  
