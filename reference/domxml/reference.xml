@@ -1,111 +1,746 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.10 Maintainer: tom Status: ready -->
  <reference id="ref.domxml">
   <title>DOM XML Funktionen</title>
   <titleabbrev>DOM XML</titleabbrev>
 
   <partintro>
-   &warn.experimental;
-   <simpara>
-    Diese Funktionen sind nur verfügbar, wenn PHP mit der Option
-    <option role="configure">--with-dom=[DIR]</option> konfiguriert
-    und kompiliert wurde. Hierfür wird mindestens libxml-2.0.0
-    benötigt (die Beta-Version reicht nicht). Diese Funktionen
-    wurden in PHP4 eingeführt.
-   </simpara>
-   <simpara>
-    Dieses Modul definiert die folgenden Konstanten:
-   </simpara>
-   <table>
-    <title>XML Konstanten</title>
-    <tgroup cols="3">
-     <thead>
-      <row>
-       <entry>Konstante</entry>
-       <entry>Wert</entry>
-       <entry>Beschreibung</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>XML_ELEMENT_NODE</entry>
-       <entry>1</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_ATTRIBUTE_NODE</entry>
-       <entry>2</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_TEXT_NODE</entry>
-       <entry>3</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_CDATA_SECTION_NODE</entry>
-       <entry>4</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_ENTITY_REF_NODE</entry>
-       <entry>5</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_ENTITY_NODE</entry>
-       <entry>6</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_PI_NODE</entry>
-       <entry>7</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_COMMENT_NODE</entry>
-       <entry>8</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_DOCUMENT_NODE</entry>
-       <entry>9</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_DOCUMENT_TYPE_NODE</entry>
-       <entry>10</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_DOCUMENT_FRAG_NODE</entry>
-       <entry>11</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_NOTATION_NODE</entry>
-       <entry>12</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_GLOBAL_NAMESPACE</entry>
-       <entry>1</entry>
-       <entry></entry>
-      </row>
-      <row>
-       <entry>XML_LOCAL_NAMESPACE</entry>
-       <entry>2</entry>
-       <entry></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
-   <simpara>
-    Dieses Modul definiert eine Reihe von Klassen. Die DOM XML
-    Funktionen geben einen Parsebaum eines XML Dokumentes zurück,
-    dessen Elemente jeweils einer der nachstehenden Klassen
-    angehören.
-   </simpara>
+   <section id="domxml.intro">
+    &reftitle.intro;
+    &warn.experimental;
+    <para>
+     Die DOM XML Erweiterung wurde in PHP 4.3.0 überholt, um dem DOM Standard
+     besser zu entsprechen. Die Erweiterung enthält noch immer viele alte
+     Funktionen, die aber nicht mehr benutzt werden sollten. Im Besonderen
+     sollten nicht objektorientierte Funktionen vermieden werden.
+    </para>
+    <para>
+     Diese Erweiterung erlaubt es, an einem XML Dokument mit dem DOM API zu
+     arbeiten. Sie bietet auch die Funktion <function>domxml_xmltree</function>,
+     um das gesamte XML Dokument in einen Baum von PHP Objekten zu verwandeln.
+     Zur Zeit sollten Sie diesen Baum nur zum Lesen verwenden &mdash; Sie können
+     ihn zwar modifizieren, aber nachdem <function>DomDocument_dump_mem</function>
+     nicht darauf angewendet werden kann, macht dies keinen Sinn. Sollten Sie eine
+     XML Datei lesen und eine modifizierte Version schreiben wollen, benutzen Sie
+     die Funktionen <function>DomDocument_create_element</function>,
+     <function>DomDocument_create_text_node</function>,
+     <function>set_attribute</function>, etc. und schließlich
+     <function>DomDocument_dump_mem</function>.
+    </para>
+   </section>
+
+   <section id="domxml.requirements">
+    &reftitle.required;
+    <para>
+     Diese Erweiterung macht von der <ulink url="&url.domxml;">GNOME XML
+     library</ulink> Gebrauch. Laden Sie diese bitte herunter und installieren
+     Sie diese Bibliothek. Sie werden zumindest libxml-2.4.14 benötigen. Um
+     DOM XSLT Features zu benutzen, können Sie die <ulink
+     url="&url.libxslt;">libxslt library</ulink> und EXSLT Erweiterungen von
+     <ulink url="&url.exslt;">&url.exslt;</ulink> verwenden. Laden Sie diese
+     Bibliotheken herunter und installieren Sie diese, wenn Sie den Einsatz
+     von (erweiterten) XSLT Features planen. Sie werden zumindest
+     libxslt-1.0.18 benötigen.
+    </para>
+   </section>
+
+   &reference.domxml.configure;
+
+   <section id="domxml.deprecated">
+    <title>Veraltete Funktionen</title>
+    <para>
+     Es gibt ziemlich viele Funktionen, die nicht in den DOM Standard passen und
+     nicht mehr länger benutzt werden sollten. Diese Funktionen sind in der
+     folgenden Tabelle aufgelistet. Die Funktion
+     <function>DomNode_append_child</function> hat ihr Verhalten geändert, indem
+     sie nun ein 'Kind' statt einem 'Geschwister' hinzufügt. Wenn Ihre Applikation
+     deshalb nicht mehr funktioniert, verwenden Sie die nicht DOM standardkonforme
+     Funktion <function>DomNode_append_sibling</function>.
+    </para>
+    <para>
+    <table>
+     <title>Veraltete Funktionen und deren Ersatz</title>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>Alte Funktion</entry>
+        <entry>Neue Funktion</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>xmldoc</entry>
+        <entry><function>domxml_open_mem</function></entry>
+       </row>
+       <row>
+        <entry>xmldocfile</entry>
+        <entry><function>domxml_open_file</function></entry>
+       </row>
+       <row>
+        <entry>domxml_new_xmldoc</entry>
+        <entry><function>domxml_new_doc</function></entry>
+       </row>
+       <row>
+        <entry>domxml_dump_mem</entry>
+        <entry><function>DomDocument_dump_mem</function></entry>
+       </row>
+       <row>
+        <entry>domxml_dump_mem_file</entry>
+        <entry><function>DomDocument_dump_file</function></entry>
+       </row>
+       <row>
+        <entry>DomDocument_dump_mem_file</entry>
+        <entry><function>DomDocument_dump_file</function></entry>
+       </row>
+       <row>
+        <entry>DomDocument_add_root</entry>
+        <entry><function>DomDocument_create_element</function> gefolgt von
+               <function>DomNode_append_child</function></entry>
+       </row>
+       <row>
+        <entry>DomDocument_dtd</entry>
+        <entry><function>DomDocument_doctype</function></entry>
+       </row>
+       <row>
+        <entry>DomDocument_root</entry>
+        <entry><function>DomDocument_document_element</function></entry>
+       </row>
+       <row>
+        <entry>DomDocument_children</entry>
+        <entry><function>DomNode_child_nodes</function></entry>
+       </row>
+       <row>
+        <entry>DomDocument_imported_node</entry>
+        <entry>Kein Ersatz.</entry>
+       </row>
+       <row>
+        <entry>DomNode_add_child</entry>
+        <entry>Erstellen Sie einen neuen Knoten mit z.B.
+         <function>DomDocument_create_element</function> und fügen Sie ihn mit
+         <function>DomNode_append_child</function> hinzu.
+        </entry>
+       </row>
+       <row>
+        <entry>DomNode_children</entry>
+        <entry><function>DomNode_child_nodes</function></entry>
+       </row>
+       <row>
+        <entry>DomNode_parent</entry>
+        <entry><function>DomNode_parent_node</function></entry>
+       </row>
+       <row>
+        <entry>DomNode_new_child</entry>
+        <entry>Erstellen Sie einen neuen Knoten mit z.B.
+         <function>DomDocument_create_element</function> und fügen Sie ihn mit
+         <function>DomNode_append_child</function> hinzu.
+        </entry>
+       </row>
+       <row>
+        <entry>DomNode_set_content</entry>
+        <entry>Erstellen Sie einen neuen Knoten mit z.B.
+         <function>DomDocument_create_text_node</function> und fügen Sie ihn mit
+         <function>DomNode_append_child</function> hinzu.
+        </entry>
+       </row>
+       <row>
+        <entry>DomNode_get_content</entry>
+        <entry>Der Inhalt ist nur ein Textknoten, auf den mittels
+         <function>DomNode_child_nodes</function> zugegriffen werden kann.
+        </entry>
+       </row>
+       <row>
+        <entry>DomNode_set_content</entry>
+        <entry>Der Inhalt ist nur ein Textknoten, der mittels
+         <function>DomNode_append_child</function> hinzugefügt werden kann.
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+   </section>
+
+   &reference.domxml.constants;
+
+   <section id="domxml.classes">
+    <title>Klassen</title>
+    <para>
+     Das API dieses Moduls entspricht dem DOM Level 2 Standard so weit wie
+     möglich. Folglich ist das API vollständig objektorientiert. Es wäre
+     sinnvoll, den DOM Standard verfügbar zu haben, wenn Sie dieses Modul
+     benutzen. Obwohl das API objektorientiert ist gibt es viele Funktionen,
+     die in einer nicht objektorientierten Art aufgerufen werden können, indem
+     das zu bearbeitende Objekt als das erste Argument übergeben wird. Diese
+     Funktionen dienen hauptsächlich der Kompatibilität zu älteren Versionen
+     dieser Erweiterung und sollten deshalb beim Erstellen neuer Skripte nicht
+     mehr verwendet werden.
+    </para>
+    <para>
+     Dieses API unterscheidet sich von dem offiziellen DOM API auf zwei Arten.
+     Erstens sind alle Klassenattribute als Funktionen mit dem selben Namen
+     implementiert. Zweitens folgen die Funktionsnamen der PHP Namenskonvention.
+     Das heißt, dass eine DOM Funktion lastChild() als last_child() geschrieben
+     wird.
+    </para>
+    <para>
+     Dieses Modul definiert eine Anzahl Klassen, die &mdash; inklusive ihrer
+     Methoden &mdash; in den folgenden Tabellen aufgelistet sind. Klassen mit
+     einem Äquivalent im DOM Standard werden DOMxxx genannt.
+    </para>
+ 
+    <para>
+    <table>
+     <title>Liste der Klassen</title>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>Klassenname</entry>
+        <entry>Basisklassen</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>DomAttribute</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomCData</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomComment</entry>
+        <entry>DomCData : DomNode</entry>
+       </row>
+       <row>
+        <entry>DomDocument</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomDocumentType</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomElement</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomEntity</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomEntityReference</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomProcessingInstruction</entry>
+        <entry>DomNode</entry>
+       </row>
+       <row>
+        <entry>DomText</entry>
+        <entry>DomCData : DomNode</entry>
+       </row>
+       <row>
+        <entry>Parser</entry>
+        <entry>Derzeit noch immer DomParser genannt</entry>
+       </row>
+       <row>
+        <entry>XPathContext</entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>DomDocument Klasse (DomDocument : DomNode)</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Funktionsname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>doctype</entry>
+        <entry><function>DomDocument_doctype</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>document_elemnent</entry>
+        <entry><function>DomDocument_document_element</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_element</entry>
+        <entry><function>DomDocument_create_element</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_text_node</entry>
+        <entry><function>DomDocument_create_text_node</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_comment</entry>
+        <entry><function>DomDocument_create_comment</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_cdata_section</entry>
+        <entry><function>DomDocument_create_cdata_section</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_processing_instruction</entry>
+        <entry><function>DomDocument_create_processing_instruction</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_attribute</entry>
+        <entry><function>DomDocument_create_attribute</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>create_entity_reference</entry>
+        <entry><function>DomDocument_create_entity_reference</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>get_elements_by_tagname</entry>
+        <entry><function>DomDocument_get_elements_by_tagname</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>get_element_by_id</entry>
+        <entry><function>DomDocument_get_element_by_id</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>dump_mem</entry>
+        <entry><function>DomDocument_dump_mem</function></entry>
+        <entry>kein DOM Standard</entry>
+       </row>
+       <row>
+        <entry>dump_file</entry>
+        <entry><function>DomDocument_dump_file</function></entry>
+        <entry>kein DOM Standard</entry>
+       </row>
+       <row>
+        <entry>html_dump_mem</entry>
+        <entry><function>DomDocument_html_dump_mem</function></entry>
+        <entry>kein DOM Standard</entry>
+       </row>
+       <row>
+        <entry>xpath_init</entry>
+        <entry>xpath_init</entry>
+        <entry>kein DOM Standard</entry>
+       </row>
+       <row>
+        <entry>xpath_new_context</entry>
+        <entry>xpath_new_context</entry>
+        <entry>kein DOM Standard</entry>
+       </row>
+       <row>
+        <entry>xptr_new_context</entry>
+        <entry>xptr_new_context</entry>
+        <entry>kein DOM Standard</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>DomElement Klasse (DomElement : DomNode)</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Funktionsname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>tagname</entry>
+        <entry><function>DomElement_tagname</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>get_attribute</entry>
+        <entry><function>DomElement_get_attribute</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>set_attribute</entry>
+        <entry><function>DomElement_set_attribute</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>remove_attribute</entry>
+        <entry><function>DomElement_remove_attribute</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>get_attribute_node</entry>
+        <entry><function>DomElement_get_attribute_node</function></entry>
+        <entry></entry>
+       </row>
+<!-- This function is not implemented at all for the time being
+       <row>
+        <entry>set_attribute_node</entry>
+        <entry><function>DomElement_set_attribute_node</function></entry>
+        <entry></entry>
+       </row>
+-->	   
+	   
+       <row>
+        <entry>get_elements_by_tagname</entry>
+        <entry><function>DomElement_get_elements_by_tagname</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>has_attribute</entry>
+        <entry><function>DomElement_has_attribute</function></entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>DomNode Klasse</title>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry><function>DomNode_node_name</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_node_value</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_node_type</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_last_child</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_first_child</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_child_nodes</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_previous_sibling</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_next_sibling</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_parent_node</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_owner_document</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_insert_before</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_append_child</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_append_sibling</function></entry>
+        <entry>Nicht im DOM Standard. Diese Funktion emuliert das frühere
+         Verhalten von <function>DomNode_append_child</function>.</entry>
+       </row>
+       <row>
+        <entry><function>DomNode_remove_child</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_has_child_nodes</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_has_attributes</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_clone_node</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_attributes</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry><function>DomNode_unlink_node</function></entry>
+        <entry>Nicht im DOM Standard</entry>
+       </row>
+       <row>
+        <entry><function>DomNode_replace_node</function></entry>
+        <entry>Nicht im DOM Standard</entry>
+       </row>
+       <row>
+        <entry><function>DomNode_set_content</function></entry>
+        <entry>Nicht im DOM Standard, veraltet</entry>
+       </row>
+       <row>
+        <entry><function>DomNode_get_content</function></entry>
+        <entry>Nicht im DOM Standard, veraltet</entry>
+       </row>
+       <row>
+        <entry><function>DomNode_dump_node</function></entry>
+        <entry>Nicht im DOM Standard</entry>
+       </row>
+       <row>
+        <entry><function>DomNode_is_blank_node</function></entry>
+        <entry>Nicht im DOM Standard</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>DomAttribute Klasse (DomAttribute : DomNode)</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry></entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>name</entry>
+        <entry><function>DomAttribute_name</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>value</entry>
+        <entry><function>DomAttribute_value</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>specified</entry>
+        <entry><function>DomAttribute_specified</function></entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>DomProcessingInstruction Klasse (DomProcessingInstruction : DomNode)</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Funktionsname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>target</entry>
+        <entry><function>DomProcessingInstruction_target</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>data</entry>
+        <entry><function>DomProcessingInstruction_data</function></entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>Parser Klasse</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Funktionsname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>add_chunk</entry>
+        <entry><function>Parser_add_chunk</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>end</entry>
+        <entry><function>Parser_end</function></entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+     <title>XPathContext Klasse</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Funktionsname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>eval</entry>
+        <entry><function>XPathContext_eval</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>eval_expression</entry>
+        <entry><function>XPathContext_eval_expression</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>register_ns</entry>
+        <entry><function>XPathContext_register_ns</function></entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+    <table>
+      <title>DomDocumentType Klasse (DomDocumentType : DomNode)</title>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Methodenname</entry>
+        <entry>Funktionsname</entry>
+        <entry>Anmerkung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>name</entry>
+        <entry><function>DomDocumentType_name</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>entities</entry>
+        <entry><function>DomDocumentType_entities</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>notations</entry>
+        <entry><function>DomDocumentType_notations</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>public_id</entry>
+        <entry><function>DomDocumentType_public_id</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>system_id</entry>
+        <entry><function>DomDocumentType_system_id</function></entry>
+        <entry></entry>
+       </row>
+       <row>
+        <entry>internal_subset</entry>
+        <entry><function>DomDocumentType_internal_subset</function></entry>
+        <entry></entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
+    </para>
+
+    <para>
+     Die Klasse DomDtd ist von DomNode, und DomComment von DomCData abgeleitet
+    </para>
+   </section>
+
+   <section id="domxml.examples">
+    &reftitle.examples;
+    <para>
+     Viele Beispiele in dieser Referenz erfordern einen XML String. Anstatt
+     diesen String laufend zu wiederholen, wird er in eine Datei geschrieben,
+     die von jedem Beispiel eingebunden wird. Diese einzubindende Datei wird
+     in dem folgenden Beispielteil gezeigt. Alternativ dazu können Sie ein XML
+     Dokument erstellen, und dieses mit <function>DomDocument_open_file</function>
+     einlesen.
+    </para>
+    <para>
+     <example>
+      <title>Einzubindende Datei example.inc mit XML String</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$xmlstr = "<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE chapter SYSTEM '/share/sgml/Norman_Walsh/db3xml10/db3xml10.dtd'
+[ <!ENTITY sp \"spanish\">
+]>
+<!-- lsfj  -->
+<chapter language='en'><title language='en'>Title</title>
+ <para language='ge'>
+  &amp;sp;
+  <!-- comment -->
+  <informaltable ID='findme' language='&amp;sp;'>
+   <tgroup cols='3'>
+    <tbody>
+     <row><entry>a1</entry><entry
+morerows='1'>b1</entry><entry>c1</entry></row>
+<row><entry>a2</entry><entry>c2</entry></row>
+     <row><entry>a3</entry><entry>b3</entry><entry>c3</entry></row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </para>
+</chapter>";
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+   </section>
   </partintro>
 
 &reference.domxml.functions;
