@@ -1,22 +1,114 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
-<!-- splitted from ./de/functions/info.xml, last change in rev 1.27 -->
-<!-- last change to 'dl' in en/ tree in rev 1.29 -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.7 Maintainer: tom Status: ready -->
   <refentry id="function.dl">
    <refnamediv>
     <refname>dl</refname>
-    <refpurpose>Eine PHP-Extension zur Laufzeit laden</refpurpose>
+    <refpurpose>Lädt eine PHP-Erweiterung (Extension) zur Laufzeit </refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
-      <type>int</type><methodname>dl</methodname>
+      <type>bool</type><methodname>dl</methodname>
       <methodparam><type>string</type><parameter>library</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Lädt die PHP-Bibliothek <parameter>library</parameter> zur Laufzeit.
-     Siehe auch die
-     <link linkend="ini.sect.extension">Extension Loading-Direktiven</link>.
+     Lädt die mittels dem Parameter <parameter>library</parameter> angegebene
+     PHP-Erweiterung. Der Parameter <parameter>library</parameter> ist
+     <emphasis>nur</emphasis> der Dateiname der zu ladenden Erweiterung
+     (Extension), welcher von Ihrer Plattform abhängig ist. Z.B. würde die
+     Extension <link linkend="ref.sockets">sockets</link> (wenn als shared
+     module kompiliert, nicht standardmäßig!) auf Unix Plattformen
+     <filename>sockets.so</filename>, und auf Windows Plattformen
+     <filename>php_sockets.dll</filename> heißen.
+    </para>
+    <para>
+     &return.success; Ist die Funktionalität des Ladens von Modulen nicht
+     verfügbar (siehe Anmerkung), oder wurde sie deaktiviert (entweder durch
+     Deaktivieren von <literal>enable_dl</literal> oder durch aktivieren von
+     <literal>safe_mode</literal> in der &php.ini;), wird ein
+     <constant>E_ERROR</constant> ausgegeben, und die Ausführung gestoppt.
+     Scheitert <function>dl</function> weil die angegebene Erweiterung nicht
+     geladen werden konnte, wird zusätzlich zu &false; eine
+     <constant>E_WARNING</constant> Meldung ausgegeben.
+    </para>
+    <para>
+     Verwenden Sie <function>extension_loaded</function> um zu testen, ob
+     die gewünschte Erweiterung bereits verfügbar ist oder nicht. Dies
+     funktioniert sowohl bei eingebauten, als auch bei dynamisch geladenen
+     Erweiterungen (entweder durch &php.ini;, oder mittels
+     <function>dl</function>).
+    </para>
+    <para>
+     Beispiel:
+     <programlisting role="php">
+if (!extension_loaded('gd')) {
+    if (!dl('gd.so')) {
+        exit;
+    }
+}
+     </programlisting>
+    </para>
+    <para>
+     Das Verzeichnis, von wo aus die Erweiterung geladen wird, hängt von
+     Ihrer Plattform ab:
+    </para>
+    <para>
+     Windows - Wenn nicht explizit in der &php.ini; angegeben, wird die
+     Erweiterung standardmäßig von <filename>c:\php4\extensions\</filename>
+     geladen.
+    </para>
+    <para>
+     Unix - Wenn nicht explizit in der &php.ini; angegeben, hängt das
+     standardmäßige Verzeichnis ab von:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        ob PHP mit <literal>--enable-debug</literal> erstellt wurde oder nicht
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        ob PHP mit (experimentellem) ZTS (Zend Thread Safety) Unterstützung
+        erstellt wurde oder nicht
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        der aktuellen internen <literal>ZEND_MODULE_API_NO</literal> (Zend
+        interne Modul API Nummer, welche im Grunde das Datum der letzten
+        größeren Modul API Änderung darstellt, z.B.
+        <literal>20010901</literal>).
+       </simpara>
+      </listitem>
+     </itemizedlist>
+     Das obige in Betracht gezogen, ist das standardmäßige Verzeichnis
+     <literal>&lt;php-install-directory&gt;/lib/php/extension/&lt;debug-or-not&gt;-&lt;zts-or-not&gt;-ZEND_MODULE_API_NO</literal>,
+     z.B.
+     <filename>/usr/local/php/lib/php/extensions/debug-non-zts-20010901</filename>
+     oder
+     <filename>/usr/local/php/lib/php/extensions/no-debug-zts-20010901</filename>.
+    </para>
+    <note>
+     <para>
+      <function>dl</function> wird in multithreaded WebServern
+      <emphasis>nicht</emphasis> unterstützt. In solch einer Umgebung
+      verwenden Sie bitte die <literal>extensions</literal> Anweisung
+      in Ihrer &php.ini;. Die <literal>CGI</literal> und
+      <literal>CLI</literal> Module sind davon jedoch
+      <emphasis role="strong">nicht</emphasis> betroffen!
+     </para>
+    </note>
+    <note>
+     <para>
+      <function>dl</function> unterscheidet auf Unix Plattformen zwischen Groß-
+      und Kleinschreibung.
+     </para>
+    </note>
+    <para>
+     Siehe auch
+     <link linkend="ini.sect.extension">Extension Loading-Direktiven</link>
+     und <function>extension_loaded</function>.
     </para>
    </refsect1>
   </refentry>
