@@ -6,9 +6,14 @@
    <para>
     InterBase is a popular database put out by Borland/Inprise.  More
     information about InterBase is available at <ulink
-    url="&url.ibase;">&url.ibase;</ulink>.  Oh, by the way, Interbase
+    url="&url.ibase;">&url.ibase;</ulink>.  Oh, by the way, InterBase
     just joined the open source movement!
    </para>
+   <note>
+    <para>
+     Full support for InterBase 6 was added in PHP 4.0.
+    </para>
+   </note>
   </partintro>
 
   <refentry id="function.ibase-connect">
@@ -29,22 +34,74 @@
      <paramdef>string 
       <parameter><optional>password</optional></parameter>
      </paramdef>
+     <paramdef>string 
+      <parameter><optional>charset</optional></parameter>
+     </paramdef>
+     <paramdef>int 
+      <parameter><optional>buffers</optional></parameter>
+     </paramdef>
+     <paramdef>int 
+      <parameter><optional>dialect</optional></parameter>
+     </paramdef>
+     <paramdef>string 
+      <parameter><optional>role</optional></parameter>
+     </paramdef>
     </funcsynopsis>
     <para>
-     Opens a connection to an InterBase database.
+     Establishes a connection to an InterBase server.
+     The <parameter>database</parameter> argument
+     has to be a valid path to database file on the server it resides on.
+     If the server is not local, it must be prefixed with either
+     'hostname:' (TCP/IP), '//hostname/' (NetBEUI) or 'hostname@' (IPX/SPX),
+     depending on the connection protocol used. <parameter>username</parameter>
+     and <parameter>password</parameter> can also
+     be specified with PHP configuration directives ibase.default_user and
+     ibase.default_password. <parameter>charset</parameter> is the default
+     character set for a database. <parameter>buffers</parameter> is the number
+     of database buffers to allocate for the server-side cache. If 0 or omitted,
+     server chooses its own default. <parameter>dialect</parameter> selects
+     the default SQL dialect for any statement executed within a connection,
+     and it defaults to the highest one supported by client libraries.
+    </para>
+    <para>
+     In case a second call is made to
+     <function>ibase_connect</function> with the same arguments, no new link
+     will be established, but instead, the link identifier of the already opened
+     link will be returned. The link to the server will be closed as soon as the
+     execution of the script ends, unless it's closed earlier by explicitly calling
+     <function>ibase_close</function>. 
      <example>
       <title><function>Ibase_connect</function> example</title>
       <programlisting role="php">
-$dbh = ibase_connect ($host, $username, $password);
-$stmt = 'SELECT * FROM tblname';
-$sth = ibase_query ($dbh, $stmt);
-while ($row = ibase_fetch_object ($sth)) {
-    print $row->email . "\n";
-}
-ibase_close ($dbh);
+&lt;?php
+    $dbh = ibase_connect ($host, $username, $password);
+    $stmt = 'SELECT * FROM tblname';
+    $sth = ibase_query ($dbh, $stmt);
+    while ($row = ibase_fetch_object ($sth)) {
+        print $row->email . "\n";
+    }
+    ibase_close ($dbh);
+?>
       </programlisting>
      </example>
     </para>
+    <note>
+     <para>
+      <parameter>buffers</parameter> was added in PHP4-RC2.
+     </para>
+    </note>
+    <note>
+     <para>
+      <parameter>dialect</parameter> was added in PHP4-RC2. It is functional
+       only with InterBase 6 and versions higher than that.
+     </para>
+    </note>
+    <note>
+     <para>
+      <parameter>role</parameter> was added in PHP4-RC2. It is functional
+       only with InterBase 5 and versions higher than that.
+     </para>
+    </note>
     <para>
      See also: <function>ibase_pconnect</function>.
     </para>
@@ -69,12 +126,29 @@ ibase_close ($dbh);
      <paramdef>string 
       <parameter><optional>password</optional></parameter>
      </paramdef>
+     <paramdef>string 
+      <parameter><optional>charset</optional></parameter>
+     </paramdef>
+     <paramdef>string 
+      <parameter><optional>role</optional></parameter>
+     </paramdef>
     </funcsynopsis>
-    <simpara>
-     Opens a persistent connection to an Interbase database.
-    </simpara>
     <para>
-     See also <function>ibase_connect</function>.
+     <function>ibase_pconnect</function> acts very much like
+     <function>ibase_connect</function> with two major differences.
+     First, when connecting, the function will first try to find a
+     (persistent) link that's already opened with the same parameters.
+     If one is found, an identifier for it will be returned instead of
+     opening a new connection. Second, the connection to the InterBase
+     server will not be closed when the execution of the script ends.
+     Instead, the link will remain open for future use
+     (<function>ibase_close</function> will not close links established
+     by <function>ibase_pconnect</function>). This type of link is
+     therefore called 'persistent'.
+    </para>
+    <para>
+     See also <function>ibase_connect</function> for the meaning of
+     parameters passed to this function. They are exactly the same.
     </para>
    </refsect1>
   </refentry>
@@ -95,8 +169,11 @@ ibase_close ($dbh);
      </paramdef>
     </funcsynopsis>
     <para>
-     Close a connection to an InterBase database.  This function takes
+     Closes the link to an InterBase database that's associated with
      a connection id returned from <function>ibase_connect</function>.
+     If the connection id is omitted, the last opened link is assumed.
+     Default transaction on link is committed, other transactions are
+     rolled back. 
     </para>
    </refsect1>
   </refentry>
@@ -113,17 +190,29 @@ ibase_close ($dbh);
      <paramdef>int 
       <parameter><optional>link_identifier</optional></parameter>
      </paramdef>
-     <paramdef>string <parameter>query</parameter> </paramdef>
+     <paramdef>string
+      <parameter>query</parameter>
+     </paramdef>
      <paramdef>int 
       <parameter><optional>bind_args</optional></parameter> 
      </paramdef>
     </funcsynopsis>
     <simpara>
-     Performs a query on a InterBase database, returning a result
+     Performs a query on an InterBase database, returning a result
      identifier for use with <function>ibase_fetch_row</function>,
+     <function>ibase_fetch_object</function>,
      <function>ibase_free_result</function> and
      <function>ibase_free_query</function>.
     </simpara>
+    <note>
+     <para>
+      Although this function supports variable binding to parameter
+      placeholders, there is not very much meaning using this capability
+      with it. For real life use and an example, see
+      <function>ibase_prepare</function> and
+      <function>ibase_execute</function>.
+     </para>
+    </note>
    </refsect1>
   </refentry>
 
@@ -135,8 +224,10 @@ ibase_close ($dbh);
    <refsect1>
     <title>Description</title>
     <funcsynopsis>
-     <funcdef>int <function>ibase_fetch_row</function></funcdef>
-     <paramdef>int <parameter>result_identifier</parameter></paramdef>
+     <funcdef>array <function>ibase_fetch_row</function></funcdef>
+     <paramdef>int
+      <parameter>result_identifier</parameter>
+     </paramdef>
     </funcsynopsis>
     <simpara>
      Returns the next row specified by the result identifier obtained
@@ -153,8 +244,10 @@ ibase_close ($dbh);
    <refsect1>
     <title>Description</title>
     <funcsynopsis>
-     <funcdef>int <function>ibase_fetch_object</function></funcdef>
-     <paramdef>int <parameter>result_id</parameter></paramdef>
+     <funcdef>object <function>ibase_fetch_object</function></funcdef>
+     <paramdef>int
+      <parameter>result_id</parameter>
+     </paramdef>
     </funcsynopsis>
     <para>
      Fetches a row as a pseudo-object from a
@@ -163,13 +256,15 @@ ibase_close ($dbh);
      <function>ibase_execute</function>.
      <informalexample>
       <programlisting role="php">
-$dbh = ibase_connect ($host, $username, $password);
-$stmt = 'SELECT * FROM tblname';
-$sth = ibase_query ($dbh, $stmt);
-while ($row = ibase_fetch_object ($sth)) {
-    print $row->email . "\n";
-}
-ibase_close ($dbh);
+&lt;php
+    $dbh = ibase_connect ($host, $username, $password);
+    $stmt = 'SELECT * FROM tblname';
+    $sth = ibase_query ($dbh, $stmt);
+    while ($row = ibase_fetch_object ($sth)) {
+        print $row->email . "\n";
+    }
+    ibase_close ($dbh);
+?>
       </programlisting>
      </informalexample>
     </para>
@@ -188,7 +283,9 @@ ibase_close ($dbh);
     <title>Description</title>
     <funcsynopsis>
      <funcdef>int <function>ibase_free_result</function></funcdef>
-     <paramdef>int <parameter>result_identifier</parameter></paramdef>
+     <paramdef>int
+      <parameter>result_identifier</parameter>
+     </paramdef>
     </funcsynopsis>
     <simpara>
      Free's a result set the has been created by
@@ -215,36 +312,9 @@ ibase_close ($dbh);
      <paramdef>string <parameter>query</parameter></paramdef>
     </funcsynopsis>
     <simpara>
-     Prepare a query for later binding of parameter placeholders (via
-     <function>ibase_bind</function>) and execution (via
-     <function>ibase_execute</function>).
+     Prepare a query for later binding of parameter placeholders and
+     execution (via <function>ibase_execute</function>).
     </simpara>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.ibase-bind">
-   <refnamediv>
-    <refname>ibase_bind</refname>
-    <refpurpose>
-     Bind placeholder parameters from a previously prepared query
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Description</title>
-    <funcsynopsis>
-     <funcdef>int <function>ibase_bind</function></funcdef>
-     <paramdef>int <parameter>query</parameter></paramdef>
-    </funcsynopsis>
-    <simpara>
-     Bind Parameters from a query prepared by
-     <function>ibase_prepare</function>.
-    </simpara>
-    <note>
-     <para>
-      <function>Ibase_bind</function> is currently not functional in
-      PHP4 
-     </para>
-    </note>
    </refsect1>
   </refentry>
 
@@ -257,13 +327,36 @@ ibase_close ($dbh);
     <title>Description</title>
     <funcsynopsis>
      <funcdef>int <function>ibase_execute</function></funcdef>
-     <paramdef>int <parameter>query</parameter></paramdef>
+     <paramdef>int 
+      <parameter>query</parameter>
+     </paramdef>
+     <paramdef>int 
+      <parameter><optional>bind_args</optional></parameter> 
+     </paramdef>
     </funcsynopsis>
-    <simpara>
-     Execute a query prepared (and perhaps binded) by
-     <function>ibase_prepare</function> and
-     <function>ibase_bind</function>.
-    </simpara>
+    <para>
+     Execute a query prepared by <function>ibase_prepare</function>.
+     This is a lot more effective than using <function>ibase_query</function>
+     if you are repeating a same kind of query several times with only
+     some parameters changing.
+     <informalexample>
+      <programlisting role="php">
+&lt;?php
+    $updates = array(
+        1 => 'Eric',
+        5 => 'Filip',
+        7 => 'Larry'
+    );
+
+    $query = ibase_prepare("UPDATE FOO SET BAR = ? WHERE BAZ = ?");
+
+    while (list($baz, $bar) = each($updates)) {
+        ibase_execute($query, $bar, $baz);
+    }
+?>
+      </programlisting>
+     </informalexample>
+    </para>
    </refsect1>
   </refentry>
 
@@ -278,7 +371,9 @@ ibase_close ($dbh);
     <title>Description</title>
     <funcsynopsis>
      <funcdef>int <function>ibase_free_query</function></funcdef>
-     <paramdef>int <parameter>query</parameter></paramdef>
+     <paramdef>int
+      <parameter>query</parameter>
+     </paramdef>
     </funcsynopsis>
     <simpara>
      Free a query prepared by <function>ibase_prepare</function>.
@@ -290,22 +385,54 @@ ibase_close ($dbh);
    <refnamediv>
     <refname>ibase_timefmt</refname>
     <refpurpose>
-     Sets the format of datetime columns returned from queries
+     Sets the format of timestamp, date and time type columns returned from queries
     </refpurpose>
    </refnamediv>
    <refsect1>
     <title>Description</title>
     <funcsynopsis>
      <funcdef>int <function>ibase_timefmt</function></funcdef>
-     <paramdef>string <parameter>format</parameter></paramdef>
+     <paramdef>string
+      <parameter>format</parameter>
+     </paramdef>
+     <paramdef>int
+      <parameter><optional>columntype</optional></parameter>
+     </paramdef>
     </funcsynopsis>
-    <simpara>
-     Sets the format of the datetime columns returned from queries.
-    </simpara>
+    <para>
+     Sets the format of timestamp, date or time type columns returned
+     from queries. Internally, the columns are formatted by c-function
+     strftime(), so refer to it's documentation regarding to the format
+     of the string. <parameter>columntype</parameter> is one of the
+     constants IBASE_TIMESTAMP, IBASE_DATE and IBASE_TIME. If omitted,
+     defaults to IBASE_TIMESTAMP for backwards compatibility.
+     <informalexample>
+      <programlisting role="php">
+&lt;?php
+    // InterBase 6 TIME-type columns will be returned in
+    // the form '05 hours 37 minutes'. 
+    ibase_timefmt("%H hours %M minutes", IBASE_TIME);
+?>
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     You can also set defaults for these formats with PHP configuration
+     directives ibase.timestampformat, ibase.dateformat and ibase.timeformat.
+    </para>
     <note>
      <para>
-      <function>Ibase_timefmt</function> is currently not functional
-      in PHP4.
+      <parameter>columntype</parameter> was added in PHP 4.0. It has any
+      meaning only with InterBase version 6 and higher.
+     </para>
+    </note>
+    <note>
+     <para>
+      A backwards incompatible change happened in PHP 4.0 when PHP
+      configuration directive ibase.timeformat was renamed to
+      ibase.timestampformat and directives ibase.dateformat and
+      ibase.timeformat were added, so that the names would match better
+      their functionality.
      </para>
     </note>
    </refsect1>
@@ -315,7 +442,7 @@ ibase_close ($dbh);
    <refnamediv>
     <refname>ibase_num_fields</refname>
     <refpurpose>
-     Get the number of rows in a result set
+     Get the number of fields in a result set
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -329,19 +456,21 @@ ibase_close ($dbh);
      set.
      <informalexample>
       <programlisting role="php">
-$dbh = ibase_connect ($host, $username, $password);
-$stmt = 'SELECT * FROM tblname';
-$sth = ibase_query ($dbh, $stmt);
+&lt;?php
+    $dbh = ibase_connect ($host, $username, $password);
+    $stmt = 'SELECT * FROM tblname';
+    $sth = ibase_query ($dbh, $stmt);
 
-if (ibase_num_fields($sth) > 0) {
-    while ($row = ibase_fetch_object ($sth)) {
-        print $row->email . "\n";
+    if (ibase_num_fields($sth) > 0) {
+        while ($row = ibase_fetch_object ($sth)) {
+            print $row->email . "\n";
+        }
+    } else {
+        die ("No Results were found for your query");
     }
-} else {
-    die ("No Results were found for your query");
-}
 
-ibase_close ($dbh);
+    ibase_close ($dbh);
+?>
       </programlisting>
      </informalexample>
     </para>
