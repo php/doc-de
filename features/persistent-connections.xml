@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
+<!-- EN-Revision: 1.19 Maintainer: tom Status: ready -->
  <chapter id="features.persistent-connections">
   <title>Persistente Datenbankverbindungen</title>
 
@@ -12,103 +13,147 @@
    'identische' Verbindung ist eine Verbindung, die zu dem
    gleichen Host mit dem gleichen Usernamen und Passwort
    hergestellt wurde.</simpara>
-
+  <note>
+   <para>
+    Auch andere Erweiterungen bieten persistente Verbindungen, wie z.B.
+    <link linkend="ref.imap">IMAP extension</link>.
+   </para>
+  </note>
   <simpara>
-   Wer nicht durchgängig mit der Art und Weise, wie
-   Webserver arbeiten und die Last verteilen, vertraut ist, könnte
-   missverstehen, wofür persistente Verbindungen gedacht sind.
-   Im Besonderen bieten sie <emphasis>keine</emphasis>
-   Möglichkeit, 'Benutzersitzungen' auf der gleichen SQL-Verbindung
-   zu öffnen und <emphasis>keine</emphasis> Möglichkeit, eine
-   Transaktion aufzubauen, und sie können viele
-   andere Sachen nicht. Um absulute Klarheit zu schaffen:
-   Persistente Verbindungen bieten <emphasis>keine</emphasis>
-   Funktionalität, die nicht auch von nicht-persistenten Verbindungen
-   bereitgestellt wird.</simpara>
-
+   Wer nicht durchgängig mit der Art und Weise vertraut ist, wie
+   Webserver arbeiten und die Last verteilen, könnte missverstehen,
+   wofür persistente Verbindungen gedacht sind. Im Besonderen bieten
+   sie <emphasis>keine</emphasis> Möglichkeit, 'Benutzersitzungen'
+   über die gleiche SQL-Verbindung zu öffnen und
+   <emphasis>keine</emphasis> Möglichkeit, eine Transaktion effizient
+   aufzubauen, und sie können auch viele andere Dinge nicht. Um
+   absolute Klarheit zu schaffen: Persistente Verbindungen bieten
+   <emphasis>keine</emphasis> Funktionalität, die nicht auch von
+   nicht-persistenten Verbindungen bereitgestellt wird.
+  </simpara>
   <simpara>
-   Warum?</simpara> 
-
+   Warum?
+  </simpara> 
   <simpara>
    Das hat mit der Arbeitsweise von Webservern zu tun. Es gibt drei
    Möglichkeiten, wie ein Webserver PHP zur Generierung von
-   Webseiten einsetzen kann.</simpara>
-
+   Webseiten einsetzen kann.
+  </simpara>
   <simpara>
    Die erste Methode ist, PHP als CGI-'Wrapper' zu benutzen. 
    Wenn diese Methode eingesetzt wird, wird für jede Anfrage 
    nach einer PHP-Seite vom Webserver eine Instanz des PHP-
-   Interpreters gestartet und anschliessend wieder beendet. 
+   Interpreters gestartet und anschließend wieder beendet. 
    Durch die Beendigung des Interpreters nach abgeschlossener
    Anfrage werden alle Ressourcen, auf die zugegriffen wurde 
    (wie beispielsweise eine Verbindung zu einem SQL-
-   Datenbankserver) wieder geschlossen. In diesem
-   Fall erreicht man nichts, wenn man persistente Verbindungen
-   benutzt - sie sind eben nicht beständig.</simpara>
-
+   Datenbankserver) wieder geschlossen. In diesem Fall erreicht
+   man nichts, wenn man persistente Verbindungen benutzt - sie
+   sind eben nicht beständig.
+  </simpara>
   <simpara>
-   Die zweite und populärere Methode ist der Einsatz von PHP als
-   Modul in einem Multiprozess-Webserver, was momentan nur
-   auf den Apache zutrifft. Typischerweise hat ein Multiprozess-
-   Webserver einen Prozess (den 'Eltern' Prozess), der einen Satz
-   weiterer Prozesse (die 'Kinder') koordiniert, die die eigentliche Arbeit
-   des Bereitstellens der Seiten übenehmen. Jede Anfrage, die von
-   einen Client erfolgt, wird an einen untergeordneten Prozess, der
+   Die zweite und populärste Methode ist der Einsatz von PHP als
+   Modul in einem Multiprozess-Webserver, was momentan nur auf den
+   Apache zutrifft. Typischerweise hat ein Multiprozess-Webserver
+   einen Prozess (den 'Eltern' Prozess), der einen Satz weiterer
+   Prozesse (die 'Kinder') koordiniert, welche die eigentliche Arbeit
+   des Bereitstellens der Seiten übernehmen. Jede Anfrage, die von
+   einem Client erfolgt, wird an einen untergeordneten Prozess, der
    noch keine andere Anfrage bearbeitet, weitergereicht. Das bedeutet,
-   dass eine zweite Anfrage des Clients an den Server unter
+   dass eine zweite Anfrage des gleichen Clients an den Server unter
    Umständen von einem anderen untergeordneten Prozess als die
    erste Anfrage bearbeitet wird. In diesem Fall sorgt eine persistente
    Verbindung dafür, dass jeder untergeordnete Prozess sich nur 
    einmal mit dem SQL-Server verbinden muss, wenn eine solche
    benötigt wird. Benötigt dann eine weitere Seite die Verbindung mit 
    dem SQL-Server, kann auf die zurückgegriffen werden,
-   die der untergeordnete Prozess vorher hergestellt hat.</simpara>
-
+   die der untergeordnete Prozess vorher hergestellt hat.
+  </simpara>
   <simpara>
    Die letzte Methode ist, PHP als Plug-in für einen Multithread-
-   Webserver zu benutzen. Momentan ist dies noch Theorie - PHP
-   arbeitet noch nicht als Plug-in für irgedeinen dieser Server. An
-   der Unterstützung für ISAPI, WSAPI und NSAPI wird gearbeitet,
-   so dass die Nutzung von PHP mit Multithread-Serven wie
-   Netscape Fast Track, Microsoft Internet Information Server (IIS)
-   und O'Reilly's WebSite Pro möglich wird. Wenn es soweit ist,
-   wird das Verhalten im wesentlichen dem oben
-   beschriebenen Multiprozess-Modell entsprechen.</simpara>
-
+   Webserver zu benutzen. Derzeit bietet PHP 4 Unterstützung für
+   ISAPI, WSAPI und NSAPI (unter Windows), wodurch die Nutzung von
+   PHP mit Multithread-Serven wie Netscape Fast Track (iPlanet),
+   Microsoft Internet Information Server (IIS) und O'Reilly's WebSite
+   Pro ermöglicht wird. Das Verhalten entspricht im wesentlichen dem
+   oben beschriebenen Multiprozess-Modell. Beachten Sie, dass PHP 3
+   keine Unterstützung für SAPI bietet.
+  </simpara>
   <simpara>
    Wozu dienen persistente Verbindungen, wenn sie keine 
-   zusätzliche Funktionalität bieten?</simpara>
-
+   zusätzliche Funktionalität bieten?
+  </simpara>
   <simpara>
-   Die Antwort ist ausserordentlich einfach: Effizienz. Persistente
-   Verbindungen sind nützlich, wenn die Notwendigkeit, eine
-   Verbindung zu einem SQL-Server herzustellen, hoch ist.
-   Ob dies der Fall ist oder nicht, hängt von vielen Faktoren ab -
-   zum Beispiel, um was für eine Datenbank es sich handelt, ob
-   sie auf dem gleichen Rechner wie der Webserver läuft oder
-   welche Last die SQL-Maschine zu bewältigen hat usw.
-   Grundsätzlich gilt, dass, wenn viele Verbindungen hergestellt
-   werden müssen, persistente Verbindungen ausserordentlich 
-   hilfreich sind. Sie veranlassen den untergeordneten Prozess, 
-   sich während seiner gesamten Lebensdauer lediglich einmal mit
-   dem SQL-Server zu verbinden, anstatt jedesmal beim Aufruf
-   einer Seite, die eine Verbindung benötigt. Das heisst, dass
-   jeder untergeordneten Prozess, der eine persistente
-   Verbindung öffnet, eine eigene dauerhafte Verbindung zum 
-   Server hat. Bei 20 untergeordnete Prozessen, die ein Skript 
+   Die Antwort ist außerordentlich einfach: Effizienz. Persistente
+   Verbindungen sind nützlich, wenn der Aufwand für das Herstellen
+   einer Verbindung zu einem SQL-Server hoch ist. Ob dies der Fall ist
+   oder nicht, hängt von vielen Faktoren ab - zum Beispiel, um welche
+   Datenbank es sich handelt, ob sie auf dem gleichen Rechner wie der
+   Webserver läuft oder welche Last die SQL-Maschine zu bewältigen hat
+   usw. Grundsätzlich gilt, dass, wenn viele Verbindungen hergestellt
+   werden müssen, persistente Verbindungen außerordentlich hilfreich
+   sind. Sie veranlassen den untergeordneten Prozess, sich während
+   seiner gesamten Lebensdauer lediglich einmal mit dem SQL-Server zu
+   verbinden, anstatt bei jedem Aufruf einer Seite, die eine Verbindung
+   benötigt. Das heißt, dass jeder untergeordnete Prozess, der eine
+   persistente Verbindung öffnet, seine eigene dauerhafte Verbindung
+   zum Server hat. Bei 20 untergeordneten Prozessen, die ein Skript 
    ausführen, das eine persistente Verbindung zum SQL-Server 
    herstellt, hat man beispielsweise 20 verschiedene Verbindungen 
-   zum SQL-Server - eine für jeden untergeordneten Prozess.</simpara>
-
+   zum SQL-Server - eine für jeden untergeordneten Prozess.
+  </simpara>
+  <simpara>
+   Beachten Sie jedoch, dass dies auch ein paar Nachteile haben kann,
+   wenn Sie eine Datenbank mit limitierten Verbindungen benutzen, welche
+   durch persistente Verbindungen überschritten werden. Wenn Ihre Datenbank
+   ein Limit von 16 gleichzeitigen Verbindungen hat, und aufgrund einer
+   stark ausgelasteten Server-Session 17 Kind-Prozesse versuchen, eine
+   Verbindung herzustellen, wird es einem nicht gelingen. Sollten in
+   Ihren Skripten Fehler bestehen, welche das Schließen der Verbindungen
+   nicht erlauben (wie z.B. Endlosschleifen), kann das eine Datenbank
+   mit mit nur 32 Verbindungen sehr schnell überschwemmen. Konsultieren
+   Sie die Dokumentation Ihrer Datenbank bezüglich der Behandlung von
+   aufgegebenen Verbindungen oder Verbindungen im Leerlauf.
+  </simpara>
+  <warning>
+   <simpara>
+    Sie sollten sich zur Vorsicht noch ein paar Gedanken machen, wenn
+    Sie persistente Verbindungen benutzen. Einer ist, wenn Sie über eine
+    persistente Verbindung Tabellen sperren und das Skript diese Sperre
+    aus welchem Grund auch immer nicht mehr aufheben kann, nachfolgende
+    Skripte, welche die selbe Verbindung benutzen, blockieren und den
+    Neustart von entweder dem Webserver oder dem Datenbankserver
+    verlangen. Ein weiterer ist, dass wenn Sie Transaktionen benutzen,
+    ein Transaktionsblock zu dem nächsten die Verbindung nutzenden Skript
+    übertragen wird, wenn die Ausführung des Skriptes vor dem
+    Transaktionsblock gestoppt wird. In jedem Fall können Sie
+    <function>register_shutdown_function</function> benutzen, um eine
+    einfache Funktion zu registrieren, welche Ihre Tabellen wieder
+    entsperrt, oder Ihre Transaktionen zurückstellt. Besser ist es, wenn
+    Sie dieses Problem gänzlich vermeiden, indem keine persistenten
+    Verbindungen in Skripten benutzen, welche Tabellen sperren oder
+    Transaktionen verwenden (Sie können sie immer noch anderswo benutzen).
+   </simpara>
+  </warning>
   <simpara>
    Eine wichtige Zusammenfassung. Persistente Verbindungen wurden
    entwickelt, um eins-zu-eins Abbildungen auf reguläre Verbindungen 
-   zu haben. Das heisst, dass man <emphasis>immer</emphasis> in der 
-   Lage sein sollte, die persistenten Verbindungen durch nicht-persistente
+   zu haben. Das heißt, dass man <emphasis>immer</emphasis> in der Lage
+   sein sollte, die persistenten Verbindungen durch nicht-persistente
    zu ersetzten, ohne dass dies den Skriptablauf verändert. Es <emphasis>
    kann</emphasis> (und wird vermutlich auch) die Effizienz des Skriptes
-   beeinflussen, aber nicht dessen Verhalten.</simpara>
-
+   beeinflussen, aber nicht dessen Verhalten.
+  </simpara>
+  <para>
+   Siehe auch <function>fbsql_pconnect</function>,
+   <function>ibase_pconnect</function>, <function>ifx_pconnect</function>,
+   <function>imap_popen</function>, <function>ingres_pconnect</function>,
+   <function>msql_pconnect</function>, <function>mssql_pconnect</function>,
+   <function>mysql_pconnect</function>, <function>OCIPLogon</function>,
+   <function>odbc_pconnect</function>, <function>Ora_pLogon</function>,
+   <function>pfsockopen</function>, <function>pg_pconnect</function> und
+   <function>sybase_pconnect</function>.
+  </para>
  </chapter>
 
 <!-- Keep this comment at the end of the file
