@@ -1,25 +1,115 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.28 Maintainer: samesch Status: ready -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.40 Maintainer: samesch Status: ready -->
  <chapter id="faq.installation">
   <title>Installation</title>
   <titleabbrev>Installation</titleabbrev>
 
-  <para>
-   In diesem Abschnitt geht es um übliche Fragen zur Installation von
-   PHP. PHP gibt es für fast jedes Betriebssystem (außer vielleicht
-   für MacOS vor OSX) und fast jeden Webserver.
+  <para> In diesem Abschnitt geht es um übliche Fragen zur Installation von
+   PHP. PHP gibt es für fast jedes Betriebssystem (außer vielleicht für MacOS
+   vor OSX) und fast jeden Webserver.
   </para>
   <para>
-   Um PHP zu installieren, folgen Sie Bitte den Anweisungen in der
-   Datei <ulink url="&url.file.installation;">INSTALL</ulink>, die sie
-   in der Distribution finden. Benutzer von Windows sollten auch die
-   Datei <ulink url="&url.file.readmewin;">install.txt</ulink> lesen.
-   Weitere hilfreiche Hinweie für Benutzer von Windows gibt es <link
+   Um PHP zu installieren, folgen Sie Bitte den Anweisungen in der Datei
+   <ulink url="&url.file.installation;">INSTALL</ulink>, die sie in der
+   Distribution finden. Benutzer von Windows sollten auch die Datei <ulink
+   url="&url.file.readmewin;">install.txt</ulink> lesen. Weitere hilfreiche
+   Hinweie für Benutzer von Windows gibt es <link
    linkend="install.windows">hier</link>.
   </para>
 
   <qandaset>
+   <qandaentry id="faq.installation.apache2">
+    <question>
+     <para>
+      Warum sollte ich Apache 2 nicht in einer Produktions-Umgebung verwenden?
+     </para>
+    </question>
+    <answer>
+     <para>
+       Die folgende Antwort ist ein modifizierter Auszug aus einer Mail von
+       Rasmus Lerdorf.
+     </para>
+     <para>
+       Apache 2 ist eine komplette Neufassung und eine komplette
+       Architekturänderung von Apache 1. Es ist nicht wie der Umstieg von PHP
+       3 auf PHP 4 oder von PHP 4 auf PHP 5. Es gibt viel gemeisamen Code und
+       die Grundarchitektur von PHP hat sich sicherlich seit Jahren nicht
+       geändert. Deshalb hat es keinen Sinn, Apache 1 und Apache 2 mit PHP 4
+       und PHP 5 zu vergleichen. Die Architektur hat sich über die Jahre
+       bewährt und der Code ist, obwohl stellenweise etwas sperrig, ein
+       bekanntes Gebilde. PHP wurde von Anfang an auf die Architektur von
+       Apache 1 ausgelegt und darunter funktioniert es außerordentlich gu.
+     </para>
+     <para>
+       Die Haupteigenschaft, die Leute zu Apache 2 zieht, ist Threading. Unter
+       Windows, wo die meisten grundlegenden Bibliotheken threadsicher sind
+       und sein müssen, ist Apache 2 wirklich sinnvoll und es wäre gut, die
+       Knoten auf dieser Plattform zu lösen. Unter UNIX gibt es aber eine
+       Menge grundlegender Bibliotheken, bei denen Threadsicherheit eine
+       Unbekannte ist. Dabei handelt es sich nicht um die PHP-Erweiterungen,
+       sondern um die Bibliotheken Dritter, die den hunderten von
+       PHP-Erweiterungen zugrunde liegen. Ob eine Bibliothek von Dritten
+       threadsicher ist, lässt sich sehr schwer feststellen. Es gibt eine
+       Menge Variablen, die einbezogen werden müssen, inklusive welches
+       Betriebssystem, welche Version des Betriebssystems, welche libc, welche
+       Version dieser libc und auf manchen Plattformen sogar die
+       Compiler-Flags, die zum Übersetzen dieser Dinge verwendet wurden. Und
+       damit das Ganze noch lustiger zu wird, ist es fast unmöglich, ein
+       Problem mit der Threadsicherheit ausfindig zu machen. Hunderte von
+       Leute, die vielleicht nur etwa eine Million Seitenaufrufe pro Tag
+       bekommen, mögen nun einwerfen, dass Apache+PHP+ext/foo bei ihnen
+       perfekt funktioniert. Dann kommt ein anderer Benutzer daher, der 100
+       Millionen Seitenaufrufe pro Tag hat und eine schnelle Dual-Prozessor
+       Maschine verwendet und alles geht hoch, weil nun das Fenster für
+       irgendeine winzige Race Condition aufgrund der höheren
+       Prozessor-Geschwindigkeit, des zweiten Prozessors und der höheren
+       Frequenz der Seitenaufrufe viel größer gemacht wurde. Der
+       Fehlerbericht, den wir von diesem Benutzer bekommen, sieht dann
+       ungefähr so aus:
+     </para>
+     <blockquote>
+      <para>
+       Manchmal funktioniert es nicht. Meistens funktioniert es gut, aber
+       gelegentlich funktioniert es einfach nicht. Es ist jedesmal ein anderer
+       Fehler und ich habe keine Ahnung, wie ich ihn reproduzieren kann, aber
+       beheben Sie ihn sofort!!!
+      </para>
+     </blockquote>
+
+     <para>
+      Was können wir bei sowas tun?
+     </para>
+     <para>
+      Es gibt eine Anzahl (behebbarer) technischer Gründe, aufgrund derer
+      Rasmus es für keine gute Idee hält, Apache2+PHP in einer
+      Produktionsumgebung zu verwenden, aber davon abgesehen läuft es auf ein
+      einfaches Konzept hinaus:
+     </para>
+     <para>
+      PHP is glue. It is the glue used to build cool web applications by
+      sticking dozens of 3rd-party libraries together and making it all appear
+      as one coherent entity through an intuitive and easy to learn language
+      interface. The flexibility and power of PHP relies on the stability and
+      robustness of the underlying platform. It needs a working OS, a working
+      web server and working 3rd-party libraries to glue together. When any of
+      these stop working PHP needs ways to identify the problems and fix them
+      quickly. By making the underlying framework more complex by not having
+      completely separate execution threads, completely separate memory
+      segments and a strong sandbox for each request to play in, a feet of
+      clay is introduced into PHP's system.
+     </para>
+     <para>
+      Using the prefork mpm with Apache 2 to avoid the threading is possible,
+      and yes using a standalone fastcgi mechanism to avoid the threading,
+      too, but then defining characteristic of the web server of choice are
+      avoided. At this point in its development, Rasmus still maintains that
+      one is better off simply sticking with Apache 1 for serving up PHP pages
+      with the one caveat that Apache 1 sucks pretty badly on Windows.
+     </para>
+    </answer>
+   </qandaentry>
+
    <qandaentry id="faq.installation.phpini">
     <question>
      <para>
@@ -242,31 +332,29 @@ rpm -Uvh mod_php3-3.0.5-2.src.rpm
          <filename>/usr/src/redhat/SPECS/mod_php3.spec</filename>
         </para>
         <para>
-         Fügen Sie im %build Abschnitt die gewünschte
-         Datenbank-Unterstützung und den Pfad hinzu.
+         Fügen Sie im %build Abschnitt die gewünschte Datenbank-Unterstützung
+         und den Pfad hinzu.
         </para>
         <para>
-         Für MySQL wäre das
-         <programlisting role="shell">
---with-mysql=/usr \
-         </programlisting>
-         Der %build Abschnitt sieht in etwa so aus:
+         Für MySQL wäre das <option
+         role="configure">--with-mysql=/usr</option> Der %build Abschnitt
+         sieht in etwa so aus:
          <programlisting role="shell">
 ./configure --prefix=/usr \
-        --with-apxs=/usr/sbin/apxs \
-        --with-config-file-path=/usr/lib \
-        --enable-debug=no \
-        --enable-safe-mode \
-        --with-exec-dir=/usr/bin \
-        --with-mysql=/usr \
-        --with-system-regex
+--with-apxs=/usr/sbin/apxs \
+--with-config-file-path=/usr/lib \
+--enable-debug=no \
+--enable-safe-mode \
+--with-exec-dir=/usr/bin \
+--with-mysql=/usr \
+--with-system-regex
          </programlisting>
         </para>
        </listitem>
        <listitem>
         <para>
-         Nachdem Sie die Änderung vorgenommen haben, bauen Sie das
-         Binary-RPM folgendermaßen:
+         Nachdem Sie die Änderung vorgenommen haben, bauen Sie das Binary-RPM
+         folgendermaßen:
          <programlisting role="shell">
 rpm -bb /usr/src/redhat/SPECS/mod_php3.spec
          </programlisting>
@@ -282,11 +370,10 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
        </listitem>
       </itemizedlist>
       Wenn Sie nun den Apache neu starten, haben Sie PHP 3 mit
-      MySQL-Unterstützung unter Verwendung von RPMs. Beachten Sie,
-      dass es mit dem Tarball der PHP 3 Distribution unter Befolgen
-      der Anweisungen in <filename>INSTALL.REDHAT</filename>, das sich
-      in dieser Distribution befindet, wahrscheinlich wesentlich
-      einfacher zu bauen ist.
+      MySQL-Unterstützung unter Verwendung von RPMs. Beachten Sie, dass es mit
+      dem Tarball der PHP 3 Distribution unter Befolgen der Anweisungen in
+      <filename>INSTALL.REDHAT</filename>, das sich in dieser Distribution
+      befindet, wahrscheinlich wesentlich einfacher zu bauen ist.
      </para>
     </answer>
    </qandaentry>
@@ -334,26 +421,24 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
    <qandaentry id="faq.installation.500error">
     <question>
      <para>
-      Unix/Windows: Ich habe PHP installiert, aber wenn ich versuche,
-      mit meinem Browser ein PHP-Script aufzurufen, erhalte ich vom
-      Server einen 500 Fehler.
+      Unix/Windows: Ich habe PHP installiert, aber wenn ich versuche, mit
+      meinem Browser ein PHP-Script aufzurufen, erhalte ich vom Server einen
+      500 Fehler.
      </para>
     </question>
     <answer>
      <para>
-      Beim Versuch des Servers PHP zu starten ist etwas
-      schiefgegangen. Wechseln Sie auf der Kommandozeile
-      (in der Eingabeaufforderung) in das Verzeichnis, das die
-      ausführbare PHP-Datei (unter Windows
+      Beim Versuch des Servers PHP zu starten ist etwas schiefgegangen.
+      Wechseln Sie auf der Kommandozeile (in der Eingabeaufforderung) in das
+      Verzeichnis, das die ausführbare PHP-Datei (unter Windows
       <filename>php.exe</filename>) enthält und lassen Sie
-      <literal>php -i</literal> laufen, um eine sinnvolle
-      Fehlermeldung zu bekommen. Falls PHP irgendwelche Probleme bei
-      der Ausführung hat, werden entsprechende Fehlermeldungen 
-      ausgegeben, die Ihnen Hinweise darauf liefern, was zu tun ist.
-      Falls sich der Bildschirm mit HTML-Quelltext füllt (die Ausgabe
-      der Funktion <function>phpinfo</function>), funktioniert PHP und
-      Ihr Problem könnte mit Ihrer Server-Konfiguration zusammen
-      hängen, die Sie dann nochmal genau überprüfen sollten.
+      <command>php -i</command> laufen, um eine sinnvolle Fehlermeldung zu
+      bekommen. Falls PHP irgendwelche Probleme bei der Ausführung hat, werden
+      entsprechende Fehlermeldungen ausgegeben, die Ihnen Hinweise darauf
+      liefern, was zu tun ist. Falls sich der Bildschirm mit HTML-Quelltext
+      füllt (die Ausgabe der Funktion <function>phpinfo</function>),
+      funktioniert PHP und Ihr Problem könnte mit Ihrer Server-Konfiguration
+      zusammenhängen, die Sie dann nochmal genau überprüfen sollten.
      </para>
     </answer>
    </qandaentry>
@@ -361,9 +446,9 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
    <qandaentry id="faq.installation.undefinedsyms">
     <question>
      <para> 
-      Manche Betriebssysteme: Ich habe PHP ohne Fehlermeldungen
-      installiert, aber wenn ich versuche, Apache zu starten, erhalte
-      ich Fehler wegen undefinierter Symbole:
+      Manche Betriebssysteme: Ich habe PHP ohne Fehlermeldungen installiert,
+      aber wenn ich versuche, Apache zu starten, erhalte ich Fehler wegen
+      undefinierter Symbole:
             <programlisting role="shell">
 [mybox:user /src/php4] root# apachectl configtest
  apachectl: /usr/local/apache/bin/httpd Undefined symbols:
@@ -375,8 +460,9 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
     <answer>
      <para>
       Das hat nichts mit PHP zu tun, sondern mit den
-      MySQL-Client-Bibliotheken. Manche benötigen --with-zlib, manche
-      nicht. Auf diese Frage wird in den MySQL FAQ eingegangen.
+      MySQL-Client-Bibliotheken. Manche benötigen <option
+      role="configure">--with-zlib</option>, manche nicht. Auf diese Frage
+      wird in den MySQL FAQ eingegangen.
      </para>
     </answer>
    </qandaentry>
@@ -402,7 +488,7 @@ cgi error:
       Kommandozeile (in der Eingabeaufforderung) in das Verzeichnis,
       das die ausführbare PHP-Datei (unter Windows
       <filename>php.exe</filename>) enthält und lassen Sie
-      <literal>php -i</literal> laufen, um eine sinnvolle
+      <command>php -i</command> laufen, um eine sinnvolle
       Fehlermeldung zu bekommen. Falls PHP irgendwelche Probleme bei
       der Ausführung hat, werden entsprechende Fehlermeldungen
       ausgegeben, die Ihnen Hinweise darauf liefern, was zu tun ist.
@@ -451,17 +537,15 @@ cgi error:
     </question>
     <answer>
      <para>
-      Stellen Sie sicher, dass jeder Benutzer, der ein PHP-Script
-      ausführt, die Berechtigung hat <filename>php.exe</filename>
-      auzuführen! Der IIS verwendet den Benutzer anonymous, der bei
-      der Installation des IIS hinzugefügt wird. Dieser Benutzer
-      benötigt die entsprechenden Berechtigungen für
-      <filename>php.exe</filename>. Außerdem benötigt auch jeder
-      angemeldete Benutzer die Berechtigung
-      <filename>php.exe</filename> auszuführen. Dem IIS4 müssen Sie
-      mitteilen, dass PHP eine Script-Engine ist. Lesen Sie auch
-      <link
-      linkend="faq.installation.forceredirect">diese FAQ</link>.
+      Stellen Sie sicher, dass jeder Benutzer, der ein PHP-Script ausführt,
+      die Berechtigung hat <filename>php.exe</filename> auzuführen! Der IIS
+      verwendet den Benutzer anonymous, der bei der Installation des IIS
+      hinzugefügt wird. Dieser Benutzer benötigt die entsprechenden
+      Berechtigungen für <filename>php.exe</filename>. Außerdem benötigt auch
+      jeder angemeldete Benutzer die Berechtigung <filename>php.exe</filename>
+      auszuführen. Dem IIS4 müssen Sie mitteilen, dass PHP eine Script-Engine
+      ist. Lesen Sie auch <link linkend="faq.installation.forceredirect">diese
+      FAQ</link>.
      </para>
     </answer>
    </qandaentry>
@@ -516,6 +600,216 @@ cgi error:
       Wenn Ihre &php.ini; gelesen wird und Sie PHP als Modul benutzen,
       müssen Sie Ihren Webserver neu starten, nachdem Sie Änderungen
       an der &php.ini; vorgenommen haben.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.addtopath">
+    <question>
+     <para>
+      Wie füge ich unter Windows <varname>PATH</varname> mein PHP-Verzeichnis
+      hinzu?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Unter Windows NT, 2000, XP und 2003:
+      <itemizedlist>
+       <listitem>
+        <para>
+         Gehen Sie in die Systemsteuerung und öffnen Sie das System-Icon
+         (Start -&gt; Einstellungen -&gt; Systemsteuerung  -&gt; System oder
+         bei Windows XP/2003 einfach Start -&gt; Systemsteuerung -&gt; System)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Gehen Sie zum Register 'Erweitert'
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Klicken Sie auf den Button 'Umgebungsvariablen'
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Schauen Sie in das Fenster 'Systemvariablen'
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Suchen Sie nach dem Pfad-Eintrag PATH (Sie müssen evtl. blättern um
+         ihn zu finden)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Doppelklicken Sie auf den Pfad-Eintrag
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Geben Sie Ihr PHP-Verzeichnis mit vorangestelltem ';' am Ende ein
+         (z.B. <literal>;C:\php</literal>)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Drücken Sie auf OK und starten Sie Ihren Computer neu
+        </para>
+       </listitem>
+      </itemizedlist>
+     </para>
+     <para>
+      Unter Windows 98/Me müssen Sie die Datei
+      <filename>autoexec.bat</filename> editieren:
+      <itemizedlist>
+       <listitem>
+        <para>
+         Öffnen Sie den Editor (Start -&gt; Ausführen und notepad eingeben)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Öffnen Sie die Datei <filename>C:\autoexec.bat</filename>
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Finden Sie die Zeile mit PATH=C:\WINDOWS;C:\WINDOWS\COMMAND;..... und
+         fügen Sie <literal>;C:\php</literal> am Ende der Zeile hinzu
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Speichern Sie die Datei und starten Sie Ihren Computer neu
+        </para>
+       </listitem>
+      </itemizedlist>
+     </para>
+     <para>
+      Das PHP Handbuch hat früher empfohlen, Dateien ins
+      Windows-Systemverzeichnis zu kopieren, weil sich dieses Verzeichnis
+      (<filename>C:\Windows</filename>, <filename>C:\WINNT</filename>, etc.)
+      standardmäßig im Pfad (PATH) des Systems befindet. Dateien ins
+      Windows-Systemverzeichnis zu kopieren könnte Probleme verursachen und es
+      wird schon lange davon abgeraten.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.phprc">
+    <question>
+     <para>
+      Wie mache ich unter Windows die Datei &php.ini; für PHP verfügbar?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Es gibt mehrere Möglichkeiten, das zu erreichen. Falls Sie Apache
+      benutzen, lesen Sie die für die jeweilige Installation bestimmte
+      Anleitung (<link linkend="install.windows.apache1">Apache 1</link>,
+      <link linkend="install.windows.apache2">Apache 2</link>). Andernfalls
+      müssen Sie die Umgebungsvariable <varname>PHPRC</varname> setzen:
+     </para>
+     <para>
+      Unter Windows NT, 2000, XP und 2003:
+      <itemizedlist>
+       <listitem>
+        <para>
+         Gehen Sie in die Systemsteuerung und öffnen Sie das System-Icon
+         (Start -&gt; Einstellungen -&gt; Systemsteuerung  -&gt; System oder
+         bei Windows XP/2003 einfach Start -&gt; Systemsteuerung -&gt; System)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Gehen Sie zum Register 'Erweitert'
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Klicken Sie auf den Button 'Umgebungsvariablen'
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Schauen Sie in das Fenster 'Systemvariablen'
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Klicken Sie auf 'Neu' und geben Sie 'PHPRC' als Name für die Variable
+         ein und als Wert für die Variable das Verzeichnis, in dem sich die
+         &php.ini; befindet (z.B. <literal>C:\php</literal>)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Drücken Sie auf OK und starten Sie Ihren Computer neu
+        </para>
+       </listitem>
+      </itemizedlist>
+     </para>
+     <para>
+      Unter Windows 98/Me müssen Sie die Datei
+      <filename>autoexec.bat</filename> editieren:
+      <itemizedlist>
+       <listitem>
+        <para>
+         Öffnen Sie den Editor (Start -&gt; Ausführen und notepad eingeben)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Öffnen Sie die Datei <filename>C:\autoexec.bat</filename>
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Fügen Sie am Ende der Datei eine neue Zeile ein: <literal>set PHPRC
+         C:\php</literal> (ersetzen Sie <literal>C:\php</literal> mit dem
+         Verzeichnis, in dem sich die &php.ini; befindet)
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Speichern Sie die Datei und starten Sie Ihren Computer neu
+        </para>
+       </listitem>
+      </itemizedlist>
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.apache.multiviews">
+    <question>
+     <para>
+      Is it possible to use Apache content negotiation (MultiViews option)
+      with PHP?
+     </para>
+    </question>
+    <answer>
+     <para>
+      If links to PHP files include extension, everything works perfect. This
+      FAQ is only for the case when links to PHP files don't include extension
+      and you want to use content negotiation to choose PHP files from URL
+      with no extension. In this case, replace the line <literal>AddType
+      application/x-httpd-php .php</literal> with:
+      <programlisting role="apache-conf">
+<![CDATA[
+# PHP 4
+AddHandler php-script php
+AddType text/html php
+
+# PHP 5
+AddHandler php5-script php
+AddType text/html php
+]]>
+     </programlisting>
+     This solution doesn't work for Apache 1 as PHP module doesn't catch
+     <literal>php-script</literal>.
      </para>
     </answer>
    </qandaentry>
