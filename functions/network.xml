@@ -1,6 +1,8 @@
  <reference id="ref.network">
   <title>Netzwerk Funktionen</title>
   <titleabbrev>Netzwerk</titleabbrev>
+  <!-- Anmerkung des Übersetzers:
+       entspricht en/functions/network.xml Vers. 1.23 -->
 
   <refentry id="function.checkdnsrr">
    <refnamediv>
@@ -65,6 +67,10 @@
      benötigt wird um in den System-Logger zu schreiben. Der Gebrauch
      von <function>closelog</function> ist optional.
     </para>
+    <para>
+     Siehe auch <function>define_syslog_variables</function>,
+     <function>syslog</function> und <function>openlog</function>.
+    </para>
    </refsect1>
   </refentry>
 
@@ -105,6 +111,32 @@
      Schaltet den internen PHP-Debugger, zeigend auf
      <parameter>address</parameter>, ein. Der Debugger befindet sich
      noch in der Entwicklung.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.define-syslog-variables">
+   <refnamediv>
+    <refname>define_syslog_variables</refname>
+    <refpurpose>
+     Initialisiert alle SysLog bezogenen Konstanten
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>define_syslog_varaibles</function></funcdef>
+      <paramdef>void</paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Initialisiert alle Konstanten, die in den SysLog-Funktionen 
+     Verwendung finden.
+    </para>
+    <para>
+     Siehe auch <function>openlog</function>,
+     <function>syslog</function> und <function>closelog</function>.
     </para>
    </refsect1>
   </refentry>
@@ -215,7 +247,12 @@ if (!$fp) {
 ?&gt;
       </programlisting>
      </example>
-     Siehe auch: <function>pfsockopen</function>.
+     Siehe auch: <function>pfsockopen</function>, 
+     <function>socket_set_blocking</function>,
+     <function>socket_set_timeout</function>,
+     <function>fgets</function>,
+     <function>fgetss</function>, <function>fputs</function>,
+     <function>fclose</function> und <function>feof</function>.
     </para>
    </refsect1>
   </refentry>
@@ -461,6 +498,71 @@ if (!$fp) {
    </refsect1>
   </refentry>
 
+  <refentry id="function.ip2long">
+   <refnamediv>
+    <refname>ip2long</refname>
+    <refpurpose>
+     Verwandelt eine gemäß IP-V4-Protokoll angegebene Internet-Adresse
+     vom Punkt-Format in die ausgeschriebene Adress-Angabe
+    </refpurpose> 
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ip2long</function></funcdef>
+      <paramdef>string <parameter>ip_address</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Die Funktion <function>ip2long</function> erzeugt aus einer im
+     Punkt-Format angegebenen IP-V4-Adresse eine ausgeschriebene
+     Adress-Angabe.
+     <example>
+      <title><function>Ip2long</function>-Beispiel:</title>
+      <programlisting role="php">
+&lt;?
+$ip = gethostbyname("www.php.net");
+$out = "Die folgenden URLs sind gleich:&lt;br&gt;\n";
+$out .= "http://www.php.net/, http://".$ip."/, and http://".ip2long($ip)."/&lt;br&gt;\n";
+echo $out;
+?&gt;
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Siehe auch: <function>long2ip</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.long2ip">
+   <refnamediv>
+    <refname>long2ip</refname>
+    <refpurpose>
+     Konvertiert eine IP-V4-Internet-Netzwerk-Adresse in einen String,
+     der das Punkt-Format enthält ("Dotted-Format")
+    </refpurpose> 
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>long2ip</function></funcdef>
+      <paramdef>int <parameter>proper_address</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Die Funktion <function>long2ip</function> erzeugt eine Internet
+     Adresse im Punkt-Format (also: www.xxx.yyy.zzz) anhand einer
+     richtigen - ausgeschriebenen - Adress-Angabe.
+    </para>
+    <para>
+     Siehe auch: <function>ip2long</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.openlog">
    <refnamediv>
     <refname>openlog</refname>
@@ -483,15 +585,147 @@ if (!$fp) {
      System-Log-Dienste eines Programms. Die Zeichenkette
      <parameter>ident</parameter> wird jeder Meldung angefügt. Werte
      für die Parameter <parameter>option</parameter> und
-     <parameter>facility</parameter> werden im nächsten Abschnitt
-     gegeben. Der Gebrauch von <function>openlog</function> ist
-     optional. Er wird - falls erforderlich - automatisch aufgerufen
-     von <function>syslog</function>. Dann ist der Vorgabewert von
+     <parameter>facility</parameter> werden unten erläutert. Das
+     Argument <parameter>option</parameter> wird verwendet, um
+     festzulegen, welche Log-Optionen bei der Erzeugung von 
+     Log-Nachrichten verwendet werden sollen. Das Argument 
+     <parameter>facility</parameter> wird verwendet, um die Art des
+     Programmes festzulegen, das die Nachricht loggt. Dies erlaubt
+     ihnen (in ihrer speziellen SysLog-Konfiguartion) die Festlegung
+     der Behandlungsweise von Log-Nachrichten. Der Gebrauch von
+     <function>openlog</function> ist optional. Er wird - falls 
+     erforderlich - automatisch aufgerufen von
+     <function>syslog</function>. Dann ist der Vorgabewert von
      <parameter>ident</parameter> falsch / false.
     </para>
     <para>
-     Siehe auch <function>syslog</function> und
-     <function>closelog</function>.
+     <table>
+      <title><function>Openlog</function> Options</title>
+      <tgroup cols="2">
+       <thead>
+        <row>
+         <entry>Konstante</entry>
+         <entry>Beschreibung</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>LOG_CONS</entry>
+         <entry>
+          Tritt ein Fehler auf beim Senden von Daten an den
+          System-Logging-Service, wird direkt an die System-Konsole
+          ausgegeben.
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_NDELAY</entry>
+         <entry>
+          Öffnet sofort die Verbindung zum Log-Service.
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_ODELAY</entry>
+         <entry>
+          (Voreinstellung); öffne die Verbindung erst, wenn die erste
+          Meldung geloggt werden soll.
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_PERROR</entry>
+         <entry>
+          Gib die Log-Meldungen auch an der Standard-Ausgabe für Fehler
+          aus.
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_PID</entry>
+         <entry>Schließe die PID bei jeder Meldung ein.</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+     Sie können eine oder mehrere dieser Optionen verwenden. Benutzen
+     sie mehrere, müssen diese per <literal>OR</literal> getrennt
+     werden. Um die Verbindung sofort herzu stellen, auch auf die 
+     Konsole zu schreiben und die PID in jede Meldung auf zu nehmen,
+     müssen sie folgendes angeben: <literal>LOG_CONS | LOG_NDELAY | 
+     LOG_PID</literal>.
+    </para>
+    <para>
+     <table>
+      <title><function>Openlog</function>-Möglichkeiten</title>
+      <tgroup cols="2">
+       <thead>
+        <row>
+         <entry>Konstante</entry>
+         <entry>Beschreibung</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>LOG_AUTH</entry>
+         <entry>
+          Security- / Authorization-Meldungen (benutzt statt dessen
+          LOG_AUTHPRIV in Systemen, wo diese Konstante definiert ist).
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_AUTHPRIV</entry>
+         <entry>
+          Security- / Authorization-Meldungen (private).
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_CRON</entry>
+         <entry>
+          Uhr-abhängige Dienste (Dämonen wie cron and at).
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_DAEMON</entry>
+         <entry>Andere System-Dienste (Dämonen).</entry>
+        </row>
+        <row>
+         <entry>LOG_KERN</entry>
+         <entry>Kernel-Meldungen.</entry>
+        </row>
+        <row>
+         <entry>LOG_LOCAL0 ... LOG_LOCAL7</entry>
+         <entry>Reserviert für lokale Benutzung.</entry>
+        </row>
+        <row>
+         <entry>LOG_LPR</entry>
+         <entry>Zeilen-Drucker Subsystem.</entry>
+        </row>
+        <row>
+         <entry>LOG_MAIL</entry>
+         <entry>Mailing-Subsystem.</entry>
+        </row>
+        <row>
+         <entry>LOG_NEWS</entry>
+         <entry>USENET-News-Subsystem.</entry>
+        </row>
+        <row>
+         <entry>LOG_SYSLOG</entry>
+         <entry>
+          Meldungen die intern von syslogd erzeugt wurden.
+         </entry>
+        </row>
+        <row>
+         <entry>LOG_USER</entry>
+         <entry>Generische User-Level-Meldungen.</entry>
+        </row>
+        <row>
+         <entry>LOG_UUCP</entry>
+         <entry>UUCP-Subsystem</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </para>
+    <para>
+     Siehe auch <function>define_syslog_variables</function>,
+     <function>syslog</function> und <function>closelog</function>.
     </para>
    </refsect1>
   </refentry>
@@ -560,6 +794,58 @@ if (!$fp) {
    </refsect1>
   </refentry>
 
+  <refentry id="function.socket-set-timeout">
+   <refnamediv>
+    <refname>socket_set_timeout</refname>
+    <refpurpose>Setzt den Timeout-Wert eines Socket</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>socket_set_timeout</function></funcdef>
+      <paramdef>int <parameter>socket descriptor</parameter></paramdef>
+      <paramdef>int <parameter>seconds</parameter></paramdef>
+      <paramdef>int <parameter>microseconds</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Setzt den Timeout-Wert von
+     <parameter>socket descriptor</parameter>, ausgedrückt durch die
+     Summe von <parameter>seconds</parameter> und
+     <parameter>microseconds</parameter>.
+     <example>
+      <title><function>socket_set_timeout</function>-Beispiel:</title>
+      <programlisting role="php">
+&lt;?php
+$fp = fsockopen("http://www.php.net", 80);
+if(!$fp) {
+    echo "Keine Verbindung möglich\n";
+} else {
+    fputs($fp,"GET / HTTP/1.0\n\n");
+    $start = time();
+    socket_set_timeout($fp, 2);
+    $res = fread($fp, 2000);
+    var_dump(socket_get_status($fp));
+    fclose($fp);
+    print $res;
+}
+?&gt;
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Diese Funktion wurde früher
+     <function>set_socket_timeout</function> genannt, dieser Name wird
+     aber nicht abgelehnt.
+    </para>
+    <para>
+     Siehe auch: <function>fsockopen</function> und
+     <function>fopen</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.syslog">
    <refnamediv>
     <refname>syslog</refname>
@@ -586,78 +872,96 @@ if (!$fp) {
      entspricht.
     </para>
     <para>
-     Mehr Informationen über die System-Möglichkeiten können in der
-     Bedienungs-Anleitung (man pages auf UNIX-Systemen) zu syslog
-     gefunden werden.
+     <table>
+      <title>
+       <function>Syslog</function>-Prioritäten (in absteigender
+       Reihenfolge)
+      </title>
+      <tgroup cols="2">
+       <thead>
+        <row>
+         <entry>Konstante</entry>
+         <entry>Beschreibung:</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>LOG_EMERG</entry>
+         <entry>System ist unbrauchbar.</entry>
+        </row>
+        <row>
+         <entry>LOG_ALERT</entry>
+         <entry>Aktion ist sofort erforderlich.</entry>
+        </row>
+        <row>
+         <entry>LOG_CRIT</entry>
+         <entry>Kritischer Zustand.</entry>
+        </row>
+        <row>
+         <entry>LOG_ERR</entry>
+         <entry>Fehler aufgetreten.</entry>
+        </row>
+        <row>
+         <entry>LOG_WARNING</entry>
+         <entry>Warnung aufgetreten.</entry>
+        </row>
+        <row>
+         <entry>LOG_NOTICE</entry>
+         <entry>Normale, aber wichtige, Meldung.</entry>
+        </row>
+        <row>
+         <entry>LOG_INFO</entry>
+         <entry>Informative Meldung.</entry>
+        </row>
+        <row>
+         <entry>LOG_DEBUG</entry>
+         <entry>Debug-Level-Meldung.</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </para>
+    <para>
+     <example>
+      <title>Die Verwendung von <function>syslog</function>:</title>
+      <programlisting role="php">
+&lt;?php
+define_syslog_variables();
+// öffne SysLog, schließe die Prozess-ID (PID) ein, sende
+// die Log-Meldungen an die Standard-Fehler-Ausgabe und benutze
+// einen User-definierten Log-Mechanismus.
+openlog(&quot;myScripLog&quot;, LOG_PID | LOG_PERROR, LOG_LOCAL0);
+
+// etwas Code
+
+if (authorized_client()) {
+    // mache etwas
+} else {
+    // unerlaubter Client!
+    // logge den Zugriff
+    $access = date(&quot;Y/m/d H:i:s&quot;);
+    syslog(LOG_WARNING,&quot;Unauthorisierter Client: $access $REMOTE_ADDR ($HTTP_USER_AGENT)&quot;);
+}
+
+closelog();
+?&gt;
+      </programlisting>
+     </example>
+     Weiter Informationen zum Benutzer-definierten Log-Handler finden
+     sie unter <citerefentry><refentrytitle>syslog.conf</refentrytitle>
+     <manvolnum>5</manvolnum></citerefentry> der Unix-Manual-Seiten.
+     Zusätzliche Informationen zu den SysLog-Möglichkeiten finden sie
+     in den Man-Pages zu
+     <citerefentry><refentrytitle>syslog</refentrytitle>
+     <manvolnum>3</manvolnum></citerefentry> (auf UNIX-Systemen).
     </para>
     <para>
      Unter Windows-NT wird der Syslog-Dienst emuliert, indem der
      Ereignis-Protokollierdienst genutzt wird.
     </para>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.ip2long">
-   <refnamediv>
-    <refname>ip2long</refname>
-    <refpurpose>
-     Verwandelt eine gemäß IP-V4-Protokoll angegebene Internet-Adresse
-     vom Punkt-Format in die ausgeschriebene Adress-Angabe
-    </refpurpose> 
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-    <funcsynopsis>
-     <funcprototype>
-      <funcdef>int <function>ip2long</function></funcdef>
-      <paramdef>string <parameter>ip_address</parameter></paramdef>
-     </funcprototype>
-    </funcsynopsis>
     <para>
-     Die Funktion <function>ip2long</function> erzeugt aus einer im
-     Punkt-Format angegebenen IP-V4-Adresse eine ausgeschriebene
-     Adress-Angabe.
-     <example>
-      <title><function>Ip2long</function>-Beispiel:</title>
-      <programlisting role="php">
-&lt;?
-$ip = gethostbyname("www.php.net");
-$out = "Die folgenden URLs sind gleich:&lt;br&gt;\n";
-$out .= "http://www.php.net/, http://".$ip."/, and http://".ip2long($ip)."/&lt;br&gt;\n";
-echo $out;
-?&gt;
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     Siehe auch: <function>long2ip</function>.
-    </para>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.long2ip">
-   <refnamediv>
-    <refname>long2ip</refname>
-    <refpurpose>
-     Konvertiert eine IP-V4-Internet-Netzwerk-Adresse in einen String,
-     der das Punkt-Format enthält ("Dotted-Format")
-    </refpurpose> 
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-    <funcsynopsis>
-     <funcprototype>
-      <funcdef>string <function>long2ip</function></funcdef>
-      <paramdef>int <parameter>proper_address</parameter></paramdef>
-     </funcprototype>
-    </funcsynopsis>
-    <para>
-     Die Funktion <function>long2ip</function> erzeugt eine Internet
-     Adresse im Punkt-Format (also: www.xxx.yyy.zzz) anhand einer
-     richtigen - ausgeschriebenen - Adress-Angabe.
-    </para>
-    <para>
-     Siehe auch: <function>ip2long</function>.
+     Siehe auch <function>define_syslog_variables</function>,
+     <function>openlog</function> und <function>closelog</function>.
     </para>
    </refsect1>
   </refentry>
