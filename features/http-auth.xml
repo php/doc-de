@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.10 $ -->
+<!-- $Revision: 1.11 $ -->
   <chapter id="features.http-auth">
   <title>HTTP-Authentifizierung mit PHP</title>
-
+    
   <simpara>
    Die HTTP-Authentifizierung durch PHP ist nur verfügbar, wenn PHP als
    Apache-Modul läuft und funktioniert daher nicht mit der CGI-Version.
@@ -15,8 +15,19 @@
    und $PHP_AUTH_TYPE, die den jeweiligen Benutzernamen, das 
    Passwort und den Typ der Identifizierung enthalten, erneut aufgerufen.
    Momentan wird nur das Authentifizierungsmodell "basic" unterstützt. 
-   Näheres hierzu bei der <function>header</function> Funktion.</simpara>
-   
+   Näheres hierzu bei der <function>header</function> Funktion.
+  </simpara>
+  
+  <note>
+   <title>Anmerkung zur PHP Version</title>
+   <para>
+    <link linkend="language.variables.superglobals">Autoglobals</link>,
+    wie <link linkend="reserved.variables.server">$_SERVER</link>, sind seit
+    der PHP Version <ulink url="&url.php.release4.1.0;">4.1.0</ulink> verfügbar.
+    <varname>$HTTP_SERVER_VARS</varname> seit PHP 3.
+   </para>
+  </note>
+
   <para>
    Ein Auszug aus einem Skript, das die Clientauthentifizierung
    auf einer Seite erzwingt, würde so aussehen:
@@ -24,19 +35,22 @@
    <example>
     <title>HTTP-Authentifizierung</title>
     <programlisting role="php">
-&lt;?php
-  if(!isset($PHP_AUTH_USER)) {
-    Header(&quot;WWW-Authenticate: Basic realm=\&quot;My Realm\&quot;&quot;);
-    Header(&quot;HTTP/1.0 401 Unauthorized&quot;);
-    echo &quot;Text to send if user hits Cancel button\n&quot;;
+<![CDATA[
+<?php
+  if( !isset ($_SERVER['PHP_AUTH_USER']) ){
+    Header("WWW-Authenticate: Basic realm=\"My Realm\"");
+    Header("HTTP/1.0 401 Unauthorized");
+    echo "Text to send if user hits Cancel button\n";
     exit;
   } else {
-    echo &quot;Hello $PHP_AUTH_USER.&lt;P&gt;&quot;;
-    echo &quot;You entered $PHP_AUTH_PW as your password.&lt;P&gt;&quot;;
+    echo "Hello {$_SERVER['PHP_AUTH_USER']}";
+    echo "<p>You entered {$_SERVER['PHP_AUTH_PW']} as your password.</p>";
   }
-?&gt;
+?>
+]]>
     </programlisting>
-   </example></para>
+   </example>
+   </para>
 
   <note>
    <title>Hinweis</title>
@@ -50,25 +64,28 @@
   </note>
 
   <para>
-   Anstatt $PHP_AUTH_USER und $PHP_AUTH_PW einfach nur 
+   Anstatt $_SERVER['PHP_AUTH_USER'] und $_SERVER['PHP_AUTH_PW'] einfach nur 
    auszugeben, werden Sie den Benutzernamen und das Passwort 
    auf Gültigkeit überprüfen wollen. Dies kann durch die Abfrage 
-   einer Datenbank oder das Einlesen einer Textdatei geschehen.</para>
+   einer Datenbank oder das Einlesen einer Textdatei geschehen.
+  </para>
 
   <para>
    Vorsicht bei einigen Internet Explorer-Versionen - sie scheinen
    sehr wählerisch zu sein, was die Reihenfolge der Header angeht.
    Abhilfe schafft hier das Senden des <emphasis>WWW-Authenticate</emphasis>
-   Headers vor dem <errorcode>HTTP/1.0 401</errorcode>.</para>
+   Headers vor dem <errorcode>HTTP/1.0 401</errorcode>.
+  </para>
 
   <simpara>
    Um zu unterbinden, dass ein Skript das Passwort einer durch 
    einen traditionellen externen Mechanismus geschützten Seite
    ausliest, werden die PHP_AUTH Variablen nicht gesetzt, wenn 
    eine externe Authentifizierung für diese bestimmte Seite aktiviert
-   ist. In diesem Fall kann die $REMOTE_USER Variable benutzt
+   ist. In diesem Fall kann die $_SERVER['REMOTE_USER'] Variable benutzt
    werden, um den Benutzer durch die externe Zugriffskontrolle
-   zu identifizieren.</simpara>
+   zu identifizieren.
+  </simpara>
 
   <note>
    <title>Konfigurationshinweis</title>
@@ -85,7 +102,8 @@
    Zu beachten ist, dass obenstehendes keinesfalls jemanden,
    der die Kontrolle über eine nichtgeschützte URL hat, davon
    abhalten kann, Passwörter von geschützten URLs auf dem
-   gleichen Rechner auszulesen.</simpara>
+   gleichen Rechner auszulesen.
+  </simpara>
   <simpara>
    Sowohl Netscape als auch der Internet Explorer löschen den
    lokalen Authentifizierungscache des Browserfensters, wenn der
@@ -93,34 +111,37 @@
    einen Benutzer "auszuloggen" und eine erneute Eingabe des
    Benutzernamens/Passworts zu erzwingen. Manchmal wird dieses Verhalten
    für das automatische Ausloggen nach Ablauf einer bestimmten Zeitspanne
-   oder für einen Logout-Button genutzt.</simpara>
-  <simpara></simpara>
+   oder für einen Logout-Button genutzt.
+  </simpara>
+  <simpara>
    <example>
      <title>HTTP-Authentifizierung, mit erneuter Anforderung von Name/Passwort</title>
      <programlisting role="php">
-&lt;?php
-  function authenticate() {
-   Header( &quot;WWW-Authenticate: Basic realm=\&quot;Test Authentication System\&quot;&quot;);
-   Header( &quot;HTTP/1.0 401 Unauthorized&quot;);
-   echo &quot;You must enter a valid login ID and password to access this resource\n&quot;;
+<![CDATA[
+<?php
+  function authenticate(){
+   Header("WWW-Authenticate: Basic realm=\"Test Authentication System\"");
+   Header("HTTP/1.0 401 Unauthorized");
+   echo "You must enter a valid login ID and password to access this resource\n";
    exit;
   }
 
-  if(!isset($PHP_AUTH_USER) || ($SeenBefore == 1 &amp;&amp; !strcmp($OldAuth, $PHP_AUTH_USER)) ) {
+  if( !isset( $_SERVER['PHP_AUTH_USER'] ) || ( $SeenBefore == 1 && ! strcmp( $OldAuth, $_SERVER['PHP_AUTH_USER']) ) ) {
    authenticate();
-  } 
-  else {
-   echo &quot;Welcome: $PHP_AUTH_USER&lt;BR&gt;&quot;;
-   echo &quot;Old: $OldAuth&quot;;
-   echo &quot;&lt;FORM ACTION=\&quot;$PHP_SELF\&quot; METHOD=POST&gt;\n&quot;;
-   echo &quot;&lt;INPUT TYPE=HIDDEN NAME=\&quot;SeenBefore\&quot; VALUE=\&quot;1\&quot;&gt;\n&quot;;
-   echo &quot;&lt;INPUT TYPE=HIDDEN NAME=\&quot;OldAuth\&quot; VALUE=\&quot;$PHP_AUTH_USER\&quot;&gt;\n&quot;;
-   echo &quot;&lt;INPUT TYPE=Submit VALUE=\&quot;Re Authenticate\&quot;&gt;\n&quot;;
-   echo &quot;&lt;/FORM&gt;\n&quot;;
+  }else{
+   echo "Welcome: {$_SERVER['PHP_AUTH_USER']}<br>";
+   echo "Old: $OldAuth";
+   echo "<form action=\"$PHP_SELF\" method=\"post\">\n";
+   echo "<input type=\"hidden\" name=\"SeenBefore\" value=\"1\">\n";
+   echo "<input type=\"hidden\" name=\"OldAuth\" value=\"{$_SERVER['PHP_AUTH_USER']}\">\n";
+   echo "<input type=\"submit\" value=\"Re Authenticate\">\n";
+   echo "</form>\n";
   }
-?&gt;
+?>
+]]>
    </programlisting>
   </example>
+  </simpara>
   <simpara>
    Dieses Verhalten wird vom Authentifizierungsstandard HTTP Basic 
    nicht gefordert, daher sollte man sich nie darauf verlassen. Tests
@@ -128,12 +149,13 @@
    bei Erhalt einer 401-Meldung nicht löscht. Ein Klick auf den Zurück-
    Button und danach auf Vorwärts wird die angeforderte Adresse
    öffnen (und zwar so lange, bis die Identifizierung der Benutzer
-   geändert wird).</simpara>
+   geändert wird).
+  </simpara>
   <simpara>
    Weiterhin muss beachtet werden, dass dies unter dem Microsoft
    IIS mit der CGI-Version von PHP aufgrund einer
-   Einschränkung des IIS nicht funktioniert.</simpara>
-
+   Einschränkung des IIS nicht funktioniert.
+  </simpara>
  </chapter>
 
 <!-- Keep this comment at the end of the file
