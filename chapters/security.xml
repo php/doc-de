@@ -33,11 +33,11 @@
     <title>Mögliche Angriffe</title>
 
     <simpara>
-     PHP als <acronym>CGI</acronym> zu nutzen ist eine Möglichkeit
+     PHP als <acronym>CGI</acronym> zu nutzen, ist eine Möglichkeit
      für Installationen, bei denen aus irgendwelchen Gründen kein Modul in
      die Serversoftware eingebunden werden soll (wie beim Apache) oder für
      Systeme, bei denen verschiedene CGI-Wrapper genutzt werden sollen,
-     um sichere chroot und setuid Umgebungen für Scripts zu schaffen.
+     um sichere chroot- und setuid-Umgebungen für Scripts zu schaffen.
      Bei dieser Konfiguration wird das ausführbare PHP-Binary üblicherweise
      im cgi-bin Verzeichnis des Webservers installiert.
      
@@ -71,16 +71,16 @@
         die durch das <acronym>CGI</acronym>-Programm geöffnet und
         interpretiert werden soll.
         Normalerweise werden einige Einträge in der Konfigurationsdatei
-        des Webservers benutzt (Apache:Action), um Aufrufe von Dokumenten
+        des Webservers benutzt (Apache: Action), um Aufrufe von Dokumenten
         wie <filename role="url">http://my.host/secret/script.php3</filename>
         an den PHP-Interpreter umzuleiten. Bei dieser Konfiguration
         überprüft der Webserver zuerst die Zugriffsrechte im Verzeichnis
         <filename role="uri">/secret</filename> und erstellt anschließend
         den umgeleiteten Aufruf
-        <filename role="url">http://my.host/cgi-bin/php/secret/script.php3</filename>.
+        <filename role="url">http://my.host/cgi-bin/php/secret/script.php</filename>.
 	Unglücklicherweise wird, wenn der Aufruf bereits in dieser Form
         geschieht, vom Webserver keine Zugriffsüberprüfung der Datei
-	<filename role="uri">/secret/script.php3</filename>, sondern
+	<filename role="uri">/secret/script.php</filename>, sondern
         lediglich der Datei <filename role="uri">/cgi-bin/php</filename>
         vorgenommen. So ist
         jeder Benutzer, der auf <filename role="uri">/cgi-bin/php</filename> 
@@ -88,9 +88,9 @@
         auf dem Webserver Zugriff zu verschaffen.</simpara>
 
        <simpara>
-        Bei PHP kann beim compilieren die Konfigurationsoption
-	<link linkend="enable-force-cgi-redirect">--enable-force-cgi-redirect</link> und zur Laufzeit die Direktive
-        <link linkend="ini.doc-root">doc_root</link> and <link linkend="ini.user-dir">user_dir</link>
+        Bei PHP können beim compilieren die Konfigurationsoption
+	<link linkend="enable-force-cgi-redirect">--enable-force-cgi-redirect</link> und zur Laufzeit die Direktiven
+        <link linkend="ini.doc-root">doc_root</link> und <link linkend="ini.user-dir">user_dir</link>
         benutzt werden, um diesen Angriff zu verhindern, falls
         der Verzeichnisbaum des Servers Verzeichnisse mit 
         Zugriffsbeschränkungen beinhaltet. 
@@ -101,7 +101,7 @@
      </itemizedlist></sect2>
 
     <sect2 id="security.cgi.default">
-     <title>Fall 1: only public files served</title>
+     <title>Fall 1: Nur öffentliche Dateien vorhanden</title>
      <simpara>
       Wenn der Server keine Inhalte hat, die durch Passwort oder
       IP-basierte Zugriffskontrolle geschützt sind, gibt es für diese
@@ -112,8 +112,8 @@
       im configure-Script angegeben werden. Nichtsdestotrotz müssen
       Sie sicherstellenn, daß Ihre PHP-Scripte nicht auf die eine oder
       anderen Art des Aufrufs angewiesen sind, weder direkt durch
-      <filename role="php">http://my.host/cgi-bin/php/dir/script.php3</filename>
-      noch durch einen Redirect <filename role="php">http://my.host/dir/script.php3</filename>.</simpara>
+      <filename role="php">http://my.host/cgi-bin/php/dir/script.php</filename>
+      noch durch einen Redirect <filename role="php">http://my.host/dir/script.php</filename>.</simpara>
 
      <simpara>
       Beim Apache kann der Redirect durch den Gebrauch von      
@@ -131,8 +131,8 @@
       Normalerweise wird der Redirect in der Apache-Konfiguration mit den
       folgenden Einträgen festgelegt:</simpara>
      <programlisting role="apache-conf">
-Action php3-script /cgi-bin/php
-AddHandler php3-script .php3
+Action php-script /cgi-bin/php
+AddHandler php-script .php
 </programlisting>
 
      <simpara>
@@ -142,15 +142,15 @@ AddHandler php3-script .php3
       Redirect-Anfragen setzt.
       Sollte Ihr Webserver keine Möglichkeit unterstützen, zu übermitteln,
       ob es sich um einen direkte Aufruf oder einen Redirect handelt,
-      können Sie diese Option nicht verwenden und müssen eine der
-      anderen hier beschriebenen Wege gehen, die CGI-version zu
+      können Sie diese Option nicht verwenden und müssen einen der
+      anderen hier beschriebenen Wege gehen, die CGI-Version zu
       nutzen.</simpara></sect2>
       
     <sect2 id="security.cgi.doc-root">
      <title>Fall 3: doc_root oder user_dir festlegen</title>
      <simpara>
       Aktiven Inhalt, wie beispielsweise Skripts und ausführbare
-      Dateien in den Dokumentverzeichnissen des Webservers abzulegen,
+      Dateien, in den Dokumentverzeichnissen des Webservers abzulegen,
       wird manchmal als unsichere Methode angesehen.
       Wenn, beispielsweise aufgrund von Konfigurationsfehlern, die 
       Skripte nicht ausgeführt, sodern als reguläres HTML-Dokument
@@ -162,17 +162,17 @@ AddHandler php3-script .php3
       interpretiert und nicht angezeigt.</simpara>
       
      <simpara>
-      Auch wenn die Methode, sicherzustellen dass die Anfragen nicht
+      Auch wenn die Methode, sicherzustellen, dass die Anfragen nicht
       umgeleitet werden (wie im vorangegangenen Kapitel beschrieben), nicht
       verfügbar ist, ist es notwendig, ein doc_root für Scripts 
       zusätzlich zum Dokumentenverzeichnis einzurichten.</simpara>
       
      <simpara>
-      Sie können Das PHP-Skriptverzeichnis durch den Eintrag
+      Sie können das PHP-Skriptverzeichnis durch die Direktive
       <link linkend="ini.doc-root">doc_root</link> in der <link linkend="configuration.file">Konfigurationsdatei</link> ändern, oder Sie setzen
       die Umgebungsvariable <envar>PHP_DOCUMENT_ROOT</envar>.
       Wenn sie gesetzt ist, wird die CGI-Version von PHP den Namen der
-      zu öffenenden Datei stets mit <parameter>doc_root</parameter> und der
+      zu öffnenden Datei stets aus <parameter>doc_root</parameter> und der
       Pfadinformation der Anfrage zusammensetzen, so daß man sicher
       sein kann, daß ausserhalb dieses Verzeichnisses keine Skripte
       ausgeführt werden (außer <parameter>user_dir</parameter>,
@@ -180,28 +180,28 @@ AddHandler php3-script .php3
       
      <simpara>
       Eine weitere hier nützliche Option ist <link linkend="ini.user-dir">user_dir</link>. 
-      Wenn das user_dir nicht gesetzt ist, hat nur <parameter>doc_root</parameter>  
+      Wenn das <parameter>user_dir</parameter> nicht gesetzt ist, hat nur <parameter>doc_root</parameter>  
       Einfluß auf die zu öffnende Datei.
       Der Aufruf einer URL wie <filename role="url">http://my.host/~user/doc.php3</filename> hat nicht zum Ergebnis, daß
       eine Datei im Home-Verzeichnis des Benutzers geöffnet wird,
-      sondern eine Datei namens <filename role="uri">~user/doc.php3</filename> unterhalb des
+      sondern eine Datei namens <filename role="uri">~user/doc.php</filename> unterhalb des
       doc_root (Ja, ein Verzeichnisname, der mit einer Tilde anfängt
       [<literal>~</literal>]).</simpara>
       
      <simpara>
-      Ist das user_dir beispielsweise auf<filename role="dir">public_php</filename> gesetzt,
-      wird eine Anfrage wie <filename role="url">http://my.host/~user/doc.php3</filename>
-      eine Aatei namens <filename>doc.php3</filename> im Verzeichnis
+      Ist das user_dir beispielsweise auf <filename role="dir">public_php</filename> gesetzt,
+      wird eine Anfrage wie <filename role="url">http://my.host/~user/doc.php</filename>
+      eine Datei namens <filename>doc.php</filename> im Verzeichnis
       <filename role="dir">public_php</filename> im Heimatverzeichnis
       des Benutzers öffnen.  Wenn das Heimatverzeichnis des Benutzers
       <filename role="dir">/home/user</filename> ist, so ist die
       ausgeführte Datei
-      <filename>/home/user/public_php/doc.php3</filename>.</simpara>
+      <filename>/home/user/public_php/doc.php</filename>.</simpara>
       
      <simpara>
-      Die <parameter>user_dir</parameter> Erweiterung erfolgte im Hinblick
+      Die <parameter>user_dir</parameter>-Expansion erfolgt ohne Berücksichtigung
       auf die <parameter>doc_root</parameter> Einstellung. So können
-      Zugriffe auf das Dokumenten- und Benutzerverzeichnis separat
+      Zugriffe auf die Dokumenten- und Benutzerverzeichnisse separat
       gesteuert werden.</simpara></sect2>
       
     <sect2 id="security.cgi.shell">
@@ -210,7 +210,7 @@ AddHandler php3-script .php3
       Eine sehr sichere Sache ist es, das PHP-Parser-Binary irgendwo
       außerhalb des Webverzeichnisbaums zu plazieren, beispielsweise
       in <filename role="dir">/usr/local/bin</filename>.  Der einzige
-      Nachteil dieses Verfahrens ist, dass eine Zeile, ähnlich der folgenden:
+      Nachteil dieses Verfahrens ist, dass eine Zeile ähnlich der folgenden:
       
       <informalexample>
        <programlisting>
@@ -222,11 +222,11 @@ AddHandler php3-script .php3
       Ausserdem muss die Datei ausführbar sein. Ansonsten ist sie genauso
       zu behandeln wie ein beliebiges CGI-Script in Perl oder sh oder
       anderen gebräuchlichen Scriptsprachen, die den
-      <literal>#!</literal> shell-escape Mechanismus nutzen, um sich
+      <literal>#!</literal> shell-escape-Mechanismus nutzen, um sich
       selbst aufzurufen.</para>
      <para>
-      Damit PHP bei dieser Konfiguration <envar>PATH_INFO</envar> und
-      <envar>PATH_TRANSLATED</envar> Informationen korrekt auswertet,
+      Damit PHP bei dieser Konfiguration die <envar>PATH_INFO</envar>- und
+      <envar>PATH_TRANSLATED</envar>-Informationen korrekt auswertet,
       sollte der PHP-Parser mit der Option <link linkend="enable-discard-path">--enable-discard-path</link>
       kompiliert werden.</para></sect2></sect1>
 
