@@ -1,5 +1,5 @@
  <reference id="ref.imap">
-  <title>IMAP functions</title>
+  <title>IMAP, POP3 and NNTP Funktionen</title>
   <titleabbrev>IMAP</titleabbrev>
 
   <partintro>
@@ -8,11 +8,11 @@
     unter der URL <ulink url="&url.imap;">&url.imap;</ulink> erhalten.
     Kompilieren Sie diese und kopieren Sie 
     <filename>c-client/c-client.a</filename> nach 
-    <filename>/usr/local/lib</filename> sowie 
+    <filename>/usr/local/lib/libc-client.a</filename> sowie 
     <filename>c-client/rfc822.h</filename>, <filename>mail.h</filename> 
     und <filename>linkage.h</filename> nach 
     <filename>/usr/local/include</filename> oder in ein anderes 
-    Verzeichnis in Ihrem Link- bzw. Include-Pfad.
+    Verzeichnis in Ihrem Link- bzw. Include-Pfad. 
     Anschließend konfigurieren und kompilieren Sie PHP mit der Option
     <option role="configure">--with-imap</option>.
    </simpara>
@@ -22,9 +22,66 @@
     Name dies vermuten läßt.
     Die zugrundeliegende c-client Bibliothek unterstützt auch  
     <acronym>POP3</acronym>, <acronym>NNTP</acronym> und lokale
-    Mailbox-Zugriffe. Für weitere Informationen siehe 
-    <function>imap_open</function>.
+    Mailbox-Zugriffe. 
    </simpara>
+   <para>
+    Diese Dokumentation kann nicht alle Bereiche beschreiben, die von 
+    den enthaltenen Funktionen berührt werden. Weitergehende Informationen
+    erhalten Sie in der Dokumentation der c-client Bibliothek (Datei 
+    <filename>docs/internal.txt</filename> im Quellpaket der Bibliothek)
+    sowie in folgenden RFC-Dokumenten:
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc821.html">RFC821</ulink> :
+       Simple Mail Transfer Protocol (SMTP)
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc822.html">RFC822</ulink> :
+       Standard for ARPA internet text messages
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink> :
+       Internet Message Access Protocol (IMAP) Version 4rev1 
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc1939.html">RFC1939</ulink> : 
+       Post Office Protocol Version 3 (POP3)
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc977.html">RFC977</ulink> :
+       Network News Transfer Protocol (NNTP)
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc2076.html">RFC2076</ulink> :
+       Common Internet Message Headers
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <ulink url="&url.rfc;/rfc2045.html">RFC2045</ulink> ,
+       <ulink url="&url.rfc;/rfc2046.html">RFC2046</ulink> ,
+       <ulink url="&url.rfc;/rfc2047.html">RFC2047</ulink> ,
+       <ulink url="&url.rfc;/rfc2048.html">RFC2048</ulink> &amp;
+       <ulink url="&url.rfc;/rfc2049.html">RFC2049</ulink> :
+       Multipurpose Internet Mail Extensions (MIME) 
+      </simpara>
+     </listitem>
+    </itemizedlist>
+    Eine ausführliche Übersicht bietet auch das Buch 
+    <ulink url="&url.email.book;">Programming Internet Email</ulink> 
+    von David Wood.
+   </para> 
   </partintro>
 
   <refentry id="function.imap-append">
@@ -75,7 +132,8 @@
     </funcsynopsis>
     <para>
      Die <function>imap_base64</function> Funktion decodiert BASE64 codierten
-     Text (gemäß RFC2045, Abschnitt 6.8). Der decodierte Text wird als String zurückgegeben.
+     Text (gemäß <ulink url="&url.rfc;/rfc2045.html">RFC2045</ulink>, 
+     Abschnitt 6.8). Der decodierte Text wird als String zurückgegeben.
     </para>
     <para>
      Siehe auch <function>imap_binary</function>.
@@ -104,7 +162,7 @@
      <itemizedlist>
       <listitem>
        <simpara>
-	FT_UID - <parameter> msg_number</parameter> ist eine UID
+	FT_UID - <parameter>msg_number</parameter> ist eine UID
        </simpara>
       </listitem>
       <listitem>
@@ -143,12 +201,12 @@
      <itemizedlist>
       <listitem>
        <simpara>
-        Date - Datum der letzten Nachricht ?
+        Date - Datum der letzten Änderung des Postfach-Inhalts
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	Driver - Driver
+	Driver - Zugriffsprotokoll: POP, IMAP, NNTP
        </simpara>
       </listitem>
       <listitem>
@@ -186,7 +244,7 @@
     <para> 
      Schließt eine IMAP-Verbindung. Mit dem optionalen
      <parameter>flag</parameter> CL_EXPUNGE kann ein Bereinigen
-     (physikalisches Löschen aller zum löschen markieten Nachrichten)
+     (physikalisches Löschen aller zum löschen markierten Nachrichten)
      ausgelöst werden.
     </para>
    </refsect1>
@@ -252,7 +310,6 @@
      oder durch <function>imap_close</function> mit dem optionalen Flag
      <parameter>CL_EXPUNGE</parameter>.
     </para>
-    
    </refsect1>
   </refentry>
 
@@ -298,8 +355,9 @@
     </funcsynopsis>
     <para>  
      <function>imap_expunge</function> löscht endgültig alle von den
-     Funktionen <function>imap_delete</function> und
-     <function>imap_mail_move</function> zum Löschen vorgemerkten
+     Funktionen <function>imap_delete</function>,
+     <function>imap_mail_move</function> oder
+     <function>imap_setflag_full</function> zum Löschen vorgemerkten
      Nachrichten.
     </para>
     <para>
@@ -337,7 +395,7 @@
      <itemizedlist>
       <listitem>
        <simpara>
-	FT_UID - <parameter>msgno</parameter> enthält eine UID
+	FT_UID - <parameter>msg_number</parameter> enthält eine UID
        </simpara>
       </listitem>
       <listitem>
@@ -656,6 +714,7 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
      Diese Funktion liefert ein String-Array, das je Nachricht
      einen String mit vorformatierten Informationen aus dem
      Nachrichtenheader enthält.
+     <!-- format -->
     </para>
    </refsect1>
   </refentry>
@@ -735,8 +794,9 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
     <para>
      <parameter>ref</parameter> sollte normalerweise nur den Namen des Servers
      in der Form {imap_server:imap_port} enthalten.
-     Über <parameter>pattern</parameter> kann ein Startpunkt innerhalb der
-     Postfach-Hierachie vorgegeben werden.
+     Über <parameter>pat</parameter> kann ein Startpunkt innerhalb der
+     Postfach-Hierachie vorgegeben werden. Wünschen Sie die Ausgabe
+     aller Postfächer, so übergeben Sie als <parameter>pat</parameter> '*'.
     </para>
     <para>
      Die Zeichen '*' und '%' haben innerhalb von <parameter>pattern</parameter> 
@@ -826,7 +886,8 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
      Diese Funktion kopiert die in <parameter>msglist</parameter>
      angegebenen Nachrichten in das Postfach <parameter>mbox</parameter>.
      <parameter>msglist</parameter> kann eine einzelne Nachrichtennummer
-     oder Aufzählungen und Bereiche gemäß RFC2060 enthalten.
+     oder Aufzählungen und Bereiche gemäß 
+     <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink> enthalten.
     </para>
     <para>
      Die Bitmaske <parameter>flags</parameter> kann aus den foldengen
@@ -870,7 +931,8 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
      Diese Funktion verschiebt die in <parameter>msglist</parameter>
      angegebenen Nachrichten in das Postfach <parameter>mbox</parameter>.
      <parameter>msglist</parameter> kann eine einzelne Nachrichtennummer
-     oder Aufzählungen und Bereiche gemäß RFC2060 enthalten.
+     oder Aufzählungen und Bereiche gemäß 
+     <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink> enthalten.
     </para>
     <para>
      Die Bitmaske <parameter>flags</parameter> kann den foldengen
@@ -1069,8 +1131,9 @@ imap_close($mbox);
      an den Mailserver und prüft so die Verfügbarkeit der Verbindung.
      Auf diese Weise kann die Verbindung zu einem Server aufrechterhalten
      werden, der Verbindungen nach einer gewissen Zeit ohne Aktivität
-     automatisch beendet.
-     <!-- BAUSTELLE - Referenz auf new mail check in en entf. -->
+     automatisch beendet ( da PHP-Scripte i.A. nicht sehr lange laufen, 
+     kann ich mir kaum vorstellen, das jemand diese Funktion wirklich
+     benötigt).
     </para>
    </refsect1>
   </refentry>
@@ -1118,9 +1181,6 @@ imap_close($mbox);
      <paramdef>string
      <parameter><optional>flags</optional></parameter></paramdef>
     </funcsynopsis>
-    <para>
-     Liefert true bei Erfolg und false bei Fehlern.
-    </para>
     <para>  
      Mit Hilfe dieser Funktion kann auf IMAP- und NNTP-Servern ein anderes
      Postfach als das bisher aktuelle ausgewählt werden.
@@ -1155,6 +1215,9 @@ imap_close($mbox);
       </listitem>
      </itemizedlist>
     </para>  
+    <para>
+     Liefert true bei Erfolg und false bei Fehlern.
+    </para>
    </refsect1>
   </refentry>
 
@@ -1243,7 +1306,8 @@ imap_close($mbox);
     </funcsynopsis>
     <para>  
      Konvertiert einen quoted-printable kodierten String 
-     (gemäß RFC2045, Abschnitt 6.7) in einen 8bit-String
+     (gemäß <ulink url="&url.rfc;/rfc2045.html">RFC2045</ulink>, 
+     Abschnitt 6.7) in einen 8bit-String
     </para>
     <para>
      Siehe auch <function>imap_8bit</function>.
@@ -1266,7 +1330,8 @@ imap_close($mbox);
     </funcsynopsis>
     <para>  
      Konvertiert einen String in einen quoted-printable kodierten String 
-     (gemäß RFC2045, Abschnitt 6.7).
+     (gemäß <ulink url="&url.rfc;/rfc2045.html">RFC2045</ulink>, 
+     Abschnitt 6.7).
     </para>
     <para>
      Siehe auch <function>imap_qprint</function>.
@@ -1289,7 +1354,8 @@ imap_close($mbox);
     </funcsynopsis>
     <para>  
      Konvertiert 8Bit-Text in einen BASE64-kodierten String 
-     (gemäß RFC2045, Abschnitt 6.8).
+     (gemäß <ulink url="&url.rfc;/rfc2045.html">RFC2045</ulink>, 
+     Abschnitt 6.8).
     </para>
     <para>
      Siehe auch <function>imap_base64</function>.
@@ -1344,7 +1410,7 @@ imap_close($mbox);
        <title>Felder des Rückgabe-Objekts</title>
        <tgroup cols="2">
         <tbody>
-        <row><entry>Date   </entry><entry>Datum des letzten Eintrags(?) </entry></row>
+        <row><entry>Date   </entry><entry>Datum der letzten Änderung    </entry></row>
         <row><entry>Driver </entry><entry>Driver                        </entry></row>
         <row><entry>Mailbox</entry><entry>Name des Postfachs            </entry></row>
         <row><entry>Nmsgs  </entry><entry>Anzahl der Nachrichten        </entry></row>
@@ -1378,7 +1444,8 @@ imap_close($mbox);
     </funcsynopsis>
     <para>
      Bildet aus Realnamen, Postfach und Server eine korekt 
-     formatierte Mail-Adresse.
+     formatierte Mail-Adresse gemäß 
+     <ulink url="&url.rfc;/rfc822.html">RFC822</ulink>.
     </para>
    </refsect1>
   </refentry>
@@ -1398,8 +1465,9 @@ imap_close($mbox);
      <paramdef>string <parameter>default_host</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Diese Funktion zerlegt einen Adress-String und liefert ein
-     Array von Objekten mit einem Eintrag je erkannter Adresse.
+     Diese Funktion zerlegt einen Adress-String gemäß 
+     <ulink url="&url.rfc;/rfc822.html">RFC822</ulink> und liefert 
+     ein Array von Objekten mit einem Eintrag je erkannter Adresse.
      Die Address-Objekte bestehen dabei jeweils aus den folgenden
      vier String-Elementen:
     </para>
@@ -1436,14 +1504,14 @@ imap_close($mbox);
     </para>
     <para>
      Mögliche Flags sind "\\Seen", "\\Answered",
-     "\\Flagged", "\\Deleted", "\\Draft", und "\\Recent" 
-     ( siehe auch RFC2060)
+     "\\Flagged", "\\Deleted", "\\Draft", und "\\Recent"
+     (siehe auch <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink>)
     </para>
     <para>
      Enthält <parameter>options</parameter> den Wert ST_UID,
      so werden die übergebenen Nachrichtennummern als UIDs anstelle
      von Indizes interpretiert.
-    </para>
+    </para>                                         
    </refsect1>
   </refentry>
 
@@ -1451,7 +1519,7 @@ imap_close($mbox);
    <refnamediv>
     <refname>imap_clearflag_full</refname>
     <refpurpose>Löscht Flags einer Nachricht</refpurpose>
-   </refnamediv>
+    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
@@ -1470,7 +1538,7 @@ imap_close($mbox);
     <para>
      Mögliche Flags sind "\\Seen", "\\Answered",
      "\\Flagged", "\\Deleted", "\\Draft", und "\\Recent" 
-     ( siehe auch RFC2060)
+     ( siehe auch <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink>)
     </para>
     <para>
      Enthält <parameter>options</parameter> den Wert ST_UID,
@@ -1497,7 +1565,7 @@ imap_close($mbox);
     <para>
      Diese Funktion liefert die Indizes der Nachrichten eines
      Postfachs als sortiertes Array zurück. Als Sortier-Kriterium
-     kann im Parameter <parameter>criteria</parameter> geneu einer
+     kann im Parameter <parameter>criteria</parameter> genau einer
      der folgenden Werte angegeben werden
      <informalexample>
       <literallayout>
@@ -1543,7 +1611,8 @@ imap_close($mbox);
     </funcsynopsis>
     <para>
      Diese Funktion liefert den vollständigen, ungefilterten und
-     gemäß RFC 822 formatierten Kopf einer Nachricht als String
+     gemäß <ulink url="&url.rfc;/rfc822.html">RFC 822</ulink> formatierten 
+     Kopf einer Nachricht als String
      zurück.
     </para>
     <para>
@@ -1767,7 +1836,8 @@ imap_close($mbox);
      Die Suche scheint nicht zwischen Groß- und Kleinschreibung zu unterscheiden.
      Die Liste der Suchbegriffe entstand nach Inspektion der UW c-client
      Sourcen und ist vermutlich nicht vollständig. 
-     ( siehe auch RFC 2060, Abschnitt 6.4.4 )
+     ( siehe auch <ulink url="&url.rfc;/rfc2060.html">RFC 2060</ulink>, 
+     Abschnitt 6.4.4 )
     </para>
     <para>
      Enthält der optionale Parameter <parameter>flags</parameter> den Wert
@@ -1799,13 +1869,6 @@ imap_close($mbox);
      liefern somit weiter dasselbe Ergebis, solange keine weiteren
      Fehler aufgetreten sind.
     </para>
-    <para>
-     <note>
-      <simpara>
-       This function is not yet available in PHP4.
-      </simpara>
-     </note>
-    </para>
    </refsect1>
   </refentry>
 
@@ -1831,13 +1894,6 @@ imap_close($mbox);
      <function>imap_last_errors</function> bis zum mächsten 
      aufgetretenen Fehler kein Ergebnis liefern.
     </para> 
-    <para>
-     <note>
-      <simpara>
-       This function is not yet available in PHP4.
-      </simpara>
-     </note>
-    </para>
    </refsect1>
   </refentry>
 
@@ -1867,13 +1923,6 @@ imap_close($mbox);
     <para>
      Die IMAP-Spezifikationen verlangen, daß diese Meldungen an den 
      Benutzer weitergegeben werden.
-    </para>
-    <para>
-     <note>
-      <simpara>
-       This function is not yet available in PHP4.
-      </simpara>
-     </note>
     </para>
    </refsect1>
   </refentry>
@@ -1968,7 +2017,9 @@ imap_close($mbox);
      nicht gemäß modifiziertem UTF-7 formatiert war.
     </para>
     <para>
-     (siehe RFC1642 für UTF-7 und RFC2060, Abschnitt 5.1.3 für modifiziertes UTF-7)
+     (siehe <ulink url="&url.rfc;/rfc2152.html">RFC2152</ulink> 
+     für UTF-7 und <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink>, 
+     Abschnitt 5.1.3 für modifiziertes UTF-7)
     </para>
    </refsect1>
   </refentry>
@@ -1991,7 +2042,9 @@ imap_close($mbox);
      in das modifizierte UTF-7 Format.
     </para>
     <para>
-     (siehe RFC1642 für UTF-7 und RFC2060, Abschnitt 5.1.3 für modifiziertes UTF-7)
+     (siehe <ulink url="&url.rfc;/rfc2152.html">RFC2152</ulink> 
+     für UTF-7 und <ulink url="&url.rfc;/rfc2060.html">RFC2060</ulink>, 
+     Abschnitt 5.1.3 für modifiziertes UTF-7)
     </para>
    </refsect1>
   </refentry>
@@ -2006,12 +2059,12 @@ imap_close($mbox);
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
-     <funcdef>string <function>imap_utf9</function></funcdef>
+     <funcdef>string <function>imap_utf8</function></funcdef>
      <paramdef>string <parameter>text</parameter></paramdef>
     </funcsynopsis>
     <para>
      Konvertiert den übergebenen String in das UTF8-Format
-     gemäß RFC2044
+     gemäß <ulink url="&url.rfc;/rfc2044.html">RFC2044</ulink>
     </para>
    </refsect1>
   </refentry>
@@ -2149,6 +2202,7 @@ imap_close($mbox);
      <paramdef>string <parameter><optional>rpath</optional></parameter></paramdef>
     </funcsynopsis>
     <para>
+      This function is currently only available in PHP3.  
     </para>
    </refsect1>
   </refentry>
