@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- EN-Revision: 1.4 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.5 Maintainer: betz Status: ready -->
 
   <refentry id="function.mysql-ping">
    <refnamediv>
@@ -11,9 +11,7 @@
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>bool</type><methodname>mysql_ping</methodname>
-      <methodparam choice="opt"><type>resource</type><parameter>
-       Verbindungs-Kennung
-       </parameter></methodparam>
+      <methodparam choice="opt"><type>resource</type><parameter>Verbindungs-Kennung</parameter></methodparam>
      </methodsynopsis>
     <para>
      <function>mysql_ping</function> überprüft, ob die Verbindung zum Server
@@ -24,6 +22,41 @@
      die Verbindung wieder herzustellen.
      Rückgabewert: <function>mysql_ping</function> gibt &true; zurück, wenn
      die Verbindung zum Server funktioniert, ansonsten &false;.
+    </para>
+    <para>
+     <example>
+      <title>A <function>mysql_ping</function> example</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+set_time_limit(0);
+
+$conn = mysql_connect('localhost', 'mysqluser', 'mypass');
+$db   = mysql_select_db('mydb');
+
+/* Annahme: diese Abfrage dauert sehr lange */
+$result = mysql_query($sql);
+if (!$result) {
+    echo 'Abfrage #1 fehlgeschlagen, aussteigen.';
+    exit;
+}
+
+/*
+Sicherstellen, dass die Verbindung immer noch besteht, falls nicht, Versuch
+diese wieder aufzubauen
+*/
+if (!mysql_ping($conn)) {
+    echo 'Verbindung verloren, Ausstieg nach Abfrage #1';
+    exit;
+}
+mysql_free_result($result);
+
+/* Verbindung besteht noch, absetzen eine einer weiteren Abfrage */
+$result2 = mysql_query($sql2);
+?>
+]]>
+      </programlisting>
+     </example>
     </para>
     <para>
      Siehe auch:

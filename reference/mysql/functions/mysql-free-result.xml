@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.3 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.5 Maintainer: betz Status: ready -->
 
   <refentry id="function.mysql-free-result">
    <refnamediv>
@@ -18,17 +18,52 @@
      der <parameter>Ergebnis-Kennung</parameter> assoziert ist.
     </para>
     <para>
-     Die Funktion muss nur dann aufgerufen werden, wenn Sie sich bei
-     Anfragen, die große Ergebnismengen liefern, Sorgen über den
-     Speicherverbrauch zur Laufzeit des PHP-Skripts machen. Nach Ablauf des
-     PHP-Skripts wird der Speicher ohnehin freigegeben.
+     Die Funktion muss nur dann aufgerufen werden, wenn Sie sich bei Anfragen,
+     die große Ergebnismengen liefern, Sorgen über den Speicherverbrauch zur
+     Laufzeit des PHP-Skripts machen. Nach Ablauf des Skripts wird der Speicher
+     ohnehin freigegeben.
     </para>
     <para>
-     Rückgabewert: &return.success;
+     &return.success;
+    </para>
+    <para>
+     Wird für den Parameter <parameter>result</parameter> ein Wert angegeben,
+     der nicht vom Typ resource ist, wird ein Fehler der Stufe E_WARNING
+     ausgegeben. Beachten Sie, dass <function>mysql_query</function> nur eine
+     <type>resource</type> für SELECT, SHOW, EXPLAIN und DESCRIBE Abfragen
+     liefert.
+    </para>
+    <para>
+     <example>
+      <title>Ein <function>mysql_free_result</function> Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$result = mysql_query("SELECT id,email FROM people WHERE id = '42'");
+if (!$result) {
+    echo 'Abfrage konnte nicht ausgeführt werden: ' . mysql_error();
+    exit;
+}
+/* Benutze result, unrer der Annahme wir sind hinterher damit fertig */
+$row = mysql_fetch_assoc($result);
+
+/* Nun geben wir den Speicher für result frei und fahren in unserem Skript fort */
+mysql_free_result($result);
+
+echo $row['id'];
+echo $row['email'];
+?>
+]]>
+      </programlisting>
+     </example>
     </para>
     <para>
      Für Abwärtskompatibilität kann <function>mysql_freeresult</function>
      verwendet werden. Diese Funktion ist jedoch veraltet.
+    </para>
+    <para>
+     Siehe auch <function>mysql_query</function> und
+     <function>is_resource</function>.
     </para>
    </refsect1>
   </refentry>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.7 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.8 Maintainer: betz Status: ready -->
 
   <refentry id="function.mysql-list-fields">
    <refnamediv>
@@ -16,6 +16,14 @@
       <methodparam choice="opt"><type>resource</type><parameter>Verbindungs-Kennung
        </parameter></methodparam>
      </methodsynopsis>
+    <note>
+     <para>
+      Die Funktion <function>mysql_list_fields</function> ist veraltet.
+      Stattdessen ist es vorzuziehen mit der Funktion <function>mysql_query</function>
+      den SQL-Befehl <literal>SHOW COLUMNS FROM table [LIKE 'name']</literal>
+      auszuführen.
+     </para>
+    </note>
     <para>
      <function>mysql_list_fields</function> fordert Information über
      den angegebenen Tabellennamen an. Argumente sind der Datenbankname und der
@@ -28,33 +36,48 @@
     </para>
     <para>
      <example>
-      <title><function>mysql_list_fields</function> Beispiel</title>
+      <title>Alternative zum veralteten<function>mysql_list_fields</function></title>
       <programlisting role="php">
 <![CDATA[
 <?php
-$link = mysql_connect('localhost', 'mysql_user', 'mysql_password');
-
-$fields = mysql_list_fields("database1", "table1", $link);
-$columns = mysql_num_fields($fields);
-
-for ($i = 0; $i < $columns; $i++) {
-    echo mysql_field_name($fields, $i) . "\n";;
+$result = mysql_query("SHOW COLUMNS FROM sometable");
+if (!$result) {
+    echo 'Abfrage konnte nicht ausgeführt werden: ' . mysql_error();
+    exit;
+}
+if (mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_assoc($result)) {
+        print_r($row);
+    }
 }
 ?>
 ]]>
       </programlisting>
       <para>
-       Das oben gezeigte Beispiel liefert die folgende Ausgabe:
+       Das oben gezeigte Beispiel liefert eine ähnliche Ausgabe wie:
       </para>
-       <screen>
+      <screen>
 <![CDATA[
-
-field1
-field2
-field3
-...
+Array
+(
+    [Field] => id
+    [Type] => int(7)
+    [Null] =>
+    [Key] => PRI
+    [Default] =>
+    [Extra] => auto_increment
+)
+Array
+(
+    [Field] => email
+    [Type] => varchar(100)
+    [Null] =>
+    [Key] =>
+    [Default] =>
+    [Extra] =>
+)
 ]]>
-       </screen>
+      </screen>
      </example>
     </para>
     <para>
@@ -62,14 +85,12 @@ field3
      <function>mysql_listfields</function> verwendet werden. Diese
       Funktion ist jedoch veraltet.
     </para>
-    <note>
-     <para>
-      Die Funktion <function>mysql_list_fields</function> ist veraltet.
-      Stattdessen ist es vorzuziehen mit der Funktion <function>mysql_query</function>
-      den SQL-Befehl <literal>SHOW COLUMNS FROM table [LIKE 'name']</literal>
-      auszuführen.
-     </para>
-    </note>
+    <para>
+     Siehe auch
+     <function>mysql_field_flags</function> und
+     <function>mysql_info</function>.
+    </para>
+
    </refsect1>
   </refentry>
 
