@@ -1,84 +1,118 @@
  <reference id="ref.dba">
-  <title>Datenbank (dbm-style) Abstraktions Funktionen</title>
+  <title>dba Datenbank (dbm-style) Abstraktions-Funktionen</title>
   <titleabbrev>dba</titleabbrev>
 
   <partintro>
    <para>
     Diese Funktionen bilden die Basis f&uuml;r den Zugriff auf
-    Datenbanken im Berkeley DB Stil.
+    Datenbanken vom Typ "Berkeley DB".
    </para>
    <para>
-    Es handelt sich hierbei um eine generelle Abstraktionsschicht f&uuml;r
-    verschiedenen textbasierte Datenbanken.
-    Als solche ist der Funktionsumfang beschr&auml;nkt auf einen Bruchteil
-    des Funktionsumfangs moderner Datenbanken wie zum Beispiel
-    <ulink url="&url.sleepycat;">Sleepycat Software's DB2</ulink>.
-    (Diese sollte nicht verwechselt werden mit IBM's DB2 Software, 
+    "dba" implementiert eine generelle Abstraktionsschicht f&uuml;r
+    verschiedene dateibasierte Datenbanken.
+    Der Funktionsumfang ist daher beschr&auml;nkt auf eine
+    gemeinsame Teilmenge des Funktionsumfangs aktueller Datenbanken
+    (zum Beispiel
+    <ulink url="&url.sleepycat;">Sleepycat Software's DB2</ulink>,
+    nicht zu verwechseln mit IBM's DB2 Software, 
     die &uuml;ber die <link linkend="ref.odbc">ODBC Funktionen</link>
-    unterst&uuml;tzt wird.)
+    unterst&uuml;tzt wird).
    </para>
    <para>
-    Das Verhalten verschiedener Aspekte des Systems ist abh&auml;ngig von
-    der Implementation des zugrunde liegenden Datenbanksystems.
+    Das Verhalten der dba-Funktionen ist teilweise abh&auml;ngig von
+    der Implementation des zugrundeliegenden Datenbanksystems.
     Funktionen wie zum Beispiel <function>dba_optimize</function>
-    und <function>dba_sync</function> funktionieren wie angepriesen mit
-    der einen Datenbank und versagen ihren Dienst mit Anderen.
+    und <function>dba_sync</function> funktionieren vielleicht bei
+    einer Datenbank, und tun gar nichts bei einer Anderen.
    </para>
    <para>
-    Um Unterst&uuml;tzung f&uuml;r einen der folgenden Handler
-    verf&uuml;gbar zu machen, f&uuml;gen Sie bitte den jeweils angegebenen
-    --with Kompilerschalter in ihre PHP Konfigurationszeile ein:
-    <itemizedlist>
-     <listitem>
-      <simpara>
-       Dbm ist der &auml;lteste und der original Typ der Datenbanken
-       im Berkeley DB Stil. Sie sollten dieses System wenn m&ouml;glich
-       vermeiden. 
-       Wir &uuml;nterst&uuml;tzen nicht die Kompatibilit&auml;tsfunktionen,
-       die in DB2 und gdbm enthalten sind, da sie nur auf
-       Quellcode Basis kompatibel sind und nicht mit dem original dbm
-       Format arbeiten k&ouml;nnen.  (--with-dbm)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       Ndbm ist neuer und flexibler als Dbm. Es hat jedoch immer noch
-       die meisten Einschr&auml;nkungen von Dbm und ist daher ebenfalls
-       nicht empfehlenswert.  (--with-ndbm)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       Gdbm ist der <ulink url="&url.gdbm;">GNU Datenbank Manager</ulink>.
-         (--with-gdbm)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       DB2 ist <ulink url="&url.sleepycat;">Sleepycat Software's
-       DB2</ulink>. Es wird beschrieben als "Werkzeugsatz, der
-       schnell verf&uuml;gbaren eingebauten Datenbank Support sowohl
-       f&uuml;r Einzel- als auch f&uuml;r Client/Server- Applikationen
-       zur Verf&uuml;gung stellt."  (--with-db2)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       DB3 ist <ulink url="&url.sleepycat;">Sleepycat Software's
-       DB3</ulink>.  (--with-db3) 
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       Cdb ist "ein schnelles, zuverl&auml;ssiges und kompaktes
-       Paket zum Erstellen und Auslesen konstanter Datenbanken."
-       Es stammt vom Autor von qmail und kann <ulink url="&url.cdb;">
-       hier</ulink> heruntergeladen werden. Da es ein konstantes
-       System ist, werden nur Lese-Operationen unterst&uuml;tzt.
-         (--with-cdb)
-      </simpara>
-     </listitem>
-    </itemizedlist>
+    Beim Aufruf von <function>dba_open</function> oder
+    <function>dba_popen</function> muss einer der verf&uuml;gbaren
+    Handler-Namen aus der nachfolgenden Handler-Tabelle angegeben
+    werden.  Die tats&auml;chlich verf&uuml;gbaren Handler in
+    Ihrer PHP-Installation k&ouml;nnen Sie mit der Funktion
+    <function>phpinfo</function> anzeigen lassen.  (Um zum
+    Zeitpunkt der PHP-Generierung die Unterst&uuml;tzung f&uuml;r
+    einen der folgenden Handler verf&uuml;gbar zu machen,
+    f&uuml;gen Sie bitte den jeweils angegebenen
+    <literal>--with-XXXX</literal> Compilerschalter in ihren
+    PHP-Konfigurations-Aufruf ein.)
+    <table>
+     <title>Liste der DBA-Handler</title>
+     <tgroup cols="2">
+      <thead>
+       <row>
+	<entry>Handler</entry>
+	<entry>Hinweise</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+	 <entry><literal>dbm</literal></entry>
+        <entry>
+         Dbm ist der urspr&uuml;ngliche und &auml;lteste Typ der
+         "Berkeley DB" Datenbanken. Sie sollten diesen Typ
+         wenn m&ouml;glich vermeiden. 
+         Die in DB2 und gdbm enthaltenen dbm-Kompatibilit&auml;tsfunktionen
+         werden ebenfalls nicht unterst&uuml;tzt, da sie nur auf
+         Quellcode-Basis kompatibel sind, aber Dateien im originalen
+         dbm-Format nicht bearbeiten k&ouml;nnen.
+         (<literal>--with-dbm</literal>)
+        </entry>
+       </row>
+
+       <row>
+	 <entry><literal>ndbm</literal></entry>
+        <entry>
+         Ndbm ist neuer und flexibler als Dbm. Es hat jedoch 
+         die meisten Einschr&auml;nkungen von Dbm &uuml;bernommen
+         und ist daher ebenfalls nicht empfehlenswert.
+         (<literal>--with-ndbm</literal>)
+        </entry>
+       </row>
+
+       <row>
+	 <entry><literal>gdbm</literal></entry>
+        <entry>
+         Gdbm ist der <ulink url="&url.gdbm;">GNU Datenbank Manager</ulink>.
+         (<literal>--with-gdbm</literal>)
+        </entry>
+       </row>
+
+       <row>
+	 <entry><literal>db2</literal></entry>
+        <entry>
+         DB2 ist <ulink url="&url.sleepycat;">Sleepycat Software's
+         DB2</ulink>. Es wird beschrieben als "Werkzeugsatz f&uuml;r
+         eingebaute Unterst&uuml;tzung von Hochleistungs-Datenbanken
+         f&uuml;r Standalone- und Client/Server- Applikationen".
+         (<literal>--with-db2</literal>)
+        </entry>
+       </row>
+
+       <row>
+	 <entry><literal>db3</literal></entry>
+        <entry>
+         DB3 ist <ulink url="&url.sleepycat;">Sleepycat Software's
+         DB3</ulink>.  (<literal>--with-db3</literal>) 
+        </entry>
+       </row>
+
+       <row>
+	 <entry><literal>cdb</literal></entry>
+        <entry>
+         Cdb ist "ein schnelles, zuverl&auml;ssiges und kompaktes
+         Paket zum Erstellen und Auslesen konstanter Datenbanken."
+         Es stammt vom Autor von qmail und kann <ulink url="&url.cdb;">
+         hier</ulink> heruntergeladen werden. Da es f&uuml;r konstante
+         Daten ausgelegt ist, werden nur Lese-Operationen unterst&uuml;tzt.
+         (<literal>--with-cdb</literal>)
+        </entry>
+       </row>
+
+      </tbody>
+     </tgroup>
+    </table>
    </para>
    <para>
     <example>
@@ -107,22 +141,22 @@ dba_close ($id);
    </para>
    <para>
     DBA arbeitet bin&auml;rsicher und besitzt keine willk&uuml;rlichen Limits.
-    Es vererbt alle Einschr&auml;nkungen von der Datenbank Implementation, die
-    ihm zugrunde liegt.
+    Es erbt allerdings alle Einschr&auml;nkungen von der
+    zugrundeliegenden Datenbank-Implementation.
    </para>
    <para>
-    Alle textbasierten Datenbanken m&uuml;ssen einen Weg zur
+    Alle dateibasierten Datenbanken m&uuml;ssen einen Weg zur
     Verf&uuml;gung stellen, um den Dateimodus einer neu erstellten
     Datenbank zu bestimmen, soweit dies &uuml;berhaupt m&ouml;glich ist.
-    Der Dateimodus wird f&uuml;r gew&ouml;hnlich als viertes Argument
+    Der Dateimodus wird gew&ouml;hnlich als viertes Argument
     an die Funktionen <function>dba_open</function> oder
     <function>dba_popen</function> &uuml;bergeben.
    </para>
    <para>
-    Sie k&ouml;nnen auf alle Eintr&auml;ge in einer Datenbank auf
-    linearem Weg durch die Verwendung von <function>dba_firstkey</function>
+    Sie k&ouml;nnen auf alle Eintr&auml;ge in einer Datenbank 
+    sequentiell durch die Verwendung von <function>dba_firstkey</function>
     und <function>dba_nextkey</function> zugreifen. W&auml;hrend die
-    Datenbank so durchlaufen wird, kann sie nicht ver&auml;ndert werden.
+    Datenbank so durchlaufen wird, darf sie nicht ver&auml;ndert werden.
    </para> 
    <para>
     <example>
@@ -130,7 +164,7 @@ dba_close ($id);
      <programlisting role="php">
 &lt;?php
 
-# ...oeffnen der Datenbank...
+# ...Oeffnen der Datenbank...
 
 $key = dba_firstkey ($id);
 
@@ -153,7 +187,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-close">
    <refnamediv>
     <refname>dba_close</refname>
-    <refpurpose>Datenbank schliessen</refpurpose>
+    <refpurpose>Datenbank schlie&szlig;en</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -164,16 +198,16 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>Dba_close</function> schliesst die aufgebaute
-     Verbindung zur Datenbank, die durch <parameter>handle</parameter>
-     festgelegt wird, und gibt alle Resourcen wieder frei.
+     <function>dba_close</function> schlie&szlig;t die offene
+     Datenbank, die durch <parameter>handle</parameter>
+     festgelegt wird, und gibt alle zugeh&ouml;rigen Ressourcen frei.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
-     <function>Dba_close</function> besitzt keinen R&uuml;ckgabewert.
+     <function>dba_close</function> besitzt keinen R&uuml;ckgabewert.
     </para>
     <para>
      Siehe auch <function>dba_open</function> und
@@ -185,35 +219,35 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-delete">
    <refnamediv>
     <refname>dba_delete</refname>
-    <refpurpose>L&ouml;schen des durch key festgelegten Eintrages</refpurpose>
+    <refpurpose>L&ouml;schen des zu key geh&ouml;rigen Eintrages</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
-      <funcdef>string <function>dba_delete</function></funcdef>
+      <funcdef>bool <function>dba_delete</function></funcdef>
       <paramdef>string <parameter>key</parameter></paramdef>
       <paramdef>int <parameter>handle</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>dba_delete</function> l&ouml;scht den Eintrag, der
-     durch <parameter>key</parameter> festgelegt ist, aus der 
-     Datenbank, die mit <parameter>handle</parameter> spezifiziert 
-     ist.
+     <function>dba_delete</function> l&ouml;scht den Eintrag mit dem
+     Schl&uuml;sel <parameter>key</parameter> aus der durch
+     <parameter>handle</parameter> spezifizierten Datenbank.
     </para>
     <para>
      <parameter>key</parameter> ist der Schl&uuml;ssel des Eintrags,
      der gel&ouml;scht wird.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
-     <function>dba_delete</function> hat als R&uuml;ckgabewert true
-     oder false, abh&auml;ngig davon, ob der Eintrag gel&ouml;scht
-     wurde oder nicht.
+     <function>dba_delete</function> hat als R&uuml;ckgabewert
+     <literal>true</literal> oder <literal>false</literal>,
+     abh&auml;ngig davon, ob der L&ouml;schvorgang erfolgreich war
+     oder nicht.
     </para>
     <para>
      Siehe auch <function>dba_exists</function>,
@@ -226,7 +260,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-exists">
    <refnamediv>
     <refname>dba_exists</refname>
-    <refpurpose>&Uuml;berpr&uuml;fen, ob key existiert</refpurpose>
+    <refpurpose>&Uuml;berpr&uuml;fen, ob Datensatz mit Schl&uuml;ssel key existiert</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -238,21 +272,23 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>Dba_exists</function> &uuml;berpr&uuml;ft, ob 
-     <parameter>key</parameter> in der Datenbank, die durch
-     <parameter>handle</parameter> spezifiziert wird, existiert.
+     <function>dba_exists</function> &uuml;berpr&uuml;ft, ob 
+     ein Datensatz mit dem Schl&uuml;ssel <parameter>key</parameter>
+     in der durch <parameter>handle</parameter> spezifizierten Datenbank
+     existiert.
     </para>
     <para>
      <parameter>Key</parameter> ist der Schl&uuml;ssel, dessen
      Existenz &uuml;berpr&uuml;ft werden soll.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
-     <function>Dba_exists</function> hat als R&uuml;ckgabewert true
-     oder false, abh&auml;ngig davon, ob der Schl&uuml;ssel gefunden
+     <function>dba_exists</function> hat als R&uuml;ckgabewert 
+     <literal>true</literal> oder <literal>false</literal>,
+     abh&auml;ngig davon, ob der Schl&uuml;ssel gefunden
      wurde oder nicht.
     </para>
     <para>
@@ -266,7 +302,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-fetch">
    <refnamediv>
     <refname>dba_fetch</refname>
-    <refpurpose>Daten, die durch key festgelegt sind, auslesen</refpurpose>
+    <refpurpose>Datensatz f&uuml;r Schl&uuml;ssel "key" auslesen</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -278,25 +314,26 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>Dba_fetch</function> liest die Daten, die durch
-     <parameter>key</parameter> festgelegt, sind aus der
-     Datenbank, die durch <parameter>handle</parameter> spezifiziert
-     ist, aus.
+     <function>dba_fetch</function> liest die durch den Schl&uuml;ssel
+     <parameter>key</parameter> festgelegten Daten
+     aus der durch <parameter>handle</parameter> spezifizierten
+     Datenbank aus.
     </para>
     <para>
      <parameter>Key</parameter> ist der Schl&uuml;ssel, mit dem
      die Daten identifizert werden.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
 
     <para>
-     <function>Dba_fetch</function> hat als R&uuml;ckgabewert
-     entweder den ausgelesenen String oder false, abh&auml;ngig
-     davon, ob das Schl&uuml;ssel/Wert Paar gefunden wurde oder
-     nicht.
+     <function>dba_fetch</function> hat als R&uuml;ckgabewert
+     entweder den zum Schl&uuml;ssel <parameter>key</parameter>
+     passenden Werte-String oder <literal>false</literal>,
+     abh&auml;ngig davon, ob das Schl&uuml;ssel/Wert-Paar
+     gefunden wurde oder nicht.
     </para>
     <para>
      Siehe auch <function>dba_exists</function>,
@@ -309,7 +346,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-firstkey">
    <refnamediv>
     <refname>dba_firstkey</refname>
-    <refpurpose>Ersten Schl&uuml;ssel auslesen</refpurpose>
+    <refpurpose>Ersten Schl&uuml;ssel bestimmen</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -320,24 +357,26 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>Dba_firstkey</function> gibt den ersten Schl&uuml;ssel
-     aus der Datenbank, die durch <parameter>handle</parameter>
-     spezifiziert wird, zur&uuml;ck und setzt den internen
-     Z&auml;hler zur&uuml;ck. Dies erlaubt eine lineare Suche durch
+     <function>dba_firstkey</function> gibt den ersten Schl&uuml;ssel
+     aus der durch <parameter>handle</parameter>
+     spezifizierten Datenbank zur&uuml;ck und setzt den internen
+     Schl&uuml;ssel-Zeiger zur&uuml;ck. Dies erlaubt in Verbindung mit
+     <function>dba_nextkey</function> eine sequentielle Suche durch
      die gesamte Datenbank.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
-     <function>Dba_firstkey</function> hat als R&uuml;ckgabewert
-     den Schl&uuml;ssel oder false, abh&auml;ngig davon, ob die
-     Aktion erfolgreich war oder fehlschlug.
+     <function>dba_firstkey</function> liefert als R&uuml;ckgabewert
+     den Schl&uuml;ssel oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Aktion erfolgreich war oder fehlschlug.
     </para>
     <para>
      Siehe auch
-     <function>Dba_nextkey</function>
+     <function>dba_nextkey</function>
+     und Beispiel 2 im <link linkend="ref.dba">DBA-&Uuml;berblick</link>
     </para>
    </refsect1>
   </refentry>
@@ -345,7 +384,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-insert">
    <refnamediv>
     <refname>dba_insert</refname>
-    <refpurpose>Eintrag einf&uuml;gen</refpurpose>
+    <refpurpose>Datensatz einf&uuml;gen</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -358,10 +397,10 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>dba_insert</function> f&uuml;gt den Eintrag, der
+     <function>dba_insert</function> f&uuml;gt den Datensatz, der
      durch <parameter>key</parameter> und <parameter>value</parameter>
-     beschrieben wird in die Datenbank, die durch 
-     <parameter>handle</parameter> spezifiziert wird, ein. Die Aktion
+     beschrieben wird, in die durch <parameter>handle</parameter>
+     spezifizierte Datenbank ein. Die Aktion
      schl&auml;gt fehl, wenn es bereits einen Eintrag mit dem gleichen
      <parameter>key</parameter> in der Datenbank gibt.
     </para>
@@ -374,12 +413,13 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      werden soll.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
-     <function>dba_insert</function> hat als R&uuml;ckgabewert true
-     oder false, abh&auml;ngig davon, ob die Aktion erfolgreich
+     <function>dba_insert</function> hat als R&uuml;ckgabewert
+     <literal>true</literal> oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Aktion erfolgreich
      war oder nicht.
     </para>
     <para>
@@ -395,7 +435,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-nextkey">
    <refnamediv>
     <refname>dba_nextkey</refname>
-    <refpurpose>N&auml;chsten Schl&uuml;ssel auslesen</refpurpose>
+    <refpurpose>Nachfolgenden Schl&uuml;ssel bestimmen</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -406,23 +446,24 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>dba_nextkey</function> gibt den n&auml;chsten
-     Schl&uuml;ssel aus der Datenbank, die durch 
-     <parameter>handle</parameter> spezifiziert wird, zur&uuml;ck
-     und erh&ouml;ht den internen Schl&uuml;sselz&auml;hler um eins.
+     <function>dba_nextkey</function> gibt den nachfolgenden
+     Schl&uuml;ssel aus der durch 
+     <parameter>handle</parameter> spezifizierten Datenbank zur&uuml;ck
+     und erh&ouml;ht den internen Schl&uuml;ssel-Zeiger.
     </para> 
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
      <function>dba_nextkey</function> hat als R&uuml;ckgabewert den
-     Schl&uuml;ssel oder false, abh&auml;ngig davon, ob die Aktion
-     erfolgreich war oder nicht.
+     Schl&uuml;ssel oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Aktion erfolgreich war oder nicht.
     </para>
     <para>
      Siehe auch
      <function>dba_firstkey</function>
+     und Beispiel 2 im <link linkend="ref.dba">DBA-&Uuml;berblick</link>
     </para>
    </refsect1>
   </refentry>
@@ -430,7 +471,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-popen">
    <refnamediv>
     <refname>dba_popen</refname>
-    <refpurpose>Persistene Verbindung zu einer Datenbank &ouml;ffnen</refpurpose>
+    <refpurpose>Persistente Datenbank-Verbindung &ouml;ffnen</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -447,28 +488,69 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
     <para>
      <function>dba_popen</function> stellt eine persistente
      Datenbankinstanz f&uuml;r <parameter>path</parameter> mit
-     <parameter>mode</parameter> her und benutzt dabei 
+     <parameter>mode</parameter> her und benutzt dabei den Handler
      <parameter>handler</parameter>.
     </para>
     <para>
-     <parameter>path</parameter> ist f&uuml;r gew&ouml;hnlich ein
+     <parameter>path</parameter> ist ein
      g&uuml;ltiger Pfad in Ihrem Dateisystem.
     </para>
     <para>
-     <parameter>mode</parameter> ist "r" f&uuml;r Lesezugriff,
-     "w" f&uuml;r Lese- und Schreibzugriff, "c" f&uuml;r Lese-
-     und Schreibzugriff und die M&ouml;glichkeit, die
-     Datenbank zu erstellen, falls sie nicht existiert, und "n"
-     ist f&uuml;r Erstellen, Bearbeiten und Lese- und Schreibzugriff.     
+     Das <parameter>mode</parameter> Argument beschreibt den Modus,
+     mit dem die Datenbank ge&ouml;ffnet werden soll.
+     Es gibt 4 M&ouml;glichkeiten, eine DBA Datenbank zu &ouml;ffnen:
+     <variablelist>
+      <varlistentry>
+       <term>"r" (read-only)</term>
+       <listitem><para>
+        Eine existierende Datenbank soll nur lesend
+        ge&ouml;ffnet werden.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"n" (new)</term>
+       <listitem><para>
+        Eine neue Datenbank soll angelegt werden.
+        Diese wird automatisch als read-write ge&ouml;ffnet.
+        Eine existierende Datenbank wird inhaltlich
+        gel&ouml;scht.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"c" (create)</term>
+       <listitem><para>
+        Eine neue Datenbank soll angelegt werden.
+        Diese wird automatisch als read-write ge&ouml;ffnet.
+        Im Gegensatz zu "n" wird eine bereits existierende
+        Datenbank inhaltlich nicht gel&ouml;scht, sondern nur
+        f&uuml;r Lese- und Schreibzugriff ge&ouml;ffnet.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"w" (read-write)</term>
+       <listitem><para>
+        Eine existierende Datenbank soll lesend und
+        schreibend ge&ouml;ffnet werden.</para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
     </para>
     <para>
-     <parameter>handler</parameter> ist der Name des Handlers, der f&uuml;r
+     <parameter>handler</parameter> ist der
+     <link linkend="ref.dba">Name des Handlers</link>, der f&uuml;r
      den Zugriff auf <parameter>path</parameter> benutzt werden soll.
+     Die (oben durch <parameter><optional>...</optional></parameter>
+     gekennzeichneten) optionalen Argumente der Funktion
+     <function>dba_popen</function> werden an ihn &uuml;bergeben.
     </para>
     <para>
-     <function>dba_popen</function> hat als R&uuml;ckgabewert eine
-     positive Handler ID oder false, abh&auml;ngig davon, ob
-     die Verbindung hergestellt werden konnte oder nicht.
+     <function>dba_popen</function> liefert als R&uuml;ckgabewert eine
+     positive Zugriffs-"handle" oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Verbindung hergestellt werden
+     konnte oder nicht.
     </para>
     <para>
      Siehe auch
@@ -500,24 +582,65 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      her und benutzt dabei <parameter>handler</parameter>.
     </para>
     <para>
-     <parameter>path</parameter> ist f&uuml;r gew&ouml;hnlich ein
+     <parameter>path</parameter> ist ein
      g&uuml;ltiger Pfad in Ihrem Dateisystem.
     </para>
     <para>
-     <parameter>mode</parameter> ist "r" f&uuml;r Lesezugriff,
-     "w" f&uuml;r Lese- und Schreibzugriff, "c" f&uuml;r Lese-
-     und Schreibzugriff und die M&ouml;glichkeit, die
-     Datenbank zu erstellen, falls sie nicht existiert, und "n"
-     ist f&uuml;r Erstellen, Bearbeiten und Lese- und Schreibzugriff.     
+     Das <parameter>mode</parameter> Argument beschreibt den Modus,
+     mit dem die Datenbank ge&ouml;ffnet werden soll.
+     Es gibt 4 M&ouml;glichkeiten, eine DBA Datenbank zu &ouml;ffnen:
+     <variablelist>
+      <varlistentry>
+       <term>"r" (read-only)</term>
+       <listitem><para>
+        Eine existierende Datenbank soll nur lesend
+        ge&ouml;ffnet werden.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"n" (new)</term>
+       <listitem><para>
+        Eine neue Datenbank soll angelegt werden.
+        Diese wird automatisch als read-write ge&ouml;ffnet.
+        Eine existierende Datenbank wird inhaltlich
+        gel&ouml;scht.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"c" (create)</term>
+       <listitem><para>
+        Eine neue Datenbank soll angelegt werden.
+        Diese wird automatisch als read-write ge&ouml;ffnet.
+        Im Gegensatz zu "n" wird eine bereits existierende
+        Datenbank inhaltlich nicht gel&ouml;scht, sondern nur
+        f&uuml;r Lese- und Schreibzugriff ge&ouml;ffnet.</para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term>"w" (read-write)</term>
+       <listitem><para>
+        Eine existierende Datenbank soll lesend und
+        schreibend ge&ouml;ffnet werden.</para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
     </para>
     <para>
-     <parameter>handler</parameter> ist der Name des Handlers, der f&uuml;r
+     <parameter>handler</parameter> ist der
+     <link linkend="ref.dba">Name des Handlers</link>, der f&uuml;r
      den Zugriff auf <parameter>path</parameter> benutzt werden soll.
+     Die (oben durch <parameter><optional>...</optional></parameter>
+     gekennzeichneten) optionalen Argumente der Funktion
+     <function>dba_open</function> werden an ihn &uuml;bergeben.
     </para>
     <para>
-     <function>dba_open</function> hat als R&uuml;ckgabewert eine
-     positive Handler ID oder false, abh&auml;ngig davon, ob
-     die Verbindung hergestellt werden konnte oder nicht.
+     <function>dba_open</function> liefert als R&uuml;ckgabewert eine
+     positive Zugriffs-"handle" oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Verbindung hergestellt werden
+     konnte oder nicht.
     </para>
     <para>
      Siehe auch
@@ -546,12 +669,13 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      spezifiziert wird.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
      <function>dba_optimize</function> hat als R&uuml;ckgabewert
-     true oder false, abh&auml;ngig davon, ob die Optimierung
+     <literal>true</literal> oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Optimierung
      erfolgreich war oder ob sie fehlschlug.
     </para>
     <para>
@@ -564,7 +688,7 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
   <refentry id="function.dba-replace">
    <refnamediv>
     <refname>dba_replace</refname>
-    <refpurpose>Ersetzen oder Einf&uuml;gen eines Eintrags</refpurpose>
+    <refpurpose>Datensatz ersetzen oder einf&uuml;gen</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -578,10 +702,10 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
     </funcsynopsis>
     <para>
      <function>dba_replace</function> ersetzt oder f&uuml;gt
-     einen Eintrag, der durch <parameter>key</parameter> und
-     <parameter>value</parameter> beschrieben wird, in die
-     Datenbank, die durch <parameter>handle</parameter>
-     spezifiziert wird, ein.
+     in der durch <parameter>handle</parameter>
+     spezifizierten Datenbank einen Datensatz ein,
+     der durch den Schl&uuml;ssel <parameter>key</parameter> und
+     den Wert <parameter>value</parameter> beschrieben wird.
     </para> 
     <para>
      <parameter>key</parameter> ist der Schl&uuml;ssel des Eintrags,
@@ -592,13 +716,13 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      werden soll.
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
-     <function>dba_replace</function> hat als R&uuml;ckgabewert
-     true oder false, abh&auml;ngig davon, ob die Aktion erfolgreich
-     war oder nicht.
+     <function>dba_replace</function> liefert als R&uuml;ckgabewert
+     <literal>true</literal> oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Aktion erfolgreich war oder nicht.
     </para>
     <para>
      Siehe auch <function>dba_exists</function>,
@@ -629,13 +753,13 @@ for ($i = 0; $i &lt; count($handle_later); $i++)
      dies unterst&uuml;tzt wird.     
     </para>
     <para>
-     <parameter>handle</parameter> ist ein Datenbankhandle das von
-     <function>dba_open</function> zur&uuml;ckgegeben wird.
+     <parameter>handle</parameter> ist ein Datenbankhandle, das von
+     <function>dba_open</function> zur&uuml;ckgegeben wurde.
     </para>
     <para>
      <function>dba_sync</function> hat als R&uuml;ckgabewert
-     true oder false, abh&auml;ngig davon, ob die Aktion erfolgreich
-     war oder nicht.
+     <literal>true</literal> oder <literal>false</literal>,
+     abh&auml;ngig davon, ob die Aktion erfolgreich war oder nicht.
     </para>
     <para>
      Siehe auch <function>dba_optimize</function>
