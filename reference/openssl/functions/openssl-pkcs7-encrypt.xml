@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.5 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.9 Maintainer: betz Status: ready -->
   <refentry id="function.openssl-pkcs7-encrypt">
    <refnamediv>
     <refname>openssl_pkcs7_encrypt</refname>
@@ -14,26 +14,25 @@
       <methodparam><type>string</type><parameter>outfile</parameter></methodparam>
       <methodparam><type>mixed</type><parameter>recipcerts</parameter></methodparam>
       <methodparam><type>array</type><parameter>headers</parameter></methodparam>
-      <methodparam choice="opt"><type>long</type><parameter>flags</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>flags</parameter></methodparam>
      </methodsynopsis>
-&warn.experimental.func;
     <para>
      Die Funktion <function>openssl_pkcs7_encrypt</function> verschlüsselt die
      Inhalte der Datei, angegeben durch den Pararmeter
-     <parameter>infile</parameter>. Die Verschlüsselung benutzt
-     eine RC2 40 Bit Chiffre, so dass diese Inhalte nur von den
-     beabsichtigten Empfängern gelesen werden können, die mit dem Parameter
+     <parameter>infile</parameter>. Die Verschlüsselung benutzt eine RC2 40
+     Bit Chiffre, so dass diese Inhalte nur von den beabsichtigten Empfängern
+     gelesen werden können, die mit dem Parameter
      <parameter>recipcerts</parameter> angegeben wurden. Der Parameter
      <parameter>recipcerts</parameter> kann ein einzelnes X.509 Zertifikat
      oder ein Array von X.509 Zertifikaten enthalten.
      Der Parameter <parameter>headers</parameter> ist ein Array aus Headern
      die den Daten vorangestellt wird, nachdem diese verschlüsselt wurden.
-     Das Array <parameter>headers</parameter> kann entweder ein assoziatives
-     Array sein, mit Indizes aus den Headernamen, oder ein indiziertes Array,
-     wobei jedes Element eine einzelne Header-Zeile enthält.
      Um den Verschlüsselungsprozess zu beeinflussen, können Sie den Paramter
      <parameter>flags</parameter> benutzen - siehe
      <link linkend="openssl.pkcs7.flags"> PKCS7 Konstanten</link>.
+     <parameter>headers</parameter> kann entweder ein assoziatives Array sein,
+     mit Indizes aus den Headernamen, oder ein indiziertes Array, wobei jedes
+     Element eine einzelne Header-Zeile enthält.
     </para>
     <para>
      <example>
@@ -41,6 +40,7 @@
       Beispiel</title>
       <programlisting role="php">
 <![CDATA[
+<?php
 // Die Nachricht die Sie verschlüsselt an Ihren Geheimagenten,
 // bekannt als Nachtfalke, schicken wollen.
 // Sein Zertifikat liegt Ihnen in der Datei nighthawk.pem vor.
@@ -56,7 +56,7 @@ HQ
 EOD;
 
 // Schlüssel laden
-$key = implode("", file("nighthawk.pem"));
+$key = file_get_contents("nighthawk.pem");
 
 // speichern der Nachricht in einer Datei
 $fp = fopen("msg.txt", "w");
@@ -66,17 +66,17 @@ fclose($fp);
 // verschlüsseln
 if (openssl_pkcs7_encrypt("msg.txt", "enc.txt", $key,
     array("To" => "nighthawk@example.com", // keyed syntax
-          "From: HQ <hq@example.com>",      // indexed syntax
-          "Subject" => "Eyes only")))
-{
+          "From: HQ <hq@example.com>", // indexed syntax
+          "Subject" => "Eyes only"))) {
+
     // Nachricht verschlüsselt - ab damit!
     exec(ini_get("sendmail_path") . " < enc.txt");
 }
+?>
 ]]>
       </programlisting>
      </example>
     </para>
-
    </refsect1>
   </refentry>
 

@@ -1,49 +1,47 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- splitted from ./de/functions/openssl.xml, last change in rev 1.1 -->
-<!-- last change to 'openssl-seal' in en/ tree in rev 1.1 -->
-<!-- EN-Revision: 1.2 Maintainer: betz Status: ready -->
-<!-- OLD-Revision: 1.22/EN.1.1 -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.6 Maintainer: betz Status: ready -->
   <refentry id="function.openssl-seal">
    <refnamediv>
     <refname>openssl_seal</refname>
-    <refpurpose>Versiegelt (verschlüsselt) Daten</refpurpose>
+    <refpurpose>Verschlüsselt (versiegelt) Daten</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>int</type><methodname>openssl_seal</methodname>
       <methodparam><type>string</type><parameter>data</parameter></methodparam>
-      <methodparam><type>string</type><parameter>sealed_data</parameter></methodparam>
-      <methodparam><type>array</type><parameter>env_keys</parameter></methodparam>
+      <methodparam><type>string</type><parameter>&amp;sealed_data</parameter></methodparam>
+      <methodparam><type>array</type><parameter>&amp;env_keys</parameter></methodparam>
       <methodparam><type>array</type><parameter>pub_key_ids</parameter></methodparam>
      </methodsynopsis>
-&warn.experimental.func;
     <para>
-     Rückgabewert: im Erolgsfall die Länge der versiegelten Daten,
-     &false; bei einem Fehler.
-     War der Aufruf der Funktion erfolgreich, sind die versiegelten Daten
-     in <parameter>sealed_data</parameter> enthalten und der Umschlag
-     Schlüssel steht in <parameter>env_keys</parameter> zur Verfügung.
+     Rückgabewert: im Erfolgsfall die Länge der verschlüsselten Daten, &false;
+     bei einem Fehler. War der Aufruf der Funktion erfolgreich, sind die
+     verschlüsselten Daten in <parameter>sealed_data</parameter> enthalten und
+     der Umschlagschlüssel steht in <parameter>env_keys</parameter> zur
+     Verfügung.
     </para>
     <para>
-     Die Funktion <function>openssl_seal</function> versiegelt (verschlüsselt)
+     Die Funktion <function>openssl_seal</function> verschlüsselt
      <parameter>data</parameter> unter Verwendung von RC4 mit einem zufällig
      erzeugten geheimen Schlüssel. Dieser Schlüssel wird mit jedem öffentlichen
      Schlüssel verschlüsselt, der mit der Kennung in
      <parameter>pub_key_ids</parameter> verknüpft ist. Jeder verschlüsselte
      Schlüssel wird in <parameter>env_keys</parameter>zurückgegeben.Das
-     bedeutet, dass Sie versiegelte Daten an mehrere Empfänger versenden können
-     (unter der Voraussetzung, dass Sie irgendwann die öffentlichen Schlüssel
-     der Empfänger erhalten haben. Jeder Empfänger muss sowohl die versiegelten
-     Daten als auch den entsprechenden Umschlag Schlüssel erhalten, der mit
-     dem öffentlichen Schlüssel des Empfängers versiegelt wurde.
+     bedeutet, dass Sie verschlüsselte Daten an mehrere Empfänger versenden
+     können (unter der Voraussetzung, dass Sie irgendwann die öffentlichen
+     Schlüssel der Empfänger erhalten haben). Jeder Empfänger muss sowohl die
+     verschlüsselten Daten als auch den entsprechenden Umschlagschlüssel 
+     erhalten, der mit dem öffentlichen Schlüssel des Empfängers versiegelt
+     wurde.
     </para>
     <para>
      <example>
       <title><function>openssl_seal</function> Beispiel</title>
       <programlisting role="php">
 <![CDATA[
+<?php
 // Annahme: $data enthält die zu versiegelnden Daten
 
 // holen und vorbereiten der öffentlichen Schlüssel unserer Empfänger
@@ -58,14 +56,15 @@ $cert = fread($fp, 8192);
 fclose($fp);
 $pk2 = openssl_get_publickey($cert);
 
-// versiegeln der Nachricht, nur Besitzer von $pk1 und $pk2 können 
-// mit Schlüsseln $sealed entschlüsseln,
-// entsprechendes gilt für $ekeys[0] und $ekeys[1].
-openssl_seal($data, $sealed, $ekeys, array($pk1,$pk2));
+// versiegeln der Nachricht, nur Besitzer von $pk1 und $pk2 können mit
+// Schlüsseln $sealed entschlüsseln, entsprechendes gilt für $ekeys[0]
+// und $ekeys[1].
+openssl_seal($data, $sealed, $ekeys, array($pk1, $pk2));
 
 // Löschen der Schlüssel aus dem Speicher
 openssl_free_key($pk1);
 openssl_free_key($pk2);
+?>
 ]]>
       </programlisting>
      </example>

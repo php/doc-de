@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- splitted from ./de/functions/openssl.xml, last change in rev 1.1 -->
-<!-- last change to 'openssl-open' in en/ tree in rev 1.1 -->
-<!-- EN-Revision: 1.2 Maintainer: betz Status: ready -->
-<!-- OLD-Revision: 1.22/EN.1.1 -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.6 Maintainer: betz Status: ready -->
   <refentry id="function.openssl-open">
    <refnamediv>
     <refname>openssl_open</refname>
@@ -14,35 +11,34 @@
      <methodsynopsis>
       <type>bool</type><methodname>openssl_open</methodname>
       <methodparam><type>string</type><parameter>sealed_data</parameter></methodparam>
-      <methodparam><type>string</type><parameter>open_data</parameter></methodparam>
+      <methodparam><type>string</type><parameter>&amp;open_data</parameter></methodparam>
       <methodparam><type>string</type><parameter>env_key</parameter></methodparam>
       <methodparam><type>mixed</type><parameter>priv_key_id</parameter></methodparam>
      </methodsynopsis>
-&warn.experimental.func;
     <para>
-     Rückgabewert: &return.success; Im
-     Erfolgsfall werden die geöffneten Daten im Parameter <parameter>
-     open_data</parameter> zurückgegeben.
+     &return.success; Im Erfolgsfall werden die geöffneten Daten im Parameter
+     <parameter>open_data</parameter> zurückgegeben.
     </para>
     <para>
      Die Funktion <function>openssl_open</function> öffnet (entschlüsselt)
      <parameter>sealed_data</parameter> unter Verwendung des privaten
-     Schlüsssels, der mit der Schlüsselkennung
-     <parameter>priv_key_id</parameter> und dem Umschlag Schlüssel
+     Schlüssels, der mit der Schlüsselkennung
+     <parameter>priv_key_id</parameter> und dem Umschlagschlüssel
      <parameter>env_key</parameter> verknüpft ist und füllt <parameter>
-     open_data</parameter> mit den entschlüsselten Daten.
-     Der Umschlag Schlüssel wird bei der Versiegelung erzeugt und kann
+     open_data</parameter> mit den entschlüsselten Daten. Der
+     Umschlagschlüssel wird bei der Versiegelung erzeugt und kann
      ausschlieslich für einen bestimmten privaten Schlüssel verwendet werden.
-     Mehr Informationen erhalten Sie unter der <function>openssl_seal</function> Funktion.
+     Mehr Informationen erhalten Sie bei der Dokumentation zu
+     <function>openssl_seal</function>.
     </para>
     <para>
      <example>
       <title><function>openssl_open</function> Beispiel</title>
       <programlisting role="php">
 <![CDATA[
-// Annahme: $sealed und $env_key enthalten versiegelte Daten
-// und unseren Umschlag Schlüssel; beide haben wir von dem sie 
-// Versiegelnden erhalten
+<?php
+// Annahme: $sealed und $env_key enthalten versiegelte Daten und unseren
+// Umschlagschlüssel; beide haben wir von dem Versiegelnden erhalten
 
 // privaten Schlüssel aus einer Datei holen und vorbereiten
 $fp = fopen("/src/openssl-0.9.6/demos/sign/key.pem", "r");
@@ -51,13 +47,15 @@ fclose($fp);
 $pkeyid = openssl_get_privatekey($priv_key);
 
 // entschlüsseln der Daten und speichern in $open
-if (openssl_open($sealed, $open, $env_key, $pkeyid))
+if (openssl_open($sealed, $open, $env_key, $pkeyid)) {
     echo "Das sind die geöffneten Daten: ", $open;
-else
+} else {
     echo "Öffnen der Daten nicht möglich!";
+}
 
 // löschen des privaten Schlüssels aus dem Speicher
 openssl_free_key($pkeyid);
+?>
 ]]>
       </programlisting>
      </example>

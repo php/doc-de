@@ -1,26 +1,92 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- splitted from ./de/functions/openssl.xml, last change in rev 1.6 -->
-<!-- last change to 'openssl-csr-sign' in en/ tree in rev 1.19 -->
-<!-- EN-Revision: 1.2 Maintainer: betz Status: ready -->
-<!-- OLD-Revision: 1.22/EN.1.19 -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.9 Maintainer: betz Status: ready -->
   <refentry id="function.openssl-csr-sign">
    <refnamediv>
     <refname>openssl_csr_sign</refname>
-    <refpurpose>Signiert ein Zertifikat mit einem andern CERT </refpurpose>
+    <refpurpose>Signiert einen CSR mit einem anderen Zertifikat
+    (oder sich selbst) und generiert ein Zertifikat</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>resource</type><methodname>openssl_csr_sign</methodname>
       <methodparam><type>mixed</type><parameter>csr</parameter></methodparam>
-      <methodparam><type>mixed</type><parameter>x509</parameter></methodparam>
+      <methodparam><type>mixed</type><parameter>cacert</parameter></methodparam>
       <methodparam><type>mixed</type><parameter>priv_key</parameter></methodparam>
-      <methodparam><type>long</type><parameter>days</parameter></methodparam>
+      <methodparam><type>int</type><parameter>days</parameter></methodparam>
+      <methodparam choice="opt"><type>array</type><parameter>configargs</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>serial</parameter></methodparam>
      </methodsynopsis>
-     &warn.experimental.func;
     <para>
-     &warn.undocumented.func;
+     <function>openssl_csr_sign</function> erzeugt eine x509
+     Zertifikatressource von <parameter>csr</parameter>, der vorher mit
+     <function>openssl_csr_new</function> erzeugt wurde. Sie können mit
+     <parameter>csr</parameter> aber auch einen Pfad zu einer PEM kodierten
+     CSR Datei angeben: <filename>file://path/to/csr</filename>, oder einer
+     mit Hilfe von <function>openssl_csr_export</function>exportierten
+     Zeichenkette. Das generierte Zertifikat wird mit
+     <parameter>cacert</parameter> signiert. Falls Sie für
+     <parameter>cacert</parameter> &null; angeben, wird das generierte
+     Zertifikat ein selbstsigniertes Zertifikat sein.
+     <parameter>priv_key</parameter> ist der private Schlüssel, der zu
+     <parameter>cacert</parameter> gehört. Mit <parameter>days</parameter>
+     legen Sie die Gültigkeitsdauer des generierten Zertifikats in Tagen fest.
+     Mit <parameter>configargs</parameter> können Sie die Signierung des CSR
+     feiner abstimmen. Für weterführende Informationen über die Verwendung von
+     <parameter>configargs</parameter> lesen Sie bitte bei der Dokumentation
+     zu <function>openssl_csr_new</function> nach. Seit PHP 4.3.3 können Sie
+     die Seriennummer des ausgestellten Zertifikats mit
+     <parameter>serial</parameter> angeben. In früheren Versionen war dieser
+     Wert immer 0.
+    </para>
+    <para>
+     Gibt bei Erfolg eine x509 Zertifikatressource zurück, &false; bei einem
+     Fehler.
+    </para>
+    &reference.openssl.note-openssl-cnf;
+    <para>
+     <example>
+      <title><function>openssl_csr_sign</function> Beispiel - signieren eines
+       CSR (wie Sie ihre eigene CA implementieren)</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Annahme: dieses Skript erhält einen CSR, der auf einer anderen Seite in
+// eine Textarea eingegeben wurde.
+$csrdata = $_POST["CSR"];
+
+// Wir werden die Anfrage mit unserem eigenen ""certificate authority"
+// Zertifikat signieren. Sie können jedes beliebige Zertifikat verwenden, um
+// ein anderes zu signieren. Aber das Ganze ist ziemlich nutzlos, solange die
+// Software/Benutzer, die dieses neu signierte Zertifikat nutzen werden, dem
+// signierenden Zertifikat 
+
+// We will sign the request using our own "certificate authority"
+// certificate.  You can use any certificate to sign another, but
+// the process is worthless unless the signing certificate is trusted
+// by the software/users that will deal with the newly signed certificate
+
+// Wir brauchen unser CA Zertifikat und dessen privaten Schlüssel
+$cacert = "file://path/to/ca.crt";
+$privkey = array("file://path/to/ca.key", "your_ca_key_passphrase");
+
+$userscert = openssl_csr_sign($csrdata, $cacert, $privkey, 365);
+
+// Jetzt zeigem wir das generierte Zertifikat an, damit die Benutzer es
+// kopieren und in ihre lokale Konfiguration einfügen können (wie z.B. eine
+// Datei, die das Zertifikat für ihren SSL Server enthalten soll.
+openssl_x509_export($usercert, $certout);
+echo $certout;
+
+// Anzeigen der möglichen aufgetretenen Fehler
+while (($e = openssl_error_string()) !== false) {
+    echo $e . "\n";
+}
+?>
+]]>
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
