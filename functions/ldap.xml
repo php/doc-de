@@ -1,0 +1,2031 @@
+<reference id="ref.ldap">
+<title>LDAP Funktionen</title>
+<titleabbrev>LDAP</titleabbrev>
+
+<partintro>
+<sect1 id="ldap.intro">
+<title>Einführung zu LDAP</title>
+    <para>
+         LDAP steht für Lightweight Directory Access Protocol und ist
+         ein Protokoll um auf "Directory Servers" - "Verzeichnis-
+         Server" - zuzugreifen.
+         Das Verzeichnis ist dabei eine spezielle Art einer Datenbank,
+         das Informationen in einer Baumstruktur bereithält.
+    </para>
+    <para>
+        Das Konzept ist dabei ähnlich der Verzeichnisstruktur Ihrer
+        Festplatte, mit der Ausnahme, daß in diesem Zusammenhang
+        das Wurzelverzeichnis "Die Welt" ist und die
+        Unterverzeichnisse der ersten Ebene "Länder" abbilden.
+        Die weiteren Verzeichnisse unterhalb der Länderebene enthalten
+        Einträge für Firmen, Organisationen oder Städte. Noch tiefer
+        geschachtelt stehen Verzeichniseinträge für Menschen und
+        vielleicht für Ausstattung oder Dokumente.
+    </para>
+    <para>
+        Um auf eine Datei in einem Unterverzeichnis auf Ihrer
+        Festplatte zu verweisen, könnten Sie eine Schreibweise wie
+        folgt verwenden
+     </para>
+    <literallayout>
+        /usr/local/meine_daten/doku
+    </literallayout>
+    <para>
+         Die Schrägstriche markieren jeden Teil in diesem Verweis und
+         die Sequenz wird von links nach rechts gelesen.
+    </para>
+    <para>
+        Das entsprechende Gegenstück zu einer voll qualifizierten
+        Dateireferenz ist in LDAP der "Eindeutige Name"
+        ("distinguished name"), der Einfachheit halber als "dn"
+        bezeichnet.
+        Ein Beispiel für einen solchen dn könnte sein
+    </para>
+    <literallayout>
+        cn=Hans Mustermann,ou=Buchhaltung,o=Meine Firma,c=DE
+    </literallayout>
+    <para>
+        Das Komma markiert jeden Teil in diesem Verweis und die
+        Sequenz wird von rechts nach links gelesen.
+        Diesen dn würden Sie wie folgt lesen ...
+    </para>
+    <literallayout>
+        Land = DE
+        Organisation (organisation) = Meine Firma
+        Organisationseinheit (organisational unit) = Buchhaltung
+        Einfacher Name (commonName) = Hans Mustermann
+    </literallayout>
+    <para>
+        In der gleichen Weise, in der es keine allgemeinverbindlichen
+        Regeln gibt, wie Sie die Verzeichnisstruktur Ihrer Festplatte
+        organsieren, kann der Verwalter eines Verzeichnis-Servers jede
+        beliebige Struktur implementieren, die für den Einsatzzweck
+        sinnvoll ist.
+        Trotzdem gibt es einige Konventionen die benutzt werden.
+        Die Botschaft ist folgende: Sie können keinen Code schreiben
+        um auf einen Verzeichnis-Server zuzugreifen, ohne etwas über
+        dessen Struktur zu wissen. Genauso wenig können Sie eine
+        Datenbank nutzen ohne Kenntnis darüber, was in derselben
+        vorhanden ist.
+     </para>
+</sect1>
+
+<sect1 id="ldap-example">
+<title>Komplettes Code Beispiel</title>
+    <para>
+     Informationen von einem Verzeichnis-Server beziehen für alle
+     Einträge bei denen der Nachname mit "S" beginnt. Darstellung
+     eines Auszugs mit Name und Email-Adresse.
+    </para>
+
+    <example>
+    <title>LDAP Such-Beispiel</title>
+    <programlisting role="php">
+    &lt;?php
+    // Grundlegende Abfolge bei LDAP ist verbinden, binden, suchen,
+    // interpretieren des Sucheergebnisses, Verbindung schließen
+
+    echo "&lt;h3>LDAP query Test&lt;/h3>";
+    echo "Verbindung ...";
+    $ds=ldap_connect("localhost");  // muss ein gültiger LDAP Server
+                                    // sein!
+
+    echo "Ergebnis der Verbindung: ".$ds."&lt;p>";
+
+    if ($ds) {
+    echo "Bindung ...";
+    $r=ldap_bind($ds);     // das ist ein "anonymer" bind,
+                           // typischerweise nur Lese Zugriff
+    echo "Ergebnis der Bindung ".$r."&lt;p>";
+
+    echo "Suche nach (sn=S*) ...";
+    // Suchen des Nachnamen-Eintrags
+    $sr=ldap_search($ds,"o=Meine Firma, c=DE", "sn=S*");
+    echo "Ergebnis der Suche ".$sr."&lt;p>";
+
+    echo "Anzahl der Einträge, die gefunden wurden
+    .ldap_count_entries($ds,$sr)."&lt;p>";
+
+    echo "Einträge holen ...&lt;p>";
+    $info = ldap_get_entries($ds, $sr);
+    echo "Daten für ".$info["count"]." Items gefunden:&lt;p>";
+
+        for ($i=0; $i&lt;$info["count"]; $i++) {
+            echo "dn ist: ". $info[$i]["dn"] ."&lt;br>";
+            echo "erster cn Eintrag: ". $info[$i]["cn"][0] ."&lt;br>";
+            echo "erster email Eintrag: ". $info[$i]["mail"][0]
+            ."&lt;p>";
+        }
+
+        echo "Verbindung schließen";
+    ldap_close($ds);
+
+    } else {
+    echo "&lt;h4>Verbindung zu LDAP Server nicht möglich&lt;/h4>";
+    }
+    ?>
+    </programlisting>
+    </example>
+
+<sect2 id="ldap.using">
+<title>Verwenden der PHP LDAP Aufrufe</title>
+    <para>
+     Sie müssen sich die LDAP Client Bibliotheken herunterladen und
+     übersetzen. Sie können entweder das ldap-3.3 Packet von der
+     University of Michigan oder das Netscape Directory SDK 3.0
+     verwenden. Ebenso müssen Sie Ihr PHP mit LDAP Unterstützung
+     aktiviert neu übersetzen bevor die PHP LDAP-Aufrufe
+     funktionieren.
+    </para>
+    <para>
+     Bevor Sie die LDAP Aufrufe benutzen können, müssen Sie folgendes
+     wissen...
+     <itemizedlist>
+      <listitem>
+       <para>
+        Den Namen oder die Adresse des Verzeichnis-Servers den Sie
+        benutzen wollen
+      </para>
+      </listitem>
+      <listitem>
+       <para>
+        Den "Basis dn" des Servers (den Teil des Weltverzeichnisses,
+        das auf diesem Server eingerichtet ist, das könnte "o=Meine
+        Firma,c=DE" sein.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Brauchen Sie ein Passwort um auf den Server zuzugreifen?
+        (Viele Server bieten Lesezugriff für einen "anonymen bind",
+        verlangen aber ein Passwort für alles weitere)
+       </para>
+      </listitem>
+     </itemizedlist>
+    </para>
+    <para>
+      Die typische Abfolge von LDAP Aufrufen in einer Anwendung folgen
+      diesem Muster
+     <literallayout>
+  ldap_connect()    // Aufbau einer Verbindung zum Server
+
+  connection to server
+     |
+  ldap_bind()       // anonymes oder authentifiziertes "login"
+     |
+  mache irgendwas, z.B. Verzeichnis durchsuchen oder aktualisieren
+  und stelle das Ergebnis dar
+     |
+  ldap_close()      // "logout"
+</literallayout></para>
+
+</sect2>
+<sect2 id="ldap.moreinfo">
+<title>Mehr Informationen</title>
+    <para>
+     Viele Informationen finden Sie unter
+    </para>
+
+    <itemizedlist>
+     <listitem>
+      <para>
+       <ulink url="&url.ldap.netscape;">Netscape</ulink>
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <ulink url="&url.ldap.michigan;">University of Michigan</ulink>
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <ulink url="&url.ldap.openldap;">OpenLDAP Project</ulink>
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <ulink url="&url.ldap.ldapworld;">LDAP World</ulink>
+      </para>
+     </listitem>
+    </itemizedlist>
+
+    <para>
+     Das Netscape SDK enthält einen hilfreichen Programmer´s Guide im
+     .html Format.
+    </para>
+</sect2>
+</sect1>
+
+</partintro>
+
+
+<refentry id="function.ldap-add">
+<refnamediv>
+ <refname>ldap_add</refname>
+ <refpurpose>
+  Einträge einem LDAP Verzeichnis hinzufügen
+ </refpurpose>
+</refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_add</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>array <parameter>eintrag</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_add</function> Funktion wird benutzt um
+     Einträge einem Verzeichnis hinzuzufügen. Die DN des Eintrags, der
+     hinzugefügt werden soll wird durch dn bestimmt. Array eintrag
+     bestimmt die Informationen des Eintrags. Die Werte in den
+     Einträgen werden durch individuelle Merkmale indiziert.
+     Im Fall von mehreren Werten für ein Merkmal werden diese durch
+     die Verwendung von Zahlen indiziert, die bei 0 beginnen.
+    </para>
+    <informalexample>
+<literallayout>
+    eintrag["merkmal1"] = wert
+    eintrag["merkmal2"][0] = wert1
+    eintrag["merkmal2"][1] = wert2
+</literallayout>
+     </informalexample>
+     <example>
+      <title>Komplettes Beispiel mit authentifiziertem bind</title>
+
+<programlisting role="php">
+&lt;?php
+$ds=ldap_connect("localhost");  // Annahme: der LDAP Server befindet
+                                // sich auf diesem Host
+
+if ($ds) {
+    // bind mit passendem dn für aktulisierenden Zugriff
+    $r=ldap_bind($ds,"cn=root, o=Meine Firma, c=DE", "geheim");
+
+    // Daten vorbereiten
+    $info["cn"]="Hans Mustermann";
+    $info["sn"]="Mustermann";
+    $info["mail"]="MustermannH@firma.de";
+    $info["objectclass"]="person";
+
+    // hinzufügen der Daten zum Verzeichnis
+    $r=ldap_add($ds, "cn=Hans Mustermann, o=Meine Firma, c=DE",
+    $info);
+
+    ldap_close($ds);
+} else {
+    echo "Verbindung zum LDAP Server nicht möglich!";
+}
+?>
+</programlisting>
+     </example>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-bind">
+   <refnamediv>
+    <refname>ldap_bind</refname>
+    <refpurpose>Bindung zu einem LDAP Verzeichnis</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_bind</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter><optional>bind_rdn</optional>
+      </parameter></paramdef>
+      <paramdef>string <parameter><optional>bind_kennwort</optional>
+      </parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Bindung für ein LDAP Verzeichnis mit angegebenem RDN und
+     Kennwort. Rückgabewert: wahr im Erfolgsfall, falsch im
+     Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_bind</function> Funktion führt eine bind
+     Operation auf einem Verzeichnis aus. bind_rdn und bind_kennwort
+     sind optional, wenn diese fehlen wird ein anonymes bind versucht.
+     </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-close">
+   <refnamediv>
+    <refname>ldap_close</refname>
+    <refpurpose>Verbindung zum LDAP Server schliessen</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_close</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_close</function> Funktion schließt die
+     Verbindung zum LDAP Server die zur
+     <parameter>Verbindungs-Kennung</parameter> gehört.
+    </para>
+    <para>
+     Der Aufruf dieser Funktion ist intern identisch zu
+     <function>ldap_unbind</function>. Die LDAP API benutzt den Aufruf
+     <function>ldap_unbind</function>, so dass Sie vielleicht diese
+     Funktion benutzen sollten, anstatt<function>
+     ldap_close</function> zu verwenden.</para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-compare">
+   <refnamediv>
+    <refname>ldap_compare</refname>
+    <refpurpose>
+     Vergleicht gefundenen Wert eines Merkmal in einem Eintrag, der
+     durch Angabe von dn destimmt wird.
+   </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_compare</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>string <parameter>merkmal</parameter></paramdef>
+      <paramdef>string <parameter>wert</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Rückgabewert: wahr, wenn <parameter>wert</parameter> gefunden
+     wird, ansonsten falsch. Tritt ein Fehler auf, wird -1
+     zurückgegeben.
+    </simpara>
+    <para>
+     <function>ldap_compare</function> vergleicht den<parameter>
+     wert</parameter> eines <parameter>merkmal</parameter> mit dem
+     Wert des gleichen Merkmals in dem LDAP Verzeichniseintrag der
+     durch <parameter>dn</parameter> bestimmt wurde.
+    </para>
+    <simpara>
+     Das folgende Beispiel zeigt, wie überprüft wird, ob ein gegebenes
+     Kennwort mit dem Kennwort übereinstimmt oder nicht, das in dem
+     durch DN bestimmten Eíntrag gespeichert ist.
+    </simpara>
+    <example>
+    <title>Komplettes Beispiel einer Kennwort-Überprüfung</title>
+    <programlisting role="php">
+&lt;?php
+
+$ds=ldap_connect("localhost");  // Annahme: der LDAP Server befindet
+                                // sich auf diesem Host
+
+if ($ds) {
+
+    // binden
+    if(ldap_bind($ds)) {
+
+        // Daten vobereiten
+        $dn = "cn=Helga Olsen, ou=Meine Einheit, o=Meine Firma, c=FI";
+        $value = "geheimeskennwort";
+        $attr = "kennwort";
+
+        // vergleiche Werte
+        $r=ldap_compare($ds, $dn, $attr, $value);
+
+        if ($r === -1) {
+            echo "Fehler: ".ldap_error($ds);
+        } elseif ($r === TRUE) {
+            echo "Kennwort korrekt.";
+        } elseif ($r === FALSE) {
+            echo "Falsch geraten! Kennwort nicht korrekt.";
+        }
+
+    } else {
+        echo "Keine Bindung zum LDAP Server möglich.";
+    }
+
+    ldap_close($ds);
+
+} else {
+    echo "Keine Verbindung zum LDAP Server möglich.";
+}
+?&gt;
+
+     </programlisting>
+    </example>
+    <note>
+     <para>
+      <function>ldap_compare</function> kann NICHT für Vergleiche von
+      BINÄREN Werten benutzt werden!
+     </para>
+    </note>
+    <note>
+     <para>
+      Diese Funktion wurde in 4.0.2 hinzugefügt.
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-connect">
+   <refnamediv>
+    <refname>ldap_connect</refname>
+    <refpurpose>Verbindung zu einem LDAP Server</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_connect</function></funcdef>
+      <paramdef>string <parameter><optional>hostname</optional>
+      </parameter></paramdef>
+      <paramdef>int <parameter><optional>port</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: Eine positive Verbindungs-Kennung im Erfolgsfall,
+     falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_connect</function> Funktion öffnet eine
+     Verbindung zu einem LDAP Server auf einem bestimmten<parameter>
+     hostname</parameter> und <parameter>port</parameter>. Beide
+     Argumente sind optional. Wenn keine Argumente angegeben werden,
+     wird die Verbindungs-Kennung einer eventuell schon geöffneten
+     Verbindung zurückgeliefert. Wird nur der<parameter>
+     hostname</parameter> angegeben, wird für den Port der Standarport
+     389 benutzt.
+    </para>
+    <para>
+     Bei Verwendung von OpenLDAP 2.x.x können Sie eine URL statt des
+     Hostnamens angeben.
+     Um LDAP mit SSL-Unterstützzung zu verwenden, übersetzen Sie
+     OpenLDAP mit SSL-Unterstützung, PHP mit SSL und verwenden
+     ldaps://Hostname/ als Host Argument. Das Port Argument wird bei
+     der Verwendung von URLs nicht benutzt.
+     URL und  SSL Unterstützung wurden in 4.0.4 hinzugefügt</para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-count-entries">
+   <refnamediv>
+    <refname>ldap_count_entries</refname>
+    <refpurpose>Zählt die Anzahl der Einträge bei einer
+    Suche</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_count_entries</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: Anzahl der Einträge im Ergebnis, falsch im
+     Fehlerfall.</para>
+    <para>
+     Die <function>ldap_count_entries</function> Funktion liefert die
+     Anzahl der Einträge im gespeicherten Ergebnis einer vorher
+     durchgeführten Suchoperation.
+     <parameter>Ergebnis-Kennung</parameter> bezeichnet das interne
+     LDAP Ergebnis.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-delete">
+   <refnamediv>
+    <refname>ldap_delete</refname>
+    <refpurpose>Löscht einen Eintrag aus einem Verzeichnis
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_delete</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_delete</function> Funktion löscht einen
+     einzelnen Eintrag aus einem LDAP Verzeichnis, das im dn angegeben
+     wurde.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-dn2ufn">
+   <refnamediv>
+    <refname>ldap_dn2ufn</refname>
+    <refpurpose>
+    Konvertiert DN in ein benutzerfreundliches Namensformat
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ldap_dn2ufn</function></funcdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Die <function>ldap_dn2ufn</function> Funktion wird verwendet um
+     einen DN in einer benutzerfreundlicheren Form darzustellen, wobei
+     die Typen-Namen wegfallen.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-err2str">
+   <refnamediv>
+    <refname>ldap_err2str</refname>
+    <refpurpose>
+     Konvertiert eine LDAP Fehlernummer in einen Fehlertext
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ldap_err2str</function></funcdef>
+      <paramdef>int <parameter>Fehlernummer</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: Fehlertext.</para>
+    <para>
+     Diese Funktion liefert den Fehlertext der die Fehlernummer
+     erklärt.
+     Während LDAP Fehlernummern standardisiert sind, liefern
+     unterschiedliche Bibliotheken unterschiedliche oder sogar
+     lokalspezifische Fehlermeldungen. Deshalb sollten Sie nie auf
+     eine spezielle Fehlermeldung prüfen, sondern immer eine
+     Fehlernummer verwenden.
+    </para>
+    <para>
+     Siehe auch <function>ldap_errno</function> und
+     <function>ldap_error</function>.
+
+    <example>
+     <title>Aufzählung aller LDAP Fehlermeldungen</title>
+<programlisting role="php">
+&lt;?php
+  for($i=0; $i&lt;100; $i++) {
+    printf("Fehler $i: %s&lt;br>\n", ldap_err2str($i));
+  }
+?>
+</programlisting>
+    </example>
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-errno">
+   <refnamediv>
+    <refname>ldap_errno</refname>
+    <refpurpose>
+     Liefert die LDAP Fehlernummer des letzten LDAP Kommandos
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_errno</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: LDAP Fehlernummer des letzten LDAP Kommandos für
+     diese Verbindung.
+    </para>
+    <para>
+     Diese Funktion liefert die standardisierte Fehlernummer des
+     zuletzt ausgeführten LDAP Kommandos für die angegebene
+     Vebindungs-Kennung. Diese Nummer kann mit der Funktion <function>
+     ldap_err2str</function> in einen Fehlertext konvertiert werden.
+    </para>
+    <para>
+     Solange Sie die Stufe der Fehlerwarnungen in Ihrer php3.ini nicht
+     herabsetzen oder vor Ihre LDAP Komanndos ein @ (at) setzen
+     um die Ausgabe von Fehlermeldungen zu unterdrücken, werden die
+     aufgetretenen Fehler auch in Ihrer HTML Ausgabe zu sehen sein.
+    <example>
+    <title>Erzeugen und Abfangen eines Fehlers</title>
+<programlisting role="php">
+&lt;?php
+/* Diese Beispiel enhält einen Fehler, der abgefangen wird.*/
+$ld = ldap_connect("localhost");
+$bind = ldap_bind($ld);
+// Syntax Fehler im Filterausdruck (errno 87),
+// müsste "objectclass=*" heißen, um zu funktionieren.
+$res =  @ldap_search($ld, "o=Meine Firma, c=DE", "objectclass");
+if (!$res) {
+    printf("LDAP-Fehlernummer: %s&lt;br>\n", ldap_errno($ld));
+    printf("LDAP-Fehler: %s&lt;br>\n", ldap_error($ld));
+    die("Argh!&lt;br>\n");
+}
+$info = ldap_get_entries($ld, $res);
+printf("%d Übereinstimmende Einträge.&lt;br>\n", $info["count"]);
+?>
+</programlisting>
+    </example>
+   </para>
+   <para>
+     Siehe auch <function>ldap_err2str</function> und
+     <function>ldap_error</function>.</para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-error">
+   <refnamediv>
+    <refname>ldap_error</refname>
+    <refpurpose>
+     Liefert die LDAP Fehlermeldung des letzten LDAP Kommandos
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ldap_error</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabe: Fehlertext</para>
+    <para>
+     Diese Funktion liefert den erklärenden Fehlertext für einen
+     Fehler, der vom zuletzt ausgeführten LDAP Kommando mit der
+     angegebenen Verbindungs-Kennung erzeugt wurde.
+     Während LDAP Fehlernummern standardisiert sind, liefern
+     unterschiedliche Bibliotheken unterschiedliche oder sogar
+     lokalspezifische Fehlermeldungen. Deshalb sollten Sie nie auf
+     eine spezielle Fehlermeldung prüfen, sondern immer eine
+     Fehlernummer verwenden.
+    </para>
+    <para>
+     Solange Sie die Stufe der Fehlerwarnungen in Ihrer php3.ini nicht
+     herabsetzen oder vor Ihre LDAP Komanndos ein @ (at) setzen
+     um die Ausgabe von Fehlermeldungen zu unterdrücken, werden die
+     aufgetretenen Fehler auch in Ihrer HTML Ausgabe zu sehen sein.
+    </para>
+    <para>
+     Siehe auch <function>ldap_err2str</function> und
+     <function>ldap_errno</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-explode-dn">
+   <refnamediv>
+    <refname>ldap_explode_dn</refname>
+    <refpurpose>
+     Aufteilung eines DN in seine Bestandteile
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>ldap_explode_dn</function></funcdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>int <parameter>mit_merkmal</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Die <function>ldap_explode_dn</function> Funktion wird benutzt um
+     einen von <function>ldap_get_dn</function> gelieferten DN
+     aufzuteilen und in dessen Bestandteile zu zerlegen. Jeder Teil
+     wird als Relative Distinguished Name, RDN, bezeichnet.
+     <function>ldap_explode_dn</function> liefert einen Array mit
+     allen diesen Bestandteilen
+     Der Parameter <parameter>mit_merkmal</parameter> wird benutzt, um
+     zu bestimmen, ob die RDNs nur mit Werten oder zusätlich mit ihren
+     Merkmalen angefragt werden. Um RDNs mit Merkmalen (z.B. Merkmal=
+     Wert Format) zu erhalten, setzen Sie <parameter>
+     mit_merkmal</parameter> auf 0, um nur Werte zu erhalten auf 1.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-first-attribute">
+   <refnamediv>
+    <refname>ldap_first_attribute</refname>
+    <refpurpose>Liefert das erste Merkmal</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ldap_first_attribute</function>
+      </funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Eintrag-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>ber-Kennung</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall das erste Merkmal des Eintrags, im
+     Fehlerfall falsch.
+    </para>
+    <para>
+     Ähnlich wie Einträge lesen, Merkmale eines bestimmten Eintrags
+     werden eins nach dem anderen gelesen.
+     Die <function>ldap_first_attribute</function> Funktion liefert
+     das erste Merkmal eines Eintrags der durch Ergebnis-Eintrag-
+     Kennung angegeben wurde. Durch erfolgreichen Aufruf von
+     <function>ldap_next_attribute</function> erhalten Sie die
+     restlichen Merkmale.
+     Der Parameter <parameter>ber-Kennung</parameter> ist die Kennung
+     eines internen Speicherort-Zeiger. Die Übergabe erfolgt per
+     Referenz. Die gleiche <parameter>ber-Kennung</parameter> wird an
+     die Funktion <function>ldap_next_attribute</function>
+     weitergegeben, die diesen Zeiger dann verändert.
+    </para>
+    <para>
+     Siehe auch <function>ldap_get_attributes</function></para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-first-entry">
+   <refnamediv>
+    <refname>ldap_first_entry</refname>
+    <refpurpose>
+     Liefert die Kennung des ersten Ergebnisses
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_first_entry</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall die Ergebnis-Eintrag-Kennung
+     für den ersten Eintrag, falsch im Fehlerfall.
+    </para>
+    <para>
+     Einträge eines LDAP Ergebnisses werden unter Verwendung der
+     Funktionen <function>ldap_first_entry</function> und
+     <function>ldap_next_entry</function> sequentiell gelesen.
+     Die <function>ldap_first_entry</function> Funktion gibt die
+     Eintrag-Kennung für den ersten Eintrag im Ergebnis zurück.
+     Diese Eintrag-Kennung wird dann an die Funktion <function>
+     lap_next_entry</function> weitergegeben, um sukzessiv die
+     Einträge des Ergebnisses zu erhalten.
+    </para>
+    <para>
+     Siehe auch <function>ldap_get_entries</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-free-result">
+   <refnamediv>
+    <refname>ldap_free_result</refname>
+    <refpurpose>
+     Gibt den belegten Speicher wieder frei
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_free_result</function></funcdef>
+      <paramdef>int <parameter>Ergebnis-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Um die Ergebnisse zu speichern, wird intern Speicher belegt.
+     Diesen Speicher können Sie mit der Funktion <function>
+     ldap_free_result</function> unter Angabe der entsprechenden
+     <parameter>Ergebnis-Kennung</parameter> wieder freigeben.
+     Typischerweise wird nach Beendigung des Skripts der gesamte
+     Ergebnis-Speicher automatisch freigegeben.
+    </para>
+    <para>
+     Falls Ihr Skript sukzessive Suchoperationen durchführt, die
+     große Ergebnismengen liefern, können Sie <function>
+     ldap_free_result</function> benutzen, um den Speicherverbrauch
+     zur Laufzeit niedrig zu halten.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-get-attributes">
+   <refnamediv>
+    <refname>ldap_get_attributes</refname>
+    <refpurpose>
+     Liefert Merkmale eines Suchergebnis-Eintrags
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>ldap_get_attributes</function>
+      </funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int
+      <parameter>Ergebnis-Eintrag-Kennung</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall wird die gesamte Information eines
+     Eintrags in einem multidimensionalen Array zurückgegeben; im
+     Fehlerfall falsch.
+    </para>
+    <para>
+     Die <function>ldap_get_attributes</function> Funktion
+     wird verwendet um das Lesen der Merkmale und Werte eines Eintrags
+     im Suchergebnis zu vereinfachen. Der Rückgabewert ist ein
+     multidimensionales Array aus Merkmalen und Werten.
+    </para>
+    <para>
+     Nachdem Sie einen bestimmten Eintrag in dem Verzeichnis
+     lokalisiert haben, können Sie mit dieser Funktion herausfinden,
+     welche Informationen für diesen Eintrag verfügbar sind. Diese
+     Funktion würden Sie in einer Anwendung verwenden, die
+     Verzeichniseinträge "durchstöbert" und/oder wo Sie die Struktur
+     der Verzeichniseinträge nicht kennen. In vielen Anwendungen
+     suchen Sie nach einem bestimmten Merkmal wie einer email-
+     Adresse oder einem Nachnamen und interessieren sich nicht dafür,
+     welche anderen Daten verfügbar sind.
+    </para>
+    <para>
+     <informalexample><literallayout>
+return_value["count"] = Anzahl der Merkmale des Eintrags
+return_value[0] = das erste Merkmal
+return_value[n] = das n-te Merkmal
+
+return_value["merkmal"]["count"] = Anzahl der Werte des Merkmals
+return_value["merkmal"][0] = der erste Wert des Merkmals
+return_value["merkmal"][i] = der i-te Wert des Merkmals
+</literallayout></informalexample>
+
+    <example>
+     <title>
+      Anzeigen der Liste der Merkmale für einen ausgewählten
+      Verzeichnis-Eintrag
+     </title>
+<programlisting role="php">
+// $ds die Verbindungs-Kennung für das Verzeichnis
+
+// $sr ein gültiges Suchergebnis eines früheren Aufrufs einer der ldap
+// Verzeichnis Suchfunktionen
+
+
+$entry = ldap_first_entry($ds, $sr);
+
+$attrs = ldap_get_attributes($ds, $entry);
+
+echo $attrs["count"]." Merkmale für diesen Eintrag:&lt;p>";
+
+for ($i=0; $i&lt;$attrs["count"]; $i++)
+    echo $attrs[$i]."&lt;br>";
+</programlisting>
+</example></para>
+
+     <para>
+      Siehe auch <function>ldap_first_attribute</function> und
+      <function>ldap_next_attribute</function></para>
+
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-get-dn">
+   <refnamediv>
+    <refname>ldap_get_dn</refname>
+    <refpurpose>Liefert den DN eines Ergebnis-Eintrags </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ldap_get_dn</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Eintrag-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall der DN des Ergebnis-Eintrags, im
+     Fehlerfall falsch.
+    </para>
+    <para>
+     Die <function>ldap_get_dn</function> Funktion wird verwendet, um
+     den DN eines Eintrags im Ergebnis herauszufinden.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-get-entries">
+   <refnamediv>
+    <refname>ldap_get_entries</refname>
+    <refpurpose>Liefert alle Ergebnis-Einträge</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>ldap_get_entries</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall wird die gesamte Information des
+     Ergebnisses in einem multidimensionalen Array zurückgegeben; im
+     Fehlerfall falsch.
+    </para>
+    <para>
+     Die <function>ldap_get_entries</function> Funktion wird verwendet
+     um das Lesen mehrfacher Einträge des Ergebnisses zu vereinfachen
+     und danach werden die Merkmale und mehfachen Werte gelesen.
+     Durch einen Funktionsaufruf wird die gesamte Information in einem
+     multidimensionalen Array zurückgegeben. Die Struktur dieses Array
+     sieht wie folgt aus.
+    </para>
+    <para>
+     Der Merkmal-Index wird in Kleinbuchstaben umgewandelt.
+     (Verzeichnis-Server unterscheiden nicht zwischen
+     Groß-/Kleinschreibung hinsichtlich der Merkmake, aber der
+     Unterschied ist wichtig, wenn diese Merkmale als Array-Indizes
+     benutzt werden.)
+
+    <informalexample>
+<literallayout>
+return_value["count"] = Anzahl der Merkmale im Ergebnis
+return_value[0] : bezieht sich auf Einzelheiten des ersten
+                  Eintrags
+
+return_value[i]["dn"] =  DN des i-ten Eintrags im Ergebnis
+
+return_value[i]["count"] = Anzahl der Merkmale im i-ten Eintrag
+return_value[i][j] = das j-te Merkmal des i-ten Eintrags im Ergebnis
+
+return_value[i]["merkmal"]["count"] = Anzahl der Werte für das
+                                      Merkmal im i-ten Eintrag
+return_value[i]["merkmal"][j] = der j-te Wert des Merkmals im i-ten
+                                Eintrag
+</literallayout>
+    </informalexample>
+   </para>
+
+     <para>
+      Siehe auch <function>ldap_first_entry</function> und
+      <function>ldap_next_entry</function></para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-get-option">
+   <refnamediv>
+    <refname>ldap_get_option</refname>
+    <refpurpose>
+     Liefert den aktuellen Wert für eine gegebene Option
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>ldap_get_option</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>option</parameter></paramdef>
+      <paramdef>mixed <parameter>retval</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Setzt <parameter>retval</parameter> auf den Wert der gewählten
+     Option.
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Der Parameter <parameter>option</parameter> kann einer der
+     folgenden sein:
+     LDAP_OPT_DEREF, LDAP_OPT_SIZELIMIT, LDAP_OPT_TIMELIMIT,
+     LDAP_OPT_PROTOCOL_VERSION, LDAP_OPT_ERROR_NUMBER,
+     LDAP_OPT_REFERRALS,
+     LDAP_OPT_RESTART, LDAP_OPT_HOST_NAME, LDAP_OPT_ERROR_STRING,
+     LDAP_OPT_MATCHED_DN. Beschrieben sind diese unter
+     <ulink url="&url.ldap.openldap-c-api;">draft-ietf-ldapext-ldap-c-
+     api-xx.txt</ulink>
+     </para>
+    <para>
+     Diese Funktion steht nur zur Verfügung, wenn Sie OpenLDAP 2.x.x
+     ODER Netscape Directory SDK x.x benutzen.
+     Wurde in PHP 4.0.4 hinzugefügt.
+    </para>
+
+     <para>
+     <example>
+      <title>Prüfen der Protokollversion</title>
+<programlisting role="php">
+// $ds eine gültige Verbindungs-Kennung für einen Verzeichnis-Server
+if (ldap_get_option($ds, LDAP_OPT_PROTOCOL_VERSION, $version))
+    echo "Sie benutzen die Protokollversion $version";
+else
+    echo "Protokollversion konnte nicht bestimmt werden";
+</programlisting>
+     </example>
+     </para>
+
+     <para>
+      Siehe auch <function>ldap_set_option</function>.
+     </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-get-values">
+   <refnamediv>
+    <refname>ldap_get_values</refname>
+    <refpurpose>
+     Liefert alle Werte eines Ergebnis-Eintrags
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>ldap_get_values</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Eintrag-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>merkmal</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall ein Array der Werte des Merkmals,
+     falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_get_values</function> Funktion wird benutzt um
+     alle Werte des Merkmals eines Eintrags im Ergebnis zu lesen. Der
+     Eintrag wird durch
+     <parameter>Ergebnis-Eintrag-Kennung</parameter> bestimmt. Die
+     Anzahl der Werte kann über die
+     Indexierung von "count" des resultierenden Arrays bestimmt
+     werden. Der Zugriff auf einzelne Werte erfolgt durch einen
+     ganzzahligen Index im Array. Der erste Indexwert ist 0.
+    </para>
+    <para>
+     Da diese Funktion eine
+     <parameter>Ergebnis-Eintrag-Kennung</parameter> benötigt, muss
+     ein Aufruf einer der LDAP Suchfunktionen und einer der
+     Funktionen, die einen einzelnen Eintrag liefern, vorausgehen.
+    </para>
+    <para>
+     Ihre Anwendung wird entweder hart codiert sein, um bestimmte
+     Merkmale (wie z.B.: "Nachname" oder "Mail") zu suchen, oder Sie
+     müssen die Funktion <function>ldap_get_attributes</function>
+     benutzen, um herauszufinden, welche Merkmale für einen gegebenen
+     Eintrag vorhanden sind.
+    </para>
+    <para>
+     LDAP erlaubt mehr als einen Eintrag für ein Merkmal, so daß es
+     z.B. sein kann, dass der Verzeichnis-Eintrag einer Person mehrere
+     Email-Adressen enthält, die alle mit dem Merkmal "mail"
+     bezeichnet sind.
+
+    <informalexample>
+<literallayout>
+return_value["count"] = Anzahl der Werte eines Merkmals
+return_value[0] = der erste Wert des Merkmals
+return_value[i] = der i-te Wert des Merkmals
+</literallayout>
+    </informalexample>
+
+     <example>
+      <title>
+       Liste aller Werte des Merkmals "mail" für einen Verzeichnis-
+       Eintrag
+      </title>
+<programlisting role="php">
+// $ds eine gültige Verbindungs-Kennung für einen Verzeichnis-Server
+
+// $sr ein gültiges Suchergebnis eines früheren Aufrufs einer der ldap
+//     Verzeichnis Suchfunktionen
+
+// $entry eine gültige Eintrag-Kennung eines früheren Aufrufs einer
+//        der Funktionen, die einen Verzeichnis-Eintrag zurückgeben
+
+$values = ldap_get_values($ds, $entry,"mail");
+
+echo $values["count"]." Email-Adressen für diesen Eintrag.&lt;p>";
+
+for ($i=0; $i &lt; $values["count"]; $i++)
+    echo $values[$i]."&lt;br>";
+</programlisting>
+     </example></para>
+
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-get-values-len">
+   <refnamediv>
+    <refname>ldap_get_values_len</refname>
+    <refpurpose>
+     Liefert alle binären Werte eines Ergebnis-Eintrags
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>ldap_get_values_len</function>
+      </funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Eintrag-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>merkmal</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall ein Array der Werte des Merkmals,
+     falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_get_values_len</function> Funktion wird
+     benutzt um alle Werte des Merkmals eines Eintrags im Ergebnis zu
+     lesen. Der Eintrag wird durch
+     <parameter>Ergebnis-Eintrag-Kennung</parameter> bestimmt. Die
+     Anzahl der Werte kann über die Indexierung von "count" des
+     resultierenden Arrays bestimmt werden. Der Zugriff auf einzelne
+     Werte erfolgt durch einen ganzzahligen Index im Array. Der erste
+     Indexwert ist 0.
+    </para>
+    <para>
+     Diese Funktion wird in der genau gleichen Weise benutzt wie die
+     Funktion <function>ldap_get_values</function> mit der Aussnahme,
+     dass hier binäre Daten statt Textdaten behandelt werden.
+    </para>
+    <note>
+     <para>
+      Diese Funktion wurde in 4.0 hinzugefügt.
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-list">
+   <refnamediv>
+    <refname>ldap_list</refname>
+    <refpurpose>Einstufige Suche</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_list</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>basis_dn</parameter></paramdef>
+      <paramdef>string <parameter>filter</parameter></paramdef>
+      <paramdef>array
+       <parameter><optional>merkmale</optional></parameter>
+       </paramdef>
+      <paramdef>int
+       <parameter><optional>attrsonly</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>größenbegrenzung</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>zeitbegrenzung</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>deref</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall eine Such-Ergebnis-Kennung,im
+     Fehlerfall falsch.
+    </para>
+    <para>
+     Die <function>ldap_list</function> Funktion führt die Suche für
+     einen gegebenen Filter im Verzeichnis mit der Reichweite von
+     LDAP_SCOPE_ONELEVEL durch.
+    </para>
+    <para>
+     LDAP_SCOPE_ONELEVEL bedeutet, dass die Suche nur Informationen
+     liefert, die direkt unterhalb der Stufe liegen, die durch die
+     Angabe des Basis dn im Auruf bestimmt wird. (Das entspricht der
+     Eingabe von "ls", die eine Liste von Dateien und Verzeichnissen
+     des aktuellen Arbeitsverzeichnisses anzeigt.)
+    </para>
+    <para>
+     Der Aufruf dieser Funktion nimmt 5 optionale Parameter entgegen.
+     Siehe die Anmerkungen zu <function>ldap_search</function>.
+    <note>
+     <para>
+       Diese wahlfreien Parameter wurden in 4.0.2 hinzugefügt:
+      <parameter>attrsonly</parameter>,
+      <parameter>größenbegrenzung</parameter>,
+      <parameter>zeitbegrenzung</parameter>,
+      <parameter>deref</parameter>.
+     </para>
+    </note>
+
+    <example>
+      <title>
+       Erzeugung einer Liste aller Organisationseinheiten einer
+       Organisation
+      </title>
+<programlisting role="php3">
+// $ds gültige Verbindungs-Kennung für einen Verzeichnis-Server
+
+$basis_dn = "o=Meine Firma, c=DE";
+$nur_dieses = array("ou");
+
+$sr=ldap_list($ds, $basis_dn, "ou=*", $nur_dieses);
+
+$info = ldap_get_entries($ds, $sr);
+
+for ($i=0; $i&lt;$info["count"]; $i++)
+    echo $info[$i]["ou"][0] ;
+</programlisting>
+</example></para>
+    <para>
+     Seit der Version 4.0.5 ist es außerdem möglich parallele Suchen
+     durchzuführen. Für Details siehe
+     <function>ldap_search</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-modify">
+   <refnamediv>
+    <refname>ldap_modify</refname>
+    <refpurpose>Verändern eines LDAP-Eintrags</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_modify</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>array <parameter>eintrag</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_modify</function> Funktion wird verwendet, um
+     bestehende Einträge in einem LDAP-Verzeichnis zu ändern.
+     Die Struktur des Eintrags ist die gleiche wie bei <function>
+     ldap_add</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-mod-add">
+   <refnamediv>
+    <refname>ldap_mod_add</refname>
+    <refpurpose>
+     Hinzufügen von Merkmalswerten zu aktuellen Merkmalen
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_mod_add</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>array <parameter>eintrag</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Diese Funktion fügt Merkmal(e) zum angegebenen dn hinzu.
+     Die Änderung wird auf der Merkmalsebene durchgeführt im
+     Gegensatz zur Objektebene. Das Hinzufügen auf der Objektebene
+     wird durch die Funktion <function>ldap_add</function> geleistet.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.ldap-mod-del">
+   <refnamediv>
+    <refname>ldap_mod_del</refname>
+    <refpurpose>
+     Löschen von Merkmalswerten aktueller Merkmale
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_mod_del</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>array <parameter>eintrag</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Diese Funktion entfernt ein oder mehrere Merkmale vom angegebenen
+     dn. Die Änderung wird auf der Merkmalsebene durchgeführt im
+     Gegensatz zur Objektebene. Das Löschen auf Objektebene wird
+     durch die Funktion <function>ldap_delete</function> geleistet.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.ldap-mod-replace">
+   <refnamediv>
+    <refname>ldap_mod_replace</refname>
+    <refpurpose>
+     Ersetzen von Merkmalswerten mit neuen Merkmalswerten
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_mod_replace</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>array <parameter>eintrag</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Diese Funktion ersetzt ein oder mehrere Merkmale vom angegebenen
+     dn. Die Änderung wird auf der Merkmalsebene durchgeführt im
+     Gegensatz zur Objektebene. Änderungen auf der Objektebene wird
+     durch die Funktion <function>ldap_modify</function> geleistet.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.ldap-next-attribute">
+   <refnamediv>
+    <refname>ldap_next_attribute</refname>
+    <refpurpose>
+     Liefert das nächste Merkmal im Ergebnis
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>string <function>ldap_next_attribute</function>
+      </funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Eintrag-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>ber_Kennung</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: im Erfolgsfall das nächste Merkmal eines Eintrags,
+     im Fehlerfall falsch.
+    </para>
+    <para>
+     Die <function>ldap_next_attribute</function> Funktion wird
+     aufgerufen, um die Merkmale eines Eintrags zu erhalten. Der
+     interne Status des Zeigers wird durch die <parameter>
+     ber_Kennung</parameter> bestimmt. Diese wird mittels Referenz an
+     die Funktion weitergegeben.
+     Der erste Aufruf von <function>ldap_next_attribute</function>
+     erfolgt mit der <parameter>Ergebnis-Eintrag-Kennung</parameter>,
+     die von <function>ldap_first_attribute</function> zurückgegeben
+     wurde.
+    </para>
+    <para>
+     Siehe auch <function>ldap_get_attributes</function>
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-next-entry">
+   <refnamediv>
+    <refname>ldap_next_entry</refname>
+    <refpurpose>
+     Liefert den nächsten Eintrag des Ergebnisses
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_next_entry</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>Ergebnis-Eintrag-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: Im Erfolgsfall wird die Eintrags-Kennung für den
+     nächsten Eintrag des Ergebnisses zurückgegeben. Das Lesen der
+     Einträge wird mit <function>ldap_first_entry</function>
+     gestartet.
+     Wenn keine weiteren Einträge im Ergebnis vorhanden sind wird
+     falsch zurückgegeben.
+    </para>
+    <para>
+     Die <function>ldap_next_entry</function> Funktion wird verwendet,
+     um die Einträge zu erhalten, die im Ergebnis gespeichert sind.
+     Wiederholtes aufrufen von <function>ldap_next_entry</function>
+     liefert einen Eintrag nach dem anderen, solange bis kein Eintrag
+     mehr vorliegt. Der erste Aufruf von <function>
+     ldap_next_entry</function> erfolgt nach dem Aufruf von
+     <function>ldap_first_entry</function> mit der Ergebnis-Kennung,
+     die von <function>ldap_first_entry</function> zurückgegeben
+     wurde.
+    </para>
+    <para>
+     Siehe auch <function>ldap_get_entries</function>
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-read">
+   <refnamediv>
+    <refname>ldap_read</refname>
+    <refpurpose>Lesen eines Eintrags</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_read</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>basis_dn</parameter></paramdef>
+      <paramdef>string <parameter>filter</parameter></paramdef>
+      <paramdef>array
+       <parameter><optional>merkmale</optional></parameter>
+       </paramdef>
+      <paramdef>int
+       <parameter><optional>attrsonly</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>größenbegrenzung</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>zeitbegrenzung</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>deref</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: Im Erfolgsfall eine Such-Ergebnis-Kennung, falsch
+     im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_read</function> Funktion führt die Suche für
+     einen gegebenen Filter im Verzeichnis mit der Reichweite von
+     LDAP_SCOPE_BASE durch. Das ist äquivalent zum Lesen eines
+     Eintrags in einem Verzeichnis.
+    </para>
+    <para>
+     Ein leerer Filter ist nicht erlaubt. Wenn Sie wirklich alle
+     Informationen für einen Eintrag erhalten möchten, müssen Sie
+     einen Filter der Art "objectClass=*" verwenden. Kennen Sie die
+     Typen der Einträge die auf dem Verzeichnis-Server benutzt werden,
+     können Sie einen passenden Filter wie z.B."objectClass=
+     inetOrgPerson" verwenden.
+    </para>
+    <para>
+     Der Aufruf dieser Funktion nimmt 5 optionale Argumente
+     entgegen. Siehe Anmerkungen zu <function>ldap_search</function>.
+    </para>
+    <note>
+     <para>
+      Diese wahlfreien Argumente wurden in 4.0.2 hinzugefügt:
+      <parameter>attrsonly</parameter>,
+      <parameter>größenbegrenzung</parameter>,
+      <parameter>zeitbegrenzung</parameter>,
+      <parameter>deref</parameter>.
+     </para>
+    </note>
+     <para>
+      Seit der Version 4.0.5 ist es außerdem möglich parallele Suchen
+      durchzuführen. Für Details siehe
+      <function>ldap_search</function>.
+     </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-rename">
+   <refnamediv>
+    <refname>ldap_rename</refname>
+    <refpurpose>
+     Verändert den Namen eines Eintrags
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>ldap_rename</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>dn</parameter></paramdef>
+      <paramdef>string <parameter>neuerrdn</parameter></paramdef>
+      <paramdef>string <parameter>neueeltern</parameter></paramdef>
+      <paramdef>bool <parameter>löschealtenrdn</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Der Eintrag, der durch <parameter>dn</parameter> gegeben ist,
+     wird umbenannt/enfernt. Der neue RDN wird durch <parameter>
+     neuerrdn</parameter> bestimmt, der neue Eltern-/übergeordnete
+     Eintrag wird durch <parameter>neueeltern</parameter> bestimmt.
+     Wenn das Argument <parameter>löschealtenrdn</parameter> wahr ist,
+     wird der alte Wert/die alten Werte von RDN enfernt, andernfalls
+     wird der alte Wert/die alten Werte als nicht-eindeutige (non-
+     distinguished) Werte des Eintrags beibehalten.
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Diese Funktion steht nur zur Verfügung, wenn Sie OpenLDAP 2.x.x
+     ODER Netscape Directory SDK x.x benutzen. Wurde in PHP 4.0.5
+     hinzugefügt.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-search">
+   <refnamediv>
+    <refname>ldap_search</refname>
+    <refpurpose>Suche im LDAP Baum</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_search</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>string <parameter>base_dn</parameter></paramdef>
+      <paramdef>string <parameter>filter</parameter></paramdef>
+      <paramdef>array
+       <parameter><optional>merkmale</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>attrsonly</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>größenbegrenzung</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>zeitbegrenzung</optional></parameter>
+      </paramdef>
+      <paramdef>int
+       <parameter><optional>deref</optional></parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: eine Such-Ergebnis-Kennung im Erfolgsfall, falsch
+     im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_search</function> Funktion führt die Suche für
+     einen gegebenen Filter im Verzeichnis mit der Reichweite von
+     LDAP_SCOPE_SUBTREE durch. Das ist äquivalent zu einer Suche im
+     ganzen Verzeichnis.<parameter>base_dn</parameter> legt den Basis
+     DN für das Verzeichnis fest.
+    </para>
+    <para>
+     Der optionale vierte Parameter kann benutzt werden, um die
+     Rückgabewerte des Servers so einzuschränken, dass nur die
+     tatsächlich benötigten Merkmale und ihre zugehörigen Werte in der
+     Ergebnismenge enthalten sind. Dieses Vorgehen ist um einiges
+     effizienter als die standardmäßige Vorgehensweise (diese liefert
+     alle Merkmale und alle zugehörigen Werte). Aus diesem Grund ist
+     die Angabe des vierten Parameters als gute Praxis zu empfehlen.
+    </para>
+    <para>
+     Der vierte Parameter ist ein Standard PHP Zeichenketten Array der
+     benötigten Merkmale, z.B. array("mail","sn","cn"). Beachten Sie,
+     dass der DN immer zurückgeliefert wird, ohne Rücksicht darauf,
+     welche Merkmalstypen angefragt wurden.
+    </para>
+    <para>
+     Beachten Sie weiterhin, dass manche Verzeichnis-Server so
+     konfiguriert sind, dass sie nicht mehr als eine vorbestimmte
+     Anzahl an Einträgen zurückliefern. Sollte dies der Fall sein,
+     zeigt Ihnen der Server an, dass nur eine Teilmenge des
+     Ergebnisses zurückgeliefert wurde. Diesen Hinweis erhalten Sie
+     auch, wenn Sie den sechsten Parameter
+     <parameter>größenbegrenzung</parameter> mit angegeben hatten, um
+     die Anzahl der angefragten Einträge einzuschränken.
+    </para>
+    <para>
+     Der fünfte Parameter <parameter>attrsonly</parameter> sollte auf
+     1 gesetzt werden, wenn Sie nur Merkmalstypen erhalten möchten.
+     Wenn der Wert auf 0 steht, erhalten Sie sowohl Merkmalstypen als
+     auch Merkmalswerte. Das ist das Standard Verhalten.
+    </para>
+    <para>
+     Mit dem sechsten Parameter
+     <parameter>größenbegrenzung</parameter> ist es möglich, die
+     Anzahl der Einträge, die Sie erhalten, zu begrenzen.
+     Wenn Sie diesen Wert auf 0 setzen, bedeutet dies keine
+     Beschränkung der Ergegnismenge.
+     ANMERKUNG: Dieser Parameter kann eine serverseitig gesetzte
+     Beschränkung NICHT überschreiben. Sie haben nur die Möglichkeit
+     die Beschränkung noch weiter herabzusetzen.
+    </para>
+    <para>
+     Der siebte Parameter <parameter>zeitbegrenzung</parameter> legt
+     die Zahl in Sekunden fest, die auf die Suche verwendet wird.
+     Wenn Sie diesen Wert auf 0 setzen, bedeutet dies keine
+     Beschränkung der Zeit.
+     ANMERKUNG: Dieser Parameter kann eine serverseitig gesetzte
+     Zeitbegrenzung NICHT überschreiben. Sie haben nur die
+     Möglichkeit die Beschränkung noch weiter herabzusetzen.
+    </para>
+    <para>
+     Der achte Parameter <parameter>deref</parameter> gibt an, wie
+     Aliase während einer Suche behandelt werden.
+     Wert kann einer der folgenden sein:
+     <itemizedlist>
+     <listitem>
+      <simpara>
+       LDAP_DEREF_NEVER - (Standard) Aliase werden nie aufgelöst.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       LDAP_DEREF_SEARCHING - Aliase sollen während der Suche
+       aufgelöst werden, aber nicht dann, wenn das Basisobjekt der
+       Suche ermittelt wird.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       LDAP_DEREF_FINDING - Aliase sollen aufgelöst werden, wenn das
+       Basisobjekt ermiitelt wird, aber nicht während der Suche.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       LDAP_DEREF_ALWAYS - Aliase sollen immer aufgelöst werden.
+      </simpara>
+     </listitem>
+     </itemizedlist>
+    </para>
+    <para>
+      Diese optionalen Parameter wurden in 4.0.2 hinzugefügt:
+      <parameter>attrsonly</parameter>,
+      <parameter>größenbegrenzung</parameter>,
+      <parameter>zeitbegrenzung</parameter>,
+      <parameter>deref</parameter>.
+    </para>
+    <para>
+     Der Suchfilter kann einfach oder komplizierter sein, wenn sie
+     boolsche Operatoren in dem Format verwenden, wie in der LDAP
+     Dokumentation beschrieben (siehe <ulink url="&url.ldap.filters;">
+     Netscape Directory SDK</ulink> für die vollständige Information
+     über Filter).
+    </para>
+    <para>
+     Das untenstehende Beispiel liefert die Organisationseinheit, den
+     Familiennamen, den Vornamen und die Email-Addresse aller Personen
+     in "Meine Firma" deren Familien- oder Vorname die Zeichenkette
+     $person enhält. In diesem Beispiel wird ein boolscher Filter
+     verwendet, um den Server zu veranlassen, nach Informationen in
+     mehr als einem Merkmal zu suchen.
+
+     <example>
+      <title>LDAP Suche</title>
+<programlisting role="php">
+// $ds gültige Verbindungs-Kennung für einen Verzeichnis-Server
+
+// $person ein Teil oder der vollständige Name einer Person, z.B.
+   "Jo"
+
+$dn = "o=Meine Firma, c=DE";
+$filter="(|(sn=$person*)(vorname=$person*))";
+$justthese = array( "ou", "sn", "vorname", "mail");
+
+$sr=ldap_search($ds, $dn, $filter, $justthese);
+
+$info = ldap_get_entries($ds, $sr);
+
+print $info["count"]." gefundene Einträge&lt;p>";
+</programlisting>
+      </example>
+    </para>
+    <para>
+     Seit der Version 4.0.5 ist es außerdem möglich parallele Suchen
+     durchzuführen. Um dies zu verwirklichen benutzen Sie als erstes
+     Argument einen Array von Verbindungs-Kennungen, statt einer
+     einzelnen Verbindungs-Kennung. Falls Sie nicht den gleichen Basis
+     DN und den gleichen Filter für alle Suchen verwenden möchten,
+     können Sie ebenso einen Array von Basis DNs und/oder einen Array
+     von Filtern benutzen. Diese Arrays müssen die gleiche Größe wie
+     das Array der Verbindungs-Kennungen haben, da die ersten Einträge
+     der Arrays für eine Suche verwendet werden, die zweiten Einträge
+     für eine andere Suche und so weiter. Wenn Sie parallel suchen
+     erhalten Sie ein Array von Such-Ergebnis-Kennungen, außer im Fall
+     eines Fehlers, dann liefert der  Eintrag zur entsprechenden Suche
+     falsch zurück. Das entspricht ganz genau dem Wert der
+     normalerweise zurückgeliefert wird, außer dass Sie immer eine
+     Ergebnis-Kennung erhalten, wenn Sie eine Suche durchgeführt
+     haben. Es treten einige seltene Fälle auf, wo eine normale Suche
+     falsch zurückgibt, während die parallele Suche eine Kennung
+     zurückliefert.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-set-option">
+   <refnamediv>
+    <refname>ldap_set_option</refname>
+    <refpurpose>Setzt den Wert der gegebenen Option</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>ldap_set_option</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+      <paramdef>int <parameter>option</parameter></paramdef>
+      <paramdef>mixed <parameter>neuerwert</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Setzt den Wert der bestimmten Option auf
+     <parameter>neuerwert</parameter>.
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Der Parameter <parameter>option</parameter> kann einer der
+     folgenden sein:
+     LDAP_OPT_DEREF, LDAP_OPT_SIZELIMIT, LDAP_OPT_TIMELIMIT,
+     LDAP_OPT_PROTOCOL_VERSION, LDAP_OPT_ERROR_NUMBER,
+     LDAP_OPT_REFERRALS,
+     LDAP_OPT_RESTART, LDAP_OPT_HOST_NAME, LDAP_OPT_ERROR_STRING,
+     LDAP_OPT_MATCHED_DN, LDAP_OPT_SERVER_CONTROLS,
+     LDAP_OPT_CLIENT_CONTROLS.
+     Hier eine kurze Beschreibung, schauen Sie unter
+     <ulink url="&url.ldap.openldap-c-api;">draft-ietf-ldapext-ldap-c-
+     api-xx.txt</ulink> nach Details.
+    </para>
+    <para>
+     Die Optionen LDAP_OPT_DEREF, LDAP_OPT_SIZELIMIT,
+     LDAP_OPT_TIMELIMIT, LDAP_OPT_PROTOCOL_VERSION und
+     LDAP_OPT_ERROR_NUMBER haben einen ganzzahligen Wert,
+     LDAP_OPT_REFERRALS und LDAP_OPT_RESTART haben einen boolschen
+     Wert und die Optionen LDAP_OPT_HOST_NAME, LDAP_OPT_ERROR_STRING
+     und LDAP_OPT_MATCHED_DN bestehen aus einer Zeichenkette.
+     Das erste Beispiel veranschaulicht deren Gebrauch. Die Optionen
+     LDAP_OPT_SERVER_CONTROLS and LDAP_OPT_CLIENT_CONTROLS benötigen
+     eine Kontrolliste, d.h. der Wert muss ein Array aus Kontrollen
+     sein. Eine Kontrolle besteht aus einer <emphasis>oid</emphasis>
+     die die Kontrolle identifiziert, einem wahlweisen <emphasis>
+     wert</emphasis>, und einem wahlweisen Kennzeichen für <emphasis>
+     criticality</emphasis>. Bei PHP wird eine Kontrolle durch ein
+     Array angegeben. Dieses Array enthält ein Element mit dem
+     Schlüssel <emphasis>oid</emphasis> und einer Zeichenkette als
+     Wert und zwei optionalen Elementen. Die optionalen Elemente sind
+     Schlüssel <emphasis>wert</emphasis> mit einer Zeichenkette als
+     Wert und dem Schlüssel <emphasis>iscritical</emphasis> mit einem
+     boolschen Wert. Der vorgegebene Wert von <emphasis>
+     iscritical</emphasis> ist <emphasis>FALSE</emphasis> falls Sie
+     nichts angeben.
+     Schauen Sie sich das zweite Beispiel weiter unten an.
+    </para>
+    <para>
+     Diese Funktion steht nur zur Verfügung, wenn Sie OpenLDAP 2.x.x
+     ODER Netscape Directory SDK x.x verwenden und wurde in PHP 4.0.4
+     hinzugefügt.
+     </para>
+     <para>
+     <example>
+      <title>Setzen der Protokollversion</title>
+<programlisting role="php">
+// $ds ist eine gültige Verbindungs-Kennung für einen Verzeichnis-
+// Server
+if (ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3))
+    echo "Verwenden von LDAPv3";
+else
+    echo "Kann das Protokoll nicht auf Version 3 setzen";
+</programlisting>
+     </example>
+     <example>
+      <title>Setzen der Server Kontrollen</title>
+<programlisting role="php">
+// $ds ist eine gültige Verbingund-Kennung für einen Verzeichnis-
+// Server
+// Kontrolle ohne Wert
+$ctrl1 = array("oid" => "1.2.752.58.10.1", "iscritical" => TRUE);
+// iscritical hat den vorgegebenen Wert FALSE
+$ctrl2 = array("oid" => "1.2.752.58.1.10", "value" => "magic");
+// Versuch, beide Kontrollen zu setzen
+if (!ldap_set_option($ds, LDAP_OPT_SERVER_CONTROLS, array($ctrl1,
+$ctrl2)))
+    echo "Kann die Server Kontrollen nicht setzen";
+</programlisting>
+     </example>
+     </para>
+     <para>
+      Siehe auch <function>ldap_get_option</function>.
+     </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.ldap-unbind">
+   <refnamediv>
+    <refname>ldap_unbind</refname>
+    <refpurpose>Unbind von einem LDAP Verzeichnis</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ldap_unbind</function></funcdef>
+      <paramdef>int <parameter>Verbindungs-Kennung</parameter>
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Rückgabewert: wahr im Erfolgsfall, falsch im Fehlerfall.
+    </para>
+    <para>
+     Die <function>ldap_unbind</function> Funktion führt ein unbind
+     auf ein LDAP Verzeichnis aus.
+    </para>
+   </refsect1>
+  </refentry>
+ </reference>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
