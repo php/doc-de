@@ -36,6 +36,17 @@
     </programlisting>
    </example></para>
 
+  <note>
+   <title>Hinweis</title>
+   <para>
+    Achten Sie bei den Header-Zeilen für maximale Kompatibilität auf die
+    richtige Schreibweise! Das Schlüsselwort "Basic" sollte genau so geschrieben
+    werden, der Realm-String muss in doppelte (nicht einfache) Anführungszeichen
+    eingeschlossen sein, und in der "HTTP/1.0 401"-Zeile
+    darf nur genau ein Leerzeichen vor dem 401-Code stehen.
+   </para>
+  </note>
+
   <para>
    Anstatt $PHP_AUTH_USER und $PHP_AUTH_PW einfach nur 
    auszugeben, werden Sie den Benutzernamen und das Passwort 
@@ -57,6 +68,17 @@
    werden, um den Benutzer durch die externe Zugriffskontrolle
    zu identifizieren.</simpara>
 
+  <note>
+   <title>Konfigurationshinweis</title>
+   <para>
+    PHP prüft das Vorhandensein einer <literal>AuthType</literal>
+    Apache-Direktive, um zu entscheiden, ob eine externe
+    Authentifizierung aktiv ist. Vermeiden Sie deshalb diese
+    Konfigurationsdirektive im Kontext der PHP-Authentifizierung
+    (anderenfalls wird jeder Authentifizierungsversuch misslingen).
+   </para>
+  </note>
+
   <simpara>
    Zu beachten ist, dass obenstehendes keinesfalls jemanden,
    der die Kontrolle über eine nichtgeschützte URL hat, davon
@@ -75,26 +97,25 @@
      <title>HTTP-Authentifizierung, mit erneuter Anforderung von Name/Passwort</title>
      <programlisting role="php">
 &lt;?php
-  function  authenticate()  {
-    Header( &quot;WWW-authenticate:  basic  realm='Test  Authentication  System'&quot;);
-    Header( &quot;HTTP/1.0  401  Unauthorized&quot;);
-    echo  &quot;You  must  enter  a  valid  login  ID  and  password  to  access  this  resource\n&quot;;
-    exit;
+  function authenticate() {
+   Header( &quot;WWW-Authenticate: Basic realm=\&quot;Test Authentication System\&quot;&quot;);
+   Header( &quot;HTTP/1.0 401 Unauthorized&quot;);
+   echo &quot;You must enter a valid login ID and password to access this resource\n&quot;;
+   exit;
   }
 
-  if(!isset($PHP_AUTH_USER)  ||  ($SeenBefore ==  1  &&  !strcmp($OldAuth,  $PHP_AUTH_USER))  )  {
-    authenticate();
-  }  
-  else  {
-    echo  &quot;Welcome:  $PHP_AUTH_USER&lt;BR&gt;&quot;;
-    echo  &quot;Old:  $OldAuth&quot;;
-    echo  &quot;&lt;FORM  ACTION=\&quot;$PHP_SELF\&quot;  METHOD=POST&gt;\n&quot;;
-    echo  &quot;&lt;INPUT  TYPE=HIDDEN  NAME=\&quot;SeenBefore\&quot;  VALUE=\&quot;1\&quot;&gt;\n&quot;;
-    echo  &quot;&lt;INPUT  TYPE=HIDDEN  NAME=\&quot;OldAuth\&quot;  VALUE=\&quot;$PHP_AUTH_USER\&quot;&gt;\n&quot;;
-    echo  &quot;&lt;INPUT  TYPE=Submit  VALUE=\&quot;Re  Authenticate\&quot;&gt;\n&quot;;
-    echo  &quot;&lt;/FORM&gt;\n&quot;;
-
-}
+  if(!isset($PHP_AUTH_USER) || ($SeenBefore == 1 && !strcmp($OldAuth, $PHP_AUTH_USER)) ) {
+   authenticate();
+  } 
+  else {
+   echo &quot;Welcome: $PHP_AUTH_USER&lt;BR&gt;&quot;;
+   echo &quot;Old: $OldAuth&quot;;
+   echo &quot;&lt;FORM ACTION=\&quot;$PHP_SELF\&quot; METHOD=POST&gt;\n&quot;;
+   echo &quot;&lt;INPUT TYPE=HIDDEN NAME=\&quot;SeenBefore\&quot; VALUE=\&quot;1\&quot;&gt;\n&quot;;
+   echo &quot;&lt;INPUT TYPE=HIDDEN NAME=\&quot;OldAuth\&quot; VALUE=\&quot;$PHP_AUTH_USER\&quot;&gt;\n&quot;;
+   echo &quot;&lt;INPUT TYPE=Submit VALUE=\&quot;Re Authenticate\&quot;&gt;\n&quot;;
+   echo &quot;&lt;/FORM&gt;\n&quot;;
+  }
 ?>
    </programlisting>
   </example>
