@@ -1,6 +1,7 @@
  <chapter id="control-structures">
   <title>Kontroll-Strukturen</title>
-<!-- entspricht en/language/control-structures.xml 1.16 -->
+<!-- Anmerkung des Übersetzeres:                      
+     entspricht en/language/control-structures.xml 1.18 -->
 
   <simpara>
    Jedes PHP-Skript besteht aus einer Reihe von Anweisungen. Eine
@@ -790,6 +791,14 @@ endswitch;
     den Inhalt der angegebenen Datei (ähnlich dem #include von C).
    </simpara>
    <simpara>
+    Wenn die PHP-Konfigurations-Option "URL fopen wrappers" auf enabled
+    (per default) steht, können sie für die mittels 
+    <function>require</function> eingebundene Datei statt einer lokalen
+    Pfadangabe auch eine URL angeben. Sehen sie hierzu unter
+    <link linkend="features.remote-files">Remote-Dateien</link> und 
+    <function>fopen</function> für weitere Informationen nach.
+   </simpara>
+   <simpara>
     Wichtig: PHP kehrt zu Beginn der per <function>include</function>
     oder <function>require</function> eingebundenen Dateien vom
     PHP- in den HTML-Modus und am Schluß der Datei wieder vom 
@@ -834,30 +843,48 @@ require ('header.inc');
      </programlisting>
     </informalexample>
    </para>
+   <simpara>
+    Wird eine Datei per <function>require</function> eingebunden, dann
+    "erbt" der darin enthaltene Code die bis zur Skriptzeile mit der
+    <function>require</function>-Anweisung definierten Variablen und
+    deren Inhalt. Alle innerhalb der eingebundenen Datei Definitionen
+    von Variablen stehen ab dieser Zeile zur Verfügung.
+    Steht die <function>require</function>-Anweisung innerhalb einer
+    Funktion, wird der darin stehende Code behandelt, als ob er
+    innerhalb der Funktion stehen würde.
+   </simpara>
    <para>
-    Beachten sie, dass sowohl <function>include</function> als auch
-    <function>require</function> den Inhalt der angegebenen Datei in
-    das Skript nur 1:1 einlesen. Sie kann weder über HTTP noch sonstwie
-    eingelesen werden. Jede vor dem Einbinden der Datei definierte
-    Variable ist innerhalb dieser Datei verfügbar, da sie Teil des
-    umgebenden Skripts wird.
+    Wird die mittels <function>require</function> einzubindende Datei
+    über HTTP (fopen wrapper) aufgerufen und sieht der Ziel-Server die
+    Ziel-Datei als PHP-Code ansieht, dann werden die Variablen an die
+    einzubindende Datei wie bei einem HTTP GET übergeben. Das
+    entspricht nicht genau der Einbindung einer lokalen Datei, da das
+    Skript auf dem entfernten Server ausgeführt wird und nur die
+    Ergebnisse in das lokale Skript eingebunden werden.
     <informalexample>
      <programlisting role="php">
-require ("file.inc?vareins=1&amp;varzwei=2"); /* Funkt. nicht. */
+/* Dieses Beispiel geht davon aus, dass ein beliebiger Server zum 
+ * Parsen von *.php-Dateien konfiguriert ist. Also meint 'funkt' hier,
+ * dass die Variablen $vareins und $varzwei innerhalb der angeforderten
+ * Datei vorhanden sind. */
+
+/* Funkt. nicht; file.txt wird vom besagten Server nicht geparst. */
+require ("http://someserver/file.txt?vareins=1&amp;varzwei=2");
+
+/* Funkt. nicht; schaut nach einer lokalen Datei namens 
+/* 'file.php?varone=1&amp;vartwo=2' */
+require ("file.php?vareins=1&amp;varzwei=2");               
+
+/* Funkt. */
+require ("http://someserver/file.php?vareins=1&amp;varzwei=2"); 
 
 $vareins = 1;
 $varzwei = 2;
-/* $vareins und $varzwei sind in file.inc verfügbar */ 
-require ("file.inc");
+require ("file.txt");    /* Funkt. */
+require ("file.php");    /* Funkt. */
      </programlisting>
     </informalexample>
    </para>
-   <simpara>
-    Lassen sie sich nicht durch die Tatsache irre führen, dass sie 
-    Dateien über HTTP anfordern oder einbinden können (siehe <link
-    linkend="features.remote-files">Remote files</link>-Funktionalität).
-    Die obigen Angaben gelten dennoch.
-   </simpara>
    <simpara>
     In PHP3 ist es möglich, eine <literal>return</literal>-Anweisung
     innerhalb einer per <function>require</function> eingebundenen Datei
@@ -879,6 +906,14 @@ require ("file.inc");
    <simpara>
     Die <function>include</function>-Anweisung liest die angegebene Datei
     ein und wertet sie aus.
+   </simpara>
+   <simpara>
+    Wenn die PHP-Konfigurations-Option "URL fopen wrappers" auf enabled
+    (per default) steht, können sie für die mittels 
+    <function>include</function> eingebundene Datei statt einer lokalen
+    Pfadangabe auch eine URL angeben. Sehen sie hierzu unter
+    <link linkend="features.remote-files">Remote-Dateien</link> und 
+    <function>fopen</function> für weitere Informationen nach.
    </simpara>
    <simpara>
     Wichtig ist, dass beim <function>include</function>- oder
@@ -1029,21 +1064,45 @@ Before the return
      Rückgabewerte unterstützt.
     </para>
    </example>
+   <simpara>
+    Wird eine Datei per <function>include</function> eingebunden, dann
+    "erbt" der darin enthaltene Code die bis zur Skriptzeile mit der
+    <function>include</function>-Anweisung definierten Variablen und
+    deren Inhalt. Alle innerhalb der eingebundenen Datei Definitionen
+    von Variablen stehen ab dieser Zeile zur Verfügung. Steht die
+    <function>include</function>-Anweisung innerhalb einer Funktion,
+    wird der darin stehende Code behandelt, als ob er innerhalb der
+    Funktion stehen würde.
+   </simpara>
    <para>
-    Beachten sie, dass sowohl <function>include</function> als auch
-    <function>require</function> den Inhalt der einzufügenden Datei
-    an ihre eigene Stelle des Skripts setzen. Sie lesen diese Datei
-    nicht über HTTP oder sonstiges ein. Deshalb ist jede in der
-    Hauptdatei gesetzte Variable auch innerhalb der eingebundenen
-    Datei vorhanden; sie ist ja Bestandteil dieser Datei geworden.
+    Wird die mittels <function>include</function> einzubindende Datei
+    über HTTP (fopen wrapper) aufgerufen und sieht der Ziel-Server die
+    Ziel-Datei als PHP-Code ansieht, dann werden die Variablen an die
+    einzubindende Datei wie bei einem HTTP GET übergeben. Das
+    entspricht nicht genau der Einbindung einer lokalen Datei, da das
+    Skript auf dem entfernten Server ausgeführt wird und nur die
+    Ergebnisse in das lokale Skript eingebunden werden.
     <informalexample>
      <programlisting role="php">
-include ("file.inc?vareins=1&amp;varzwei=2"); /* Funkt. nicht. */
+/* Dieses Beispiel geht davon aus, dass ein beliebiger Server zum 
+ * Parsen von *.php-Dateien konfiguriert ist. Also meint 'funkt' hier,
+ * dass die Variablen $vareins und $varzwei innerhalb der angeforderten
+ * Datei vorhanden sind. */
+
+/* Funkt. nicht; file.txt wird vom besagten Server nicht geparst. */
+include ("http://someserver/file.txt?vareins=1&amp;varzwei=2");
+
+/* Funkt. nicht; schaut nach einer lokalen Datei namens 
+/* 'file.php?varone=1&amp;vartwo=2' */
+include ("file.php?vareins=1&amp;varzwei=2");               
+
+/* Funkt. */
+include ("http://someserver/file.php?vareins=1&amp;varzwei=2"); 
 
 $vareins = 1;
 $varzwei = 2;
-/* $vareins und $varzwei sind in file.inc verfügbar */
-include ("file.inc");
+include ("file.txt");    /* Funkt. */
+include ("file.php");    /* Funkt. */
      </programlisting>
     </informalexample>
    </para>
@@ -1123,7 +1182,7 @@ showVar($foo);
     </example>
     Wenn sie letzteres starten, wird folgende Ausgabe erzeugt (gilt für
     PHP 4.01pl2):
-	  <informalexample>
+    <informalexample>
      <programlisting>
 GLOBALE SIND GUT
 GLOBALE SIND GUT
@@ -1132,10 +1191,10 @@ Fatal error:  Cannot redeclare causeerror() in utils.inc on line 5
      </programlisting>
     </informalexample>
     Durch Umschreiben von <literal>foolib.inc</literal> und
-	  <literal>cause_errror_require.php</literal> (Gebrauch von
+    <literal>cause_errror_require.php</literal> (Gebrauch von
     <function>require_once</function> statt 
     <function>require</function>) und Umbenennung des letzten Skriptes
-    zu literal>avoid_error_require_once.php</literal> haben wir nun:
+    zu <literal>avoid_error_require_once.php</literal> haben wir nun:
     <example>
      <title>foolib.inc (fixed)</title>
      <programlisting role="php">
