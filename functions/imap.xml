@@ -112,12 +112,12 @@
     </para>
     <para>     
      <example>
-      <title><function>imap_append</function> example</title>
+      <title><function>imap_append</function> Beispiel</title>
       <programlisting role="php">
 $stream = imap_open("{your.imap.host}INBOX.Drafts","username", "password");
 
 $check = imap_check($stream);
-print "Msg Count before append: ". $check->Nmsgs."&lt;br&gt;\n";
+print "Msg Count before append: ". $check->Nmsgs."&lt;br>\n";
 
 imap_append($stream,"{your.imap.host}INBOX.Drafts"
                    ,"From: me@my.host\r\n"
@@ -128,7 +128,7 @@ imap_append($stream,"{your.imap.host}INBOX.Drafts"
                    );
 
 $check = imap_check($stream);
-print "Msg Count after append : ". $check->Nmsgs.""&lt;br&gt;\n";
+print "Msg Count after append : ". $check->Nmsgs.""&lt;br>\n";
 
 imap_close($stream);
       </programlisting>
@@ -252,7 +252,7 @@ imap_close($stream);
     </para>
     <para>     
      <example>
-      <title><function>imap_check</function> example</title>
+      <title><function>imap_check</function> Beispiel</title>
       <programlisting role="php">
 $mbox = imap_open("{your.imap.host}INBOX","username", "password")
       || die("can't connect: ".imap_last_error());
@@ -260,13 +260,13 @@ $mbox = imap_open("{your.imap.host}INBOX","username", "password")
 $check = imap_check($mbox);
 	  
 if($check) {
-  print "Date: "    . $check-&gt;Date    ."&lt;br&gt;\n" ;
-  print "Driver: "  . $check-&gt;Driver  ."&lt;br&gt;\n" ;
-  print "Mailbox: " . $check-&gt;Mailbox ."&lt;br&gt;\n" ;
-  print "Messages: ". $check-&gt;Nmsgs   ."&lt;br&gt;\n" ;
-  print "Recent: "  . $check-&gt;Recent  ."&lt;br&gt;\n" ;
+  print "Date: "    . $check->Date    ."&lt;br>\n" ;
+  print "Driver: "  . $check->Driver  ."&lt;br>\n" ;
+  print "Mailbox: " . $check->Mailbox ."&lt;br>\n" ;
+  print "Messages: ". $check->Nmsgs   ."&lt;br>\n" ;
+  print "Recent: "  . $check->Recent  ."&lt;br>\n" ;
 } else { 
-  print "imap_check() failed: ".imap_lasterror(). "&lt;br&gt;\n"; 
+  print "imap_check() failed: ".imap_last_error(). "&lt;br>\n"; 
 }
 	  
 imap_close($mbox);	  	 
@@ -322,6 +322,56 @@ imap_close($mbox);
      sowie <function>imap_open</function> für das Format des
      Parameters <parameter>mbox</parameter>.
     </para>
+    <para>     
+     <example>
+      <title><function>imap_createmailbox</function> Beispiel</title>
+      <programlisting>
+$mbox = imap_open("{your.imap.host}","username","password",OP_HALFOPEN)
+     || die("can't connect: ".imap_last_error());
+
+$name1 = "phpnewbox";
+$name2 = imap_utf7_encode("phpnewböx");
+
+$newname = $name1;
+
+echo "Newname will be '$name1'&lt;br>\n";
+
+# we will now create a new mailbox "phptestbox" in your inbox folder,
+# check its status after creation and finaly remove it to restore
+# your inbox to its initial state 
+if(@imap_createmailbox($mbox,imap_utf7_encode("{your.imap.host}INBOX.$newname"))) {
+  $status = @imap_status($mbox,"{your.imap.host}INBOX.$newname",SA_ALL);
+  if($status) {
+    print("your new mailbox '$name1' has the following status:&lt;br>\n");
+    print("Messages:   ". $status->messages   )."&lt;br>\n";
+    print("Recent:     ". $status->recent     )."&lt;br>\n";
+    print("Unseen:     ". $status->unseen     )."&lt;br>\n";
+    print("UIDnext:    ". $status->uidnext    )."&lt;br>\n";
+    print("UIDvalidity:". $status->uidvalidity)."&lt;br>\n";
+    
+    if(imap_renamemailbox($mbox,"{your.imap.host}INBOX.$newname","{your.imap.host}INBOX.$name2")) {
+      echo "renamed new mailbox from '$name1' to '$name2'&lt;br>\n";
+      $newname=$name2;
+    } else {
+      print "imap_renamemailbox on new mailbox failed: ".imap_last_error()."&lt;br>\n";
+    }
+  } else {
+    print  "imap_status on new mailbox failed: ".imap_last_error()."&lt;br>\n";
+  }
+  if(@imap_deletemailbox($mbox,"{your.imap.host}INBOX.$newname")) {
+    print "new mailbox removed to restore initial state&lt;br>\n";
+  } else {
+    print  "imap_deletemailbox on new mailbox failed: ".implode("&lt;br>\n",imap_errors())."&lt;br>\n";
+  }
+  
+} else {
+  print  "could not create new mailbox: ".implode("&lt;br>\n",imap_errors())."&lt;br>\n";
+}
+
+imap_close($mbox);
+      </programlisting>
+     </example>
+    </para>     
    </refsect1>
   </refentry>
 
@@ -359,17 +409,17 @@ imap_close($mbox);
     </para>
     <para>     
      <example>
-      <title><function>imap_check</function> example</title>
+      <title><function>imap_delete</function> Beispiel</title>
       <programlisting role="php">
 $mbox = imap_open("{your.imap.host}INBOX","username", "password")
         || die("can't connect: ".imap_last_error());
 
 $check = imap_mailboxmsginfo($mbox);
-print "Messages before delete: ". $check->Nmsgs   ."&lt;br&gt;\n" ;
+print "Messages before delete: ". $check->Nmsgs   ."&lt;br>\n" ;
 imap_delete($mbox,1);
-print "Messages after  delete: ". $check->Nmsgs   ."&lt;br&gt;\n" ;
+print "Messages after  delete: ". $check->Nmsgs   ."&lt;br>\n" ;
 imap_expunge($mbox);
-print "Messages after expunge: ". $check->Nmsgs   ."&lt;br&gt;\n" ;
+print "Messages after expunge: ". $check->Nmsgs   ."&lt;br>\n" ;
 imap_close($mbox);
       </programlisting>
      </example>
@@ -399,7 +449,7 @@ imap_close($mbox);
     </para>
     <para>
      Siehe auch <function>imap_createmailbox</function> und
-     <function>imap_reanmemailbox</function>
+     <function>imap_renamemailbox</function>
      sowie <function>imap_open</function> für das Format des 
      <parameter>mbox</parameter> Parameters.
     </para>
@@ -856,8 +906,13 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
      </itemizedlist>
     </para>
     <para>
-     <parameter>ref</parameter> sollte normalerweise nur den Namen des Servers
-     in der Form {imap_server:imap_port} enthalten.
+     Namen von Postfächern, die Zeichen außerhalb des druckbaren ASCII-Bereiches
+     enthalten, können mit Hilfe der Funktion <function>imap_utf7_decode</function>
+     dekodiert werden.
+    </para>
+    <para>
+     <parameter>ref</parameter> sollte normalerweise nur die Spezifikation des
+     Servers in der in <function>imap_open</function> beschriebenen Form enthalten.
      Über <parameter>pat</parameter> kann ein Startpunkt innerhalb der
      Postfach-Hierachie vorgegeben werden. Wünschen Sie die Ausgabe
      aller Postfächer, so übergeben Sie als <parameter>pat</parameter> '*'.
@@ -886,6 +941,30 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
      Ein '%' am Ende von <parameter>pattern</parameter> entspricht 
      zusätzlich auch allen Zeichenfolgen, die mit dem Trennzeichen 
      beginnen.
+    </para>
+    <para>
+     <example>
+      <title><function>imap_getmailboxes</function> Beispiel</title>
+      <programlisting role="php">
+$mbox = imap_open("{your.imap.host}","username","password",OP_HALFOPEN)
+      || die("can't connect: ".imap_last_error());
+ 
+$list = imap_getmailboxes($mbox,"{your.imap.host}","*");
+if(is_array($list)) {
+  reset($list);
+  while (list($key, $val) = each($list))
+  {
+    print "($key) ";
+    print imap_utf7_decode($val->name).",";
+    print "'".$val->delimiter."',";
+    print $val->attributes."&lt;br>\n";
+  }
+} else
+  print "imap_getmailboxes failed: ".imap_last_error()."\n";
+ 
+imap_close($mbox);                                                                
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
@@ -1079,8 +1158,52 @@ fetchsubject (Subject: Zeile, formatiert auf max. <parameter>subjectlength</para
      dann allerdings nicht der gesamte Funktionsumfang zur Verfügung steht. 
      Liefert ein IMAP-Streamhandle oder false bei Fehlern.
     </para>
+    <para> 
+     Der Name eines Postfachs setzt sich zusammen aus der
+     Bezeichnung des Servers und dem Pfad des Postfachs auf diesem
+     Server. Der spezielle Name INBOX steht dabei als Synonym für das
+     persönliche Postfach des jeweiligen Benutzers. Die Bezeichnung des
+     Servers setzt sich zusammen aus dem eigentlichen Servernamen oder
+     der entsprechenden IP-Adresse sowie das gewünschte Protokoll
+     (getrennt durch '/') und optional der zu benutzende Port (getrennt
+     durch ':'). Die gesamte Serverbezeichnung wird in '{' und '}'
+     eingeschlossen und muß immer mit angegeben werden. Enthält der
+     Name eines Postfachs Zeichen außerhalb des druckbaren
+     ASCII-Bereiches wie z.B. Umlaute oder das 'ß', so muß er mit Hilfe
+     der Funktion <function>imap_utf7_encode</function> codiert werden.
+    </para>
     <para>
-     Das folgende Beispile stellt eine Verbindung zu einem 
+     Der optionale Parameter <parameter>flags</parameter> kann sich aus den
+     folgenden Bitmasken zusammensetzen:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+	OP_READONLY - Über diese Verbindung darf nur lesend zugegriffen werden
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+	OP_ANONYMOUS - Bei NNTP-Verbindungen wird die Datei .newsrc nicht aktualisiert 
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+	OP_HALFOPEN - es wird eine IMAP- oder NNTP-Verbindung aufgebaut, aber noch kein
+                      Postfach ausgewählt
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+	CL_EXPUNGE - beim Schließen der Verbindung werden alle zum Löschen vorgemerkte 
+                     Nachrichten endgültig gelöscht
+                     (siehe auch <function>imap_delete</function> und
+                                 <function>imap_expunge</function>)
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+    <para>
+     Das folgende Beispiel stellt eine Verbindung zu einem 
      lokalen IMAP-Server (IMAP = Port 143) her:
 
      <informalexample>
@@ -1113,57 +1236,26 @@ $nntp = imap_open("{localhost/nntp:119}comp.test","","");
      Namen oder die IP-Adresse des Servers ersetzen.
     </para>
     <para>
-     Der optionale Parameter <parameter>flags</parameter> kann sich aus den
-     folgenden Bitmasken zusammensetzen:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-	OP_READONLY - Über diese Verbindung darf nur lesend zugegriffen werden
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	OP_ANONYMOUS - Bei NNTP-Verbindungen wird die Datei .newsrc nicht aktualisiert 
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	OP_HALFOPEN - es wird eine IMAP- oder NNTP-Verbindung aufgebaut, aber noch kein
-                      Postfach ausgewählt
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	CL_EXPUNGE - beim Schließen der Verbindung werden alle zum Löschen vorgemerkte 
-                     Nachrichten endgültig gelöscht
-                     (siehe auch <function>imap_delete</function> und
-                                 <function>imap_expunge</function>)
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-
-    <para>
      <example>
-      <title><function>imap_open</function> example</title>
+      <title><function>imap_open</function> Beispiel</title>
       <programlisting>
 $mbox = imap_open("{your.imap.host:143}","username","password");
 
-echo "&lt;p&gt;&lt;h1&gt;Mailboxes&lt;/h1&gt;\n";
+echo "&lt;p>&lt;h1>Mailboxes&lt;/h1>\n";
 $folders = imap_listmailbox($mbox, "{your.imap.host:143}", "*");
 if($folders == false)
-  echo "Call failed&lt;br&gt;\n";
+  echo "Call failed&lt;br>\n";
 else
   while(list($key,$val) = each($folders))
-    echo $val."&lt;br&gt;\n";
+    echo $val."&lt;br>\n";
 
-echo "&lt;p&gt;&lt;h1&gt;Headers in INBOX&lt;/h1&gt;\n";
+echo "&lt;p>&lt;h1>Headers in INBOX&lt;/h1>\n";
 $headers = imap_headers($mbox);
 if($headers == false)
-  echo "Call failed&lt;br&gt;\n";
+  echo "Call failed&lt;br>\n";
 else
   while(list($key,$val) = each($headers))
-    echo $val."&lt;br&gt;\n";
+    echo $val."&lt;br>n";
 
 imap_close($mbox);
       </programlisting>
@@ -1485,6 +1577,29 @@ imap_close($mbox);
        </tgroup>
      </table>
     </para>
+    <para>
+     <example>
+      <title><function>imap_mailboxmsginfo</function> Beispiel</title>
+      <programlisting role="php">
+$mbox = imap_open("{your.imap.host}INBOX","username", "password")
+      || die("can't connect: ".imap_last_error());
+ 
+$check = imap_mailboxmsginfo($mbox);
+ 
+if($check) {
+  print "Date: "    . $check->Date    ."&lt;br>\n" ;
+  print "Driver: "  . $check->Driver  ."&lt;br>\n" ;
+  print "Mailbox: " . $check->Mailbox ."&lt;br>\n" ;
+  print "Messages: ". $check->Nmsgs   ."&lt;br>\n" ;
+  print "Recent: "  . $check->Recent  ."&lt;br>\n" ;
+  print "Size: "    . $check->Size    ."&lt;br>\n" ;
+} else
+  print "imap_check() failed: ".imap_lasterror(). "&lt;br>\n";
+ 
+imap_close($mbox);
+      </programlisting>
+     </example>
+    </para>
    </refsect1>
   </refentry>
 
@@ -1511,6 +1626,14 @@ imap_close($mbox);
      formatierte Mail-Adresse gemäß 
      <ulink url="&url.rfc;/rfc822.html">RFC822</ulink>.
     </para>
+    <para>
+     <example>
+      <title><function>imap_rfc822_write_address</function> Beispiel</title>
+      <programlisting role="php">
+print imap_rfc822_write_address("hartmut","cvs.php.net","Hartmut Holzgraefe")."\n";      
+      </programlisting>
+     </example>
+    </para>
    </refsect1>
   </refentry>
 
@@ -1522,7 +1645,7 @@ imap_close($mbox);
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
-     <funcdef>string 
+     <funcdef>array
       <function>imap_rfc822_parse_adrlist</function>
      </funcdef>
      <paramdef>string <parameter>address</parameter></paramdef>
@@ -1536,14 +1659,46 @@ imap_close($mbox);
      vier String-Elementen:
     </para>
     <para>
-     <informalexample>
-      <literallayout>
-     mailbox - Name des Postfachs (Username)
-     host   - Hostname
-     personal - Realer Name des Empfängers
-     adl - at domain source route
-      </literallayout>
-     </informalexample>
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        mailbox - Name des Postfachs (Username)
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        host - Hostname
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        personal - Realer Name des Empfängers
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        adl - at domain source route
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+    <para>
+     <example>
+      <title><function>imap_rfc822_parse_adrlist</function> Beispiel</title>
+      <programlisting role="php">
+$address_string = "Hartmut Holzgraefe &lt;hartmut@cvs.php.net>, postmaster@somedomain.net, root";
+$address_array  = imap_rfc822_parse_adrlist($address_string,"somedomain.net");
+if(! is_array($address_array)) die("somethings wrong\n");
+ 
+reset($address_array);
+while(list($key,$val)=each($address_array)){
+  print "mailbox : ".$val->mailbox."&lt;br>\n";
+  print "host    : ".$val->host."&lt;br>\n";
+  print "personal: ".$val->personal."&lt;br>\n";
+  print "adl     : ".$val->adl."&lt;p>\n";
+} 
+      </programlisting>
+     </example>
     </para>
    </refsect1>
   </refentry>
@@ -1575,8 +1730,23 @@ imap_close($mbox);
      Enthält <parameter>options</parameter> den Wert ST_UID,
      so werden die übergebenen Nachrichtennummern als UIDs anstelle
      von Indizes interpretiert.
-    </para>                                         
-   </refsect1>
+    </para>              
+    <para>
+     <example>
+      <title><function>imap_setflag_full</function> Beispiel</title>
+      <programlisting role="php">
+$mbox = imap_open("{your.imap.host:143}","username","password")
+     || die("can't connect: ".imap_last_error());
+ 
+$status = imap_setflag_full($mbox,"2,5","\\Seen \\Flagged");
+ 
+print gettype($status)."\n";
+print $status."\n";
+ 
+imap_close($mbox);
+      </programlisting>
+     </example>
+    </para>                                                                                                 </refsect1>
   </refentry>
 
   <refentry id="function.imap-clearflag-full">
@@ -1631,17 +1801,29 @@ imap_close($mbox);
      Postfachs als sortiertes Array zurück. Als Sortier-Kriterium
      kann im Parameter <parameter>criteria</parameter> genau einer
      der folgenden Werte angegeben werden
-     <informalexample>
-      <literallayout>
-        SORTDATE        Versanddatum der Nachricht
-        SORTARRIVAL     Empfangsdatum der Nachricht
-        SORTFROM        Benutzername des ersten From: Eintrags
-        SORTSUBJECT     Betreff der Nachricht
-        SORTTO          Benutzername des ersten To: Eintrags
-        SORTCC          Benutzername des ersten CC: Eintrags
-        SORTSIZE        Größe der Nachricht in Bytes
-      </literallayout>
-     </informalexample>
+     <itemizedlist>
+      <listitem><simpara>
+       SORTDATE        Versanddatum der Nachricht
+      </simpara></listitem>
+      <listitem><simpara>
+       SORTARRIVAL     Empfangsdatum der Nachricht
+      </simpara></listitem>
+      <listitem><simpara>
+       SORTFROM        Benutzername des ersten From: Eintrags
+      </simpara></listitem>
+      <listitem><simpara>
+       SORTSUBJECT     Betreff der Nachricht
+      </simpara></listitem>
+      <listitem><simpara>
+       SORTTO          Benutzername des ersten To: Eintrags
+      </simpara></listitem>
+      <listitem><simpara>
+       SORTCC          Benutzername des ersten CC: Eintrags
+      </simpara></listitem>
+      <listitem><simpara>
+       SORTSIZE        Größe der Nachricht in Bytes
+      </simpara></listitem>
+     </itemizedlist>
     </para>
     <para>
      Ist <parameter>reverse</parameter> ungleich 0, so werden
@@ -1650,12 +1832,14 @@ imap_close($mbox);
     <para>
      Die Bitmaske <parameter>options</parameter> kann aus folgenden
      werten zusammengesetzt werden:
-     <informalexample>
-      <literallayout>
+     <itemizedlist>
+      <listitem><simpara>
         SE_UID          Es werden UIDs anstelle von Indizes zurückgegeben
+      </simpara></listitem>
+      <listitem><simpara>
         SE_NOPREFETCH   Es werden keine Nachrichten im Cache gehalten
-      </literallayout>
-     </informalexample>
+      </simpara></listitem>
+     </itemizedlist>
     </para>
    </refsect1>
   </refentry>
@@ -1682,18 +1866,22 @@ imap_close($mbox);
     <para>
      Die Bitmaske <parameter>flags</parameter> kann aus folgenden Werten
      zusammengesetzt werden:
-     <informalexample>
-      <literallayout>
+     <itemizedlist>
+      <listitem><simpara>
         FT_UID          <parameter>msgno</parameter> enthält eine UID 
+      </simpara></listitem>
+      <listitem><simpara>
         FT_INTERNAL     Der Kopf wird im "internen" Format, d.h.
                         ohne jegliche Konvertierung von Zeilenenden
                         zurückgegeben
+      </simpara></listitem>
+      <listitem><simpara>
         FT_PREFETCHTEXT Der Körper der Nachricht wird ebenfalls angefordert,
                         hierdurch wird ein zus. Zugriff vermieden, wenn z.B.
                         für eine Save-Operation der gesamte Text einer 
                         Nachricht benötigt wird
-      </literallayout>
-     </informalexample>
+      </simpara></listitem>
+     </itemizedlist>
     </para>
    </refsect1>
   </refentry>
@@ -2058,8 +2246,22 @@ imap_close($mbox);
     </para>
     <para>
      <example>
-      <title><function>imap_check</function> example</title>
+      <title><function>imap_status</function> Beispiel</title>
       <programlisting role="php">
+$mbox = imap_open("{your.imap.host}","username","password",OP_HALFOPEN)
+      || die("can't connect: ".imap_last_error());
+ 
+$status = imap_status($mbox,"{your.imap.host}INBOX",SA_ALL);
+if($status) {
+  print("Messages:   ". $status->messages   )."&lt;br>\n";
+  print("Recent:     ". $status->recent     )."&lt;br>\n";
+  print("Unseen:     ". $status->unseen     )."&lt;br>\n";
+  print("UIDnext:    ". $status->uidnext    )."&lt;br>\n";
+  print("UIDvalidity:". $status->uidvalidity)."&lt;br>\n"; 
+} else
+  print "imap_status failed: ".imap_lasterror()."\n";
+ 
+imap_close($mbox);
       </programlisting>
      </example>
     </para>
@@ -2084,8 +2286,10 @@ imap_close($mbox);
      modifizierten UTF-7 Format in 8Bit-Text.
     </para>
     <para>
-     Liefert den dekodierten Text oder false, wenn die Eingabe
-     nicht gemäß modifiziertem UTF-7 formatiert war.
+     Liefert den dekodierten Text oder false, wenn die Eingabe nicht
+     gemäß modifiziertem UTF-7 formatiert war. Diese Funktion wird
+     benötigt, um Postfachnamen zu decodieren, die internationale
+     Sonderzeichen, wie z.B. unsere Umlaute, enthalten.
     </para>
     <para>
      (siehe <ulink url="&url.rfc;/rfc2152.html">RFC2152</ulink> 
@@ -2110,7 +2314,9 @@ imap_close($mbox);
     </funcsynopsis>
     <para>
      Konvertiert den in <parameter>data</parameter> übergebenen Text
-     in das modifizierte UTF-7 Format.
+     in das modifizierte UTF-7 Format. Diese Funktion wird benötigt,
+     um Postfachnamen darzustellen, die internationale Sonderzeichen,
+     wie z.B. unsere Umlaute, enthalten.
     </para>
     <para>
      (siehe <ulink url="&url.rfc;/rfc2152.html">RFC2152</ulink> 
@@ -2153,11 +2359,16 @@ imap_close($mbox);
      <funcdef>array <function>imap_fetch_overview</function></funcdef>
      <paramdef>int <parameter>imap_stream</parameter></paramdef>
      <paramdef>string <parameter>sequence</parameter></paramdef>
+     <paramdef>int <parameter><optional>flags</optional></parameter></paramdef>
     </funcsynopsis>
     <para>
-     Diese Funktion liefert ausgewählte Headerfelder der übergebenen Nachrichten
-     und liefert sie in einem Array mit je einem Objekt pro Nachricht zurück.
-     Die einzelnen Objekte enthalten dabei folgende Informationen:
+     Diese Funktion liefert ausgewählte Headerfelder der in
+     <parameter>sequence</parameter> übergebenen Nachrichten und
+     liefert sie in einem Array mit je einem Objekt pro Nachricht
+     zurück. <parameter>sequence</parameter> enthält eine Sequenz von
+     Nachrichten-Indizes oder, bei gesetztem FT_UID in
+     <parameter>flags</parameter>, von UIDs. Die einzelnen Objekte
+     des zurückgegeben Arrays enthalten dabei folgende Informationen:
      <itemizedlist>
       <listitem>
        <simpara>
@@ -2231,7 +2442,30 @@ imap_close($mbox);
       </listitem>
      </itemizedlist>
     </para>
-   </refsect1>
+    <para>
+     <example>
+      <title><function>imap_fetch_overview</function> Beispiel</title>
+      <programlisting role="php">
+$mbox = imap_open("{your.imap.host:143}","username","password")
+     || die("can't connect: ".imap_last_error());
+ 
+$overview = imap_fetch_overview($mbox,"2,4:6",0);
+ 
+if(is_array($overview)) {
+        reset($overview);
+        while( list($key,$val) = each($overview)) {
+                print     $val->msgno
+                . " - " . $val->date
+                . " - " . $val->subject
+                . "\n";
+        }
+}
+ 
+imap_close($mbox);
+      </programlisting>
+     </example>
+    </para>
+    </refsect1>
   </refentry>
 
   <refentry id="function.imap-mail-compose">
@@ -2249,6 +2483,27 @@ imap_close($mbox);
      <paramdef>array <parameter>body</parameter></paramdef>
     </funcsynopsis>
     <para>
+<!--
+envelope
+ remail
+ return_path
+ date
+ from
+ reply_to
+ to
+ cc
+ bcc
+ message_id
+body
+ type
+ encoding
+ subtype
+ id
+ contents.data
+ lines
+ bytes
+ md5
+-->
     </para>
    </refsect1>
   </refentry>
