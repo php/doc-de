@@ -1,93 +1,92 @@
-<!-- $Revision: 1.8 $ -->
+<!-- $Revision: 1.9 $ -->
  <reference id="ref.fdf">
-  <title>Forms Data Format functions</title>
+  <title>Forms Data Format Funktionen</title>
   <titleabbrev>FDF</titleabbrev>
 
   <partintro>
 
    <simpara>
-    Forms Data Format (FDF) is a format for handling
-    forms within PDF documents. You should read the documentation at 
-		  <ulink url="&spec.pdf.fdf;">&spec.pdf.fdf;</ulink>
-    for more information on what FDF is and how it is used in general.
+    Forms Data Format (FDF) ist ein Format zur Verarbeitung von 
+    Formularen innerhalb von PDF Dokumenten.
+    Weiterführende Informationen zu FDF und dessen Verwendung 
+    sind unter <ulink url="&spec.pdf.fdf;">&spec.pdf.fdf;</ulink> zu finden.
    </simpara>
 
    <note><simpara>
-    If you run into problems configuring php with fdftk support, check
-    whether the header file FdfTk.h and the library libFdfTk.so are at
-    the right place. They should be in fdftk-dir/include and
-    fdftk-dir/lib. This will not be the case if you just unpack
-    the FdfTk distribution.
+    Bei Problemen mit der Konfiguration der FdfTk-Unterstützung sollte man 
+    überprüfen, ob die Datei FdfTk.h sowie die Bibliothek libFdfTk.so im richtigen 
+    Verzeichnis zu finden sind. Die korrekten Verzeichnisse sind fdftk-dir/include
+    und fdftk-dir/lib. Das ausschließliche Entpacken der Distribution führt nicht
+    zu dem gewünschten Ergebnis.
    </simpara></note>
 
    <simpara>
-    The general idea of FDF is similar to HTML forms. The diffence is
-    basically the format how data is transmitted to the server when the submit
-    button is pressed (this is actually the Form Data Format) and the format
-    of the form itself (which is the Portable Document Format, PDF).
-    Processing the FDF data is one of the features provided by the fdf
-    functions. But there is more.  One may as well take an existing PDF form
-    and populated the input fields with data without modifying the form
-    itself. In such a case one would create a FDF document
-    (<function>fdf_create</function>) set the values of each input field
-    (<function>fdf_set_value</function>) and associate it with a PDF form
-    (<function>fdf_set_file</function>). Finally it has to be sent to the
-    browser with MimeType <literal>application/vnd.fdf</literal>. The Acrobat
-    reader plugin of your browser recognizes the MimeType,  reads the
-    associated PDF form and fills in the data from the FDF document.
+    Der Ansatz den FDF verfolgt, ist vergleichbar mit dem üblicher HTML Formulare.
+    Die wesentlichen Unterschiede liegen in der Übertragung der Daten nach Absenden des Formulars (dies ist das eigentliche Form Data Format), sowie in dem Format des Dokuments welches das Formular enthält(PDF).
+    Die Verarbeitung der FDF Daten ist eine der Möglichkeiten, die 
+    die FDF Funktionen bereitstellen.
+    Darüberhinaus kann man beispielsweise innerhalb eines vorhandenen PDF Formulars
+    die Input Felder dynamisch mit Daten füllen, ohne das Formular selbst zu verändern.
+    Hierzu erzeugt man das FDF Dokument (<function>fdf_create</function>), setzt die Werte 
+    der jeweiligen Input Felder (<function>fdf_set_value</function>) und verbindet es 
+    mit dem jeweiligen PDF Formular (<function>fdf_set_file</function>).
+    Nachdem man das FDF Dokument, mit dem passenden MimeType <literal>application/vnd.fdf</literal>
+    versehen, ausgegeben hat, erkennt das Acrobat Reader PlugIn des Browsers den MimeType und 
+    füllt das Zielformular mit den Daten des FDF Dokuments.
    </simpara>
 
    <simpara>
-    If you look at an FDF-document with a text editor you will find a
-    catalogue object with the name <literal>FDF</literal>. Such an object may
-    contain a number of entries like <literal>Fields</literal>,
-    <literal>F</literal>, <literal>Status</literal> etc..
-    The most commonly used entries are <literal>Fields</literal> whicht points
-    to a list of input fields, and <literal>F</literal> which contains the
-    filename of the PDF-document this data belongs to. Those entries are
-    referred to in the FDF documention as /F-Key or /Status-Key.
-    Modifying this entries
-    is done by functions like <function>fdf_set_file</function> and
-    <function>fdf_set_status</function>. Fields are modified with
-    <function>fdf_set_value</function>, <function>fdf_set_opt</function> etc..
+    Betrachtet man ein FDF Dokument mit einem Text Editor, findet sich dort
+    ein Katalog Objekt <literal>FDF</literal>. Dieses Objekt kann mehrere Einträge
+    der Art <literal>Fields</literal>, <literal>F</literal>, <literal>Status</literal> etc.. 
+    enthalten. Die gebräuchlichsten Einträge sind <literal>Fields</literal>, welches zu einer
+    Anzahl von Input Feldern verweist, sowie <literal>F</literal> das den Dateinamen des
+    zugehörigen PDF Dokuments enthält. Diese Einträge finden sich in der FDF Dokumentation 
+    unter /F-Key oder /Status-Key.
+    Modifikationen dieser Einträge werden mit Hilfe der Funktionen <function>fdf_set_file</function> und 
+    <function>fdf_set_status</function> vorgenommen.
+    Felder werden u.a. mit <function>fdf_set_value</function>, <function>fdf_set_opt</function>
+    modifiziert.
    </simpara>
    <simpara>
-    The following examples shows just the evaluation of form data.</simpara>
+    Das Beispiel zeigt die Auswertung der Formular Daten.
+   </simpara>
    <simpara></simpara>
     <example>
-     <title>Evaluating a FDF document</title>
+     <title>Auswertung eines FDF Dokuments</title>
      <programlisting>
 &lt;?php
-// Save the FDF data into a temp file
+// Speichern der FDF Daten in eine temporäre Datei
 $fdffp = fopen("test.fdf", "w");
 fwrite($fdffp, $HTTP_FDF_DATA, strlen($HTTP_FDF_DATA));
 fclose($fdffp);
 
-// Open temp file and evaluate data
-// The pdf form contained several input text fields with the names
-// volume, date, comment, publisher, preparer, and two checkboxes
-// show_publisher and show_preparer.
+// Öffnen der temporären Datei und Auswertung der Daten
+// Das PDF Formular enthält verschiedene Eingabefelder mit den zugehörigen Namen
+// band, datum, kommentar, verleger, bearbeiter, sowie zwei Checkboxen
+// zeige_verleger und zeige_bearbeiter.
+
 $fdf = fdf_open("test.fdf");
-$volume = fdf_get_value($fdf, "volume");
-echo "The volume field has the value '&lt;B>$volume&lt;/B>'&lt;BR>";
+$band = fdf_get_value($fdf, "band");
+echo "Das Feld Band hat den Wert '&lt;B>$band&lt;/B>'&lt;BR>";
 
-$date = fdf_get_value($fdf, "date");
-echo "The date field has the value '&lt;B>$date&lt;/B>'&lt;BR>";
+$datum = fdf_get_value($fdf, "datum");
+echo "Das Feld Datum hat den Wert '&lt;B>$datum&lt;/B>'&lt;BR>";
 
-$comment = fdf_get_value($fdf, "comment");
-echo "The comment field has the value '&lt;B>$comment&lt;/B>'&lt;BR>";
+$kommentar = fdf_get_value($fdf, "kommentar");
+echo "Das Feld Kommentar hat den Wert '&lt;B>$kommentar&lt;/B>'&lt;BR>";
 
-if(fdf_get_value($fdf, "show_publisher") == "On") {
-  $publisher = fdf_get_value($fdf, "publisher");
-  echo "The publisher field has the value '&lt;B>$publisher&lt;/B>'&lt;BR>";
+if(fdf_get_value($fdf, "zeige_verleger") == "On") {
+  $verleger = fdf_get_value($fdf, "verleger");
+  echo "Das Feld Verleger hat den Wert '&lt;B>$verleger&lt;/B>'&lt;BR>";
 } else
-  echo "Publisher shall not be shown.&lt;BR>";
+  echo "Verleger soll nicht angezeigt werden.&lt;BR>";
 
-if(fdf_get_value($fdf, "show_preparer") == "On") {
-  $preparer = fdf_get_value($fdf, "preparer");
-  echo "The preparer field has the value '&lt;B>$preparer&lt;/B>'&lt;BR>";
+if(fdf_get_value($fdf, "zeige_bearbeiter") == "On") {
+  $bearbeiter = fdf_get_value($fdf, "bearbeiter");
+  echo "Das Feld Bearbeiter hat den Wert '&lt;B>$bearbeiter&lt;/B>'&lt;BR>";
 } else
-  echo "Preparer shall not be shown.&lt;BR>";
+  echo "Bearbeiter soll nicht angezeigt werden.&lt;BR>";
 fdf_close($fdf);
 ?&gt;
      </programlisting>
@@ -98,10 +97,10 @@ fdf_close($fdf);
   <refentry id="function.fdf-open">
    <refnamediv>
     <refname>fdf_open</refname>
-    <refpurpose>Open a FDF document</refpurpose>
+    <refpurpose>Öffnet ein FDF Dokument</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>fdf_open</function></funcdef>
@@ -109,25 +108,25 @@ fdf_close($fdf);
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_open</function> function opens
-     a file with form data. This file must contain the data as returned
-     from a PDF form. Currently, the file has to be created 'manually'
-     by using <function>fopen</function> and writing the content
-     of HTTP_FDF_DATA with <function>fwrite</function> into it.
-     A mechanism like for HTML form data where for each input
-     field a variable is created does not exist.</para>
-
+     Die Funktion <function>fdf_open</function> öffnet 
+     eine Datei mit Formulardaten. Diese Datei muß die von einem 
+     PDF Formular zurückgegebenen Formulardaten enthalten.
+     Momentan muss diese Datei 'manuell' erzeugt werden.
+     Mit Hilfe von <function>fopen</function> schreibt man den Inhalt von HTTP_FDF_DATA
+     mit <function>fwrite</function> in die Datei.
+     Eine automatische Vorbelegung von Variablen mit den Daten der Eingabefelder, 
+     wie sie bei HTML Formularen möglich ist, existiert in diesem Fall nicht.</para>
     <para>
     <example>
-     <title>Accessing the form data</title>
+     <title>Zugang zu den Fornmulardaten</title>
      <programlisting>
 &lt;?php
-// Save the FDF data into a temp file
+// Speichern der FDF Daten in eine temporäre Datei
 $fdffp = fopen("test.fdf", "w");
 fwrite($fdffp, $HTTP_FDF_DATA, strlen($HTTP_FDF_DATA));
 fclose($fdffp);
 
-// Open temp file and evaluate data
+// Öffnen der temporären Datei und Auswertung der Daten
 $fdf = fdf_open("test.fdf");
 ...
 fdf_close($fdf);
@@ -136,7 +135,7 @@ fdf_close($fdf);
     </example></para>
 
     <para>
-     See also <function>fdf_close</function>.</para>
+     Siehe auch <function>fdf_close</function>.</para>
 
    </refsect1>
   </refentry>
@@ -144,10 +143,10 @@ fdf_close($fdf);
   <refentry id="function.fdf-close">
    <refnamediv>
     <refname>fdf_close</refname>
-    <refpurpose>Close an FDF document</refpurpose>
+    <refpurpose>Schließt ein FDF Dokument</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_close</function></funcdef>
@@ -155,10 +154,10 @@ fdf_close($fdf);
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_close</function> function closes the FDF document.</para>
+     Die Funktion <function>fdf_close</function> schließt das FDF Dokument.</para>
 
     <para>
-     See also <function>fdf_open</function>.</para>
+     Siehe auch <function>fdf_open</function>.</para>
 
    </refsect1>
   </refentry>
@@ -166,10 +165,10 @@ fdf_close($fdf);
   <refentry id="function.fdf-create">
    <refnamediv>
     <refname>fdf_create</refname>
-    <refpurpose>Create a new FDF document</refpurpose>
+    <refpurpose>Erzeugt ein neues FDF Dokument</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>fdf_create</function></funcdef>
@@ -177,16 +176,16 @@ fdf_close($fdf);
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_create</function> creates a new
-     FDF document. This function is needed if one would like to
-     populate input fields in a PDF document with data.</para>
+     Die Funktion <function>fdf_create</function> erzeugt ein neues FDF Dokument. 
+     Diese Funktion wird benötigt, wenn man Eingabefelder in einem PDF Dokument 
+     mit Daten belegen möchte.</para>
     <para>
     <example>
-     <title>Populating a PDF document</title>
+     <title>Füllen von Formularwerten in einem PDF Dokument</title>
      <programlisting>
 &lt;?php
 $outfdf = fdf_create();
-fdf_set_value($outfdf, "volume", $volume, 0);
+fdf_set_value($outfdf, "band", $band, 0);
 
 fdf_set_file($outfdf, "http:/testfdf/resultlabel.pdf");
 fdf_save($outfdf, "outtest.fdf");
@@ -200,7 +199,7 @@ unlink("outtest.fdf");
     </example></para>
 
     <para>
-     See also <function>fdf_close</function>,
+     Siehe auch <function>fdf_close</function>,
               <function>fdf_save</function>,
               <function>fdf_open</function>.</para>
 
@@ -210,10 +209,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-save">
    <refnamediv>
     <refname>fdf_save</refname>
-    <refpurpose>Save a FDF document</refpurpose>
+    <refpurpose>Speichern eines FDF Dokuments</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>int <function>fdf_save</function></funcdef>
@@ -221,16 +220,14 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_save</function> function saves
-     a FDF document.
-     The FDF Toolkit provides a way to output the document to stdout if
-     the parameter <parameter>filename</parameter>
-     is '.'. This does not work if PHP is used as an apache module.
-     In such a case one will have to write to a file and use e.g.
-     <function>fpassthru</function>. to output it.</para>
-
+     Die Funktion <function>fdf_save</function> speichert ein FDF Dokument.
+     Das FDF Toolkit stellt eine Möglichkeit zur Verfügung, das Dokument an 
+     der Standardausgabe auszugeben, wenn der Parameter <parameter>filename</parameter>
+     '.' ist. Dies funktioniert allerdings nicht, wenn PHP als Apache Module verwendet wird.
+     In diesem Fall sollte man die Ausgabe in eine Datei schreiben und die Funktion 
+     <function>fpassthru</function> verwenden, um den Inhalt anzuzeigen.</para>
     <para>
-     See also <function>fdf_close</function> and example for
+     Siehe auch <function>fdf_close</function> and example for
               <function>fdf_create</function>.</para>
 
    </refsect1>
@@ -239,10 +236,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-get-value">
    <refnamediv>
     <refname>fdf_get_value</refname>
-    <refpurpose>Get the value of a field</refpurpose>
+    <refpurpose>Gibt den Wert eines Feldes zurück</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>fdf_get_value</function></funcdef>
@@ -251,11 +248,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_get_value</function> function returns the
-     value of a field.</para>
+     Die Funktion <function>fdf_get_value</function> gibt den Wert eines 
+     Feldes zurück.</para>
 
     <para>
-     See also <function>fdf_set_value</function>.</para>
+     Siehe auch <function>fdf_set_value</function>.</para>
 
    </refsect1>
   </refentry>
@@ -263,10 +260,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-value">
    <refnamediv>
     <refname>fdf_set_value</refname>
-    <refpurpose>Set the value of a field</refpurpose>
+    <refpurpose>Setzt den Wert eines Feldes</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_value</function></funcdef>
@@ -277,13 +274,13 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_value</function> function sets the
-     value of a field. The last parameter determines if the field value
-     is to be converted to a PDF Name (<parameter>isName</parameter> = 1)
-     or set to a PDF String (<parameter>isName</parameter> = 0).</para>
+     Die Funktion <function>fdf_set_value</function> setzt den Wert 
+     eines Feldes. Der letzte Parameter bestimmt, ob der Wert des Feldes 
+     in einen PDF Namen (<parameter>isName</parameter> = 1) konvertiert oder 
+     als PDF String (<parameter>isName</parameter> = 0) behandelt wird.</para>
 
     <para>
-     See also <function>fdf_get_value</function>.</para>
+     Siehe auch <function>fdf_get_value</function>.</para>
 
    </refsect1>
   </refentry>
@@ -291,10 +288,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-next-field-name">
    <refnamediv>
     <refname>fdf_next_field_name</refname>
-    <refpurpose>Get the next field name</refpurpose>
+    <refpurpose>Gibt den Namen des nächsten Feldes zurück</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>fdf_next_field_name</function></funcdef>
@@ -303,13 +300,12 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_next_field_name</function> function returns the
-     name of the field after the field in
-     <parameter>fieldname</parameter> or the field name of the first field
-     if the second paramter is &null;.</para>
+     Die Funktion <function>fdf_next_field_name</function> gibt den Namen 
+     des Feldes nach <parameter>fieldname</parameter> oder den Namen des 
+     ersten Feldes zurück, wenn der Parameter &null; ist.</para>
 
     <para>
-     See also <function>fdf_set_field</function>,
+     Siehe auch <function>fdf_set_field</function>,
               <function>fdf_get_field</function>.</para>
 
    </refsect1>
@@ -318,10 +314,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-ap">
    <refnamediv>
     <refname>fdf_set_ap</refname>
-    <refpurpose>Set the appearance of a field</refpurpose>
+    <refpurpose>Legt das Aussehen eines Feldes fest</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_ap</function></funcdef>
@@ -333,10 +329,10 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_ap</function> function sets the
-     appearance of a field (i.e. the value of the /AP key).
-     The possible values of <parameter>face</parameter>
-     are 1=FDFNormalAP, 2=FDFRolloverAP, 3=FDFDownAP.</para>
+     Die Funktion <function>fdf_set_ap</function> legt das Aussehen 
+     eines Feldes (d.h den Wert des /AP Schlüssels) fest.
+     Mögliche Werte von <parameter>face</parameter> sind 
+     1=FDFNormalAP, 2=FDFRolloverAP, 3=FDFDownAP.</para>
 
    </refsect1>
   </refentry>
@@ -344,10 +340,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-status">
    <refnamediv>
     <refname>fdf_set_status</refname>
-    <refpurpose>Set the value of the /STATUS key</refpurpose>
+    <refpurpose>Setzt den Wert des /STATUS Schlüssels</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_status</function></funcdef>
@@ -356,11 +352,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_status</function> sets the value
-     of the /STATUS key.</para>
+     Die Funktion <function>fdf_set_status</function> setzt den Wert 
+     des /STATUS Schlüssels.</para>
 
     <para>
-     See also <function>fdf_get_status</function>.</para>
+     Siehe auch <function>fdf_get_status</function>.</para>
 
    </refsect1>
   </refentry>
@@ -368,10 +364,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-get-status">
    <refnamediv>
     <refname>fdf_get_status</refname>
-    <refpurpose>Get the value of the /STATUS key</refpurpose>
+    <refpurpose>Gibt den Wert des /STATUS Schlüssels zurück</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>fdf_get_status</function></funcdef>
@@ -379,11 +375,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_get_status</function> returns the value
-     of the /STATUS key.</para>
+     Die Funktion <function>fdf_get_status</function> gibt den Wert 
+     des /STATUS Schlüssels zurück.</para>
 
     <para>
-     See also <function>fdf_set_status</function>.</para>
+     Siehe auch <function>fdf_set_status</function>.</para>
 
    </refsect1>
   </refentry>
@@ -391,10 +387,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-file">
    <refnamediv>
     <refname>fdf_set_file</refname>
-    <refpurpose>Set the value of the /F key</refpurpose>
+    <refpurpose>Setzt den Wert des /F Schlüssels</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_file</function></funcdef>
@@ -403,13 +399,12 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_file</function> sets the value
-     of the /F key. The /F key is just a reference to a PDF form
-     which is to be populated with data.
-     In a web environment it is a URL (e.g. http:/testfdf/resultlabel.pdf).</para>
+     Die Funktion <function>fdf_set_file</function> setzt den Wert des /F Schlüssels. 
+     Der /F Schlüssel ist eine Referenz zu einem PDF Formular welches mit Daten gefüllt werden soll.
+     In einer Web Umgebung ist diese Referenz ein URL (z.B. http:/testfdf/resultlabel.pdf).</para>
 
     <para>
-     See also <function>fdf_get_file</function> and example for
+     Siehe auch <function>fdf_get_file</function> und das Beispiel zu 
               <function>fdf_create</function>.</para>
 
    </refsect1>
@@ -418,10 +413,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-get-file">
    <refnamediv>
     <refname>fdf_get_file</refname>
-    <refpurpose>Get the value of the /F key</refpurpose>
+    <refpurpose>Gibt den Wert des /F Schlüssels zurück</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>fdf_get_file</function></funcdef>
@@ -429,11 +424,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_file</function> returns the value
-     of the /F key.</para>
+     Die Funktion  <function>fdf_set_file</function> gibt den Wert 
+     des /F Schlüssels zurück.</para>
 
     <para>
-     See also <function>fdf_set_file</function>.</para>
+     Siehe auch <function>fdf_set_file</function>.</para>
 
    </refsect1>
   </refentry>
@@ -441,10 +436,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-flags">
    <refnamediv>
     <refname>fdf_set_flags</refname>
-    <refpurpose>Sets a flag of a field</refpurpose>
+    <refpurpose>Setzt Flags eines Feldes</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_flags</function></funcdef>
@@ -455,11 +450,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_flags</function> sets certain flags
-     of the given field <parameter>fieldname</parameter>.
-    </para>
+     Die Funktion  <function>fdf_set_flags</function> setzt bestimmte Flags 
+     des Feldes <parameter>fieldname</parameter>.</para>
+
     <para>
-     See also <function>fdf_set_opt</function>.
+     Siehe auch <function>fdf_set_opt</function>.
     </para>
    </refsect1>
   </refentry>
@@ -467,10 +462,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-opt">
    <refnamediv>
     <refname>fdf_set_opt</refname>
-    <refpurpose>Sets an option of a field</refpurpose>
+    <refpurpose>Setzt die Option eines Feldes</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_opt</function></funcdef>
@@ -482,11 +477,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_opt</function> sets options 
-     of the given field <parameter>fieldname</parameter>.
-    </para>
+     Die Funktion <function>fdf_set_opt</function> setzt Optionen  
+     des Feldes <parameter>fieldname</parameter>.
+    </para> 
     <para>
-     See also <function>fdf_set_flags</function>.
+     Siehe auch <function>fdf_set_flags</function>.
     </para>
    </refsect1>
   </refentry>
@@ -494,10 +489,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-submit-form-action">
    <refnamediv>
     <refname>fdf_set_submit_form_action</refname>
-    <refpurpose>Sets an javascript action of a field</refpurpose>
+    <refpurpose>Setzt die 'Submit Form Action' für ein Feld</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_submit_form_action</function></funcdef>
@@ -509,11 +504,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     The <function>fdf_set_submit_form_action</function> sets a submit form
-     action for the given field <parameter>fieldname</parameter>.
+     Die Funktion <function>fdf_set_submit_form_action</function> setzt die 
+     'Submit Form Action' für das Feld <parameter>fieldname</parameter>.
     </para>
     <para>
-     See also <function>fdf_set_javascript_action</function>.
+     Siehe auch <function>fdf_set_javascript_action</function>.
     </para>
    </refsect1>
   </refentry>
@@ -521,10 +516,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-javascript-action">
    <refnamediv>
     <refname>fdf_set_javascript_action</refname>
-    <refpurpose>Sets an javascript action of a field</refpurpose>
+    <refpurpose>Weist einem Feld eine Javascript Aktion zu</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_javascript_action</function></funcdef>
@@ -535,11 +530,11 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>fdf_set_javascript_action</function> sets a javascript
-     action for the given field <parameter>fieldname</parameter>.
+     <function>fdf_set_javascript_action</function> weist dem Feld <parameter>fieldname</parameter> 
+     eine Javascript Aktion zu.
     </para>
     <para>
-     See also <function>fdf_set_submit_form_action</function>.
+     Siehe auch <function>fdf_set_submit_form_action</function>.
     </para>
    </refsect1>
   </refentry>
@@ -547,10 +542,10 @@ unlink("outtest.fdf");
   <refentry id="function.fdf-set-encoding">
    <refnamediv>
     <refname>fdf_set_encoding</refname>
-    <refpurpose>Sets FDF character encoding</refpurpose>
+    <refpurpose>Legt die Kodierung des FDF Zeichensatzes fest</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>fdf_set_encoding</function></funcdef>
@@ -559,16 +554,15 @@ unlink("outtest.fdf");
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>fdf_set_encoding</function> sets the character
-     encoding in FDF document <parameter>fdf_document</parameter>. 
-     <parameter>encoding</parameter> should be the valid encoding 
-     name. The valid encoding name in Acrobat 5.0 are 
-     "<literal>Shift_JIS</literal>", "<literal>UHC</literal>",
-     "<literal>GBK</literal>","<literal>BigFive</literal>".
+     <function>fdf_set_encoding</function> legt die Kodierung des 
+     Zeichensatzes innerhalb des FDF Dokuments <parameter>fdf_document</parameter> fest.
+     In Acrobat 5.0 sind "<literal>Shift_JIS</literal>", "<literal>UHC</literal>", 
+     "<literal>GBK</literal>","<literal>BigFive</literal>" gültige Werte für den Parameter 
+     <parameter>encoding</parameter>.
     </para>
     <para>
-     The <function>fdf_set_encoding</function> is available in
-     PHP-4.0.7 or later.
+     Die Funktion <function>fdf_set_encoding</function> ist ab PHP-4.0.7 oder 
+     später verfügbar.
     </para>
    </refsect1>
   </refentry>
