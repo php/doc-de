@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- splitted from ./de/functions/http.xml, last change in rev 1.2 -->
-<!-- last change to 'setcookie' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.13/EN.1.2 -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.17 Maintainer: tom Status: ready -->
+<!-- CREDITS: tschuer -->
   <refentry id="function.setcookie">
    <refnamediv>
     <refname>setcookie</refname>
@@ -12,13 +10,8 @@
    <refsect1>
     <title>Beschreibung:</title>
      <methodsynopsis>
-      <type>int</type><methodname>setcookie</methodname>
+      <type>boolean</type><methodname>setcookie</methodname>
       <methodparam><type>string</type><parameter>name</parameter></methodparam>
-      <methodparam><type>string</type><parameter>value</parameter></methodparam>
-      <methodparam><type>int</type><parameter>expire</parameter></methodparam>
-      <methodparam><type>string</type><parameter>path</parameter></methodparam>
-      <methodparam><type>string</type><parameter>domain</parameter></methodparam>
-      <methodparam><type>int</type><parameter>secure</parameter></methodparam>
       <methodparam choice="opt"><type>string</type><parameter>value</parameter></methodparam>
       <methodparam choice="opt"><type>int</type><parameter>expire</parameter></methodparam>
       <methodparam choice="opt"><type>string</type><parameter>path</parameter></methodparam>
@@ -26,39 +19,162 @@
       <methodparam choice="opt"><type>int</type><parameter>secure</parameter></methodparam>
      </methodsynopsis>
     <para>
-     <function>setcookie</function> definiert ein mit den
-     Header-Informationen zu übertragendes Cookie. Cookies müssen
-     <emphasis>vor</emphasis> irgendwelchen anderen Headern gesendet
-     werden (dies ist eine Einschränkung der Cookies, nicht von PHP).
-     Sie müssen deshalb solche Funktionsaufrufe vor irgendwelchen
-     <literal>&lt;html></literal>- oder
-     <literal>&lt;head></literal>-Tags im Skript einsetzen.
+     <function>setcookie</function> definiert ein mit den HTTP
+     Header-Informationen zu übertragendes Cookie. Wie andere Header auch,
+     müssen Cookies <emphasis>vor</emphasis> irgendwelchen anderen Ausgaben
+     Ihres Skriptes gesendet werden (dies ist eine Einschränkung des Protokolls).
+     Sie müssen deshalb solche Funktionsaufrufe vor irgendwelchen Ausgaben,
+     inklusive <literal>&lt;html></literal>- oder
+     <literal>&lt;head></literal>-Tags sowie irgendwelcher Whitespaces tätigen.
+     Erfolgte bereits vor dem Aufruf dieser Funktion eine Ausgabe erfolgt sein,
+     gibt <function>setcookie</function> scheitern und &false; zurückgeben.
+     War <function>setcookie</function> erfolgreich, wird &true; zurückgegeben.
+     Dies sagt jedoch nichts darüber aus, ob der Benutzer das Cookie auch
+     akzeptiert hat.
     </para>
     <para>
-     Alle Argumente - ausser <parameter>name</parameter> - sind
-     optional. Ist nur der Name angegeben wird das Cookie mit diesem
-     Namen auf dem Client gelöscht. Sie können beliebige Argumente
-     auch durch einen Leerstring (<emphasis>&quot;&quot;</emphasis>)
-     ersetzen, um diese Argumente zu übergehen.
-     Der <parameter>expire</parameter>-Parameter und das
-     <parameter>secure</parameter>-Argument sind Integer-Werte und
-     können nicht mit einem Leerstring übersprungen werden. Setzen
-     sie statt dessen &null; (<emphasis>0</emphasis>). Der
-     <parameter>expire</parameter>-Parameter ist ein normaler
-     UNIX-Zeitwert als Integer-Zahl, wie er von der
-     <function>time</function> oder
-     <function>mktime</function>-Funktion zurück gegeben wird. Das
-     <parameter>secure</parameter>-Argument bedeutet, dass das Cookie
-     nur über eine sichere HTTP-Verbindung geschickt werden soll.
+     Alle Argumente - außer <parameter>name</parameter> - sind optional.
+     Ist nur der Name angegeben wird das Cookie mit diesem Namen auf dem
+     Client gelöscht. Sie können ein Argument auch durch einen Leerstring
+     (<emphasis>&quot;&quot;</emphasis>) ersetzen, um es zu überspringen.
+     Da die Argumente <parameter>expire</parameter> und
+     <parameter>secure</parameter> Integer-Werte sind können sie nicht mit
+     einem Leerstring übersprungen werden. Setzen sie statt dessen &null;
+     (<emphasis>0</emphasis>). Die folgende Tabelle erklärt jeden Parameter
+     von <function>setcookie</function>, spezifische Informationen finden
+     Sie auch auf der Seite <ulink url="&spec.cookies;">Netscape cookie
+     specification</ulink>.
     </para>
+    <para>
+     <table>
+      <title><function>setcookie</function> Parameter erklärt</title>
+      <tgroup cols="3">
+       <thead>
+        <row>
+         <entry>Parameter</entry>
+         <entry>Beschreibung</entry>
+         <entry>Beispiele</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry><parameter>name</parameter></entry>
+         <entry>
+          Der Name des Cookies.
+         </entry>
+         <entry>
+          Auf 'cookiename' wird mittels  <varname>$_COOKIE['cookiename']</varname>
+          zugegriffen.
+         </entry>
+        </row>
+        <row>
+         <entry><parameter>value</parameter></entry>
+         <entry>
+          Der Wert des Cookies. Dieser Wert wird am Computer des Benutzers
+          gespeichert, speichern Sie deshalb keine sensiblen Informationen.
+         </entry>
+         <entry>
+          Ist der <parameter>name</parameter> z.B. 'cookiename', so erhält man
+          seinen Wert mittels <varname>$_COOKIE['cookiename']</varname>.
+         </entry>
+        </row>
+        <row>
+         <entry><parameter>expire</parameter></entry>
+         <entry>
+          Der Zeitpunkt, wann das verfällt. Dies ist ein Unix Timestamp, also
+          die Anzahl Sekunden seit der Unix-Epoche. In anderen Worten werden
+          Sie diesen Wert wahrscheinlich mittels der Funktion
+          <function>time</function> plus der Anzahl Sekunden bis zum gewünschten
+          Ablauf des Cookies. Sie könnten aber auch <function>mktime</function>
+          verwenden.
+         </entry>
+         <entry>
+          <literal>time()+60*60*24*30</literal> wird das Cookie in 30 Tagen
+          ablaufen lassen. Ist der Parameter nicht gesetzt, verfällt das
+          Cookie am Ende der Session (wenn der Browser geschlossen wird).
+         </entry>
+        </row>
+        <row>
+         <entry><parameter>path</parameter></entry>
+         <entry>
+          Der Pfad zu dem Server, auf welchem das Cookie verfügbar sein wird.
+         </entry>
+         <entry>
+          Ist er auf <literal>'/'</literal> gesetzt, wird das Cookie innerhalb
+          der gesamten Domain verfügbar. Ist er auf <literal>'/foo/'</literal>
+          gesetzt, wird das Cookie nur innerhalb des Verzeichnisses
+          <literal>/foo/</literal> der <parameter>domain</parameter>, sowie
+          allen Unterverzeichnissen wie z.B. <literal>/foo/bar/</literal>
+          verfügbar. Der Standardwert ist das Verzeichnis, in dem das Cookie
+          gesetzt wurde.
+         </entry>
+        </row>
+        <row>
+         <entry><parameter>domain</parameter></entry>
+         <entry>
+          Die Domain, der das Cookie zur Verfügung steht.
+         </entry>
+         <entry>
+          Um das Cookie für all Sub-Domains von example.com verfügbar zu
+          machen, setzen Sie es auf <literal>'.example.com'</literal>. Der
+          <literal>.</literal> ist zwar nicht erforderlich, erhöht aber die
+          Kompatibilität zu mehr Browsern. Eine Setzen auf
+          <literal>www.example.com</literal> macht das Cookie nur in der
+          <literal>www</literal> Sub-Domain verfügbar. Weitere Details hierzu
+          finden Sie in der <ulink url="&spec.cookies;">Spezifikation</ulink>.
+         </entry>
+        </row>
+        <row>
+         <entry><parameter>secure</parameter></entry>
+         <entry>
+          Gibt an, dass das Cookie nur über eine sichere HTTPS - Verbindung
+          übertragen werden soll. Ist es auf <literal>1</literal> gesetzt,
+          wird das Cookie nur gesendet, wenn eine sichere Verbindung besteht.
+          Der Standardwert ist <literal>0</literal>.
+         </entry>
+         <entry>
+          <literal>0</literal> oder <literal>1</literal>
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </para>
+    <para>
+     Sind die Cookies einmal gesetzt, können Sie beim nächsten Seitenaufruf
+     anhand der <link linkend="reserved.variables.cookies">$_COOKIE</link>
+     oder <varname>$HTTP_COOKIE_VARS</varname> Arrays auf diese zugreifen.
+     Beachten Sie, dass die <link
+     linkend="language.variables.superglobals">autoglobals</link> wie
+     <varname>$_COOKIE</varname> seit PHP <ulink
+     url="&url.php.release4.1.0;">4.1.0</ulink> verfügbar sind.
+     <varname>$HTTP_COOKIE_VARS</varname> existiert seit PHP 3.
+     Cookie-Werte kommen auch in <link linkend="reserved.variables.request">
+     $_REQUEST</link> vor.
+    </para>
+    <note>
+     <para>
+      Ist die PHP Direktive <link
+      linkend="ini.register-globals">register_globals</link> auf
+      <literal>on</literal> gesetzt, stehen die Cookies auch als eigene
+      Variablen zur Verfügung. In den nachstehenden Beispielen wird
+      <varname>$TextCookie</varname> also existieren. Es wird empfohlen,
+      <varname>$_COOKIE</varname> zu verwenden.
+     </para>
+    </note>
     <para>  
-     Anwendungsbereiche:
+     Häufige Probleme:
     </para>
     <itemizedlist>
      <listitem>
       <simpara>
        Cookies werden nicht sichtbar, bevor nicht eine Seite geladen
-       wird, in der das Cookie sichtbar sein soll.  
+       wird, in der das Cookie sichtbar sein soll. Um zu testen, ob ein
+       Cookie erfolgreich gesetzt wurde, prüfen Sie noch vor der Ablaufzeit
+       auf einer weiteren Seite ob das Cookie vorhanden ist. Die Ablaufzeit
+       wird mittels dem Parameter <parameter>expire</parameter> gesetzt.
+       Eine nette Möglichkeit um die Existenz von Cookies zu prüfen, ist
+       <literal>print_r($_COOKIE);</literal> aufzurufen.
       </simpara>
      </listitem> 
      <listitem>
@@ -67,12 +183,21 @@
        denen sie gesetzt wurden.
       </simpara>
      </listitem>
+     <listitem>
+      <simpara>
+       Namen von Cookies können auch als Arraynamen gesetzt werden und stehen
+       dann in Ihren Skripten als Arrays zu Verfügung, während sie auf dem System
+       des Benutzers separat abgespeichert werden. Um ein Cookie mit mehreren
+       Namen und Werten zu setzen, erwägen Sie auch den Einsatz von
+       <function>explode</function> bzw. <function>serialize</function>.
+      </simpara>
+     </listitem>
     </itemizedlist>
     <simpara>
-     In PHP3 werden mehrfache Aufrufe von <function>setcookie</function>
+     In PHP 3 werden mehrfache Aufrufe von <function>setcookie</function>
      im selben Skript in umgekehrter Reihenfolge abgearbeitet. Sollten
      sie also ein Cookie löschen wollen bevor sie ein anderes setzen,
-     sollten sie das Setzen vor dem Löschen vornehmen. In PHP4 werden
+     sollten sie das Setzen vor dem Löschen vornehmen. In PHP 4 werden
      mehrfache Aufrufe von <function>setcookie</function> in der 
      Reihenfolge ihres Aufrufs behandelt.
     </simpara>
@@ -82,63 +207,88 @@
       <title><function>setcookie</function>-Beispiele:</title>
       <programlisting role="php">
 <![CDATA[
-setcookie ("TestCookie", "Test Value");
+<?php
+$value = 'something from somewhere';
+
+setcookie ("TestCookie", $value);
 setcookie ("TestCookie", $value, time()+3600);  /* verfällt in 1 Stunde */
 setcookie ("TestCookie", $value, time()+3600, "/~rasmus/", ".utoronto.ca",1);
+?>
 ]]>
       </programlisting>
      </example>
     </para>
     <para>
-     Beispiele, wie die vorhergehenden Cookies wieder gelöscht werden:
-     <example>
-      <title><function>setcookie</function>-Beispiele:</title>
-      <programlisting role="php">
-<![CDATA[
-setcookie ("TestCookie");
-// Setzen des Ablauf-Zeitpunktes auf 1 Stunde vorher
-setcookie ("TestCookie", "", time() - 3600);
-setcookie ("TestCookie", "", time() - 3600, "/~rasmus/", ".utoronto.ca",1);
-]]>
-      </programlisting>
-     </example>
-     Beim Löschen eines Cookies sollten sie sicher stellen, dass die
-     Verfallszeit in der Vergangenheit liegt, damit ihr Browser
-     &quot;zufrieden&quot; ist.
-    </para>
-    <para>
-     Beachten sie, dass der Wertebereich des Cookies automatisch
+     Beachten Sie, dass der Wertebereich des Cookies automatisch
      URL-konform codiert (urlencoded) wird, sobald sie das Cookie
      senden, und wenn es gelesen wird, wird es automatisch URL-konform
      decodiert und einer Variablen zugewiesen, die den selben Namen
      wie das Cookie trägt. Um die Inhalte unserer Test-Cookies zu
-     sehen, brauchen sie nur eines der folgenden Beispiel zu benutzen:
+     sehen, brauchen sie nur eines der folgenden Beispiele zu benutzen:
      <informalexample>
       <programlisting role="php">
 <![CDATA[
-echo $TestCookie;
+<?php
+// ein bestimmtes Cookie ausgeben
+echo $_COOKIE["TestCookie"];
 echo $HTTP_COOKIE_VARS["TestCookie"];
+
+// Eine anderer Weg zu debuggen/testen ist, alle Cookies anzuzeigen
+print_r($_COOKIE);
+?>
 ]]>
       </programlisting>
      </informalexample>
     </para>
     <para>
+     Beim Löschen eines Cookies sollten sie sicherstellen, dass das
+     Verfallsdatum in der Vergangenheit liegt, um den Mechanismus zum
+     Löschen des Cookies im Browser auszulösen. Die folgenden Beispiele
+     zeigen, wie die im vorigen Beispiel gesendeten Cookies wieder gelöscht
+     werden:
+     <example>
+      <title><function>setcookie</function> Beispiele zum Löschen</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Setzen des Verfalls-Zeitpunktes auf 1 Stunde vorher
+setcookie ("TestCookie", "", time() - 3600);
+setcookie ("TestCookie", "", time() - 3600, "/~rasmus/", ".example.com", 1);
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
      Sie können auch ein Array an Cookies setzen, in dem sie die
      Array-Schreibweise benutzen. Dadurch werden so viele Cookies
-     gesetzt, wie ihr Array Elemente hat. Sobald das Cookie aber von
+     gesetzt, wie Ihr Array Elemente hat. Sobald das Cookie aber von
      ihrem Skript gelesen wird, werden alle Werte in ein einziges
      Array mit dem Cookie-Namen eingelesen: 
      <informalexample>
       <programlisting role="php">
 <![CDATA[
+<?php
+// Setzen der Cookies
 setcookie ("cookie[three]", "cookiethree");
 setcookie ("cookie[two]", "cookietwo");
 setcookie ("cookie[one]", "cookieone");
-if (isset ($cookie)) {
-    while (list ($name, $value) = each ($cookie)) {
-        echo "$name == $value<br>\n";
+
+// Nach dem Neuladen der Seite wieder ausgeben
+if (isset($_COOKIE['cookie'])) {
+    foreach ($_COOKIE['cookie'] as $name => $value) {
+        echo "$name : $value <br />\n";
     }
 }
+
+/* was folgendes ausgibt:
+
+three : cookiethree
+two : cookietwo
+one : cookieone
+
+*/
+?>
 ]]>
       </programlisting>
      </informalexample>
@@ -149,7 +299,7 @@ if (isset ($cookie)) {
      url="&spec.cookies;">&spec.cookies;</ulink>.
     </para>
     <simpara>
-     Microsofts Internet-Explorer 4 mit Servive-Pack 1 geht nicht
+     Microsofts Internet-Explorer 4 mit Service-Pack 1 geht nicht
      korrekt mit Cookies um, die den Pfad-Parameter beinhalten.
     </simpara>
     <simpara>
