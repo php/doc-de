@@ -1,29 +1,81 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- splitted from ./de/functions/http.xml, last change in rev 1.2 -->
-<!-- last change to 'headers-sent' in en/ tree in rev 1.7 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.13/EN.1.7 -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.11 Maintainer: tom Status: ready -->
+<!-- CREDITS: tschuer -->
   <refentry id="function.headers-sent">
    <refnamediv>
     <refname>headers_sent</refname>
-    <refpurpose>
-     Gibt &true; zurück, wenn die Header schon gesendet sind
-    </refpurpose>
+    <refpurpose>Prüft, ob oder wo die Header bereits gesendet wurden</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Beschreibung:</title>
+    <title>Beschreibung</title>
      <methodsynopsis>
-      <type>boolean</type><methodname>headers_sent</methodname>
-      <methodparam><parameter>void</parameter></methodparam>
+      <type>boolean</type><methodname>headers_sent</methodname>      
+      <methodparam choice="opt"><type>string</type><parameter>&amp;file</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>&amp;line</parameter></methodparam>
      </methodsynopsis>
+    <simpara>
+     <function>headers_sent</function> gibt &true; zurück, wenn die HTTP-Header
+     bereits gesendet wurden, ansonsten wird &false; zurückgegeben. Sind die
+     optionalen Parameter <parameter>file</parameter> und <parameter>line</parameter>
+     angegeben, werden der Dateiname und die Zeilennummer von wo die Ausgabe
+     begann, in den Variablen <parameter>file</parameter> und
+     <parameter>line</parameter> gespeichert.
+    </simpara>
+    <simpara>
+     Sobald der Header-Block gesendet wurde, können Sie keine weiteren
+     Header-Zeilen mit der Funktion <function>header</function> hinzufügen.
+     Mittels dieser Funktion können Sie aber zumindest Fehlermeldungen
+     bezüglich der HTTP Header vermeiden. Eine andere Möglichkeit ist die
+     Verwendung von <link linkend="ref.outcontrol">Output Buffering</link>.
+    </simpara>
+    <note>
+     <title>Neue Parameter</title>
+     <simpara>
+      Die optionalen Parameter <parameter>file</parameter> und
+      <parameter>line</parameter> wurden in PHP 4.3.0 eingeführt.
+     </simpara>
+    </note>
     <para>
-     Diese Funktion gibt &true; zurück, wenn die HTTP-Header bereits
-     abgeschickt worden sind, ansonsten wird &false; zurück gegeben.
+     <example>
+      <title>Beispiele für <function>headers_sent</function></title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+
+// Wenn keine Header gesendet wurden, sende einen
+if (!headers_sent()) {
+    header ('Location: http://www.example.com/');
+    exit;
+}
+  
+// Ein Beispiel für den Einsatz der seit PHP 4.3.0 verfügbaren optionalen
+// Parameter file und line. Beachten Sie, dass $filename und $linenum für
+// einen späteren Einsatz übergeben werden.
+// Weisen Sie ihnen davor keine Werte zu.
+if (!headers_sent($filename, $linenum)) {
+    header ('Location: http://www.example.com/');
+    exit;
+
+// Wahrscheinlich wollen Sie hier eine Fehlermeldung auslösen
+} else {
+
+    print "Headers already sent in $filename on line $linenum\n" .
+          "Cannot redirect, for now please click this <a " .
+          "href=\"http://www.example.com\">link</a> instead\n";
+    exit;
+}
+
+?>
+]]>
+      </programlisting>
+     </example>
     </para>
     <para>
-	   Siehe auch: <function>header</function>.
-  	</para>
+     Siehe auch <function>ob_start</function>, <function>trigger_error</function>
+     und <function>header</function> für detailliertere Informationen zu diesem
+     Thema.
+    </para>
    </refsect1>
   </refentry>
 
