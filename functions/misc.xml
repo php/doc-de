@@ -1,6 +1,8 @@
  <reference id="ref.misc">
   <title>Sonstige Funktionen</title>
   <titleabbrev>Sonstiges</titleabbrev>
+<!-- Anmerkung des Übersetzers:
+     entspricht en/functions.misc.xml 1.32 -->
 
   <partintro>
    <para>
@@ -433,6 +435,123 @@ Mozilla/4.5 [en] (X11; U; Linux 2.2.9 i586)&lt;hr&gt;
    </refsect1>
   </refentry>
 
+  <refentry id="function.highlight-string">
+   <refnamediv>
+    <refname>highlight_string</refname>
+    <refpurpose>Hervorhebung der Syntax eines Strings</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>highlight_string</function></funcdef>
+      <paramdef>string <parameter>str</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Die Funktion <function>highlight_string</function> gibt den String
+     <parameter>str</parameter> mit hervorgehobener Syntax (Syntax 
+     highlighting) aus. Dabei werden die Farben des in PHP eingebauten
+     Syntax-Highlighter benutzt.
+    </simpara>
+    <simpara>
+     Siehe auch <function>highlight_file</function> und
+     <function>show_source</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.highlight-file">
+   <refnamediv>
+    <refname>highlight_file</refname>
+    <refpurpose>Syntax-Hervorhebung für eine Datei</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung:</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>highlight_file</function></funcdef>
+      <paramdef>string <parameter>filename</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <simpara>
+     Die Funktion <function>highlight_file</function> erzeugt die 
+     Ausgabe des Codes der Datei <parameter>filename</parameter>
+     mit hervorgehobener Syntax. Dabei werden die Farben des in PHP
+     eingebauten Syntax-Highlighter benutzt.
+    </simpara>
+    <para>
+     <example>
+      <title>Erzeugung einer hervorgehobenen URL</title>
+      <simpara>
+       Zur Erzeugung einer URL, die Code eines ihm übermittelten 
+       Skripts hervorgehoben dargestellen kann, machen wir Gebrauch von
+       der &quot;ForceType&quot;-Anweisung des Apachen um eine richtige
+       URL zu erzeugen. Zusätzlich benutzen wir die Funktion
+       <function>highlight_file</function>, um das Code-Listing wie
+       gewünscht an zu zeigen.
+      </simpara>
+      <simpara>
+       In ihrer httpd.conf sollten sie folgendes hinzu fügen:
+      </simpara>
+      <para>
+       <informalexample><programlisting>
+&lt;Location /source&gt;
+    ForceType application/x-httpd-php
+&lt;/Location&gt;
+       </programlisting></informalexample>
+      </para>
+      <simpara>
+       Jetzt erzeugen sie eine Datei namens &quot;source&quot; und
+       speichern es in dem Root-Verzeichnis ihrer Web-Seite.
+      </simpara>
+      <para>
+       <programlisting role="php">
+&lt;HTML&gt;
+&lt;HEAD&gt;
+&lt;TITLE&gt;Source Display&lt;/TITLE&gt;
+&lt;/HEAD&gt;
+&lt;BODY BGCOLOR=&quot;white&quot;&gt;
+&lt;?php
+    $script = getenv (&quot;PATH_TRANSLATED&quot;);
+    if(!$script) {
+        echo &quot;&lt;BR&gt;&lt;B&gt;Fehler: Skript-Name nötig&lt;/B&gt;&lt;BR&gt;&quot;;
+    } else {
+        if (ereg(&quot;(\.php|\.inc)$&quot;,$script)) {
+            echo &quot;&lt;H1&gt;Source von: $PATH_INFO&lt;/H1&gt;\n&lt;HR&gt;\n&quot;;
+            highlight_file($script);
+        } else {
+            echo &quot;&lt;H1&gt;ERROR: Nur PHP oder Include-Skripte sind erlaubt&lt;/H1&gt;&quot;; 
+        }
+    }
+    echo &quot;&lt;HR&gt;Erzeugt: &quot;.date(&quot;Y/M/d H:i:s&quot;,time());
+?&gt;
+&lt;/BODY&gt;
+&lt;/HTML&gt;
+       </programlisting>
+      </para>
+      <simpara>
+       Jetzt können sie die u.a. URL benutzen, um eine farblich
+       hervorgehobene Version des Skriptes
+       &quot;/path/to/script.php&quot; innerhalb ihrer Web-Seite zu
+       zeigen.
+      </simpara>
+      <para>
+       <informalexample>
+	<programlisting>
+http://ihr.server.de/source/pfad/zu/script.php
+	</programlisting>
+       </informalexample>
+      </para>
+     </example>
+    </para>
+    <simpara>
+     Siehe auch <function>highlight_string</function> und
+     <function>show_source</function>.
+    </simpara>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.ignore-user-abort">
    <refnamediv>
     <refname>ignore_user_abort</refname>
@@ -698,64 +817,36 @@ $binarydata = pack ("nvc*", 0x1234, 0x5678, 65, 66);
    </refsect1>
   </refentry>
 
-  <refentry id="function.serialize">
+
+  <refentry id="function.show-source">
    <refnamediv>
-    <refname>serialize</refname>
-    <refpurpose>
-     Erzeugt ein speicherbares Datenformat
-    </refpurpose>
+    <refname>show_-source</refname>
+    <refpurpose>Syntax-Highlighting einer Datei</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung:</title>
     <funcsynopsis>
      <funcprototype>
-      <funcdef>string <function>serialize</function></funcdef>
-      <paramdef>mixed <parameter>value</parameter></paramdef>
+      <funcdef>void <function>show_source</function></funcdef>
+      <paramdef>string <parameter>filename</parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <simpara>
-     <function>Serialize</function> gibt eine Zeichenkette (String)
-     zurück, die eine Byte-Stream entsprechende Wiedergabe von
-     <parameter>value</parameter> enthält und beliebig abgespeichert
-     werden kann.
+     Die Funktion <function>show_source</function> erzeugt die 
+     Ausgabe des Codes der Datei <parameter>filename</parameter>
+     mit hervorgehobener Syntax. Dabei werden die Farben des in PHP
+     eingebauten Syntax-Highlighter benutzt.
     </simpara>
+    <note>
+     <simpara>
+      Diese Funktion ist ein Alias der Funktion
+      <function>highlight_file</function>.
+     </simpara>
+    </note>
     <simpara>
-     Diese Funktion dient der Speicherung oder Übergabe von
-     PHP-Werten, ohne dass diese ihren Wert oder ihre Struktur
-     verlieren.
+     Siehe auch <function>highlight_string</function> und
+     <function>highlight_file</function>.
     </simpara>
-    <simpara>
-     Um eine serialisierte Zeichenkette wieder als PHP-Wert verfügbar
-     zu machen steht die <function>unserialize</function>-Funktion zur
-     Verfügung. <function>Serialize</function> kann mit den Typen
-     <type>integer</type>, <type>double</type>, <type>string</type>,
-     <type>array</type> (mehrdimensional) und <type>object</type>
-     umgehen. Beim Objekt werden die Eigenschaften serialisiert, die
-     Methoden gehen aber verloren.
-    </simpara>
-    <para>
-     <example>
-      <title><function>Serialize</function>-Beispiel:</title>
-      <programlisting role="php">
-// $session_data enthält ein mehrdimensionales Array mit
-// Session-Informationen des aktuellen Benutzers. Wir benutzen
-// serialize() um diese Infos am Ende der Anfrage in eine
-// Datenbank zu speichern.
-
-$conn = odbc_connect ("webdb", "php", "moorhuhn");
-$stmt = odbc_prepare ($conn,
-                      "UPDATE sessions SET data = ? WHERE id = ?");
-$sqldata = array (serialize($session_data), $PHP_AUTH_USER);
-if (!odbc_execute ($stmt, &amp;$sqldata)) {
-    $stmt = odbc_prepare ($conn,
-                          "INSERT INTO sessions (id, data) VALUES(?, ?)");
-    if (!odbc_execute($stmt, &amp;$sqldata)) {
-        /* Etwas lief schief. Fluche, heule und stöhne. */
-    }
-}
-      </programlisting>
-     </example>
-    </para>
    </refsect1>
   </refentry>
 
@@ -896,59 +987,6 @@ $array = unpack ("c2chars/nint", $binarydata);
    </refsect1>
   </refentry>
 
-  <refentry id="function.unserialize">
-   <refnamediv>
-    <refname>unserialize</refname>
-    <refpurpose>
-     Erzeugt aus einem gespeicherten Datenformat einen Wert in PHP
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-    <funcsynopsis>
-     <funcprototype>
-      <funcdef>mixed <function>unserialize</function></funcdef>
-      <paramdef>string <parameter>str</parameter></paramdef>
-     </funcprototype>
-    </funcsynopsis>
-    <simpara>
-     <function>Unserialize</function> nimmt eine einzelne
-     Variable aus einer serialisierten Datenmenge (siehe unter
-     <function>serialize</function>) und wandelt sie in einen
-     PHP-Wert um. Dieser Wert wird als Funktionsergebnis zurück
-     gegeben. Er kann vom Typ <type>integer</type>,
-     <type>double</type>, <type>string</type>, <type>array</type>
-     oder <type>object</type> sein. Wurde ein Objekt serialisiert,
-     können dessen Methoden nicht zurück gegeben werden.
-    </simpara>
-    <para>
-     <example>
-      <title><function>Unserialize</function>-Beispiel:</title>
-      <programlisting role="php">
-// Als Beispiel benutzen wir unserialize() um Daten aus einer
-// Datenbank nach $session_data zu laden. Das Beispiel vervollständigt
-// das unter serialize() beschriebene.
-
-$conn = odbc_connect ("webdb", "php", "moorhuhn");
-$stmt = odbc_prepare ($conn, "SELECT data FROM sessions WHERE id = ?");
-$sqldata = array ($PHP_AUTH_USER);
-if (!odbc_execute ($stmt, &amp;$sqldata) || !odbc_fetch_into ($stmt, &amp;$tmp)) {
-    // wenn execute oder fetch fehlschlägt, initialisiere ein leeres Array
-    $session_data = array();
-} else {
-    // die serialisierten Daten sollten nun in $tmp[0] stehen
-    $session_data = unserialize ($tmp[0]);
-    if (!is_array ($session_data)) {
-        // etwas ging schief, also wieder ein leeres Array initialisieren
-        $session_data = array();
-    }
-}
-      </programlisting>
-     </example>
-    </para>
-   </refsect1>
-  </refentry>
-
   <refentry id="function.usleep">
    <refnamediv>
     <refname>usleep</refname>
@@ -963,7 +1001,7 @@ if (!odbc_execute ($stmt, &amp;$sqldata) || !odbc_fetch_into ($stmt, &amp;$tmp))
      </funcprototype>
     </funcsynopsis>
     <simpara>
-     Mittels der Funktion <function>sleep</function> verzögern sie die
+     Mittels der Funktion <function>usleep</function> verzögern sie die
      weitere Skript-Ausführung um die gegebene Anzahl an
      <parameter>micro_seconds</parameter>.
     </simpara>
@@ -975,155 +1013,6 @@ if (!odbc_execute ($stmt, &amp;$sqldata) || !odbc_fetch_into ($stmt, &amp;$tmp))
       Dies Funktion steht unter Windows-Systemen nicht zur Verfügung.
      </simpara>
     </note>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.highlight-string">
-   <refnamediv>
-    <refname>highlight_string</refname>
-    <refpurpose>Hervorhebung der Syntax eines Strings</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-    <funcsynopsis>
-     <funcprototype>
-      <funcdef>void <function>highlight_string</function></funcdef>
-      <paramdef>string <parameter>str</parameter></paramdef>
-     </funcprototype>
-    </funcsynopsis>
-    <simpara>
-     Die Funktion <function>highlight_string</function> gibt den String
-     <parameter>str</parameter> mit hervorgehobener Syntax (Syntax 
-     highlighting) aus. Dabei werden die Farben des in PHP eingebauten
-     Syntax-Highlighter benutzt.
-    </simpara>
-    <simpara>
-     Siehe auch <function>highlight_file</function> und
-     <function>show_source</function>.
-    </simpara>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.highlight-file">
-   <refnamediv>
-    <refname>highlight_file</refname>
-    <refpurpose>Syntax-Hervorhebung für eine Datei</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-    <funcsynopsis>
-     <funcprototype>
-      <funcdef>void <function>highlight_file</function></funcdef>
-      <paramdef>string <parameter>filename</parameter></paramdef>
-     </funcprototype>
-    </funcsynopsis>
-    <simpara>
-     Die Funktion <function>highlight_file</function> erzeugt die 
-     Ausgabe des Codes der Datei <parameter>filename</parameter>
-     mit hervorgehobener Syntax. Dabei werden die Farben des in PHP
-     eingebauten Syntax-Highlighter benutzt.
-    </simpara>
-    <para>
-     <example>
-      <title>Erzeugung einer hervorgehobenen URL</title>
-      <simpara>
-       Zur Erzeugung einer URL, die Code eines ihm übermittelten 
-       Skripts hervorgehoben dargestellen kann, machen wir Gebrauch von
-       der &quot;ForceType&quot;-Anweisung des Apachen um eine richtige
-       URL zu erzeugen. Zusätzlich benutzen wir die Funktion
-       <function>highlight_file</function>, um das Code-Listing wie
-       gewünscht an zu zeigen.
-      </simpara>
-      <simpara>
-       In ihrer httpd.conf sollten sie folgendes hinzu fügen:
-      </simpara>
-      <para>
-       <informalexample><programlisting>
-&lt;Location /source&gt;
-    ForceType application/x-httpd-php
-&lt;/Location&gt;
-       </programlisting></informalexample>
-      </para>
-      <simpara>
-       Jetzt erzeugen sie eine Datei namens &quot;source&quot; und
-       speichern es in dem Root-Verzeichnis ihrer Web-Seite.
-      </simpara>
-      <para>
-       <programlisting role="php">
-&lt;HTML&gt;
-&lt;HEAD&gt;
-&lt;TITLE&gt;Source Display&lt;/TITLE&gt;
-&lt;/HEAD&gt;
-&lt;BODY BGCOLOR=&quot;white&quot;&gt;
-&lt;?php
-    $script = getenv (&quot;PATH_TRANSLATED&quot;);
-    if(!$script) {
-        echo &quot;&lt;BR&gt;&lt;B&gt;Fehler: Skript-Name nötig&lt;/B&gt;&lt;BR&gt;&quot;;
-    } else {
-        if (ereg(&quot;(\.php|\.inc)$&quot;,$script)) {
-            echo &quot;&lt;H1&gt;Source von: $PATH_INFO&lt;/H1&gt;\n&lt;HR&gt;\n&quot;;
-            highlight_file($script);
-        } else {
-            echo &quot;&lt;H1&gt;ERROR: Nur PHP oder Include-Skripte sind erlaubt&lt;/H1&gt;&quot;; 
-        }
-    }
-    echo &quot;&lt;HR&gt;Erzeugt: &quot;.date(&quot;Y/M/d H:i:s&quot;,time());
-?&gt;
-&lt;/BODY&gt;
-&lt;/HTML&gt;
-       </programlisting>
-      </para>
-      <simpara>
-       Jetzt können sie die u.a. URL benutzen, um eine farblich
-       hervorgehobene Version des Skriptes
-       &quot;/path/to/script.php&quot; innerhalb ihrer Web-Seite zu
-       zeigen.
-      </simpara>
-      <para>
-       <informalexample>
-	<programlisting>
-http://ihr.server.de/source/pfad/zu/script.php
-	</programlisting>
-       </informalexample>
-      </para>
-     </example>
-    </para>
-    <simpara>
-     Siehe auch <function>highlight_string</function> und
-     <function>show_source</function>.
-    </simpara>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.show-source">
-   <refnamediv>
-    <refname>show_-source</refname>
-    <refpurpose>Syntax-Highlighting einer Datei</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-    <funcsynopsis>
-     <funcprototype>
-      <funcdef>void <function>show_source</function></funcdef>
-      <paramdef>string <parameter>filename</parameter></paramdef>
-     </funcprototype>
-    </funcsynopsis>
-    <simpara>
-     Die Funktion <function>show_source</function> erzeugt die 
-     Ausgabe des Codes der Datei <parameter>filename</parameter>
-     mit hervorgehobener Syntax. Dabei werden die Farben des in PHP
-     eingebauten Syntax-Highlighter benutzt.
-    </simpara>
-    <note>
-     <simpara>
-      Diese Funktion ist ein Alias der Funktion
-      <function>highlight_file</function>.
-     </simpara>
-    </note>
-    <simpara>
-     Siehe auch <function>highlight_string</function> und
-     <function>highlight_file</function>.
-    </simpara>
    </refsect1>
   </refentry>
 
