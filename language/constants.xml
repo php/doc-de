@@ -1,132 +1,260 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
+<!-- EN-Revision: 1.25 Maintainer: betz Status: ready -->
+<!-- CREDITS: tzwenny -->
+
   <chapter id="language.constants">
    <title>Konstanten</title>
 
+  <simpara>
+   Eine Konstante ist ein Bezeichner (Name) für eine simple Variable.
+   Wie der Name schon ausdrückt, kann sich der Wert einer Konstanten
+   zur Laufzeit eines Skripts nicht ändern. (Die 'Magischen Konstanten'
+   <constant>__FILE__</constant> und <constant>__LINE__</constant> scheinen
+   eine Ausnahme von dieser Regel zu sein, aber in Wahrheit sind dies
+   keine Konstanten). Eine Konstante unterscheidet zwischen Groß- und
+   KLeinschreinbung (case-sensitive). Nach gängiger Konvention werden
+   Konstanten immer in Großbuchstaben geschrieben.
+  </simpara>
+  <para>
+   Der Name einer Konstanten folgt den gleichen Regeln wie alle anderen
+   Bezeichner in PHP. Ein gültiger Name beginnt mit einem Buchstaben
+   oder einem Unterstrich, gefolgt von beliebig vielen Buchstaben, Nummern
+   oder Understrichen. Als regulärer Ausdruck geschrieben:
+   <literal>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*</literal>
+  </para>
+  <note>
    <simpara>
-    PHP definiert eine Reihe von Konstanten und stellt einen Mechanismus
-    zur Verfügung, mit dem man zusätzliche Konstanten zur Laufzeit definieren
-    kann. Konstanten sind Variablen sehr ähnlich, bis auf die Tatsache, dass
-    sie mit der <function>define</function>-Funktion definiert werden
-    müssen und später nicht mehr mit einem anderen Wert versehen werden
-    können.</simpara>
+    Für unsere Zwecke ist ein Buchstabe a-z, A-Z und die ASCII-Zeichen
+    von 127 bis 255 (0x7f-0xff).
+   </simpara>
+  </note>
 
+  <simpara>
+   Der Gültigkeitsbereich einer Konstanten ist global -- Sie können unabhängig
+   vom Gültigkeitsbereich überall auf eine Konstante zugreifen.
+  </simpara>
+
+  <sect1 id="language.constants.syntax">
+   <title>Syntax</title>
+   <simpara>
+    Eine Konstante können Sie über die Funktion <function>define</function>
+    definieren. Einmal definiert, kann eine Konstane weder verändert
+    noch gelöscht werden.
+   </simpara>
+   <simpara>
+    Konstanten können nur scalare Daten (<type>boolean</type>,
+    <type>integer</type>, <type>float</type> und <type>string</type>)
+    enthalten.
+   </simpara>
+   <simpara>
+    Den Wert einer Konstanten erhalten Sie ganz einfach durch die Angabe ihres
+    Namens. Einer Konstanten sollten Sie <emphasis>nicht</emphasis>,wie bei
+    Variablen, ein $ voranstellen. Ebenso können Sie die Funktion
+    <function>constant</function> benutzen um den Wert einer Konstanten
+    auszulesen, wenn Sie den Namen der Konstanten dynamisch erhalten wollen.
+    Benutzen Sie <function>get_defined_constants</function> um eine Liste
+    aller definierten Konstanten zu erhalten.
+   </simpara>
+   <note>
+    <simpara>
+     Konstanten und (globale) Variablen befinden sich in unterschiedlichen
+     Namensräumen. Das hat zum Beispiel zur Folge, dass  &true; und 
+     <varname>$TRUE</varname> grundsätzlich unterschiedlich sind.
+    </simpara>
+   </note>
+
+   <simpara>
+    Falls Sie eine undefinierte Konstante verwenden, nimmt PHP an, dass
+    Sie den Namen der Konstanten selber meinen.
+    Wenn das passiert wird eine <link linkend="features.error-handling">Notice</link>
+    ausgegeben. Benutzen Sie die Funktion <function>defined</function> um
+    herauszufinden, ob eine Konstante definiert ist.
+   </simpara>
    <para>
-	Folgende vordefinierten Variablen sind immer verfügbar:
+    Das hier sind die Unterschiede zwischen Konstanten und Variablen:
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Konstanten haben kein Dollarzeichen (<literal>$</literal>)
+       vorangestellt;
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Konstanten können nur über die Funktion <function>define</function>
+       definiert werden, nicht durch einfache Zuweisung;
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Konstanten können überall definiert werden und auf Ihren Wert
+       können Sie ohne Rücksicht auf Namensraumregeln von Variablen zugreifen;
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Sobald Konstanten definiert sind, können sie nicht neu definiert
+       oder gelöscht werden; und
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Konstanten können nur skalare Werte haben.
+       </simpara>
+     </listitem>
+    </itemizedlist>
+   </para>
+   <para>
+    <example>
+     <title>Definiton von Konstanten</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+define("CONSTANT", "Hallo Welt.");
+echo CONSTANT; // Ausgabe: "Hallo Welt."
+echo Constant; // Ausgabe: "Constant" und eine Notice.
+?>
+]]>
+     </programlisting>
+    </example>
 
-	<variablelist>
+   </para>
+  </sect1>
 
-	 <varlistentry>
-	  <term>__FILE__</term>
-	  <listitem>
-	   <simpara>
-		Der Name der Skript-Datei, die gerade geparsed wird. Wird 
-		diese Konstante in einer Datei verwendet, die per
-		<function>include</function> oder <function>require</function>
-		eingebunden wurde, liefert sie den Namen der eingebundenen
-		Datei, nicht den der aufrufenden Datei.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+  <sect1 id="language.constants.predefined">
+   <title>Vordefinierte Konstanten</title>
+   <simpara>
+    PHP stellt jedem Skript eine Reihe von vordefinierten Konstanten zur Verfügung.
+    Viele dieser Konstanten werden jedoch von verschiedenen Erweiterungen definiert,
+    die nur zur Verfügung stehen, wenn diese Erweiterungen selbst zur Verfügung stehen,
+    entweder über dynamisches Laden zur Laufzeit oder sie sind einkompiliert.
+   </simpara>
 
-	 <varlistentry>
-	  <term>__LINE__</term>
-	  <listitem>
-	   <simpara>
-		Die Nummer der Zeile im laufenden Skript, die gerade geparst
-	 	wird. Wird diese Konstante in einer Datei benutzt, die per
-		<function>include</function> oder <function>require</function>
-		eingebunden wurde, liefert sie die Zeilennummer innerhalb der
-		eingebundenen Datei.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+   <simpara>
+    Eine Liste vordefinierter Konstanten finden Sie im Abschnitt
+    <link linkend="reserved.constants">Vordefinierte Konstanten</link>.
+   </simpara>
+  </sect1>
+ </chapter>
 
-	 <varlistentry>
-	  <term>PHP_VERSION</term>
-	  <listitem>
-	   <simpara>
-		Ein String, der die Versionsnummer des PHP-Parsers
-		enthält, der gerade verwendet wird; z. B.´3.0.8-dev´.
- 	   </simpara>
-	  </listitem>
-	 </varlistentry>
+<!--  Alter Inhalt
+   <para>
+    Folgende vordefinierten Variablen sind immer verfügbar:
 
-	 <varlistentry>
-	  <term>PHP_OS</term>
-	  <listitem>
-	   <simpara>
-		Der Name des Betriebsystems, auf dem der PHP-Parser
-		ausgeführt	wird; z. B. ´Linux´.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+    <variablelist>
 
-	 <varlistentry>
-	  <term>&true;</term>
-	  <listitem>
-	   <simpara>
-		Der Wert ´wahr´.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+     <varlistentry>
+      <term>__FILE__</term>
+      <listitem>
+       <simpara>
+        Der Name der Skript-Datei, die gerade geparsed wird. Wird 
+        diese Konstante in einer Datei verwendet, die per
+        <function>include</function> oder <function>require</function>
+        eingebunden wurde, liefert sie den Namen der eingebundenen
+        Datei, nicht den der aufrufenden Datei.
+       </simpara>
+      </listitem>
+     </varlistentry>
 
-	 <varlistentry>
-	  <term>&false;</term>
-	  <listitem>
-	   <simpara>
-		Der Wert ´falsch´.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+     <varlistentry>
+      <term>__LINE__</term>
+      <listitem>
+       <simpara>
+        Die Nummer der Zeile im laufenden Skript, die gerade geparst
+        wird. Wird diese Konstante in einer Datei benutzt, die per
+        <function>include</function> oder <function>require</function>
+        eingebunden wurde, liefert sie die Zeilennummer innerhalb der
+        eingebundenen Datei.
+       </simpara>
+      </listitem>
+     </varlistentry>
 
-	 <varlistentry>
-	  <term>E_ERROR</term>
-	  <listitem>
-	   <simpara>
-		Bedeutet einen Fehler, der sich von einem    
-		´parsing error´ unterscheidet. Die Ausführung des Skriptes
+     <varlistentry>
+      <term>PHP_VERSION</term>
+      <listitem>
+       <simpara>
+        Ein String, der die Versionsnummer des PHP-Parsers
+        enthält, der gerade verwendet wird; z. B.´3.0.8-dev´.
+       </simpara>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term>PHP_OS</term>
+      <listitem>
+       <simpara>
+        Der Name des Betriebsystems, auf dem der PHP-Parser
+        ausgeführt  wird; z. B. ´Linux´.
+       </simpara>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term>&true;</term>
+      <listitem>
+       <simpara>
+        Der Wert ´wahr´.
+       </simpara>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term>&false;</term>
+      <listitem>
+       <simpara>
+        Der Wert ´falsch´.
+       </simpara>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term>E_ERROR</term>
+      <listitem>
+       <simpara>
+        Bedeutet einen Fehler, der sich von einem    
+        ´parsing error´ unterscheidet. Die Ausführung des Skriptes
                 wird beendet. 
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+       </simpara>
+      </listitem>
+     </varlistentry>
 
-	 <varlistentry>
-	  <term>E_WARNING</term>
-	  <listitem>
-	   <simpara>
+     <varlistentry>
+      <term>E_WARNING</term>
+      <listitem>
+       <simpara>
                 Gibt einen Zustand zurück,durch den PHP weiß, dass etwas 
                 nicht in Ordnung ist, das aktuelle Skript aber trotzdem
                 weiter ausführt; dies kann vom Skript selbst aufgefangen
                 werden.
                 Ein Beispiel wäre ein ungültiger regulärer Ausdruck (regexp)
                 in der Funktion <function>ereg</function>.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+       </simpara>
+      </listitem>
+     </varlistentry>
 
-	 <varlistentry>
-	  <term>E_PARSE</term>
-	  <listitem>
-	   <simpara>
+     <varlistentry>
+      <term>E_PARSE</term>
+      <listitem>
+       <simpara>
                 Der Parser hat Probleme mit ungültiger Syntax in
                 der Skript-Datei. Die Ausführung des Skriptes wird
                 beendet.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
+       </simpara>
+      </listitem>
+     </varlistentry>
 
-	 <varlistentry>
-	  <term>E_NOTICE</term>
-	  <listitem>
-	   <simpara>
+     <varlistentry>
+      <term>E_NOTICE</term>
+      <listitem>
+       <simpara>
                 Etwas ist aufgetreten, das ein Fehler sein kann oder nicht.
                 Das aktuelle Skript wird weiter ausgeführt. Beispiele hierfür
                 sind ein nicht gequoteter string als Hash-Index oder der 
                 Zugriff auf eine Variable, die nicht gesetzt wurde.
-	   </simpara>
-	  </listitem>
-	 </varlistentry>
-	</variablelist></para>
+       </simpara>
+      </listitem>
+     </varlistentry>
+    </variablelist></para>
 
    <para>
         Die E_*-Konstanten werden typischerweise mit der
@@ -136,7 +264,7 @@
    <para>
     Zusätzliche Konstanten können mithilfe der 
    <function>define</function>-Funktion definiert werden.</para>
-	
+    
    <para>
         Zu beachten ist, dass dies Konstanten sind, und  keine Makros, wie man
         sie von C her kennt; nur gültige Skalar-Daten können von einer
@@ -163,23 +291,31 @@ report_error(__FILE__,__LINE__, "Irgendetwas ist falsch gelaufen!");
 ?&gt;
      </programlisting>
     </example></para>
-	
+    
   </chapter>
- 
- <!-- Keep this comment at the end of the file
- Local variables:
- mode: sgml
- sgml-omittag:t
- sgml-shorttag:t
- sgml-minimize-attributes:nil
- sgml-always-quote-attributes:t
- sgml-indent-step:1
- sgml-indent-data:t
+
+ENDE alter Inhalt
+-->
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
 indent-tabs-mode:nil
- sgml-parent-document:nil
- sgml-default-dtd-file:"../manual.ced"
- sgml-exposed-tags:nil
- sgml-local-catalogs:nil
- sgml-local-ecat-files:nil
- End:
- -->
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
+
+
