@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.3 Maintainer: tom Status: ready -->
+  <chapter id="security.filesystem">
+   <title>Dateisystem - Sicherheit</title>
+   <simpara>
+    PHP ist von den in den meisten Serversystemen implementierten
+    Sicherheitseinstellungen hinsichtlich der Berechtigungen auf Datei-
+    und Verzeichnisebene abhängig. Dies verleiht Ihnen Kontrolle darüber,
+    welche Dateien in dem Dateisystem gelesen werden dürfen. Vorsicht ist
+    bei weltweit lesbaren Dateien geboten um sicherzustellen, dass diese
+    sicher von allen Usern mit Zugriff auf dieses Dateisystem (nur) gelesen
+    werden können.
+   </simpara>
+   <simpara>
+    Da PHP entwickelt wurde um Zugriffe auf das Dateisystem auf Benutzebene
+    zu erlauben, ist es natürlich auch möglich ein PHP Skript zu schreiben
+    das Ihnen erlaubt Systemdateien wie /etc/passwd zu lesen,
+    Ethernetverbindungen zu modifizieren, enorme Druckaufträge zu senden,
+    etc. Dies hat offensichtliche Implikationen, indem Sie sicherstellen
+    müssen, dass alle von Ihnen zu lesenden bzw. zu schreibenden Dateien
+    auch die richtigen sind.
+   </simpara>
+   <simpara>
+    Stellen Sie sich folgendes Skript vor, in dem ein User zum Ausdruck
+    bringt, dass gerne eine Datei in seinem Heimatverzeichnis löschen
+    möchte. Dies geht von einer Situation aus, in der ein PHP Web-Interface
+    regelmäßig zum Dateimanagement verwendet wird, und der Apache User
+    ist auch berechtigt, in seinem Heimatverzeichnis Dateien zu löschen.
+   </simpara>
+   <para>
+    <example>
+     <title>Schlechte Variablenprüfung führt zu....</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Löschen einer Datei aus dem Heimatverzeichnis des Users
+$username = $_POST['user_submitted_name'];
+$homedir = "/home/$username";
+$file_to_delete = "$userfile";
+unlink ("$homedir/$userfile");
+echo "$file_to_delete wurde gelöscht!";
+?>
+]]>
+     </programlisting>
+    </example>
+   Da der Benutzername über ein User-Formular zu posten ist, kann
+   jeder einen Benutzer- und Dateinamen von jemand anderen übertragen,
+   und Dateien löschen. In diesem Fall empfiehlt es sich, eine andere
+   Form der Authentifizierung zu verwenden. Stellen Sie sich vor was
+   passieren würde, wenn die übertragenen Variablen "../etc/" und
+   "passwd" beinhalten würden. Der Code würde dann effektiv lesen:
+    <example>
+     <title>... Ein Angriff auf das Dateisystem</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// löscht eine Datei irgendwo auf der Festplatte, wo der
+// Benutzer die nötigen Rechte besitzt. Wenn PHP root hat:
+$username = "../etc/";
+$homedir = "/home/../etc/";
+$file_to_delete = "passwd";
+unlink ("/home/../etc/passwd");
+echo "/home/../etc/passwd wurde gelöscht!";
+?>
+]]>
+     </programlisting>
+    </example>
+    Es gibt zwei wichtige Kriterien die Sie beachten sollten, um diese
+    Dinge zu vermeiden:
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Erteilen Sie dem PHP Web-user (Binärdatei) nur eingeschränkte Rechte.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Prüfen Sie alle übertragenen Variablen.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+    Hier ist ein verbessertes Skript:
+    <example>
+     <title>Etwas sicherere Prüfung des Dateinamens</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// löscht eine Datei von der Festplatte, auf die
+// der PHP user Zugriff hat.
+$username = $_SERVER['REMOTE_USER']; // verwendet eine
+                                     // Authentifizierungsmethode
+$homedir = "/home/$username";
+
+$file_to_delete = basename("$userfile"); // den Pfad entfernen
+unlink ($homedir/$file_to_delete);
+
+$fp = fopen("/home/logging/filedelete.log","+a"); //logge die Löschung
+$logstring = "$username $homedir $file_to_delete";
+fputs ($fp, $logstring);
+fclose($fp);
+
+echo "$file_to_delete wurde gelöscht!";
+?>
+]]>
+     </programlisting>
+    </example>
+    Auch dies nicht völlig makellos. Wenn Ihr Authentifizierungssystem
+    Benutzern erlauben sollte, deren eigene Logins zu kreieren, und ein
+    Benutzer wählt den Login "../etc", ist das System wieder aufgedeckt.
+    Aus diesem Grund ziehen Sie es vielleicht vor, einen besseren Check
+    zu schreiben:
+    <example>
+     <title>Sicherere Dateinamensprüfung</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$username = $HTTP_SERVER_VARS['REMOTE_USER']; // verwendet eine
+                                              // Authentifizierungsmethode
+$homedir = "/home/$username";
+
+if (!ereg('^[^./][^/]*$', $userfile))
+    die('bad filename'); // "DIE", gehen Sie nicht weiter
+
+if (!ereg('^[^./][^/]*$', $username))
+     die('bad username'); // "DIE", gehen Sie nicht weiter
+//etc...
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Abhängig vom Betriebssystem gibt es eine große Anzahl Dateien mit der
+    Sie sich befassen sollten, inklusive Einträge für Geräte (/dev/ oder
+    com1), Konfigurationsdateien (/etc/ Dateien und die .ini Dateien), gut
+    bekannte Verzeichnisse (/home/, My Documents), etc. Aus diesem Grund
+    ist es gewöhnlich einfacher eine Vorgangsweise einzuführen, bei der
+    außer den von Ihnen explizit erlaubten Dingen alles verboten ist.
+   </para>
+
+  </chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
