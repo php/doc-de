@@ -6,26 +6,41 @@
    <simpara>
     Den Quellcode sowie die Binärdistributionen für die verschiedenen
     Plattformen (inklusive Windows) erhalten Sie unter <literal><ulink
-    url="&url.php;">&url.php;</ulink></literal>.
+    url="&url.php;">&url.php;</ulink></literal>. Wir empfehlen, den 
+    Download der Distributionen von dem Ihnen am nächsten liegenden 
+    <ulink url="&url.mirrors;">Mirror</ulink> durchzuführen.
    </simpara>
   </sect1>
 
   <sect1 id="install.unix">
    <title>Installation auf UNIX Systemen</title>
-
    <para>
-    Dieser Abschnitt wird Sie durch die Konfiguration und Installation
-    von PHP führen. Erforderliche Kenntnisse und Software:
+    Dieser Abschnitt wird Sie durch die Konfiguration und Installation von
+    PHP auf UNIX Systemen führen. Bevor Sie mit dem Prozeß beginnen, lesen
+    Sie bitte alle für Ihre Plattform oder Webserver relevanten Sektionen.
+   </para>
+   <para>
+    Erforderliche Kenntnisse und Software:
     <itemizedlist>
      <listitem>
       <simpara>
-       Grundlegende UNIX-Kenntnisse (Sie sollten in der Lage sein mit
-       der make-Anweisung und einem C-Compiler umzugehen)
+       Grundlegende UNIX-Kenntnisse (Sie sollten in der Lage sein, mit 
+       "make" und einem C-Compiler umzugehen, wenn Sie compilieren)
       </simpara>
      </listitem> 
      <listitem>
       <simpara>
-       Einen ANSI C compiler
+       Einen ANSI C compiler (wenn Sie compilieren)
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       flex (zum compilieren)
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       bison (zum compilieren)
       </simpara>
      </listitem>
      <listitem>
@@ -33,823 +48,500 @@
        Einen Web Server
       </simpara>
      </listitem>
+     <listitem>
+      <simpara>
+       Alle modulspezifischen Komponenten (wie z.B. gd, pdf libs, etc.)
+      </simpara>
+     </listitem>
     </itemizedlist>
    </para>
    
-   <sect2>
-    <title>"Quick Installation"- Anleitung (Apache Modul Version)</title>
+   <para>
+    Es gibt verschiedene Wege, PHP auf der Unix Plattform zu installieren.
+    Entweder mit einem Compilier- und Configure- Prozeß, oder über verschiedene
+    Methoden mittels vorgefertigter Pakete. Diese Dokumentation ist hauptsächlich 
+    auf auf den Prozeß des Compilierens und Konfigurierens von PHP fokusiert.
+   </para>
+   
+   <para>
+    Der Anfang des PHP Installations- und Konfigurationsprozesses wird von
+    den Eingabeoptionen für das <filename>configure</filename> Skript gesteuert.
+    Diese Seite umreißt die Verwendung der meisten allgemeinen Optionen, aber
+    es gibt noch viele andere als Spielraum.  Eine umfassende Übersicht finden
+    Sie in der <link linkend="install.configure">Complete list of configure
+    options</link>. Es gibt verschiedene Wege, PHP zu installieren:
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Als ein <link linkend="install.apache">Apache Modul</link>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Als ein <link linkend="install.fhttpd">fhttpd Modul</link>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Zur Verwendung mit <link
+       linkend="install.otherhttpd">AOLServer, NSAPI,
+       phttpd, Pi3Web, Roxen, thttpd, or Zeus.</link>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Als ein <link linkend="install.commandline">CGI Executable</link>
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </para>
 
+   
+   <sect2 id="install.unix.apache-module">
+    <title>Apache Modul - Kurzanleitung</title>
+    
     <para>
-     <informalexample>
-      <programlisting>
+     PHP kann auf einigen verschiedenen Wegen Kompiliert werden, aber eine 
+     der populärsten ist die als Apache Modul. Es folgt ein kurzer Überblick
+     über die Installation.
+    </para>
+    
+    <example id="install.unix.apache-module.quick">
+     <title>
+      Kurzanleitung zur Instalation von PHP 4 (Apache Modul Version)
+     </title>
+     <programlisting>
 1.  gunzip apache_1.3.x.tar.gz
 2.  tar xvf apache_1.3.x.tar
-3.  gunzip php-3.0.x.tar.gz
-4.  tar xvf php-3.0.x.tar
+3.  gunzip php-x.x.x.tar.gz
+4.  tar xvf php-x.x.x.tar
 5.  cd apache_1.3.x
 6.  ./configure --prefix=/www
-7.  cd ../php-3.0.x
+7.  cd ../php-x.x.x
 8.  ./configure --with-mysql --with-apache=../apache_1.3.x --enable-track-vars
 9.  make
 10. make install
 11. cd ../apache_1.3.x
-12. ./configure --prefix=/www --activate-module=src/modules/php3/libphp3.a
+12. ./configure --activate-module=src/modules/php4/libphp4.a
 13. make
 14. make install
+15. cd ../php-x.x.x
+16. cp php.ini-dist /usr/local/lib/php.ini
+17. Editieren Sie nun Ihre httpd.conf oder srm.conf, und fügen Sie hinzu: 
+      AddType application/x-httpd-php .php
 
-  Sie können aber auch alternativ zu oben beschriebenen Schritt
-  einfach die httpd binary auf Ihre existierende Binary übertragen In
-  jedem Fall sollte darauf geachtet werden, den Server vorher
-  herunterzufahren.
-  
-15. cd ../php-3.0.x
-16. cp php3.ini-dist /usr/local/lib/php3.ini
-
-  Sie können nun die php.ini unter /usr/local/lib/php3.ini editieren,
-  um Ihre gewünschten PHP-Optionen einzustellen. Wenn Sie die php.ini
-  lieber in einem anderen Verzeichnis haben möchten, dann sollten Sie
-  Sie in Schritt 8 --with-config-file-path=/path angeben.
-
-17. Editieren Sie nun Ihre httpd.conf or srm.conf folgendermassen: 
-      
-            AddType application/x-httpd-php3 .php3
- 
-    Es bleibt Ihnen völlig freigestellt, welche File-Extension Sie
-    hier benutzen. ".php3" wird von uns lediglich empfohlen.
-
-18. Starten Sie den Apache Web Server. Sie müssen den Server starten
-    und beenden, ein einfacher Reload mittels des HUP oder USR1
-    Signales ist nicht ausreichend.
-      </programlisting>
-     </informalexample>
-    </para>
-
-   </sect2>
- 
-   <sect2>
-    <title>Konfiguration</title>
-    <para>
-     Es gibt zwei Möglichkeiten PHP zu konfigurieren.
-     
-     <itemizedlist>
-      <listitem>
-       <para>
-        Sie können das mitgelieferte "Setup"- Skript von PHP benutzen.
-        Dieses Skript wird Ihnen eine handvoll Fragen stellen (ähnlich
-        dem "Install"- Skript von PHP/FI 2.0) und am Ende "configure"
-        ausführen. Um dieses Skript auszuführen, geben Sie
-        <command>./setup</command> ein.
-       </para>
-       <para>
-	Dieses Skript wird zusätzlich eine Datei namens "do-conf"
-	erstellen, welches die Konfigurations-Optionen enthält, die
-	"configure" übermittelt wurden. Um später noch änderungen in
-	der Konfiguration vorzunehmen, können Sie einfach diese Datei
-	editieren, ohne ein erneutes Setup ausführen zu müssen. Geben
-	Sie hierzu <command>./do-conf</command> ein, um PHP mit den
-	neuen Optionen zu konfigurieren.
-       </para>
-      </listitem>
-      <listitem>
-       <para>
-	Die Alternative ist "configure" manuell auszuführen. Um zu
-	sehen, welche Optionen "configure" bietet, geben Sie
-	<command>./configure --help</command> ein.
-       </para>
-      </listitem>
-     </itemizedlist></para>
-     
-    <para>
-     Details über einige der verschiedenen Konfiguratrions- Optionen
-     sind weiter unten aufgeführt.
-    </para>
+18. Starten Sie den Apache Web Server neu. (Sie müssen den Server beenden
+    und neu starten, ein einfacher Reload mittels HUP oder USR1 Signal
+    reicht nicht aus.)
+     </programlisting>
+    </example>
    </sect2>
 
-   <sect2 id="with-apache">
-    <title>Apache Modul</title>
-
-    <para>
-     Um PHP als Modul in den Apache einzukompilieren, antworten Sie
-     bitte "yes" auf die Frage  "Build as an Apache module?" (die
-     <option><link linkend="with-apache">
-     --with-apache</link>=<replaceable>DIR</replaceable></option>
-     option zu konfigurieren) und geben Sie das Stammverzeichnis der
-     Apache Distribution an. Wenn Sie also die Apache Distribution in
-     <filename
-     class="directory">/usr/local/www/apache_1.2.4</filename>, entpackt
-     haben, dann ist dieses Ihr Stammverzeichnis.
-     Das Standart-Stammverzeichnis ist <filename
-     class="directory">/usr/local/etc/httpd</filename>.
-    </para>
-   </sect2>
-
-   <sect2 id="with-fhttpd">
-    <title>fhttpd Module</title>
-
-    <para>
-     Um PHP als fhttpd Modul in den Apache einzukompilieren, antworten
-     Sie "yes" auf die Frage "Build as an fhttpd module?" (die <option>
-     <link linkend="with-fhttpd"> --with-fhttpd</link>=<replaceable>DIR
-     </replaceable></option> Option zu konfigurieren) und geben Sie das
-     fhttpd source Stammverzeichnis an.
-     Das Standartverzeichnis ist
-     <filename class="directory">/usr/local/src/fhttpd</filename>.
-     Wenn Sie fhttpd benutzen, wird PHP als Modul performanter und
-     besser kontrollierbar und besitzt mehr Fähigkeiten zur 
-     Remote-Ausführung.
-    </para>
-   </sect2>
-     
-   <sect2 id="install-cgi">
-    <title>CGI version</title>
-
-    <para>
-     Standartmäßig wird PHP als CGI-Programm installiert. Wenn Sie einen
-     Webserver betreiben, auf dem PHP Module unterstützt werden, dann
-     sollten Sie diese Variante aus Performancegründen den Vorzug geben.
-     Wie auch immer, die CGI-Variante erlaubt es dem Apache Benutzer,
-     verschiedene PHP-unterstützte Seiten unter verschiedenen Benutzer
-     ID's zu ermöglichen. Sie sollten jedoch daran denken, sich mit
-     den Sicherheitseinstellungen im <link linkend="security">Security
-     chapter</link> vertraut zu machen, wenn Sie PHP in der CGI -
-     Variante einsetzen wollen.
-    </para>
-   </sect2>
-
-   <sect2>
-    <title>Database Support Options</title>
-
-    <para>
-     PHP unterstützt von Haus aus eine große Anzahl an Datenbanken
-     (wie auch ODBC):
-    </para>
-
-    <sect3 id="with-adabas">
-     <title>Adabas D</title>
-     <synopsis>
-      <option>--with-adabas<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Kompiliert mit Adabas D Unterstützung. Parameter sind das
-      Adabas D Installations-Verzeichnis. Standartmäßig ist
-      dieses auf <filename class="directory">/usr/local/adabasd</filename>
-      gesetzt.
-     </simpara>
-     <simpara>
-      <ulink url="&url.adabas;">Adabas home page</ulink>
-     </simpara>
-    </sect3>
-    
-    <sect3 id="with-dbase">
-     <title>dBase</title>
-     <synopsis>
-      <option>--with-dbase</option>
-     </synopsis>
-     <simpara>
-      Schaltet die Unterstützung für DBase ein. Externe Bibliotheken
-      werden nicht benötigt.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-filepro">
-     <title>filePro</title>
-     <synopsis>
-      <option>--with-filepro</option>
-     </synopsis>
-     <simpara>
-      Schaltet die Unterstützung für FilePro ein. Nur Lese- Unterstützung.
-      Externe Bibliotheken werden nicht benötigt.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-msql">
-     <title>mSQL</title>
-     <synopsis>
-      <option>--with-msql<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Schaltet die Unterstützung für mSQL-Datenbanken ein. Das Parameter
-      für diese Option ist das mSQL-Installations-Verzeichnis, 
-      standartmäßig unter <filename class="directory">/usr/local/Hughes
-      </filename>.
-      Dieses ist das Standartverzeichnis der mSQL2.0 Distribution.
-      <command>configure</command> erkennt automatisch die Version von
-      Ihrem mSQL, PHP unterstützt sowohl Version 1.0 wie auch 2.0 .
-      Wenn Sie PHP mit mSQL 1.0 kompilieren, können Sie aber auch nur
-      auf mSQL 1.0 zugreifen und vica versa.
-     </simpara>
-     <simpara>
-      See also <link linkend="ini.sect.msql">mSQL Configuration</link>
-      Directives in the <link
-      linkend="configuration.file">configuration file</link>.
-     </simpara>
-     <simpara>
-      <ulink url="&url.msql;">mSQL home page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-mysql">
-     <title>MySQL</title>
-     <synopsis>
-      <option>--with-mysql<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert die die MySQL-Unterstützung. Als Parameter kann bei
-      dieser Option das MySQL-Installationsverzeichnis angegeben 
-      werden. Standartmäßig ist dieses auf <filename class="directory">
-      /usr/local</filename> gesetzt.
-     </simpara>
-     <simpara>
-      Siehe auch: <link linkend="ini.sect.mysql">MySQL
-      Konfiguration</link> Direktiven in der <link
-      linkend="configuration.file">Konfigurations-
-      Datei</link>.
-     </simpara>
-     <simpara>
-      <ulink url="&url.mysql;">MySQL home page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-iodbc">
-     <title>iODBC</title>
-     <synopsis>
-      <option>--with-iodbc<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert die iODBC-Unterstützung. Dieses Merkmal wurde erstmals
-      für den iODBC-Treiber-Manager entwickelt, ein frei verteilbarer
-      ODBC-Treiber-Manager, der unter vielen UNIX-Derivaten läuft. Als
-      Parameter zu dieser Option kann das iODBC-Installations-Verzeichnis
-      angegeben werden. Standartmäßig ist dieses auf <filename class="directory">
-      /usr/local</filename> gesetzt.
-     </simpara>
-     <simpara>
-      <ulink url="&url.freeodbc;">FreeODBChome page</ulink> 
-      or <ulink url="&url.iodbc;">iODBC home page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-openlink">
-     <title>OpenLink ODBC</title>
-     <synopsis>
-      <option>--with-openlink<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert die OpenLink ODBC-Unterstützung. Als Parameter
-      kann bei dieser Option das OpenLink ODBC Installations-Verzeichnis
-      angegeben werden. Standartmäßig ist dieses auf <filename class="directory">
-      /usr/local/openlink</filename> gesetzt.
-     </simpara>
-     <simpara>
-      <ulink url="&url.openlink;">OpenLink Software's home
-      page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-oracle">
-     <title>Oracle</title>
-     <synopsis>
-      <option>--with-oracle<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert die Oracle-Unterstützung. Diese Option wurde getestet,
-      und sollte zumindest mit den Orcale-Versionen 7.0 bis 7.3 laufen.
-      Als Parameter kann das <envar>ORACLE_HOME</envar> Verzeichnis angegeben
-      werden. Sie müssen diesen Parameter aber nicht angeben, wenn die
-      Oracle-Umgebung gesetzt wurde.
-     </simpara>
-     <simpara>
-      <ulink url="&url.oracle;">Oracle home page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-pgsql">
-     <title>PostgreSQL</title>
-     <synopsis>
-      <option>--with-pgsql<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert die PostgresSQL-Unterstützung. Als Parameter
-      kann bei dieser Option das PostgresSQL- Basisinstallationsverzeichnis
-      angegeben werden. Standartmäßig ist dieses auf <filename class="directory">
-      /usr/local/pgsql</filename> gesetzt.
-     </simpara>
-     <simpara>
-      Siehe auch: <link linkend="ini.sect.pgsql">Postgres
-      Konfiguration</link> Direkiven in der <link
-      linkend="configuration.file">Konfigurations- Datei</link>.
-     </simpara>
-     <simpara>
-      <ulink url="&url.pgsql;">PostgreSQL home
-      page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-solid">
-     <title>Solid</title>
-     <synopsis>
-      <option>--with-solid<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert Solid-Unterstützung. Als Parameter kann das Solid
-      Installationsverzeichnis angegeben werden. Standartmäßig ist
-      dieses auf <filename class="directory">/usr/local/solid</filename>
-      gesetzt.
-     </simpara>
-     <simpara>
-      <ulink url="&url.solid;">Solid home page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-sybase">
-     <title>Sybase</title>
-     <synopsis>
-      <option>--with-sybase<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert Sybase-Unterstützung. Als Parameter kann das Sybase
-      Installationsverzeichnis angegeben werden. Standartmäßig ist 
-      dieses auf <filename class="directory">/home/sybase</filename>
-      gesetzt.
-     </simpara>
-     <simpara>
-      Siehe auch: <link linkend="ini.sect.sybase">Sybase
-      Konfiguration</link> Direktives in der <link
-      linkend="configuration.file">Konfigurations- Datei</link>.
-     </simpara>
-     <simpara>
-      <ulink url="&url.sybase;">Sybase home page</ulink>
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-sybase-ct">
-     <title>Sybase-CT</title>
-     <synopsis>
-      <option>--with-sybase-ct<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert Sybase-CT Unterstützung. Als Parameter kann das
-      Sybase-CT Installationsverzeichnis angegeben werden. 
-      Standartmäßig ist dieses auf <filename class="directory">/home/sybase</filename>
-      gesetzt.
-     </simpara>
-     <simpara>
-      See also <link linkend="ini.sect.sybct">Sybase-CT
-      Configuration</link> Directives in the <link
-      linkend="configuration.file">configuration file</link>.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-velocis">
-     <title>Velocis</title>
-     <synopsis>
-      <option>--with-velocis<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert Velocis Unterstützung. Als Parameter kann das
-      Velocis Installationsverzeichnis angegeben werden. Standartmäßig
-      ist dieses auf <filename class="directory">/usr/local/velocis</filename>
-      gesetzt.
-     </simpara>
-     <simpara>
-      <ulink url="&url.velocis;">Velocis home page</ulink></simpara>
-    </sect3>
-
-    <sect3 id="with-custom-odbc">
-     <title>Eine benutzerdefinierte ODBC Bilbliothek</title>
-     <synopsis>
-      <option>--with-custom-odbc<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert Unterstützung für eine benutzerdefinierte ODBC-Bibliothek.
-      Als Parameter kann das Basisverzeichnis angegeben werden.
-      Standartmäßig ist dieses auf <filename class="directory">/usr/local</filename>
-      gesetzt.
-     </simpara>
-     <simpara>
-      Diese option verlangt, dass Sie zuvor eigene CUSTOM_ODBC_LIBS
-      definiert haben, bevor Sie das Konfigurationsskript starten.
-      Ebenfalls müssen Sie einen gültiger odbc.h Header irgendwo
-      in in Ihrem Include-Pfad haben. Wenn Sie keinen haben, erstellen
-      Sie ihn  und schließen Sie diesen spezifischen Header mit ein.
-      Ihr Header mag auch einige extra- Definitionen verlangen, besonders
-      wenn es sich um eine Mehrbenutzer-Plattform handelt. Definieren Sie
-      diese in CFLAGS.
-      
-     </simpara>
-     <simpara>
-      Zum Beipspiel können Sie Sybase SQL überall auf QNX wie folgt
-      benutzen:
-     
-      <literal>
-       CFLAGS=-DODBC_QNX LDFLAGS=-lunix CUSTOM_ODBC_LIBS="-ldblib
-       -lodbc" ./configure --with-custom-odbc=/usr/lib/sqlany50
-      </literal>
-     </simpara>
-    </sect3>
-
-    <sect3 id="disable-unified-odbc">
-     <title>Unified ODBC</title>
-     <synopsis>
-      <option>--disable-unified-odbc</option>
-     </synopsis>
-     <simpara>
-      Deaktiviert das "Unfified ODBC Modul", bei welchem es sich um
-      ein  allgemeines Interface für Datenbanken mit ODBC-Interfaces
-      handelt (z.B. für Solid und Adabas D). Es arbeitet auch mit
-      normalen ODBC-Bibliotheken zusammen. Es wurde getestet mit
-      iODBC, Solid, Adabas D und Sybase SQL. Hierbei ist es erforderlich,
-      dass eines (nur eines) dieser Module oder das Velocis Modul
-      aktiviert sind, oder eine benutzerdefinierte ODBC-Bibliothek
-      spzifiziert ist. 
-      Diese Option steht nur zur Verfügung, wenn eine der folgenden
-	  Parameter verwendet wurden:
-	  <link linkend="with-iodbc">--with-iodbc</link>,
-	  <link linkend="with-solid">--with-solid</link>,
-	  <link linkend="with-adabas">--with-adabas</link>, 
-	  <link linkend="with-velocis">--with-velocis</link>,
-	  or <link linkend="with-adabas">--with-custom-odbc</link>.
-     </simpara>
-     <simpara>
-      Siehe auch: <link linkend="ini.sect.uodbc">Unified ODBC
-      Konfiguration</link> Direktiven in der <link
-      linkend="configuration.file">Konfigurations
-      Datei</link>.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-ldap">
-     <title>LDAP</title>
-     <synopsis>
-      <option>--with-ldap<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Aktiviert die <acronym>LDAP</acronym> (Lightweight Directory Access
-      Protocol)Unterstützung. Als Parameter kann das LDAP Standart
-      Installationsverzeichnis angegeben werden, welches standartmäßig
-      auf <filename class="directory">/usr/local/ldap</filename> gesetzt
-      ist.
-     </simpara>
-     <simpara>
-      Zusätzliche Informationen zu LDAP sind unter <ulink
-      url="&url.rfc;rfc1777.html">RFC1777</ulink> und
-      <ulink
-      url="&url.rfc;rfc1778.html">RFC1778</ulink>
-      verfügbar.
-     </simpara>
-    </sect3>
-
-   </sect2>
-
-   <sect2>
-    <title>Weitere Konfigurations-Optionen</title>
-
-    <sect3 id="with-mcrypt">
-     <title>--with-mcrypt<replaceable>=DIR</replaceable></title>
-     <synopsis>
-      <option>--with-mcrypt</option>
-     </synopsis>
-     <simpara>
-      Aktiviert die Unterstützung für die mycrypt Bibliothek.
-      Siehe auch <link linkend="ref.mcrypt">mcrypt Dokumentation</link>
-      für weitere Informationen. Wenn Sie das optionale <replaceable>DIR</replaceable>
-      Argument benutzen, wird PHP in <replaceable>DIR</replaceable>/include
-      nach mycrypt.h suchen.
-     </simpara>
-    </sect3>
-     
-    <sect3 id="enable-sysvsem">
-     <title>--enable-sysvsem</title>
-     <synopsis>
-      <option>--enable-sysvsem</option>
-     </synopsis>
-     <simpara>
-      Aktiviert die Unterstützung für Sys V Semaphores (wird von den
-      meisten UNIX-Derivaten unterstüzt). Siehe auch <link linkend="ref.sem">
-      Semaphore und Shared Memory Dokumentation</link> für weitere Informationen.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-sysvshm">
-     <title>--enable-sysvshm</title>
-     <synopsis>
-      <option>--enable-sysvshm</option>
-     </synopsis>
-     <simpara>
-      Aktiviert die Unterstützung für Sys V Shared Memory (wird von den meisten
-      UNIX-Derivaten unterstützt). Siehe auch <link linkend="ref.sem">
-      Semaphore und Shared Memory Dokumentation</link> für weitere Informationen.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-xml">
-     <title>--with-xml</title>
-     <synopsis>
-      <option>--with-xml</option>
-     </synopsis>
-     <simpara>
-      Aktiviert die Unterstützung für einen "nicht-validierenden" XML-Parser
-      auf Basis von James Clarks's <ulink url="&url.expat;">expat library</ulink>.
-      Siehe auch <link linkend="ref.xml">XML Funktions-Referenz</link> für mehr
-      Details.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-maintainer-mode">
-     <title>--enable-maintainer-mode</title>
-     <synopsis>
-      <option>--enable-maintainer-mode</option>
-     </synopsis>
-     <simpara>
-      Aktiviert Extra- Dependenzen und Compiler Warnungen, welche
-      von einigen PHP Entwicklern benutzt werden.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-system-regex">
-     <title>--with-system-regex</title>
-     <synopsis>
-      <option>--with-system-regex</option>
-     </synopsis>
-     <simpara>
-      Benutzt mehr die System Bibliothek für Regular Expression als
-      als die gebündelte. Wenn Sie PHP als Servermodul benutzten,
-      müssen Sie die gleiche Bibliothek bei der Installtion von
-      PHP wie beim Linking des Servers verwenden. Aktivieren Sie diese
-      Option, wenn die System-Bibliothek Features beinhaltet, die Sie
-      unbedingt benötigen. Es wird jedoch empfohlen, die beiliegende
-      Bibliothek wenn möglich zu benutzen.  
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-config-file-path">
-     <title>--with-config-file-path</title>
-     <synopsis>
-      <option>--with-config-file-path=DIR</option>
-     </synopsis>
-     <simpara>
-      Mit dieser Option kann das Verzeichnis angegeben werden, in dem
-      PHP nach der PHP.INI (<link linkend="configuration.file">Die
-      Konfigurations Datei</link>) sucht, wenn PHP gestartet wird.
-     </simpara>
-    </sect3>
-
-    <sect3 id="with-exec-dir">
-     <title>--with-exec-dir</title>
-     <synopsis>
-      <option>--with-exec-dir<replaceable>=DIR</replaceable></option>
-     </synopsis>
-     <simpara>
-      Erlaubt die Ausführung von ausführbaren Dateien in einem Verzeichnis
-      nur, wenn PHP im safe mode betrieben wird. Standartmäßig ist
-      dieses Verzeichnis <filename class="directory">/usr/local/bin</filename>.
-      Diese Option setzt den Pfad nur auf den Standartwert. Wenn dieser
-      geändert werden soll, kann dieses mit der <link linkend="ini.safe-mode-exec-dir">
-      safe_mode_exec_dir</link> Direktive in der <link linkend="configuration.file">
-      Konfigurations Datei</link> später geändert werden.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-debug">
-     <title>--enable-debug</title>
-     <synopsis>
-      <option>--enable-debug</option>
-     </synopsis>
-     <simpara>
-      Aktiviert extra debug Informationen. Dieses ermöglicht es, genauere
-      Informationen zu erhalten, wenn Probleme mit PHP auftreten.
-      (Bedenken Sie, dass diese Option nichts mit Debugger-Fähigkeiten
-      oder Informationen, die zu PHP-Skripten erhätlich sind, zu tun hat).
-      
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-safe-mode">
-     <title>--enable-safe-mode</title>
-     <synopsis>
-      <option>--enable-safe-mode</option>
-     </synopsis>
-     <simpara>
-      Aktiviert "safe mode" standartmäßig. Diese Option zieht einige
-      Restriktionen betreffend den Möglichkeiten von PHP nach sich, so z.B.
-      das Öffnen von Dateien nur im DocumentRoot zu erlauben. Lesen Sie auch <link
-      linkend="security">Security chapter</link> für weitergehende
-      Informationen. CGI-Benutzer sollten "safe mode" immer aktivieren.
-      Diese Option setzt nur die standartmäßige Behandlung von PHP. Sie
-      kann später per <link linkend="ini.safe-mode">safe_mode</link>
-      Direktive in der <link linkend="configuration.file">Konfigurations Datei
-      </link> geändert werden.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-track-vars">
-     <title>--enable-track-vars</title>
-     <synopsis>
-      <option>--enable-track-vars</option>
-     </synopsis>
-     <simpara>
-      Aktiviert PHP_TRACK_VARS. Ermöglicht PHP zu verfolgen, von wo
-      GET/POST/COOKIES Variablen in den Arrays HTTP_GET_VARS, HTTP_POST_VARS
-      und HTTP_COOKIE_VARS kommen. Diese Option setzt lediglich den 
-      Standartwert, welcher später mit der <link linkend="ini.track-vars">
-      track_vars</link> Direktive in der <link linkend="configuration.file">
-      Konfigurations Datei</link> aktiviert bzw. deaktiviert werden kann.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-magic-quotes">
-     <title>--enable-magic-quotes</title>
-     <synopsis>
-      <option>--enable-magic-quotes</option>
-     </synopsis>
-     <simpara>
-      Aktiviert magic quotes. Diese Option setzt nur einen Standartwert.
-      Die Option kann später mit der <link linkend="ini.magic-quotes-runtime">
-      magic_quotes_runtime</link>  Direktive in der <link
-      linkend="configuration.file">Konfigurations Datei</link>
-      aktiviert bzw. deaktiviert werden. Siehe auch die <link linkend="ini.magic-quotes-gpc">
-      magic_quotes_gpc</link> und die <link
-      linkend="ini.magic-quotes-sybase">magic_quotes_sybase</link>
-      Direktiven.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-debugger">
-     <title>--enable-debugger</title>
-     <synopsis>
-      <option>--enable-debugger</option>
-     </synopsis>
-     <simpara>
-      Aktiviert die interne PHP Debugger Unterstützung. Dieses Merkmal
-      ist immer noch im Experimentier- Stadium. Siehe auch  <link
-      linkend="ini.sect.debugger">Debugger Konfiguration</link>
-      Direktiven in der <link
-      linkend="configuration.file">Konfigurationsdatei</link>.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-discard-path">
-     <title>--enable-discard-path</title>
-     <synopsis>
-      <option>--enable-discard-path</option>
-     </synopsis>
-     <simpara>
-      Wenn diese Option aktiviert ist, kann die PHP CGI-Binär-Datei
-      sicher ausserhalb des Web-Verzeichnisses plaziert werden,
-      und niemand wird .htaccess-Sicherheit umgehen können. Lesen
-      Sie die <link linkend="security.cgi.shell"> Sektion im 
-      Sicherheitskapitel</link> über diese Option.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-bcmath">
-     <title>--enable-bcmath</title>
-     <synopsis>
-      <option>--enable-bcmath</option>
-     </synopsis>
-     <simpara>
-      Aktiviert <command>bc</command> mathematische Funktionen zur
-      Präzesion. Siehe auch <link linkend="ini.sect.bcmath">bcmath.scale
-      </link> Option in der <link linkend="configuration.file">
-      Konfigurationsdatei</link>.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-force-cgi-redirect">
-     <title>--enable-force-cgi-redirect</title>
-     <synopsis>
-      <option>--enable-force-cgi-redirect</option>
-     </synopsis>
-     <simpara>
-      Aktiviert den Sicherheits-Check für interne Server-Redirects.
-      Sie sollten dieses Option aktivieren, wenn Sie die CGI-Version
-      mit dem Apache benutzen.
-     </simpara>
-     <simpara>
-      Wenn Sie PHP als CGI Binärdatei benutzen, überprüft PHP selber
-      zuerst immer, ob es als Redirekt benutzt wird (z.B. unter Apache
-      mittels Action Direktiven). Dieses stellt sicher, dass PHP
-      in dieser Variante nicht missbraucht werden kann, um  
-      Authentifizierungsmodelle des Webservers über direkte Aufrufe wie
-      <filename role="url">http://my.host/cgi-bin/php/secret/doc.html</filename>
-      zu umgehen. Dieses Beispiel greift zwar auf <filename
-      role="url">http://my.host/secret/doc.html</filename> zu, aber berücksichtigt
-      keine Sicherheitseinstellungen die durch die Directory-Einstellungen
-      <filename role="dir">/secret</filename> in der httpd gesetzt wurden.
-     </simpara>
-     <simpara>
-      Wenn Sie diese option nicht aktivieren, erlauben Sie das Umgehen
-      von httpd Sicherheits- und Authentifizierungs- Einstellungen.
-      Tun Sie dieses nur, wenn Ihre Serversoftware nicht fähig ist, 
-      zu erkennen, ob ein sicherer Redirect erfolgt ist und alle ihre Dateien
-      unterhalb des Document- Root und Benutzer-Verzeichnisse für jedermann
-      zugänglich sein sollen / können.
-     
-     </simpara>
-     <simpara>
-      Lesen Sie die <link linkend="security.cgi.force-redirect"> Sektion im
-      Sicherheits-Kapitel</link> um mehr über diese option zu erfahren.
-     </simpara>
-    </sect3>
-
-    <sect3 id="disable-short-tags">
-     <title>--disable-short-tags</title>
-     <synopsis>
-      <option>--disable-short-tags</option>
-     </synopsis>
-     <simpara>
-      Deaktiviert die Kurzform <literal>&lt;? ?&gt;</literal> PHP Tags.
-      Sie müssen diese Option deaktivieren, wenn Sie PHP im Zusammanhang
-      mit <acronym>XML</acronym> benutzen wollen. 
-      Wenn Sie die Kurzform deaktiviert haben, ist die einzige gültige
-      Syntax für PHP-Code-Tags <literal>&lt;?php ?&gt;</literal>.
-      Diese Option setzt nur den Standartwert. Die Option kann später
-      in der <link linkend="ini.short-open-tag">short_open_tag</link> Direktive
-      in der <link linkend="configuration.file">Konfigurationsdatei</link>
-      geändert werden.
-     </simpara>
-    </sect3>
-
-    <sect3 id="enable-url-includes">
-     <title>--enable-url-includes</title>
-     <synopsis>
-      <option>--enable-url-includes</option>
-     </synopsis>
-     <simpara>
-      Erlaubt es, Programme direkt von anderen HTTP- oder FTP- Servern
-      mittels <link linkend="function.include">include()</link> laufen zu
-      lassen. Siehe auch <link linkend="ini.include-path">include_path</link>
-      Option in der <link linkend="configuration.file">Konfigurationsdatei</link>.
-     </simpara>
-    </sect3>
-
-    <sect3 id="disable-syntax-hl">
-     <title>--disable-syntax-hl</title>
-     <synopsis>
-      <option>--disable-syntax-hl</option>
-     </synopsis>
-     <simpara>
-      Deaktiviert Syntax-Highlighting.
-     </simpara>
-    </sect3>
-
-    <sect3>
-     <title>CPPFLAGS and LDFLAGS</title>
-     <para>
-      Um die PHP-Installation dazu zu veranlassen in verschiedenen
-      Verzeichnissen für Header unf Bibliotheken zu suchen, modifizieren
-      Sie die <envar>CPPFLAGS</envar> und <envar>LDFLAGS</envar> 
-      Umgebungsvariablen. Wenn Sie eine sensible shell benutzen, sollte
-      es möglich sein folgendes zu tun:
-      <command>
-       LDFLAGS=-L/my/lib/dir CPPFLAGS=-I/my/include/dir ./configure
-      </command>
-     </para>
-    </sect3>
-
-   </sect2>
-
-
-   <sect2>
+   <sect2 id="install.building">
     <title>Building</title>
     <simpara>
-     Wenn PHP fertig konfiguriert ist, können Sie die CGI-ausführbare Datei
-     oder PHP-Bibliothek gerstellen. Das Kommando <command>make</command>
-     sollte das für Sie erledigen. Wenn dieser Weg fehlschlägt, und Sie nicht 
-     herausfinden können warum, schauen Sie hier nach <link linkend="install-problems">
-     Problem- Sektion</link>.
-    </simpara>
-
-   </sect2>
-
-   <sect2>
-    <title>Testing</title>
-    <simpara>
-     Wenn Sie PHP als CGI-Programm gergestellt haben, können Sie das
-     Programm mit <command>make test</command> testen. Es ist immer
-     eine gute Idee, Ihr Programm zu testen. So können Sie ein Problem
-     möglicherweise früher erkennen und beseitigen.
+     Wenn PHP konfiguriert ist, können Sie die ausführbare CGI Datei
+     oder PHP-Bibliothek erstellen. Das Kommando <command>make</command>
+     sollte das für Sie erledigen. Sollte dies scheitern und Sie nicht 
+     erkennen können warum, lesen Sie in der <link linkend="install-problems">
+     Problem- Sektion</link> weiter.
     </simpara>
    </sect2>
-
-   <sect2>
-    <title>Benchmarking</title>
-    <simpara>
-     Wenn Sie PHP als CGI-Programm hergestellt haben, können Sie
-     mit  <command>make bench</command> ein Benchmark Test machen.
-     Bedenken Sie, dass wenn der safe_mode standartmäßig aktiviert
-     wurde, es sein kann, dass der Benchmark nicht fähig ist, den
-     Benchmark zu vollenden, wenn der Vorgang länger als 30 Sekunden
-     (die erlaubt sind) dauert. Dieses kommt daher, weil die Funktion
-     <function>set_time_limit</function> im safe_mode nicht benutzt
-     werden kann. Benutzten Sie die <link linkend="ini.max-execution-time">
-     max_execution_time</link> Konfigurationseinstellungen um die Zeit
-     für Ihre eigenen Skripte einzustellen. <command>make bench</command>
-     ignoriert die <link linkend="configuration.file">Konfigurationsdatei</link>.
-    </simpara>
-   </sect2>
-
   </sect1>
+
+  <sect1 id="install.linux">
+   <title>Unix/Linux Installation</title>
+   <para>
+    Dieser Teil enthält Anmerkungen und Hinweise zur Installation von PHP
+    auf Linux Distributionen 
+   </para>
+   <sect2 id="install.linux.packages">
+    <title>Pakete verwenden</title>
+    <simpara>
+     Viele Linux Distributionen haben eine Art Paketinstallation, wie z.B.
+     RPM. Das kann beim Setup einer Standardkonfiguration helfen, aber wenn 
+     Sie andere Features (wie einen Secure Server, oder einen anderen 
+     Datenbanktreiber) benötigen könnte es sein, dass ein Build von PHP
+     und/oder Ihres Webservers nötig ist. Wenn Sie mit dem Bilden und
+     Kompilieren Ihrer Software nicht vertraut sind, sollten Sie sich 
+     nach einer von jemand anders bereits erstellten Paketversion von
+     PHP mit den von Ihnen benötigten Features umsehen.
+    </simpara>
+   </sect2>
+  </sect1>
+
+  <sect1 id="install.hpux">
+   <title>Unix/HP-UX Installationen</title>
+   <para>
+    Diese Sektion enthält Anmerkungen und Hinweise zur Installation von
+    PHP auf HP-UX Systemen.
+   </para>
+   <example id="install.hpux.example">
+    <title>
+     Installationsanleitung für HP-UX 10
+    </title>
+    <programlisting>
+Von: paul_mckay@clearwater-it.co.uk
+04-Jan-2001 09:49
+(Diese Tipps sind für PHP 4.0.4 und Apache v1.3.9)
+
+Sie wollen also PHP und Apache auf einer HP-UX 10.20 installieren? 
+
+1. Sie brauchen gzip, holen Sie sich eine Binärdistribution von
+http://hpux.connect.org.uk/ftp/hpux/Gnu/gzip-1.2.4a/gzip-1.2.4a-sd-10.20.depot.Z
+dekomprimieren Sie die Datei, und installieren Sie sie mit swinstall
+
+2. Sie brauchen gcc, holen Sie sich eine Binärdistribution von
+http://gatekeep.cs.utah.edu/ftp/hpux/Gnu/gcc-2.95.2/gcc-2.95.2-sd-10.20.depot.gz 
+gunzip, und installieren Sie sie mit swinstall.
+
+3. Sie brauchen die GNU binutils, holen Sie sich eine Binärdistribution von
+http://hpux.connect.org.uk/ftp/hpux/Gnu/binutils-2.9.1/binutils-2.9.1-sd-10.20.depot.gz 
+gunzip, und installieren Sie sie mit swinstall.
+
+4. Nun benötigen Sie bison, holen Sie sich eine Binärdistribution von
+http://hpux.connect.org.uk/ftp/hpux/Gnu/bison-1.28/bison-1.28-sd-10.20.depot.gz 
+installieren Sie sie wie oben
+
+4. Nun benötigen Sie flex, holen Sie sich den Source von einem der 
+http://www.gnu.org mirrors. Es ist in dem <filename>non-gnu</filename> 
+Verzeichnis der FTP-Site.
+Downloaden Sie die Datei, gunzip, dann tar -xvf 'en Sie sie. Gehen Sie in das erstellte 
+Verzeichnis flex, und führen ein ./configure aus, dann make, und dann make install.
+
+Sollten dabei Fehler auftreten liegt es vielleicht daran, dass gcc etc. 
+nicht im PATH sind. Ist das der Fall, fügen Sie diese bitte dem PATH hinzu.
+
+OK, nun zum schwierigen Teil:
+
+6. Laden Sie die Sources von PHP und Apache herunter.
+
+7. Führen Sie gunzip und tar -xvf an ihnen aus. 
+
+Wir müssen einige Dateien ändern, dass sie richtig kompiliert werden können.
+
+8. Erst muß die Konfigurationsdatei geändert werden, denn es scheint als 
+würde sie aus den Augen verlieren, dass sie auf einer hpux Maschine ist. Es 
+gibt sicher einen besseren Weg dies zu tun, aber einfacher Weg ist es, 
+    lt_target=hpux10.20 
+in die Zeile 47286 des configure Skriptes zu schreiben.
+
+9. Als nächstes müssen wir die Apache GuessOS Datei ändern. Unter
+apache_1.3.9/src/helpers ändern Sie die Zeile 89 von 
+    "echo "hp${HPUXMACH}-hpux${HPUXVER}"; exit 0" 
+auf: 
+    "echo "hp${HPUXMACH}-hp-hpux${HPUXVER}"; exit 0" 
+    
+10. Sie können PHP nicht als Shared Object unter HP-UX installieren, weshalb Sie es 
+statisch kompilieren müssen; folgen Sie einfach den Anweisungen auf der Apache Seite.
+
+11. Das Kompilieren PHP und Apache sollte OK gehen, aber Apache wird nicht starten. 
+Sie müssen einen neuen User für Apache einrichten, z.B. www oder apache. Dann ändern 
+Sie die Zeilen 252 und 253 der conf/httpd.conf in Apache so, dass statt
+    User nobody 
+    Group nogroup 
+etwas ähnliches steht wie:
+    User www 
+    Group sys 
+
+Das hat den Grund, dass Sie Apache unter HP-UX nicht als nobody laufen 
+lassen können. Jetzt sollten Apache und PHP laufen.
+
+Ich hoffe das hilft jemandem,
+Paul Mckay.
+  </programlisting>
+ </example>
+
+</sect1>
+
+<sect1 id="install.solaris">
+ <title>Unix/Solaris Installation</title>
+ <para>
+  Diese Sektion enthält Anmerkungen und Hinweise zur Installation von
+  PHP auf Solaris Systemen.
+ </para>
+ <sect2 id="install.solaris.required">
+  <title>Benötigte Software</title>
+  <para>
+   Solaris Installationen mangelt es oft an C Compilern und deren 
+   zugehörigen Tools. Sie benötigen folgende Software:
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      gcc (empfohlen, andere C Compiler können ebenfalls funktionieren)
+     </simpara>
+    </listitem> 
+    <listitem>
+     <simpara>
+      make
+     </simpara>
+    </listitem> 
+    <listitem>
+     <simpara>
+      flex
+     </simpara>
+    </listitem> 
+    <listitem>
+     <simpara>
+      bison
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      m4
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      autoconf
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      automake
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      perl
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      gzip
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      tar
+     </simpara>
+    </listitem>
+   </itemizedlist>
+    Zusätzlich werden Sie für die Installation (und vielleicht auch zum
+    Kompilieren) eine andere, für Ihre Konfiguration spezifische Software
+    benötigen (wie z.B. Oracle oder MySQL). 
+  </para>     
+ </sect2>
+ <sect2 id="install.solaris.packages">
+  <title>Pakete verwenden</title>
+  <simpara>
+   Sie können den Installationsprozeß auf Solaris vereinfachen, indem Sie
+   zur Installation der meisten benötigten Komponenten pkgadd verwenden.
+  </simpara>
+ </sect2>
+</sect1>
+
+<sect1 id="install.openbsd">
+ <title>Unix/OpenBSD Installation</title>
+ <para>
+  Diese Sektion enthält Anmerkungen und Hinweise zur Installation von
+  PHP auf <ulink url="&url.openbsd;">OpenBSD</ulink>.
+ </para>
+ <sect2 id="install.openbsd.ports">
+  <title>Using Ports</title>
+   <simpara>
+    This is the recommended method of installing PHP on OpenBSD, as it will have 
+    the latest patches and security fixes applied to it by the maintainers.  To
+    use this method, ensure that you have a <ulink url="&url.openbsd.ports;">
+    recent ports tree</ulink>.  Then simply find out which flavors you wish
+    to install, and issue the <command>make install</command> command.  Below
+    is an example of how to do this.
+   </simpara>
+   <example id="install.openbsd.ports.example">
+    <title>OpenBSD Ports Install Example</title>
+    <programlisting>
+$ cd /usr/ports/www/php4
+$ make show VARNAME=FLAVORS
+ (choose which flavors you want from the list)
+$ FLAVOR="imap gettext ldap mysql gd pdflib" make install
+$ php4-enable
+    </programlisting>
+   </example>
+ </sect2>
+ <sect2 id="install.openbsd.packages">
+  <title>Using Packages</title>
+  <simpara>
+   There are pre-compiled packages available for your release
+   of <ulink url="&url.openbsd;">OpenBSD</ulink>.  These integrate 
+   automatically with the version of Apache installed with the OS.
+   However, since there are a large number of options (called 
+   <emphasis>flavors</emphasis>) available for this port,
+   you may find it easier to compile it from source using the ports tree.
+   Read the <ulink url="&url.openbsd.packages;">packages(7)</ulink>
+   manual page for more information in what packages are available.
+  </simpara>
+ </sect2>
+</sect1>
+  
+<sect1 id="install.macosx">
+ <title>Unix/Mac OS X installs</title>
+ <para>
+  This section contains notes and hints specific to installing
+  PHP on Mac OS X Server.
+ </para>
+ <sect2 id="install.macosx.packages">
+  <title>Using Packages</title>
+  <simpara>
+   There are a few pre-packaged and pre-compiled versions of PHP for
+   Mac OS X. This can help in setting up a standard
+   configuration, but if you need to have a different set of features
+   (such as a secure server, or a different database driver), you may
+   need to build PHP and/or your web server yourself. If you are unfamiliar
+   with building and compiling your own software, it's worth
+   checking whether somebody has already built a packaged
+   version of PHP with the features you need.
+   <ulink url="&url.lightyear;">Lightyear Design</ulink> offers a
+   pre-built version of PHP for OS X, as does
+   <ulink url="&url.tenon;">Tenon Intersystems</ulink>.
+  </simpara>
+ </sect2>
+ <sect2 id="install.macosx.compile">
+  <title>Compiling for OS X server</title>
+  <simpara>
+   There are two slightly different versions of Mac OS X, client and
+   server. The following is for OS X Server.
+  </simpara>
+   <example id="install.macosx.compile.example">
+   <title>Mac OS X server install</title>
+   <programlisting>
+1. Get the latest distributions of Apache and PHP
+2. Untar them, and run the configure program on Apache like so.
+    ./configure --exec-prefix=/usr \ 
+    --localstatedir=/var \ 
+    --mandir=/usr/share/man \ 
+    --libexecdir=/System/Library/Apache/Modules \ 
+    --iconsdir=/System/Library/Apache/Icons \ 
+    --includedir=/System/Library/Frameworks/Apache.framework/Versions/1.3/Headers \ 
+    --enable-shared=max \ 
+    --enable-module=most \ 
+    --target=apache 
+
+4. You may also want to add this line: 
+    setenv OPTIM=-O2 
+    If you want the compiler to do some optimization. 
+    
+5. Next, go to the PHP 4 source directory and configure it. 
+    ./configure --prefix=/usr \ 
+    --sysconfdir=/etc \ 
+    --localstatedir=/var \ 
+    --mandir=/usr/share/man \ 
+    --with-xml \ 
+    --with-apache=/src/apache_1.3.12 
+
+    If you have any other addiitons (MySQL, GD, etc.), be sure to add
+    them here. For the --with-apache string, put in the path to your 
+    apache source directory, for example "/src/apache_1.3.12". 
+6. make
+7. make install    
+    This will add a directory to your Apache source directory under
+    src/modules/php4.
+    
+8. Now, reconfigure Apache to build in PHP 4.
+    ./configure --exec-prefix=/usr \ 
+    --localstatedir=/var \ 
+    --mandir=/usr/share/man \ 
+    --libexecdir=/System/Library/Apache/Modules \ 
+    --iconsdir=/System/Library/Apache/Icons \ 
+    --includedir=/System/Library/Frameworks/Apache.framework/Versions/1.3/Headers \ 
+    --enable-shared=max \ 
+    --enable-module=most \ 
+    --target=apache \ 
+    --activate-module=src/modules/php4/libphp4.a 
+
+    You may get a message telling you that libmodphp4.a is out of date.
+    If so, go to the src/modules/php4 directory inside your apache
+    source directory and run this command: 
+
+    ranlib libmodphp4.a 
+
+    Then go back to the root of the apache source directory and run the
+    above configure command again. That'll bring the link table up to
+    date. 
+
+9. make
+
+10. make install
+
+11. copy and rename the php.ini-dist file to your "bin" directory from your
+    PHP 4 source directory:
+    cp php.ini-dist /usr/local/bin/php.ini 
+
+    or (if your don't have a local directory) 
+
+    cp php.ini-dist /usr/bin/php.ini 
+   </programlisting>
+  </example>
+  <simpara>
+   Other examples for
+   <ulink url="&url.stepwise.macosx-client;">Mac OS X client</ulink>
+   and
+   <ulink url="&url.stepwise.macosx-client;">Mac OS X server</ulink>
+   are available at <ulink url="&url.stepwise;">Stepwise</ulink>.
+  </simpara>
+ </sect2>
+ <sect2 id="install.macosx.client">
+  <title>Compiling for MacOS X client</title>
+  <simpara>
+   Those tips are graciously provided by Marc Liyanage : 
+   <ulink url="&url.macosx2;">April 2001's site</ulink> and 
+   <ulink url="&url.macosx;">future site</ulink>.
+  </simpara>
+  <simpara>
+   The PHP module for the Apache web server included in Mac OS X.
+   This version includes support for the MySQL and PostgreSQL databases.
+  </simpara>
+  <simpara>
+   NOTE: Be careful when you do this, you could screw up your Apache web server!
+  </simpara>
+  <para>
+   Do this to install:
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      1.	Open a terminal window 
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      2.	type "wget http://www.access.ch/ml/software/macosx/libphp4.so.gz",
+      wait for download to finish 
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      3.	type "gunzip libphp4.so.gz" 
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      4.	type "sudo apxs -i -a -n php4 libphp4.so" 
+     </simpara>
+    </listitem>
+   </itemizedlist>
+   Now type "<literal>sudo open -a TextEdit /etc/httpd/httpd.conf</literal>"
+   TextEdit will open with the web server configuration file. Locate these 
+   two lines towards the end of the file: (Use the Find command)
+   <programlisting>
+   *	#AddType application/x-httpd-php .php 
+   *	#AddType application/x-httpd-php-source .phps
+   </programlisting>
+   Remove the two hash marks (#), then save the file and quit TextEdit.
+  </para>
+  <para>
+   Finally, type "<literal>sudo apachectl graceful</literal>" to restart the web server.
+  </para>
+  <para>
+   PHP should now be up and running. You can test it by dropping a file into 
+   your "Sites" folder which is called "test.php". Into that file, write this
+   line: "<?php phpinfo() ?>".
+  </para>
+  <para>
+   Now open up 127.0.0.1/~your_username/test.php in your web browser.
+   You should see a status table with information about the PHP module.
+  </para>
+ </sect2>
+</sect1>
+
 <sect1 id="install.configure">
  <title>Complete list of configure options</title>
  <note>
@@ -2059,6 +1751,37 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry id="install.configure.enable-mbstr-enc-trans">
+     <term>
+      <parameter>--enable-mbstr-enc-trans</parameter>
+     </term>
+     <listitem>
+      <para>
+       PHP 4: enable http input character automatic detection and
+       translation for multi-byte character encodings.
+      </para>
+      <warning>
+        <para>
+         This switch is only available for PHP 4.0.6 or higher.
+        </para>
+       </warning>
+     </listitem>
+    </varlistentry>
+    <varlistentry id="install.configure.enable-mbstring">
+     <term>
+      <parameter>--enable-mbstring</parameter>
+     </term>
+     <listitem>
+      <para>
+       PHP 4: enable multi-byte character encoding related functions.
+      </para>
+      <warning>
+        <para>
+         This switch is only available for PHP 4.0.6 or higher.
+        </para>
+       </warning>
+     </listitem>
+    </varlistentry>
     <varlistentry id="install.configure.enable-memory-limit">
      <term>
       <parameter>--enable-memory-limit</parameter>
@@ -3113,6 +2836,20 @@
       </listitem>
      </varlistentry>
 
+     <varlistentry id="install.configure.with-iconv">
+      <term>
+       <parameter>--with-iconv[=DIR]</parameter>
+      </term>
+      <listitem>
+       <para>
+        PHP 3: Option not available in PHP 3
+       </para>
+       <para>
+        PHP 4: Include iconv support.
+       </para>
+      </listitem>
+     </varlistentry>
+
      <varlistentry id="install.configure.with-pspell">
       <term>
        <parameter>--with-pspell[=DIR]</parameter>
@@ -3256,623 +2993,1599 @@
   </sect1>
 
   <sect1 id="install-windows">
-   <title>Installation auf Windows 95/98/NT Systemen</title>
-
-   <simpara>
-    Diese Installationsanleitung soll Ihnen helfen, PHP auf Ihrem
-    Windows 9x/NT Webserver zu installieren und zu konfigurieren.
-    Diese Anleitung wurde von &link.bob; erstellt. Um die aktuellste
-    Fassung (Englisch) zu erhalten, klicken Sie bitte hier: <ulink
-    url="&url.win32install;">&url.win32install;</ulink>.
-   </simpara>
-
+   <title>Installation on Windows 9x/Me/NT/2000 systems</title>
    <para>
-    Diese Anleitung umfasst die Installation folgender Komponenten:
-    <itemizedlist>
-     <listitem>
-      <para>
-       Personal Web Server (Neueste Version empfohlen)
-      </para>
-     </listitem>
-     <listitem>
-      <para>
-       Internet Information Server 3 oder 4
-      </para>
-     </listitem>
-     <listitem>
-      <para>
-       Apache 1.3.x
-      </para>
-     </listitem> 
-     <listitem>
-      <para>
-       Omni HTTPd 2.0b1
-      </para>
-     </listitem>
-    </itemizedlist>
+    There are two main ways to install PHP for Windows: either
+    <link linkend="install.windows.manual">manually</link>
+    or by using the <link linkend="install.windows.installer">InstallShield</link>
+    installer.
    </para>
- 
-   <sect2>
-    <title>Grundlegende Installations- Schritte</title>
-
+   <para>
+    If you have Microsoft Visual Studio, you can also 
+    <link linkend="install.windows.build">build</link>
+    PHP from the original source code.
+   </para>
+   <para>
+    Once you have PHP installed on your Windows system, you may also
+    want to <link linkend="install.windows.extensions">load various extensions</link>
+    for added functionality.
+   </para>
+   
+   <sect2 id="install.windows.installer">
+    <title>Windows InstallShield</title>
+    
     <para>
-     Die folgenden Schritte sollten in jedem Fall und unabhängig vom
-     bevorzugten Webserver ausgeführt werden.
-     
+     The Windows PHP installer available from the downloads page at 
+     <ulink url="&url.php;">&url.php;</ulink>, this installs the CGI version
+     of PHP and, for IIS, PWS, and Xitami, configures the web server as
+     well.
+    </para>
+    
+    <simpara>
+     Install your selected <acronym>HTTP</acronym> server on your system
+     and make sure that it works.
+    </simpara>
+    
+    <simpara>
+     Run the executable installer and follow the instructions provided by
+     the installation wizard. Two types of installation are supported -
+     standard, which provides sensible defaults for all the settings it
+     can, and advanced, which asks questions as it goes along.
+    </simpara>
+    
+    <simpara>
+     The installation wizard gathers enough information to set up the 
+     <filename>php.ini</filename> file and configure the web server to
+     use PHP. For IIS and also PWS on NT Workstation, a list of all the
+     nodes on the server with script map settings is displayed, and you
+     can choose those nodes to which you wish to add the PHP script
+     mappings.
+    </simpara>
+
+    <simpara>
+     Once the installation has completed the installer will inform you
+     if you need to restart your system, restart the server, or just
+     start using PHP.
+    </simpara>
+   
+   </sect2>
+   
+   <sect2 id="install.windows.manual">
+    <title>General Installation Steps</title>
+    <simpara>
+     This install guide will help you manually install and configure
+     PHP on your Windows 9x/Me/NT/2000 webservers. This guide was compiled by
+     &link.bob;. The original version can be found at <ulink
+     url="&url.win32install;">&url.win32install;</ulink>.
+    </simpara>
+    <para>
+     This guide provides manual installation support for:
      <itemizedlist>
       <listitem>
        <para>
-	Entpacken Sie die Dateien, die mit der Distribution
-	mitgeliefert werden in ein Verzeichnis Ihrer Wahl. Wir
-	empfehlen "C:\PHP3\".
+        Personal Web Server 3 and 4 or newer
        </para>
       </listitem>
       <listitem>
        <para>
-	Kopieren Sie die 'php3.ini-dist'- Datei in Ihr '%WINDOWS%'-
-	Verzeichnis un benennen Sie sie um in 'php3.ini'. Ihr
-	Windows-Verzeichnis ist im Allgemeinen:
-	<simplelist>
-	 <member>c:\windows für Windows 95/98</member>
-	 <member>c:\winnt oder c:\winnt40 für NT servers</member>
-	</simplelist>
-       </para>	
+        Internet Information Server 3 and 4 or newer
+       </para>
       </listitem>
       <listitem>
        <para>
-	Editieren Sie nun Ihre 'php3.ini' -Datei mit Ihrem bevorzugtem
-	Editor:
-	<itemizedlist>
-	 <listitem>
-	  <simpara>
-	   Sie müssen den Schlüssel 'extension_dir' so verändern, dass
-	   er auf Ihr PHP-Verzeichnis zeigt, bzw. dorthin, wo Sie die
-	   zu ladenden Erweiterungen (Module) abgelegt haben.  Z.B.:
-	   c:\php3
-	  </simpara>
-	 </listitem>
-	 <listitem>
-	  <simpara>
-	   Wenn Sie den Omni Httpd-Server verwenden, überspringen Sie
-	   den nächsten Schritt.  Geben Sie bei dem Schlüssel
-	   'doc_root' das Stammverzeichnis an, in dem Ihre PHP-Skripte
-	   liegen. Sie sollten diese Angabe aus Sicherheits-gründen
-	   auf das Dokumentenverzeichnis des Webservers setzen:
-	   Apache: '%apache\htdocs' IIS: '%inetpub\wwwroot' PWS:
-	   '%webshare\wwwroot'. 
-	  </simpara>
-	 </listitem>
-	 <listitem>
-	  <simpara>
-	   Wählen Sie nun die Erweiterungen (Module) aus, die Sie
-	   benutzen möchten, wenn PHP startet. Dieses geschieht, indem
-	   Sie die jeweiligen Schlüssel 'extension=php3_*.dll'
-	   entkommentieren (Entfernen Sie das ';' vor den
-	   Erweiterungen).  Einige Erweiterungen stehen in
-	   Abhängigkeiten zu zusätzlichen Bibliotheken (Libraries),
-	   welche auf Ihrem System installiert sein müssen, um korrekt
-	   zu funktionieren.  Die <ulink
-	   url="&url.php.faq;">FAQ</ulink> - Sektion von PHP liefert
-	   hier weitere Informationen über Bezugsquellen weiterer
-	   Bibliotheken.  Bei selten benutzten Modulen empfiehlt es
-	   sich diese im Hinblick auf Systemresourcen dynamisch in das
-	   einzelne Skript zu laden. Module können Sie dynamisch
-	   mittels folgender Anweisung laden:
-	   <command>dl("php_*.dll");</command>
-	  </simpara>
-	 </listitem>
-	 <listitem>
-	  <simpara>
-	   Wenn Sie den PWS oder IIS benutzen, können Sie die
-	   browscap.ini auf folgende Verzeichnisse setzen:
-	   'c:\windows\system\inetsrv\browscap.ini' für Windows 95/98
-	   und 'c:\winnt\system32\inetsrv\browscap.ini' für NT
-	   Server. Zusätzliche Informationen zur Benutzung der
-	   browsecap.ini und Ihrer Funktionalität erhalten Sie hier:
-	   <ulink url="&url.browscap;">mirror</ulink>, klicken Sie auf
-	   den "source" button um ein Anwendungsbeispiel zu erhalten.
-	  </simpara>
-	 </listitem>
-	</itemizedlist>
+        Apache 1.3.x
+       </para>
+      </listitem> 
+      <listitem>
+       <para>
+        OmniHTTPd 2.0b1 and up
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Oreilly Website Pro
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Xitami
        </para>
       </listitem>
      </itemizedlist>
     </para>
-
-    <simpara>
-     Den DLLs für PHP Erweiterungen sind allen das Prefix 'php3_'
-     vorangestellt.  Dieses soll Unklarheiten zwischen PHP
-     Erweiterungen und ihren unterstützenden Bibliotheken vorbeugen.
-    </simpara>
-
-   </sect2>
-
-   <sect2>
-    <title>Windows 95/98/NT und PWS/IIS 3</title>
-
-    <simpara>
-     Die empfohlene Methode, um diese Server zu konfigurieren ist es,
-     die 'php_iis_reg.inf'- Datei zu benutzen. Sie können diese Datei
-     editieren, um sie Ihren Wünschen anzupassen. Sie können aber die
-     Konfiguration auch "von Hand" vornehmen.
-    </simpara>
-    <simpara>
-     (!)WARNUNG: Diese Schritte erfordern einen Eingriff in die
-     Registrierungsdatei von Windows. Sie sollten auf jeden Fall zuvor
-     eine Sicherheitskopie Ihrer Registrierungsdatei erstellen. Sollte
-     Ihnen bei der Bearbeitung der Registrierungsdatei ein Fehler
-     unterlaufen, kann dieses ein instabiles oder nicht mehr
-     startendes System zur Folge haben.  Wir lehnen jede Verantwortung
-     für Schäden und Verluste ab.  Bitte seien Sie also bei der
-     folgenden Methode sehr aufmerksam.
-    </simpara>
-
     <para>
+     PHP 4 for Windows comes in two flavours - a CGI executable (php.exe),
+     and several SAPI modules (for exapmle php4isapi.dll). The latter form
+     is new to PHP 4, and provides significantly improved performance and
+     some new functionality. However, please note that the SAPI modules
+     are <emphasis>NOT</emphasis> yet considered to be production quality.
+     The reason for this is that the PHP SAPI modules are using the
+     thread-safe version of the PHP code, which is new to PHP 4, and has
+     not yet been tested and pounded enough to be considered completely
+     stable, and there are actually a few known bugs. On the other hand,
+     some people have reported very good results with the SAPI modules,
+     even though we're not aware of anyone actually running it on a
+     production site. In short - your mileage may vary;  If you need
+     absolute stability, trade the performance of the SAPI modules
+     with the stability of the CGI executable.
+   </para>
+   <para>
+    If you choose one of the SAPI modules and use Windows 95, be sure
+    to download the DCOM update from the <ulink
+    url="http://download.microsoft.com/msdownload/dcom/95/x86/en/dcom95.exe">Microsoft
+    DCOM pages</ulink>. For the ISAPI module, an ISAPI 4.0 compliant Web server
+    is required (tested on IIS 4.0, PWS 4.0 and IIS 5.0). IIS 3.0 is
+    <emphasis>NOT</emphasis> supported; You should download and
+    install the Windows NT 4.0 Option Pack with IIS 4.0 if you
+    want native PHP support.
+   </para>
+    <para>
+     The following steps should be performed on all installations
+     before the server specific instructions.
      <itemizedlist>
       <listitem>
-       <simpara>
-	Starten Sie regedit.exe
-       </simpara>
+       <para>
+        Extract the distribution file to a directory of your choice.
+        &quot;C:\PHP\&quot; is a good start.
+       </para>
       </listitem>
       <listitem>
-       <simpara>
-	Gehen Sie zu <literal>HKEY_LOCAL_MACHINE /System
-	/CurrentControlSet /Services /W3Svc /Parameters
-	/ScriptMap</literal>.
-       </simpara>
+       <para>
+        Copy the file, &apos;php.ini-dist&apos; to your 
+        &apos;%WINDOWS%&apos; directory on Windows 95/98 or to your 
+        &apos;%SYSTEMROOT%&apos; directory under Windows NT or Windows 
+        2000 and rename it to &apos;php.ini&apos;. Your 
+        &apos;%WINDOWS%&apos; or &apos;%SYSTEMROOT%&apos; directory is
+        typically:
+        <simplelist>
+         <member>c:\windows for Windows 95/98</member>
+         <member>c:\winnt or c:\winnt40 for NT/2000 servers</member>
+        </simplelist>
+       </para>  
       </listitem>
       <listitem>
-       <simpara>
-	Wählen Sie aus dem 'Bearbeiten-Menü' folgendes aus:
-	<literal>Neu->Zeichenfolge</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Geben Sie hier die Erweiterung Ihrer .php3- Dateien an. Bsp.:
-	<literal>.php3</literal>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Klicken Sie nun doppelt auf den Wert der Zeichenkette, und
-	geben Sie hier als zugeordnetes Programm Ihre
-	<literal>php.exe</literal> an. Bsp.: <literal>c:\php3\php.exe
-	%s %s</literal>. Die Folge '%s %s' ist unbedingt einzufügen,
-	PHP würde sonst nicht korrekt arbeiten.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wiederholen Sie diese Schritte für jede weitere
-	Datei-Erweiterung, die sie mit PHP verbinden wollen.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wechseln Sie zu: <literal>HKEY_CLASSES_ROOT</literal>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wählen Sie aus dem 'Bearbeiten-Menü' folgendes aus:
-	<literal>Neu->Schlüssel</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Benennen Sie den Schlüssel wie Ihre Datei-Erweiterung
-	(<literal>.php3</literal>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wählen Sie nun den neu erstellten Schlüssel aus, und weisen
-	Sie ihm den Standartwert <literal>phpfile</literal> zu.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wiederholen Sie diese Schritte, wenn Sie weitere
-	Datei-Erweiterungen konfigurieren wollen.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Erzeugen Sie nun einen weiteren Schlüssel
-	<literal>Neu->schlüssel</literal> im Verzeichnis
-	<literal>HKEY_CLASSES_ROOT</literal> und benennen Sie ihn mit
-	<literal>phpfile</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wählen Sie den neuen Schlüssel <literal>phpfile</literal> aus,
-	und und weisen Sie ihm den Standartwert <literal>PHP
-	Script</literal> zu.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Erstellen Sie nun unterhalb von <literal>phpfile</literal>
-	mittels Rechtsklick einen neue Schlüssel und nennen Sie ihn
-	<literal>Shell</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Unterhalb von <literal>Shell</literal> erzeugen Sie nun einen
-	weiteren Schlüssel und nennen ihn <literal>open</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Unterhalb von <literal>open</literal> erzeugen Sie jetzt noch
-	einen Schlüssel und nennen ihn <literal>command</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Wählen Sie den Schlüssel <literal>command</literal> aus, und
-	geben Sie ihm als Standartwert den Pfad zur
-	<literal>php.exe</literal> mit folgender Schreibweise an:
-	<literal>c:\php3\php.exe -q %1</literal>. (vergessen Sie bitte
-	nicht das <literal>%1</literal>).
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Beenden Sie Regedit.
-       </simpara>
+       <para>
+        Edit your &apos;php.ini&apos; file:
+        <itemizedlist>
+         <listitem>
+          <simpara>
+           You will need to change the 'extension_dir' setting to
+           point to your php-install-dir, or where you have placed
+           your 'php_*.dll' files. ex: c:\php
+          </simpara>
+         </listitem>
+         <listitem>
+          <simpara>
+           If you are using OmniHTTPd, do not follow the next step.
+           Set the 'doc_root' to point to your webservers
+           document_root. ex: c:\apache\htdocs or c:\webroot
+          </simpara>
+         </listitem>
+         <listitem>
+          <simpara>
+           Choose which extensions you would like to load when PHP
+           starts. You can uncomment the: 'extension=php_*.dll' lines
+           in <filename>php.ini</filename> to load these extensions.
+           Some extensions require you to have additional libraries
+           installed on your system for the module to work correctly.
+           The PHP <ulink url="&url.php.faq;">FAQ</ulink> has more
+           information on where to get supporting libraries. You
+           can also load a module dynamically in your script
+           using <function>dl</function>. See the section about
+           <link linkend="install.windows.extensions">Windows
+           extensions</link>.
+          </simpara>
+         </listitem>
+         <listitem>
+          <simpara>
+           On PWS and IIS, you can set the <filename>browscap.ini</filename>
+           to point to: 'c:\windows\system\inetsrv\browscap.ini' on
+           Windows 9x/Me and 'c:\winnt\system32\inetsrv\browscap.ini'
+           on NT/2000 Server. Additional information on using the
+           browscap functionality in PHP can be found at this <ulink
+           url="&url.browscap;">mirror</ulink>, select the "source"
+           button to see it in action.
+          </simpara>
+         </listitem>
+        </itemizedlist>
+       </para>
       </listitem>
      </itemizedlist>
     </para>
-
-    <simpara>
-     PWS and IIS 3 Benutzer sollten nun ein voll funktionsfähiges
-     System haben.  IIS 3 Benutzer können ein kleines <ulink
-     url="&url.iiscfg;">Tool</ulink> von
-     Steven Genusa benutzen, um Ihre Skript-Maps zu editieren.
-    </simpara>
-
    </sect2>
 
-   <sect2>
-    <title>Windows NT und IIS 4</title>
-
-    <simpara>
-     Um PHP auf Windows NT und dem IIS4 zu installieren, folgen Sie
-     dieser Anleitung:
-    </simpara>
-
+   <sect2 id="install.windows.build">
+    <title>Building from source</title>
     <para>
+     Before getting started, it is worthwhile answering the question:
+     "Why is building on Windows so hard?" Two reasons come to mind:
+    </para>
+    <orderedlist>
+     <listitem><simpara>
+      Windows does not (yet) enjoy a large community of developers
+      who are willing to freely share their source. As a direct
+      result, the necessary investment in infrastructure required
+      to support such development hasn't been made.  By and large,
+      what is available has been made possible by the porting of
+      necessary utilities from Unix. Don't be surprised if some of
+      this heritage shows through from time to time.
+     </simpara></listitem>
+     <listitem><simpara>
+      Pretty much all of the instructions that follow are of the
+      "set and forget" variety. So sit back and try follow the
+      instructions below as faithfully as you can.
+     </simpara></listitem>
+    </orderedlist>
+
+    <sect3 id="install.windows.build.prepare">
+     <title>Preparations</title>
+     <para>
+      Before you get started, you have a lot to download....
+     </para>
      <itemizedlist>
+      <listitem><simpara>
+       For starters, get the Cygwin toolkit from the closest <ulink
+       url="http://sources.redhat.com/cygwin/download.html">cygwin</ulink>
+       mirror site.  This will provide you most of the popular GNU 
+       utilities used by the build process.
+      </simpara></listitem>
+      <listitem><simpara>
+       Download the rest of the build tools you will need from the PHP
+       site at <ulink url="http://www.php.net/extra/win32build.zip"
+       >http://www.php.net/extra/win32build.zip</ulink>.
+      </simpara></listitem>
+      <listitem><simpara>
+       Get the source code for the DNS name resolver used by PHP
+       at <ulink url="http://www.php.net/extra/bindlib_w32.zip"
+       >http://www.php.net/extra/bindlib_w32.zip</ulink>. This
+       is a replacement for the <filename>resolv.lib</filename>
+       library included in <filename>win32build.zip</filename>.
+      </simpara></listitem>
+      <listitem><simpara>
+       If you don't already have an unzip utility, you will
+       need one.  A free version is available from <ulink
+       url="http://www.cdrom.com/pub/infozip/UnZip.html">InfoZip</ulink>.
+      </simpara></listitem>
+     </itemizedlist>
+     <simpara>
+      Finally, you are going to need the source to PHP 4 itself.
+      You can get the latest development version using <ulink
+      url="http://www.php.net/anoncvs.php">anonymous CVS</ulink>. If you get
+      a <ulink url="http://snaps.php.net/">snapshot</ulink> or a <ulink
+      url="http://www.php.net/downloads.php">source</ulink> tarball, you
+      not only will have to untar and ungzip it, but you will have to
+      convert the bare linefeeds to crlf's in the <filename>*.dsp</filename>
+      and <filename>*.dsw</filename> files before Microsoft Visual C++
+      will have anything to do with them.
+     </simpara>
+     <note>
+      <simpara>
+       Place the <filename>Zend</filename> and
+       <filename>TSRM</filename> directories inside the
+       <filename>php4</filename> directory in order for the projects
+       to be found during the build process.
+      </simpara>
+     </note>
+    </sect3>
+    <sect3 id="install.windows.build.install">
+     <title>Putting it all together</title>
+     <itemizedlist>
+      <listitem><simpara>
+       Follow the instructions for installing the unzip utility of
+       your choosing.
+      </simpara></listitem>
       <listitem>
        <simpara>
-	Im Internet Service Manager (MMC) selektieren Sie die Webseite
-	oder ein Ausgangsverzeichnis Ihrer Anwendungen.
+        Execute <filename>setup.exe</filename> and follow the installation
+        instructions.  If you choose to install to a path other than
+        <filename>c:\cygnus</filename>, let the build process know by setting
+        the Cygwin environment variable. On Windows 95/98 setting
+        an environment variable can be done by placing a line in
+        your autoexec.bat. On Windows NT, go to My Computer =&gt;
+        Control Panel =&gt; System and select the environment tab.
+       </simpara>
+       <warning>
+        <simpara>
+         Make a temporary directory for Cygwin to use, otherwise many
+         commands (particularly bison) will fail. On Windows 95/98,
+         <userinput>mkdir C:\TMP</userinput>. For Windows NT,
+         <userinput>mkdir %SystemDrive%\tmp</userinput>.
+        </simpara>
+       </warning>
+      </listitem>
+      <listitem><simpara>
+       Make a directory and unzip <filename>win32build.zip</filename> into it.
+      </simpara></listitem>
+      <listitem>
+       <simpara>
+        Launch Microsoft Visual C++, and from the menu select
+        Tools =&gt; Options. In the dialog, select the
+        directories tab. Sequentially change the dropdown
+        to Executables, Includes, and Library files,
+        and ensure that <filename>cygwin\bin</filename>,
+        <filename>win32build\include</filename>, and
+        <filename>win32build\lib</filename> are in each list,
+        respectively. (To add an entry, select a blank line
+        at the end of the list and begin typing).  Typical entries
+        will look like this:
+       </simpara>
+       <itemizedlist>
+        <listitem><simpara>
+         <filename>c:\cygnus\bin</filename>
+        </simpara></listitem>
+        <listitem><simpara>
+         <filename>c:\php-win32build\include</filename>
+        </simpara></listitem>
+        <listitem><simpara>
+         <filename>c:\php-win32build\lib</filename>
+        </simpara></listitem>
+       </itemizedlist>
+       <simpara>
+        Press OK, and exit out of Visual C++.
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	Öffnen Sie die Eigenschaften Ihres Verzeichnisses
-	(Rechtsklick), danach klicken Sie auf die Registerkarte
-	Homeverzeichnis, Virtuelles Verzeichnis oder Verzeichnis.
+        Make another directory and unzip <filename>bindlib_w32.zip</filename>
+        into it. Decide whether you want to have debug symbols available
+        (bindlib - Win32 Debug) or not (bindlib - Win32 Release).
+        Build the appropriate configuration:
        </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Klicken Sie auf die Schaltfläche Konfiguration und
-	anschliessend auf die Registerkarte Anwendungs-Mapping.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Klicken Sie auf Hinzufügen und geben Sie in der Ausführungsbox
-	ein: <literal>c:\path-to-php-dir\php.exe %s %s</literal>.Sie
-	müssen %s %s unbedingt am Ende eingeben, sonst wird PHP nicht
-	korrekt arbeiten.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Inder Ausführungsbox geben Sie die Dateierweiterungen an, mit
-	der Ihre PHP-Skripte verbunden werden sollen. (Sie müssen
-	Schritt 5 und 6 für jede zusätzlich gewünschte Erweiterung
-	wiederholen. <literal>.php3</literal> und
-	<literal>.phtml</literal> sind die gebräuchlichsten.)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	Stellen Sie im Internet Service Manager die geeigneten
-	Sicherheitsmechanismen ein.  Falls Ihr NT- Server das NTFS-
-	Dateisystem benutzt, dann fügen Sie bitte Ausführungsrechte
-	für I_USR_ dem Verzeichnis hinzu, das das Programm
-	<literal>php.exe</literal> enthält.
-       </simpara>
+       <itemizedlist>
+        <listitem><simpara>
+         For GUI users, launch VC++, and then select File =&gt; Open
+         Workspace and select bindlib.  Then select Build=&gt;Set
+         Active Configuration and select the desired configuration.
+         Finally select Build=&gt;Rebuild All.
+        </simpara></listitem>
+        <listitem>
+         <simpara>
+          For command line users, make sure that you either have
+          the C++ environment variables registered, or have run
+          <command>vcvars.bat</command>, and then execute one of the
+          following:
+         </simpara>
+         <itemizedlist>
+          <listitem>
+           <simpara>
+            <userinput>msdev bindlib.dsp /MAKE "bindlib - Win32 Debug"</userinput>
+           </simpara>
+          </listitem>
+          <listitem>
+           <simpara>
+            <userinput>msdev bindlib.dsp /MAKE "bindlib - Win32 Release"</userinput>
+           </simpara>
+          </listitem>
+         </itemizedlist>
+        </listitem>
+        <listitem><simpara>
+         At this point, you should have a usable
+         <filename>resolv.lib</filename> in either your
+         <filename>Debug</filename> or <filename>Release</filename>
+         subdirectories.  Copy this file into your
+         <filename>win32build\lib</filename> directory over the
+         file by the same name found in there.
+        </simpara></listitem>
+       </itemizedlist>
       </listitem>
      </itemizedlist>
-    </para>
+    </sect3>
 
-   </sect2>
-
-   <sect2>
-    <title>Windows 9x/NT and Apache 1.3.x</title>
-    
-    <simpara>
-     Um den Apache zu konfigurieren, müssen Sie die Datei
-     <literal>httpd.conf</literal> zum Bearbeiten öffnen (Bei älteren
-     Apache-Versionen sind noch weitere Konfigurations-Dateien
-     vorhanden; hier muss dann auch die <literal>srm.conf</literal>
-     editiert werden).
-    </simpara>
-    <simpara>
-     Obwohl der Apache auf mannigfaltige Weise konfiguriert werden
-     kann, sollte die hier vorgestellte Art selbst für einen
-     "Newcomer" keine grösseren Hindernisse darstellen. Für
-     weitere Konfigurationsmöglichkeiten konsultieren Sie bitte die
-     Apache Docs.
-    </simpara>
-
-    <para>
+    <sect3 id="install.windows.build.compile">
+     <title>Compiling</title>
+     <simpara>
+      The best way to get started is to build the standalone/CGI version.
+     </simpara>
      <itemizedlist>
+      <listitem><simpara>
+       For GUI users, launch VC++, and then select File =&gt; Open
+       Workspace and select php4ts.  Then select Build=&gt;Set Active
+       Configuration and select the desired configuration. Finally
+       select Build=&gt;Rebuild All.
+      </simpara></listitem>
       <listitem>
        <simpara>
-	<literal>
-	 ScriptAlias /php3/ "c:/path-to-php-dir/"
-	</literal>
+        For command line users, make sure that you either have
+        the C++ environment variables registered, or have run
+        <command>vcvars.bat</command>, and then execute one of the
+        following:
        </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	<literal>
-	 AddType application/x-httpd-php3 .php3
-	</literal>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	<literal>
-	 AddType application/x-httpd-php3 .phtml
-	</literal>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	<literal>
-	 Action application/x-httpd-php3 "/php3/php.exe"
-	</literal>
-       </simpara>
+       <itemizedlist>
+        <listitem><simpara>
+         <userinput>msdev php4ts.dsp /MAKE "php4ts - Win32 Debug_TS"</userinput>
+        </simpara></listitem>
+        <listitem><simpara>
+         <userinput>msdev php4ts.dsp /MAKE "php4ts - Win32 Release_TS"</userinput>
+        </simpara></listitem>
+        <listitem><simpara>
+         At this point, you should have a usable
+         <filename>php.exe</filename> in either
+         your <filename>Debug_TS</filename> or
+         <filename>Release_TS</filename> subdirectories.
+        </simpara></listitem>
+       </itemizedlist>
       </listitem>
      </itemizedlist>
-    </para>
-
-    <simpara>
-     Das Quell-Code-Highlighting Feature nutzen sie mit der Funktion
-     showSource().  Erstellen Sie z.B. ein PHP-Skript in welchem Sie
-     folgenden Code eingeben: <literal>&lt;?php show_source
-     ("original_php_script.php3"); ?></literal>.  Ersetzen Sie
-     <literal>original_php_script.php3</literal> durch den Namen des
-     Skriptes, dessen Quellcode Sie anzeigen wollen (Dieses ist nur
-     ein Weg, das Feature zu nutzen). Die Farben der des
-     Syntax-Highlighting können Sie in der php.ini im Abschnitt
-     'Languages Options' einstellen.  <emphasis>Bemerkung:</emphasis>
-     Auf Win-Apache müssen alle Backslashes in einer
-     Verzeichnis-Anweisung in Forward-Slashes (normaler Slash)
-     konvertiert werden.
-    </simpara>
-
+     <simpara>
+      Repeat the above steps with <filename>php4isapi.dsp</filename>
+      (which can be found in <filename>sapi\isapi</filename>) in
+      order to build the code necessary for integrating PHP with
+      Microsoft IIS.
+     </simpara>
+    </sect3>
    </sect2>
-
-   <sect2>
-    <title>Omni HTTPd 2.0b1 für Windows</title>
-    
-    <simpara>
-     Dieser ist von allen Server der am einfachsten zu konfigurierende:
-    </simpara>
-
+   
+   <sect2 id="install.windows.extensions">
+    <title>Installation of Windows extensions</title>
     <para>
-     <simplelist>
-      <member>
-       Schritt 1: Installieren Sie den Omni server
-      </member>
-      <member>
-       Schritt 2: Rechtsklick auf das blaue OmniHTTPd Icon in der System
-       Tray und selektieren Sie <literal>Eigenschaften</literal>
-      </member>
-      <member>
-       Schritt 3: Klicken Sie auf <literal>Web Server Global
-       Settings</literal>
-      </member>
-      <member>
-       Schritt 4: Bei der Registerkarte 'External' , geben Sie
-       folgendes ein: <literal>virtual = .php3 | actual =
-       c:\path-to-php-dir\php.exe</literal>
-      </member>
-      <member>
-       Schritt 5: Bei der Registerkarte <literal>Mime</literal> geben
-       Sie folgendes ein: <literal>virtual = wwwserver/stdcgi | actual
-       = .php3</literal>
-      </member>
-      <member>
-       Schritt 6: Klicken Sie auf <literal>OK</literal>. Fertig :-)
-      </member>
-     </simplelist>
+     After installing PHP and a webserver on Windows, you will
+     probably want to install some extensions for added functionality.
+     The following table describes some of the extensions available. As
+     described in the manual installation steps, you can choose which
+     extensions you would like to load when PHP starts by uncommenting the:
+     'extension=php_*.dll' lines in <filename>php.ini</filename>. Some
+     extensions require you to have additional libraries installed on
+     your system for the module to work correctly. The PHP
+     <ulink url="&url.php.faq;">FAQ</ulink> has more information on
+     where to get supporting libraries. You can also load a module
+     dynamically in your script using <function>dl</function>.
     </para>
-
-    <simpara>
-     Wiederholen Sie Schritt 2-6 für jede Dateierweiterung, die Sie
-     mit PHP verbinden wollen.
-    </simpara>
-
-   </sect2>
-
-   <sect2>
-    <title>PHP Module</title>
+    <para>
+     The DLLs for PHP extensions are prefixed with 'php_'.  This
+     prevents confusion between PHP extensions and their supporting
+     libraries.
+    </para>
+    <note>
+     <para>
+       In PHP 4.0.4pl1 MySQL, ODBC, FTP, Calendar, BCMath, COM, PCRE,
+       Session, WDDX and XML support is <emphasis>built-in</emphasis>.
+       You don't need to load any additional extensions in order to
+       use these functions. See your distributions
+       <filename>README.txt</filename> or <filename>install.txt</filename>
+       for a list of built in modules.
+     </para>
+    </note>
 
     <para>
      <table>
-      <title>PHP Module</title>
+      <title>PHP Extensions</title>
       <tgroup cols="2">
        <tbody>
-	<row>
-	 <entry>php3_calendar.dll</entry>
-	 <entry>Kalender - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_crypt.dll</entry>
-	 <entry>Verschlüsselungs - Funktionen (MD5)</entry>
-	</row>
-	<row>
-	 <entry>php3_dbase.dll</entry>
-	 <entry>dBase - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_dbm.dll</entry>
-	 <entry>GDBM Emulation via Berkely DB2 library</entry>
-	</row>
-	<row>
-	 <entry>php3_filepro.dll</entry>
-	 <entry>READ ONLY Zugang zur Filepro Datenbank</entry>
-	</row>
-	<row>
-	 <entry>php3_gd.dll</entry> 
-	 <entry>GD Library - Funktionen für gif-Manipulation</entry>
-	</row>
-	<row>
-	 <entry>php3_hyperwave.dll</entry>
-	 <entry>HyperWave - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_imap4r2.dll</entry>
-	 <entry>IMAP 4 - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_ldap.dll</entry>
-	 <entry>LDAP - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_msql1.dll</entry>
-	 <entry>mSQL 1 client</entry>
-	</row>
-	<row>
-	 <entry>php3_msql2.dll</entry>
-	 <entry>mSQL 2 client</entry>
-	</row>
-	<row>
-	 <entry>php3_mssql.dll</entry>
-	 <entry>MSSQL client (benötigt MSSQL DB-Bibliotheken</entry>
-	</row>
-	<row>
-	 <entry>php3_mysql.dll</entry>
-	 <entry>MySQL - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_nsmail.dll</entry>
-	 <entry>Netscape Mail - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_oci73.dll</entry>
-	 <entry>Oracle - Funktionen</entry>
-	</row>
-	<row>
-	 <entry>php3_snmp.dll</entry>
-	 <entry>SNMP get and walk Funktionen (nur NT !)</entry>
-	</row>
-	<row>
-	 <entry>php3_zlib.dll</entry>
-	 <entry>ZLib - Funktionen</entry>
-	</row>
+  <row>
+   <entry>php_calendar.dll</entry>
+   <entry>Calendar conversion functions</entry>
+  </row>
+  <row>
+   <entry>php_crypt.dll</entry>
+   <entry>Crypt functions</entry>
+  </row>
+  <row>
+   <entry>php_dbase.dll</entry>
+   <entry>dBase functions</entry>
+  </row>
+  <row>
+   <entry>php_dbm.dll</entry>
+   <entry>Berkeley DB2 library</entry>
+  </row>
+  <row>
+   <entry>php_filepro.dll</entry>
+   <entry>Read-only access to Filepro databases</entry>
+  </row>
+  <row>
+   <entry>php_gd.dll</entry>
+   <entry>GD library functions for GIF manipulation</entry>
+  </row>
+  <row>
+   <entry>php_hyperwave.dll</entry>
+   <entry>HyperWave functions</entry>
+  </row>
+  <row>
+   <entry>php_imap4r2.dll</entry>
+   <entry>IMAP 4 functions</entry>
+  </row>
+  <row>
+   <entry>php_ldap.dll</entry>
+   <entry>LDAP functions</entry>
+  </row>
+  <row>
+   <entry>php_msql1.dll</entry>
+   <entry>mSQL 1 client</entry>
+  </row>
+  <row>
+   <entry>php_msql2.dll</entry>
+   <entry>mSQL 2 client</entry>
+  </row>
+  <row>
+   <entry>php_mssql.dll</entry>
+   <entry>MSSQL client (requires MSSQL DB-Libraries</entry>
+  </row>
+  <row>
+   <entry>php3_mysql.dll (built into PHP 4)</entry>
+   <entry>MySQL functions</entry>
+  </row>
+  <row>
+   <entry>php_nsmail.dll</entry>
+   <entry>Netscape mail functions</entry>
+  </row>
+  <row>
+   <entry>php_oci73.dll</entry>
+   <entry>Oracle functions</entry>
+  </row>
+  <row>
+   <entry>php_snmp.dll</entry>
+   <entry>SNMP get and walk functions (NT only!)</entry>
+  </row>
+  <row>
+   <entry>php_zlib.dll</entry>
+   <entry>ZLib compression functions</entry>
+  </row>
        </tbody>
       </tgroup>
      </table>
+    </para>
+   </sect2>
+  </sect1>
+
+  <sect1 id="install.apache">
+   <title>Servers-Apache</title>
+   <para>
+    This section contains notes and hints specific to Apache installs
+    of PHP, both for <link linkend="install.apache.unix">Unix</link> and
+    <link linkend="install.apache.windows">Windows</link> versions.
+   </para>   
+   <sect2 id="install.apache.unix">
+    <title>Details of installing PHP with Apache on Unix.</title>
+    <para>
+     You can select arguments to add to the
+     <command>configure</command> on line 8 below from the <link
+     linkend="install.configure">Complete list of configure
+     options</link>.
+    </para>
+
+    <example id="install.apache.unix.longer">
+     <title>
+      Installation Instructions (Apache Module Version)
+     </title>
+     <programlisting>
+1.  gunzip apache_1.3.x.tar.gz
+2.  tar xvf apache_1.3.x.tar
+3.  gunzip php-x.x.x.tar.gz
+4.  tar xvf php-x.x.x.tar
+5.  cd apache_1.3.x
+6.  ./configure --prefix=/www
+7.  cd ../php-x.x.x
+8.  ./configure --with-mysql --with-apache=../apache_1.3.x --enable-track-vars
+9.  make
+10. make install
+11. cd ../apache_1.3.x
+12. for PHP 3: ./configure --activate-module=src/modules/php3/libphp3.a
+    for PHP 4: ./configure --activate-module=src/modules/php4/libphp4.a
+13. make
+14. make install
+
+  Instead of this step you may prefer to simply copy the httpd binary
+  overtop of your existing binary.  Make sure you shut down your
+  server first though.
+
+15. cd ../php-x.x.x
+16. for PHP 3: cp php3.ini-dist /usr/local/lib/php3.ini
+    for PHP 4: cp php.ini-dist /usr/local/lib/php.ini
+
+  You can edit your .ini file to set PHP options.  If
+  you prefer this file in another location, use
+  --with-config-file-path=/path in step 8.
+
+17. Edit your httpd.conf or srm.conf file and add: 
+      
+     For PHP 3:   AddType application/x-httpd-php3 .php3
+     For PHP 4:   AddType application/x-httpd-php .php
+ 
+  You can choose any extension you wish here.  .php is simply the one
+  we suggest. You can even include .html .
+
+18. Use your normal procedure for starting the Apache server. (You must
+    stop and restart the server, not just cause the server to reload by
+    use a HUP or USR1 signal.)
+      </programlisting>
+     </example>
+
+     <para>
+      Depending on your Apache install and Unix variant, there are many
+      possible ways to stop and restart the server. Below are some typical
+      lines used in restarting the server, for different apache/unix
+      installations. You should replace <literal>/path/to/</literal> with
+      the path to these applications on your systems.
+      <informalexample>
+       <programlisting>
+1. Several Linux and SysV variants:
+/etc/rc.d/init.d/httpd restart
+
+2. Using apachectl scripts:
+/path/to/apachectl stop
+/path/to/apachectl start
+
+3. httpdctl and httpsdctl (Using OpenSSL), similar to apachectl:
+/path/to/httpsdctl stop
+/path/to/httpsdctl start
+
+4. Using mod_ssl, or another SSL server, you may want to manually
+stop and start:
+/path/to/apachectl stop
+/path/to/apachectl startssl
+       </programlisting>
+      </informalexample>
+      The locations of the apachectl and http(s)dctl binaries often
+      vary. If your system has <literal>locate</literal> or
+      <literal>whereis</literal> or <literal>which</literal> commands,
+      these can assist you in finding your server contrl programs.
      </para>
+
+     <para>
+      Different examples of compiling PHP for apache are as follows:
+      <informalexample>
+       <programlisting>
+./configure --with-apxs --with-pgsql
+       </programlisting>
+      </informalexample>
+     </para>
+     <para>
+      This will create a <filename>libphp4.so</filename> shared
+      library that is loaded into Apache using a LoadModule line in
+      Apache's <filename>httpd.conf</filename> file. The PostgreSQL
+      support is embedded into this <filename>libphp4.so</filename>
+      library.
+     </para>
+     <para>
+      <informalexample>
+       <programlisting>
+./configure --with-apxs --with-pgsql=shared
+       </programlisting>
+      </informalexample>
+     </para>
+     <para>
+      This will again create a <filename>libphp4.so</filename> shared
+      library for Apache, but it will also create a
+      <filename>pgsql.so</filename> shared library that is loaded into
+      PHP either by using the extension directive in
+      <filename>php.ini</filename> file or by loading it explicitly in
+      a script using the <function>dl</function> function.
+     </para>
+     <para>
+      <informalexample>
+       <programlisting>
+./configure --with-apache=/path/to/apache_source --with-pgsql
+       </programlisting>
+      </informalexample>
+     </para>
+     <para>
+      This will create a <filename>libmodphp4.a</filename> library, a
+      <filename>mod_php4.c</filename> and some accompanying files and
+      copy this into the <literal>src/modules/php4</literal> directory
+      in the Apache source tree. Then you compile Apache using
+      <literal>--activate-module=src/modules/php4/libphp4.a</literal>
+      and the Apache build system will create
+      <filename>libphp4.a</filename> and link it statically into the
+      <filename>httpd</filename> binary. The PostgreSQL support is
+      included directly into this <filename>httpd</filename> binary,
+      so the final result here is a single <filename>httpd</filename>
+      binary that includes all of Apache and all of PHP.
+     </para>
+     <para>
+      <informalexample>
+       <programlisting>
+./configure --with-apache=/path/to/apache_source --with-pgsql=shared
+       </programlisting>
+      </informalexample>
+     </para>
+     <para>
+      Same as before, except instead of including PostgreSQL support
+      directly into the final <filename>httpd</filename> you will get
+      a <filename>pgsql.so</filename> shared library that you can load
+      into PHP from either the <filename>php.ini</filename> file or
+      directly using <function>dl</function>.
+     </para>
+     <para>
+      When choosing to build PHP in different ways, you should consider
+      the advantages and drawbacks of each method. Building as a shared
+      object will mean that you can compile apache separately, and don't
+      have to recompile everything as you add to, or change, PHP.
+      Building PHP into apache (static method) means that PHP will
+      load and run faster. For more information, see the Apache
+      <ulink url="&url.apachedso;">webpage on DSO support</ulink>.
+     </para>
+   </sect2>
+
+
+   <sect2 id="install.apache.windows">
+    <title>Details of installing PHP on Windows with Apache 1.3.x</title>
+    
+    <simpara>
+     There are two ways to set up PHP to work with Apache 1.3.x
+     on Windows. One is to use the CGI binary (php.exe),
+     the other is to use the Apache module dll. In either case
+     you need to stop the Apache server, and edit your
+     <literal>srm.conf</literal> or <literal>httpd.conf</literal>
+     to configure Apache to work with PHP.
+    </simpara>
+    <simpara>
+     Although there can be a few variations of configuring PHP
+     under Apache, these are simple enough to be used by the
+     newcomer. Please consult the Apache Docs for further
+     configuration directives.
+    </simpara>
+  
+    <para>
+     If you unziped the PHP package to C:\PHP\ as desribed
+     in the <link linkend="install.windows.manual">General
+     Installation Steps</link> section, you need to insert
+     these lines to your Apache conf file to set up the
+     CGI binary:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        <literal>
+         ScriptAlias /php/ "c:/php/"
+        </literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <literal>
+         AddType application/x-httpd-php .php .phtml
+        </literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <literal>
+         Action application/x-httpd-php "/php/php.exe"
+        </literal>
+       </simpara>
+      </listitem>
+     </itemizedlist>
+     Remerber to restart the server, for example,
+     <literal>NET STOP APACHE</literal> followed by
+     <literal>NET START APACHE</literal>.
+    </para>
+
+    <para>
+     If you would like to use PHP as a module in Apache,
+     you should move <filename>php4ts.dll</filename> to
+     the windows/system (for Windows 9x/Me) or winnt/system32
+     (for Windows NT/2000) directory, overwriting any older file.
+     Then you should add the following two lines to you Apache
+     conf file:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        <literal>
+         LoadModule php4_module c:/php/sapi/php4apache.dll
+        </literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <literal>
+          AddType application/x-httpd-php .php .phtml
+        </literal>
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+
+    <simpara>
+     To use the source code highlighting feature, simply create a PHP
+     script file and stick this code in: <literal>&lt;?php show_source
+     ("original_php_script.php"); ?></literal>. Substitute
+     <literal>original_php_script.php</literal> with the name of the
+     file you wish to show the source of. (This is the only way of
+     doing so). 
+    </simpara>
+    <note>
+     <simpara>
+      On Win-Apache all backslashes in a path statement such
+      as: "c:\directory\file.ext", must be converted to
+      forward slashes.
+     </simpara>
+    </note>
+   </sect2>
+  </sect1>
+
+  <sect1 id="install.commandline">
+   <title>Servers-CGI/Commandline</title>
+   <para>
+    The default is to build PHP as a CGI program.  This creates a
+    commandline interpreter, which can be used for CGI processing, or
+    for non-web-related PHP scripting.  If you are running a web
+    server PHP has module support for, you should generally go for
+    that solution for performance reasons.  However, the CGI version
+    enables Apache users to run different PHP-enabled pages under
+    different user-ids.  Please make sure you read through the <link
+    linkend="security">Security chapter</link> if you are going to
+    run PHP as a CGI.
+   </para>
+   
+   <sect2 id="install.commandline.testing">
+    <title>Testing</title>
+    <simpara>
+     If you have built PHP as a CGI program, you may test your build
+     by typing <command>make test</command>.  It is always a good idea
+     to test your build.  This way you may catch a problem with PHP on
+     your platform early instead of having to struggle with it later.
+    </simpara>
+   </sect2>
+
+   <sect2 id="install.commandline.benchmarking">
+    <title>Benchmarking</title>
+    <simpara>
+     If you have built PHP 3 as a CGI program, you may benchmark your
+     build by typing <command>make bench</command>. Note that if safe
+     mode is on by default, the benchmark may not be able to finish if
+     it takes longer then the 30 seconds allowed. This is because the
+     <function>set_time_limit</function> can not be used in safe
+     mode. Use the <link
+      linkend="ini.max-execution-time">max_execution_time</link>
+     configuration setting to control this time for your own
+     scripts. <command>make bench</command> ignores the <link
+      linkend="configuration.file">configuration file</link>.
+    </simpara>
+    <note>
+     <simpara>
+        <command>make bench</command> is only available for PHP 3.
+     </simpara>
+    </note>
+   </sect2>
+  </sect1>
+
+  <sect1 id="install.fhttpd">
+   <title>Servers-fhttpd</title>
+   <para>
+    To build PHP as an fhttpd module, answer "yes" to "Build as an
+    fhttpd module?" (the <option><link
+    linkend="install.configure.with-fhttpd">
+    --with-fhttpd</link>=<replaceable>DIR</replaceable></option>
+    option to configure) and specify the fhttpd source base
+    directory.  The default directory is <filename
+    class="directory">/usr/local/src/fhttpd</filename>. If you are
+    running fhttpd, building PHP as a module will give better
+    performance, more control and remote execution capability.
+   </para>
+  </sect1>
+
+  <sect1 id="install.caudium">
+   <title>Servers-Caudium</title>
+   <para>
+    PHP 4 can be build as a Pike module for the Caudium webserver. Note
+    that this is not supported with PHP 3. Follow the simple
+    instructions below to install PHP 4 for Caudium.
+   </para>
+   <example id="install.caudium.instructions">
+    <title>Caudium Installation Instructions</title>
+    <programlisting>
+1.  Make sure you have Caudium installed prior to attempting to
+    install PHP 4. For PHP 4 to work correctly, you will need Pike
+    7.0.268 or newer. For the sake of this example we assume that
+    Caudium is installed in /opt/caudium/server/.
+2.  Change directory to php-x.y.z (where x.y.z is the version number).
+3.  ./configure --with-caudium=/opt/caudium/server
+4.  make
+5.  make install
+6.  Restart Caudium if it's currently running.
+7.  Log into the graphical configuration interface and go to the
+    virtual server where you want to add PHP 4 support.
+8.  Click Add Module and locate and then add the PHP 4 Script Support module.
+9.  If the documentation says that the 'PHP 4 interpreter isn't
+    available', make sure that you restarted the server. If you did
+    check /opt/caudium/logs/debug/default.1 for any errors related to
+    <filename>PHP4.so</filename>. Also make sure that 
+    <filename>caudium/server/lib/[pike-version]/PHP4.so</filename>
+    is present.
+10. Configure the PHP Script Support module if needed.
+    </programlisting>
+   </example>
+   <para>
+    You can of course compile your Caudium module with support for the
+    various extensions available in PHP 4. See the 
+    <link linkend="install.configure">complete list of configure
+    options</link> for an exhaustive rundown. 
+   </para>
+   <note>
+    <para>
+     When compiling PHP 4 with MySQL support you must make sure that
+     the normal MySQL client code is used. Otherwise there might be
+     conflicts if your Pike already has MySQL support. You do this by
+     specifying a MySQL install directory <link
+     linkend="install.configure.with-mysql">the --with-mysql
+     option</link>.
+    </para>
+   </note>
+  </sect1>
+
+  <sect1 id="install.iis">
+   <title>Servers-IIS/PWS</title>
+   <para>
+    This section contains notes and hints specific to IIS (Microsoft
+    Internet Information Server) installing PHP for
+    <link linkend="install.iis.iis3">PWS/IIS 3</link>,
+    <link linkend="install.iis.pws4">PWS 4 or newer</link> and
+    <link linkend="install.iis.iis4">IIS 4 or newer</link> versions.
+   </para>
+   <sect2 id="install.iis.iis3">
+    <title>Windows and PWS/IIS 3</title>
+    
+    <simpara>
+     The recommended method for configuring these servers is to use
+     the INF file included with the distribution
+     (php_iis_reg.inf). You may want to edit this file and make sure
+     the extensions and PHP install directories match your
+     configuration. Or you can follow the steps below to do it
+     manually.
+    </simpara>
+    <warning>
+     <para>
+      These steps involve working directly with the Windows
+      registry. One error here can leave your system in an unstable
+      state. We highly recommend that you back up your registry
+      first. The PHP Development team will not be held responsible if
+      you damage your registry.
+     </para>
+    </warning>
+
+    <para>
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        Run Regedit.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Navigate to: <literal>HKEY_LOCAL_MACHINE /System
+         /CurrentControlSet /Services /W3Svc /Parameters
+         /ScriptMap</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        On the edit menu select: <literal>New->String Value</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Type in the extension you wish to use for your php
+        scripts. ex: <literal>.php</literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Double click on the new string value and enter the path to
+        <literal>php.exe</literal> in the value data field. ex:
+        <literal>c:\php\php.exe %s %s</literal>. The '%s %s' is VERY
+        important, PHP will not work properly without it.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Repeat these steps for each extension you wish to associate
+        with PHP scripts.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Now navigate to: <literal>HKEY_CLASSES_ROOT</literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        On the edit menu select: <literal>New->Key</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Name the key to the extension you setup in the previous
+        section. ex: <literal>.php</literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Highlight the new key and in the right side pane, double click 
+        the "default value" and enter <literal>phpfile</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Repeat the last step for each extension you set up in the
+        previous section.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Now create another <literal>New->Key</literal> under
+        <literal>HKEY_CLASSES_ROOT</literal> and name it
+        <literal>phpfile</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Highlight the new key <literal>phpfile</literal> and in the
+        right side pane, double click the "default value" and enter
+        <literal>PHP Script</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Right click on the <literal>phpfile</literal> key and select
+        <literal>New->Key</literal>, name it <literal>Shell</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Right click on the <literal>Shell</literal> key and select
+        <literal>New->Key</literal>, name it <literal>open</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Right click on the <literal>open</literal> key and select
+        <literal>New->Key</literal>, name it
+        <literal>command</literal>. 
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Highlight the new key <literal>command</literal> and in the
+        right side pane, double click the "default value" and enter
+        the path to <literal>php.exe</literal>. ex:
+        <literal>c:\php\php.exe -q %1</literal>. (don't forget the
+        <literal>%1</literal>). 
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Exit Regedit.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        If using PWS on Windows, reboot to reload the registry.
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+    <simpara>
+     PWS and IIS 3 users now have a fully operational system. IIS 3
+     users can use a nifty <ulink url="&url.iiscfg;">tool</ulink>
+     from Steven Genusa to configure their script maps.
+    </simpara>
+    
+   </sect2>
+
+   <sect2 id="install.iis.pws4">
+    <title>Windows and PWS 4 or newer</title>
+
+    <simpara>
+     When installing PHP on Windows with PWS 4 or newer version,
+     you have two options. One to set up the PHP CGI binary,
+     the other is to use the ISAPI module dll.
+    </simpara>
+     
+    <para>
+     If you choose the CGI binary, do the following:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        Edit the enclosed <filename>pws-php4cgi.reg</filename>
+        file (look into the sapi dir) to reflect the location of
+        your php.exe. Forward slashes should be escaped, for example:
+        <literal>[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\w3svc\parameters\Script Map] ".php"="C:\\PHP\\php.exe"</literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        In the PWS Manager, right click on a given directory you want
+        to add PHP support to, and select Properties. Check the 'Execute'
+        checkbox, and confirm.
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+
+    <para>
+     If you choose the ISAPI module, do the following:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        Edit the enclosed <filename>pws-php4isapi.reg</filename>
+        file (look into the sapi dir) to reflect the location of
+        your php4isapi.dll. Forward slashes should be escaped, for example:
+        <literal>[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\w3svc\parameters\Script Map] ".php"="C:\\PHP\\sapi\\php4isapi.dll"</literal>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        In the PWS Manager, right click on a given directory you want to
+        add PHP support to, and select Properties. Check the 'Execute'
+        checkbox, and confirm. 
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
 
    </sect2>
 
+   <sect2 id="install.iis.iis4">
+    <title>Windows NT/2000 and IIS 4 or newer</title>
+
+    <simpara>
+     To install PHP on an NT/2000 Server running IIS 4 or newer,
+     follow these instructions. You have two options to set up
+     PHP, using the CGI binary (php.exe) or with the ISAPI module.
+    </simpara>
+    
+    <simpara>
+     In either case, you need to start the Microsoft Management
+     Console (may appear as 'Internet Services Manager', either
+     in your Windows NT 4.0 Option Pack branch or the Control
+     Panel=&gt;Administrative Tools under Windows 2000). Then 
+     right click on your Web server node (this will most probably
+     appear as 'Default Web Server'), and select 'Properties'.
+    </simpara>
+
+    <para>
+     If you want to use the CGI binary, do the following:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        Under 'Home Directory', 'Virtual Directory', or
+        'Directory', click on the 'Configuration' button,
+        and then enter the App Mappings tab.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Click Add, and in the Executable box, type:
+        <literal>c:\php\php.exe %s %s</literal> (assuming
+        that you have unziped PHP in c:\php\). You MUST
+        have the %s %s on the end, PHP will not function
+        properly if you fail to do this.
+        </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        In the Extension box, type the file name extension you want
+        associated with PHP scripts. Leave 'Method exclusions'
+        blank, and check the Script engine checkbox.
+        You must repeat step 3 and 4 for each extension you
+        want associated with PHP scripts.
+        (<literal>.php</literal> and <literal>.phtml</literal>
+        are common.)
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Set up the appropriate security. (This is done in Internet
+        Service Manager), and if your NT Server uses NTFS file system,
+        add execute rights for I_USR_ to the directory that contains
+        <literal>php.exe</literal>.
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+    
+    <para>
+     To use the ISAPI module, do the following:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        If you don't want to perform HTTP Authentication using PHP,
+        you can (and should) skip this step. Under ISAPI Filters,
+        add a new ISAPI filter. Use PHP as the filter name, and
+        supply a path to the php4isapi.dll.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Under 'Home Directory', click on the 'Configuration' button.
+        Add a new entry to the Application Mappings. Use the path
+        to the php4isapi.dll as the Executable, supply .php as the
+        extension, leave Method exclusions blank, and check the
+        Script engine checkbox.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Stop IIS completely
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Start IIS again
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </para>
+   </sect2>
+  </sect1>
+  
+  <sect1 id="install.netscape-enterprise">
+   <title>Servers-Netscape and iPlanet</title>
+   <para>
+    To build PHP with NES or iPlanet web servers, enter the proper
+    install directory for the 
+    <option><link linkend="install.configure.with-nsapi">--with-nsapi</link> = <replaceable>DIR</replaceable></option> 
+    option. The default directory is usually 
+    <filename class="directory">/opt/netscape/suitespot/</filename>. 
+    Please also read <filename>/php-xxx-version/sapi/nsapi/nsapi-readme.txt</filename>. 
+   </para>
+   <para>
+    <example id="install.netscape-enterprise.solaris">
+     <title>
+      Installation Example for Netscape Enterprise on Solaris
+     </title>
+     <programlisting>
+Instructions for Sun Solaris 2.6 with Netscape Enterprise Server 3.6
+From: bhager@invacare.com
+
+1. Install the following packages from www.sunfreeware.com or another
+download site: 
+
+    flex-2_5_4a-sol26-sparc-local 
+    gcc-2_95_2-sol26-sparc-local 
+    gzip-1.2.4-sol26-sparc-local 
+    perl-5_005_03-sol26-sparc-local 
+    bison-1_25-sol26-sparc-local 
+    make-3_76_1-sol26-sparc-local 
+    m4-1_4-sol26-sparc-local 
+    autoconf-2.13 
+    automake-1.4 
+    mysql-3.23.24-beta (if you want mysql support) 
+    tar-1.13 (GNU tar) 
+
+2. Make sure your path includes the proper directories
+    PATH=.:/usr/local/bin:/usr/sbin:/usr/bin:/usr/ccs/bin 
+    export PATH 
+
+3. gunzip php-x.x.x.tar.gz (if you have a .gz dist, otherwise go to 4) 
+4. tar xvf php-x.x.x.tar 
+5. cd ../php-x.x.x 
+
+6. For the following step, make sure /opt/netscape/suitespot/ is where
+   your netscape server is installed. Otherwise, change to correct path:
+    /configure --with-mysql=/usr/local/mysql --with-nsapi=/opt/netscape/suitespot/ --enable-track-vars --enable-libgcc 
+7. make 
+8. make install
+      </programlisting>
+     </example>
+     After performing the base install and reading the appropriate
+     readme file, you may need to performs some additional
+     configuration steps.
+    </para>
+    <para>
+     Firstly you may need to add some paths to the LD_LIBRARY_PATH 
+     environment for Netscape to find all the shared libs. This can 
+     best done in the start script for your Netscape server. 
+     Windows users can probably skip this step. The start 
+     script is often located in:
+     <filename
+     class="directory">/path/to/server/https-servername/start</filename> 
+    </para>
+    <para>
+     You may also need to edit the configuration files that are
+     located in:<filename
+     class="directory">/path/to/server/https-servername/config/</filename>.
+    </para>
+   
+   <example id="install.netscape-enterprise.configure">
+      <title>
+       Configuration Example for Netscape Enterprise
+      </title>
+      <programlisting>
+Configuration Instructions for Netscape Enterprise Server
+From: bhager@invacare.com
+
+1. Add the following line to mime.types:
+    type=magnus-internal/x-httpd-php exts=php
+
+2. Add the following to obj.conf, shlib will vary depending on
+    your OS, for unix it will be something like
+    /opt/netscape/suitespot/bin/libphp4.so.
+
+    You should place the following lines after mime types init.
+    Init fn="load-modules" funcs="php4_init,php4_close,php4_execute,php4_auth_trans" shlib="/php4/nsapiPHP4.dll"
+    Init fn=php4_init errorString="Failed to initialize PHP!"
+
+    &lt;object name="default"&gt;
+    . 
+    . 
+    . 
+    .#NOTE this next line should happen after all 'ObjectType' and before all 'AddLog' lines 
+    Service fn="php4_execute" type="magnus-internal/x-httpd-php" 
+    . 
+    . 
+    &lt;/Object&gt;
+
+
+    &lt;Object name="x-httpd-php"&gt; 
+    ObjectType fn="force-type" type="magnus-internal/x-httpd-php" 
+    Service fn=php4_execute 
+    &lt;/Object&gt; 
+
+
+    Authentication configuration 
+
+    PHP authentication cannot be used with any other authentication. ALL AUTHENTICATION IS 
+    PASSED TO YOUR PHP SCRIPT. To configure PHP Authentication for the entire server, add 
+    the following line: 
+
+    &lt;Object name="default"&gt; 
+    AuthTrans fn=php4_auth_trans 
+    . 
+    . 
+    . 
+    . 
+    &lt;/Object&gt; 
+
+    To use PHP Authentication on a single directory, add the following: 
+
+    &lt;Object ppath="d:\path\to\authenticated\dir\*"&gt; 
+    AuthTrans fn=php4_auth_trans 
+    &lt;/Object&gt;
+     </programlisting>
+    </example>
+    <para>If you are running Netscape Enterprise 4.x, then you should use the following:</para>
+    <example>
+     <title>Configuration Example for Netscape Enterprise 4.x</title>
+     <programlisting>
+Place these lines after the mime types init, and everything else is similar
+to the example configuration above.
+From: Graeme Hoose (GraemeHoose@BrightStation.com)
+
+Init fn="load-modules" shlib="/path/to/server4/bin/libphp4.so" funcs="php4_init,php4_close,php4_execute,php4_auth_trans"
+Init fn="php4_init" LateInit="yes"
+     </programlisting>
+    </example>
+  </sect1>
+
+  <sect1 id="install.omnihttpd">
+   <title>Servers-OmniHTTPd Server</title>
+   <para>
+    This section contains notes and hints specific to OmniHTTPd.
+   </para>
+   <sect2 id="install.omnihttpd.windows">
+    <title>OmniHTTPd 2.0b1 and up for Windows</title>
+    
+    <simpara>
+     This has got to be the easiest config there is:
+    </simpara>
+
+    <para>
+     <itemizedlist>
+      <listitem>
+       <para>
+        Step 1: Install OmniHTTPd server.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Step 2: Right click on the blue OmniHTTPd icon in the system
+        tray and select <literal>Properties</literal>
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Step 3: Click on <literal>Web Server Global Settings</literal>
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Step 4: On the 'External' tab, enter: <literal>virtual = .php
+         | actual = c:\path-to-php-dir\php.exe</literal>, and use the Add
+         button.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Step 5: On the <literal>Mime</literal> tab, enter:
+        <literal>virtual = wwwserver/stdcgi | actual = .php</literal>,
+        and use the Add button.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Step 6: Click <literal>OK</literal>
+       </para>
+      </listitem>
+     </itemizedlist>
+    </para>
+
+    <simpara>
+     Repeat steps 2 - 6 for each extension you want to associate with PHP.
+    </simpara>
+    <note>
+     <para>
+      Some OmniHTTPd packages come with built in PHP support.
+      You can choose at setup time to do a custom setup, and
+      uncheck the PHP component. We recommend you to use the latest
+      PHP binaries. Some OmniHTTPd servers come with PHP 4 beta
+      distributions, so you should choose not to set up
+      the built in support, but install your own. If the server
+      is already on your machine, use the Replace button in Step
+      4 and 5 to set the new, correct information.
+     </para>
+    </note>
+   </sect2>
+  </sect1>
+
+  <sect1 id="install.oreilly">
+   <title>Servers-Oreilly Website Pro</title>
+   <para>
+    This section contains notes and hints specific to Oreilly
+    Website Pro.
+   </para>
+   <sect2 id="install.oreilly.windows">
+    <title>Oreilly Website Pro 2.5 and up for Windows</title>
+    
+    <simpara>
+     This list describes how to set up the PHP CGI binary
+     or the ISAPI module to work with Oreilly Website Pro
+     on Windows.
+    </simpara>
+
+    <para>
+     <itemizedlist>
+      <listitem>
+       <para>
+        Edit the Server Properties and select the tab "Mapping".
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        From the List select "Associations" and enter the desired
+        extension (".php") and the path to the CGI exe
+        (ex. c:\php\php.exe) or the ISAPI dll file
+        (ex. c:\php\sapi\php4isapi.dll).
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Select "Content Types" add the same extension ".php"
+        and enter the content type. If you choose the CGI exe
+        file, enter 'wwwserver/shellcgi', if you chosse the
+        ISAPI module, enter 'wwwserver/isapi' (both without
+        quotes).
+       </para>
+      </listitem>
+     </itemizedlist>
+    </para>
+   </sect2>
+  </sect1>
+
+  <sect1 id="install.xitami">
+   <title>Servers-Xitami</title>
+   <para>
+    This section contains notes and hints specific to Xitami.
+   </para>
+   <sect2 id="install.xitami.windows">
+    <title>Xitami for Windows</title>
+    
+    <simpara>
+     This list describes how to set up the PHP CGI binary
+     to work with Xitami on Windows.
+    </simpara>
+
+    <para>
+     <itemizedlist>
+      <listitem>
+       <para>
+        Make sure the webserver is running, and point
+        your browser to xitamis admin console
+        (usually http://127.0.0.1/admin), and click on
+        Configuration.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Navigate to the Filters, and put the
+        extension which php should parse (i.e. .php)
+        into the field File extensions (.xxx).
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        In Filter command or script put the path and name
+        of your php executable i.e. c:\php\php.exe.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        Press the 'Save' icon.
+       </para>
+      </listitem>
+     </itemizedlist>
+    </para>
+   </sect2>
+  </sect1>
+  
+  <sect1 id="install.otherhttpd">
+   <title>Servers-Other web servers</title>
+   <para>
+    PHP can be built to support a large number of web servers. Please
+    see <link linkend="install.configure.servers">Server-related
+    options</link> for a full list of server-related configure
+    options. The PHP CGI binaries are compatible with almost all
+    webservers supporting the CGI interface.
+   </para>
   </sect1>
 
   <sect1 id="install-problems">
-   <title>Probleme?</title>
+   <title>Problems?</title>
 
    <sect2>
-    <title>Lesen Sie die FAQ</title>
+    <title>Read the FAQ</title>
     <simpara>
-     Einige Problem tauchen öfters auf als andere. Die am häufigsten
-     auftretenden Probleme sind in der PHP-FAQ aufgelistet: <ulink
-     url="&url.php.faq;">&url.php.faq;</ulink>
+     Some problems are more common than others.  The most common ones
+     are listed in the PHP FAQ, found at <ulink
+      url="&url.php.faq;">&url.php.faq;</ulink>
     </simpara>
    </sect2>
 
-   <sect2>
-    <title>Bug Reports</title>
+   <sect2 id="install.otherproblems">
+    <title>Other problems</title>
 
     <simpara>
-     Wenn Sie glauben, einen Bug gefunden zu haben, melden Sie ihn uns
-     bitte. Die PHP-Entwickler kennen ihn wahrscheinlich noch nicht,
-     und wenn Sie ihn nicht melden, stehen die Chancen schlecht, das
-     er ausgemerzt wird. Sie können einen Bug mittels des
-     "bug-tracking system" unter <ulink
-     url="&url.php.bugs;">&url.php.bugs;</ulink> melden.
+     If you are still stuck, someone on the PHP installation mailing list may be
+     able to help you. You should check out the archive first, in case
+     someone already answered someone else who had the same problem as
+     you. The archives are available from the support page on <ulink
+      url="&url.php;">&url.php;</ulink>.  To subscribe to the PHP installation
+     mailing list, send an empty mail to <ulink
+      url="mailto:&email.php.install.subscribe;">&email.php.install.subscribe;</ulink>.
+     The mailing list address is
+     <literal>&email.php.install;</literal>.
     </simpara>
-
+    <simpara>
+     If you want to get help on the mailing list, please try to be
+     precise and give the necessary details about your environment
+     (which operating system, what PHP version, what web server, if
+     you are running PHP as CGI or a server module, etc.), and
+     preferably enough code to make others able to reproduce and test
+     your problem.
+    </simpara>
    </sect2>
 
-   <sect2>
-    <title>Andere Probleme</title>
-
+   <sect2 id="install.bugreports">
+    <title>Bug reports</title>
     <simpara>
-     Wenn Ihnen trotzdem noch nicht geholfen werden konnte, könnte es
-     sein, das jemand auf der Mailingliste Ihnen helfen kann. Bevor
-     Sie jedoch ein Problem an die Mailingliste weitergeben, sollten
-     Sie zuerst das Archiv der Liste durchsuchen. Das Archiv finden
-     Sie unter <ulink url="&url.php;">&url.php;</ulink>.  Um sich auf
-     der Mailingliste anzumelden, reicht es, eine leere Email an
-     <ulink
-     url="mailto:&email.php3.subscribe;">&email.php3.subscribe;</ulink>
-     zu schicken.  Die Adresse der Mailingliste ist
-     <literal>&email.php3;</literal>.
-    </simpara>
-
-    <simpara>
-     Wenn Sie Hilfe von der Mailingliste haben möchten, dann achten
-     Sie bitte auf folgende Verhaltensma&szlig;nahmen:
+     If you think you have found a bug in PHP, please report it.  The
+     PHP developers probably don't know about it, and unless you
+     report it, chances are it won't be fixed. You can report bugs
+     using the bug-tracking system at <ulink
+      url="&url.php.bugs;">&url.php.bugs;</ulink>.
     </simpara>
     <simpara>
-     Beschreiben Sie Ihr Problem so präzise wie möglich, und fügen Sie
-     Details Ihrer Entwicklungsumgebung hinzu (Betriebssystem, Server,
-     PHP-Version, CGI oder Modul- Version etc). Fügen Sie genug
-     Quellcode hinzu, so dass andere Ihr Problem nachvollziehen können
+     Read the <ulink 
+      url="&url.php.bugdosdonts;">Bugs-Dos-And-Donts</ulink> 
+     before submitting any bug reports!
     </simpara>
-    <simpara>
-     Verschicken Sie keine html-codierte Emails. Solche Emails können
-     nicht von allen Email-Programmen gelesen werden, was zur Folge
-     hat, das Ihre Email unter Umständen gleich im Papierkorb landet.
-    </simpara>
-    <simpara>
-     Halten Sie die NetiQuette ein.
-    </simpara>
-
    </sect2>
 
   </sect1>
 
  </chapter>
 
-<!-- Keep this comment at the end of the file
-Local variables:
-mode: sgml
-sgml-omittag:t
-sgml-shorttag:t
-sgml-minimize-attributes:nil
-sgml-always-quote-attributes:t
-sgml-indent-step:1
-sgml-indent-data:t
-sgml-parent-document:nil
-sgml-default-dtd-file:"../../manual.ced"
-sgml-exposed-tags:nil
-sgml-local-catalogs:nil
-sgml-local-ecat-files:nil
-End:
--->
+ <!-- Keep this comment at the end of the file
+ Local variables:
+ mode: sgml
+ sgml-omittag:t
+ sgml-shorttag:t
+ sgml-minimize-attributes:nil
+ sgml-always-quote-attributes:t
+ sgml-indent-step:1
+ sgml-indent-data:t
+ sgml-parent-document:nil
+ sgml-default-dtd-file:"../../manual.ced"
+ sgml-exposed-tags:nil
+ sgml-local-catalogs:nil
+ sgml-local-ecat-files:nil
+ End:
+ -->
