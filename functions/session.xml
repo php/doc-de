@@ -4,49 +4,92 @@
 
   <partintro>
    <para>
-    Session support in PHP consists of a way to preserve certain data
-    across subsequent accesses. This enables you to build more
-    customized applications and increase the appeal of your web site.
+    Die Unterst&uuml;tzung von Sessions in PHP bietet die
+    M&ouml;glichkeit, bestimmte Daten w&auml;hrend einer Folge
+    von Aufrufen ihrer Website festzuhalten. Damit k&ouml;nnen Sie
+    pers&ouml;nlichere Applikationen erstellen und Ihre Website
+    ansprechender gestalten.
    </para>
    <para>
-    If you are familiar with the session management of PHPLIB, you
-    will notice that some concepts are similar to PHP's session
+    Falls sie mit dem Sessionmanagment von PHPLIB vertraut sind,
+    werden sie &Auml;hnlichkeiten zu PHP's Session-Unterst&uuml;tzung
+    feststellen.
     support.
    </para>
    <para>
-    A visitor accessing your web site is assigned an unique id, the
-    so-called session id. This is either stored in a cookie on the
-    user side or is propagated in the URL.
+    Einem Besucher wird beim Aufruf ihrer Website eine einzigartige
+    ID, die sogenannte Session-ID, zugeordnet. Diese wird entweder
+    benutzerseitig in einem Cookie abgelegt oder in der URL
+    &uuml;bermittelt.
    </para>
    <para>
-    The session support allows you to register arbitrary numbers of
-    variables to be preserved across requests. When a visitor accesses
-    your site, PHP will check automatically (if session.auto_start is
-    set to 1) or on your request (explicitly through
-    <function>session_start</function> or implicitly through
-    <function>session_register</function>) whether a specific session
-    id has been sent with the request. If this is the case, the prior
-    saved environment is recreated.
+    Die Unterst&uuml;tzung von Sessions erlaubt Ihnen, eine beliebige
+    Anzahl von Variablen zu registrieren und diese &uuml;ber Anfragen
+    hinweg zu erhalten. Wenn ein Besucher Ihre Website aufruft,
+    &uuml;berpr&uuml;ft PHP automatisch (falls session.auto_start auf
+    1 gesetzt ist) oder auf Anfrage (explizit durch
+    <function>session_start</function> oder implizit durch
+    <function>session_register</function>), ob mit der Anfrage schon
+    eine bestimmte Session-ID gesendet wurde. Wenn dies der Fall ist,
+    wird die zuvor gespeicherte Umgebung wiederhergestellt.
    </para>
    <para>
-    All registered variables are serialized after the request
-    finishes.  Registered variables which are undefined are marked as
-    being not defined.  On subsequent accesses, these are not defined
-    by the session module unless the user defines them later.
+    Alle registrierten Variablen werden serialisiert, nachdem die
+    Anfrage beendet ist. Registrierte Variablen, die nicht definiert
+    sind, werden als nicht definiert gekennzeichnet. Auch bei
+    darauffolgenden Zugriffen werden sie nicht vom Session-Modul
+    definiert, wenn der Benutzer sie sp&auml;ter nicht definiert.
    </para>
    <para>
-    <literal>track_vars</literal> and <literal>gpc_globals</literal>
-    configuration settings influence how the session variables get
-    restored. If <literal>track_vars</literal> is enabled, then the
-    restored session variables will be available in the global
-    associative array $HTTP_STATE_VARS. If
-    <literal>gpc_globals</literal> is enabled, then the session
-    variables will be restored to corresponding global variables. If
-    both of these settings are enabled, then the globals variables and
-    the $HTTP_STATE_VARS entries will reference the same value.
+    Die Konfigurationseinstellungen von <literal>track_vars</literal>
+    und <literal>register_globals</literal> beeinflussen, wie die
+    Session-Variablen gespeichert und wiederhergestellt werden.
+   </para> 
+   <para>
+    Falls <literal>track_vars</literal> aktiviert und
+    <literal>track_vars</literal> deaktiviert ist, k&ouml;nnen nur Bestandteile
+    des globalen assoziativen Arrays $HTTP_SESSION_VARS als Session-Variablen
+    registriert werden. Wiederhergestellte Session-Variablen stehen nur im Array
+    $HTTP_SESSION_VARS zur Verf&uuml;gung.
+    <example> 
+     <title>
+      Registrierung einer Variablen bei aktiviertem
+      <literal>track_vars</literal>
+     </title>
+     <programlisting role="php">
+&lt;?php
+session_register("count");
+$HTTP_SESSION_VARS["count"]++;
+?&gt;
+     </programlisting>
+    </example>
    </para>
    <para>
-    There are two methods to propagate a session id:
+    Wenn <literal>register_globals</literal> aktiviert ist, k&ouml;nnen alle
+    globalen Variablen als Session-Variablen registriert werden und die
+    Session-Variablen werden als entsprechende globale Variablen
+    wiederhergestellt.
+  <example> 
+     <title>
+      Registrierung einer Variablen bei aktiviertem
+      <literal>register_globals</literal>
+     </title>
+     <programlisting role="php">
+&lt;?php
+session_register("count");
+$count++;
+?&gt;
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Wenn sowohl <literal>track_vars</literal> als auch
+    <literal>register_globals</literal> aktiviert sind, dann referenzieren die
+    globalen Variablen und die Eintr&auml;ge von $HTTP_SESSION_VARS den selben
+    Wert.
+   </para>
+   <para>
+    Es gibt zwei Methoden, eine Session-ID zu &uuml;bermitteln:
     <itemizedlist>
      <listitem>
       <simpara>
@@ -55,59 +98,60 @@
      </listitem>
      <listitem>
       <simpara>
+       URL Parameter
        URL parameter
       </simpara>
      </listitem>
     </itemizedlist>
    </para>
    <para>
-    The session module supports both methods. Cookies are optimal, but
-    since they are not reliable (clients are not bound to accept
-    them), we cannot rely on them. The second method embeds the
-    session id directly into URLs.
+    Das Session-Modul unterst&uuml;tzt beide Methoden. Cookies sind
+    optimal, aber da sie nicht zuverl&auml;ssig sind (Clients m&uuml;ssen
+    sie nicht unbedingt akzeptieren), k&ouml;nnen wir uns nicht auf sie
+    verlassen. Die zweite Methode h&auml;ngt die Session-ID direkt an die
+    URLs.
    </para>
    <para>
-    PHP is capable of doing this transparently when compiled with
-    <literal>--enable-trans-sid</literal>. If you enable this option,
-    relative URIs will be changed to contain the session id
-    automatically.  Alternatively, you can use the constant
-    <literal>SID</literal> which is defined, if the client did not
-    send the appropiate cookie.  <literal>SID</literal> is either of
-    the form <literal>session_name=session_id</literal> or is an empty
-    string.
+    Wenn PHP mit <literal>--enable-trans-sid</literal> kompiliert wurde,
+    kann es dies transparent machen. Wenn sie diese Option aktivieren, werden
+    die URIs automatisch ge&auml;ndert, sodass sie die Session-ID enthalten.
+    Alternativ k&ouml;nnen sie die Konstante <literal>SID</literal> verwenden,
+    die definiert wird, falls vom Client keinen passendes Cookie gesendet
+    wurde. <literal>SID</literal> hat entweder die Form
+    <literal>session_name=session_id</literal> oder ist ein leerer String.
    </para>
    <para>
-    The following example demonstrates how to register a variable, and
-    how to link correctly to another page using SID.
+    Das folgende Beispiel demonstriert, wie eine Variable registriert wird und
+    wie unter Verwendung einer SID korrekt auf eine andere Seite verwiesen wird.
     <example>
-     <title>Counting the number of hits of a single user</title>
+     <title>Z&auml;hlen der Seitenaufrufe eines einzelnen Benutzers</title>
      <programlisting role="php">
 &lt;?php
 session_register("count");
 $count++;
 ?&gt;
 
-Hello visitor, you have seen this page &lt;? echo $count; ?&gt; times.&lt;p&gt;
+Hallo Besucher, Sie haben diese Seite &lt;? echo $count; ?&gt; Mal aufgerufen.&lt;p&gt;
 
-&lt;php?
-# the &lt;?=SID?&gt; is necessary to preserve the session id
-# in the case that the user has disabled cookies
+&lt;?php
+# f&uuml;r den Fall, da&szlig; der Benutzer Cookies deaktiviert hat,
+# ist das &lt;?=SID?&gt; n&ouml;tig, um die Session-ID zu erhalten
 ?&gt;
 
-To continue, &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;click here&lt;/A&gt;
+Hier gehts &lt;A HREF="nextpage.php?&lt;?=SID?&gt;"&gt;weiter&lt;/A&gt;
      </programlisting>
     </example>
    </para>
    <para>
-    To implement database storage you need PHP code and a user level
-    function <function>session_set_save_handler</function>. You would
-    have to extend the following functions to cover MySQL or another
-    database.
+    Zur Realisierung einer Speicherung in einer Datenbank brauchen Sie PHP-Code
+    und eine Funktion <function>session_set_save_handler</function> auf der
+    Benutzerebene. Sie m&uuml;&szlig;ten die folgenden Funktionen erweitern, um
+    damit MySQL oder eine andere Datenbank abzudecken.
    </para>
    <para>
     <example>
      <title>
-      Usage of <function>session_set_save_handler</function>
+      Die Verwendung von <function>session_set_save_handler</function>
      </title>
      <programlisting role="php">
 &lt;?php
@@ -146,12 +190,12 @@ session_start();
 
 $foo++;
 
-?>
+?&gt;
      </programlisting>
     </example>
    </para> 
    <para>
-    Will produce this results:
+    Erzeugt die folgenden Resultate:
    </para>
    <para>
     <programlisting>
@@ -166,116 +210,146 @@ close
     </programlisting>
    </para>
    <para>
-    The <literal>&lt;?=SID?&gt;</literal> is not necessary, if
-    <literal>--enable-trans-sid</literal> was used to compile PHP.
+    Das <literal>&lt;?=SID?&gt;</literal> ist nicht n&ouml;tig, wenn PHP mit
+    <literal>--enable-trans-sid</literal> kompiliert wurde.
    </para>
    <para>
-    The session management system supports a number of configuration
-    options which you can place in your php.ini file. We will give a
-    short overview.
+    Das Sessionmanagementsystem unterst&uuml;tzt eine Anzahl von
+    Konfigurationsoptionen, die sie in Ihrer php.ini setzen k&ouml;nnen. Wir
+    geben Ihnen dazu einen kleinen &Uuml;berblick.
     <itemizedlist>
      <listitem>
       <simpara>
-       <literal>session.save_handler</literal> defines the name of the
-       handler which is used for storing and retrieving data
-       associated with a session.  Defaults to
+       <literal>session.save_handler</literal> definiert den Namen der Prozedur,
+       die benutzt wird, um die Daten zu speichern und zur&uuml;ckzuholen, die
+       mit der Session in Verbindung stehen. Grundeinstellung
        <literal>files</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.save_path</literal> defines the argument which
-       is passed to the save handler. If you choose the default files
-       handler, this is the path where the files are created.
-       Defaults to <literal>/tmp</literal>.
+       <literal>session.save_path</literal> definiert das Argument, das an
+       die Speicherprozedur &uuml;bergeben wird. Wenn Sie die
+       standardm&auml;&szlig;ige files Prozedur w&auml;hlen, ist das der Pfad,
+       unter dem die Dateien erzeugt werden. Grundeinstellung
+       <literal>/tmp</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.name</literal> specifies the name of the
-       session which is used as cookie name. It should only contain
-       alphanumeric characters.  Defaults to
+       <literal>session.name</literal> spezifiziert den Namen der Session, der
+       als Cookie-Name verwendet wird. Grundeinstellung
        <literal>PHPSESSID</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.auto_start</literal> specifies whether the
-       session module start a session automatically on request
-       startup. Defaults to <literal>0</literal> (disabled).
+       <literal>session.auto_start</literal> spezifiziert, ob das Session-Modul
+       zu Beginn einer Anfrage automatisch eine Session startet.
+       Grundeinstellung <literal>0</literal> (deaktiviert).
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.lifetime</literal> specifies the lifetime of
-       the cookie in seconds which is sent to the browser. The value 0
-       means "until the browser is closed." Defaults to
+       <literal>session.cookie_lifetime</literal> spezifiziert die
+       Cookie-Lebensdauer, die an den Browser geschickt wird, in Sekunden. Der
+       Wert 0 bedeutet "bis der Browser geschlossen wird." Grundeinstellung
        <literal>0</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.serialize_handler</literal> defines the name
-       of the handler which is used to serialize/deserialize
-       data. Currently, a PHP internal format (name
-       <literal>php</literal>) and WDDX is supported (name
-       <literal>wddx</literal>). WDDX is only available, if PHP is
-       compiled with <link linkend="ref.wddx">WDDX
-       support</link>. Defaults to <literal>php</literal>.
-       </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <literal>session.gc_probability</literal> specifies the
-       probability that the gc (garbage collection) routine is started
-       on each request in percent. Defaults to <literal>1</literal>.
+       <literal>session.serialize_handler</literal> definiert den Namen der
+       Prozedur, die benutzt wird, um Daten zu serialisieren/deserialisieren.
+       Gegenw&auml;rtig wird ein internes PHP-Format (Name
+       <literal>php</literal>) und WDDX (name <literal>wddx</literal>)
+       unterst&uuml;tzt. WDDX steht nur zur Verf&uuml;gung, wenn PHP mit <link
+       linkend="ref.wddx">WDDX support</link> kompiliert wurde.
+       Grundeinstellung <literal>php</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.gc_maxlifetime</literal> specifies the number
-       of seconds after which data will be seen as 'garbage' and
-       cleaned up.  
+       <literal>session.gc_probability</literal> spezifiziert die prozentuale
+       Wahrscheinlichkeit, da&szlig; die gc (garbage collection)
+       Routine bei jeder Anfrage gestartet wird. Grundeinstellung
+       <literal>1</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.referer_check</literal> determines whether
-       session ids referred to by external sites will be
-       eliminated. If session ids are propagated using the URL method,
-       users not knowing about the impact might publish session
-       ids. This can lead to security problems which this check tries
-       to defeat. Defaults to <literal>0</literal>.
+       <literal>session.gc_maxlifetime</literal> spezifiziert die Anzahl der
+       Sekunden, nach denen Daten als 'garbage' ('M&uuml;ll') betrachtet und
+       entsorgt werden.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.entropy_file</literal> gives a path to an
-       external resource (file) which will be used as an additional
-       entropy source in the session id creation process. Examples are
-       <literal>/dev/random</literal> or
-       <literal>/dev/urandom</literal> which are available on many
-       Unix systems.
+       <literal>session.referer_check</literal> bestimmt, ob Session-IDs
+       beseitigt werden, die von externen (oder soll das "an externe"
+       heissen?) Seiten uebergeben werden. Wenn Session-IDs durch Verwendung der
+       URL-Methode &uuml;bermittelt werden, k&ouml;nnten Benutzer, die sich
+       dieser Wirkung nicht bewu&szlig;t sind, Session-IDs ver&ouml;ffentlichen.
+       Das kann zu Sicherheitsproblemen f&uuml;hren, die diese
+       &Uuml;berpr&uuml;fung zu vermeiden versucht. Grundeinstellung
+       <literal>0</literal>.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.entropy_length</literal> specifies the number
-       of bytes which will be read from the file specified
-       above. Defaults to <literal>0</literal> (disabled).
+       <literal>session.entropy_file</literal> gibt den Pfad zu einer externen
+       Quelle (Datei) an, die bei der Erzeugung einer Session-ID
+       als zus&auml;tzliche Entropiequelle verwendet wird. Beispiele sind
+       <literal>/dev/random</literal> oder <literal>/dev/urandom</literal>, die
+       auf vielen Unix-Systemen zur Verf&uuml;gung stehen.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       <literal>session.use_cookies</literal> specifies whether the
-       module will use cookies to store the session id on the client
-       side. Defaults to <literal>1</literal> (enabled).
+       <literal>session.entropy_length</literal> spezifiziert die Anzahl der
+       Bytes, die von der oben spezifizieren Datei gelesen werden.
+       Grundeinstellung <literal>0</literal> (deaktiviert).
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <literal>session.use_cookies</literal> spezifiziert, ob das Modul Cookies
+       verwendet, um die Session-ID clientseitig zu speichern.
+       Grundeinstellung <literal>1</literal> (aktiviert).
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara> 
+       <literal>session.cookie_path</literal> spezifiziert den Pfad, in dem das
+       Session-Cookie gesetzt wird. Grundeinstellung <literal>/</literal>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <literal>session.cookie_domain</literal> spezifiziert die Domain, unter
+       der das Session-Cookie gesetzt wird. In der Grundeinstellung
+       &uuml;berhaupt keine.
+      </simpara>
+     </listitem>
+     <listitem> 
+      <simpara> 
+       <literal>session.cache_limiter</literal> spezifiziert die Methode der
+       Cacheverwaltung, die bei Session-Seiten benutzt wird
+       (nocache/private/public). Grundeinstellung
+       <literal>nocache</literal>.
+      </simpara>
+     </listitem>
+     <listitem> 
+      <simpara> 
+       <literal>session.cache_expire</literal> spezifiziert in Minuten, wie
+       lange Session-Seiten im Cache bleiben. Bei nocache ist diese Angabe
+       wirkungslos. Grundeinstellung <literal>180</literal>.
       </simpara>
      </listitem>
     </itemizedlist>
     <note>
      <para>
-      Session handling was added in PHP 4.0.
+      Die Behandlung von Sessions wurde in PHP 4.0 eingef&uuml;hrt.
      </para>
     </note>
    </para>
@@ -284,10 +358,10 @@ close
   <refentry id="function.session-start">
    <refnamediv>
     <refname>session_start</refname>
-    <refpurpose>Initialize session data</refpurpose>
+    <refpurpose>Initialisierung einer Session</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_start</function></funcdef>
@@ -295,15 +369,16 @@ close
      </funcprototype>
     </funcsynopsis>
     <simpara>
-     <function>session_start</function> creates a session (or resumes
-     the current one based on the session id being passed via a GET
-     variable or a cookie).</simpara>
+     <function>session_start</function> erzeugt eine Session (oder nimmt die
+     aktuelle, basierend auf der Session-ID, die &uuml;ber eine GET-Variable
+     oder ein Cookie &uuml;bermittelt wurde, wieder auf).
+    </simpara>
     <simpara>
-     This function always returns true.
+     Diese Funktion gibt immer true zur&uuml;ck.
     </simpara>
     <note>
      <para>
-      This function was added in PHP 4.0.
+      Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
      </para>
     </note>
    </refsect1>
@@ -312,10 +387,12 @@ close
   <refentry id="function.session-destroy">
    <refnamediv>
     <refname>session_destroy</refname>
-    <refpurpose>Destroys all data registered to a session</refpurpose>
+    <refpurpose>
+     L&ouml;scht alle in einer Session registrierten Daten
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_destroy</function></funcdef>
@@ -323,15 +400,16 @@ close
      </funcprototype>
     </funcsynopsis>
     <simpara>
-     <function>session_destroy</function> destroys all of the data
-     associated with the current session.
+     <function>session_destroy</function> l&ouml;scht alle in Verbindung mit der
+     aktuellen Session stehenden Daten.
     </simpara>
     <simpara>
-     This function returns true on success and false on failure.
+     Diese Funktion gibt nach erfolgtem L&ouml;schen der Daten true zur&uuml;ck
+     und false, wenn dabei ein Fehler auftritt.
     </simpara>
     <note>
      <para>
-      This function was added in PHP 4.0.
+      Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
      </para>
     </note>
    </refsect1>
@@ -340,10 +418,12 @@ close
   <refentry id="function.session-name">
    <refnamediv>
     <refname>session_name</refname>
-    <refpurpose>Get and/or set the current session name</refpurpose>
+    <refpurpose>
+     Holen und/oder setzen des Namens der aktuellen Session
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>session_name</function></funcdef>
@@ -382,7 +462,7 @@ echo "The previous session name was $previous_name&lt;p&gt;";
     </example>
     <note>
      <para>
-      This function was added in PHP 4.0.
+      Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
      </para>
     </note>
    </refsect1>
@@ -394,7 +474,7 @@ echo "The previous session name was $previous_name&lt;p&gt;";
     <refpurpose>Get and/or set the current session module</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>session_module_name</function></funcdef>
@@ -409,7 +489,7 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      specified, that module will be used instead.
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
     </para>
@@ -419,12 +499,14 @@ echo "The previous session name was $previous_name&lt;p&gt;";
   <refentry id="function.session-save-path">
    <refnamediv>
     <refname>session_save_path</refname>
-    <refpurpose>Get and/or set the current session save path</refpurpose>
+    <refpurpose>
+     Holen und/oder setzen des aktuellen session save path
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
-     <funcprototype>
+      <funcprototype>
       <funcdef>string <function>session_save_path</function></funcdef>
       <paramdef>string 
        <parameter><optional>path</optional></parameter>
@@ -445,7 +527,7 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </note>
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
     </para>
@@ -455,10 +537,10 @@ echo "The previous session name was $previous_name&lt;p&gt;";
   <refentry id="function.session-id">
    <refnamediv>
     <refname>session_id</refname>
-    <refpurpose>Get and/or set the current session id</refpurpose>
+    <refpurpose>Holen und/oder setzen der aktuellen Session-ID</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>string <function>session_id</function></funcdef>
@@ -466,14 +548,14 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_id</function> returns the session id for the
-     current session. If <parameter>id</parameter> is specified, it
-     will replace the current session id.
+     <function>session_id</function> gibt die Session-ID der aktuellen Session
+     zur&uuml;ck. Wenn <parameter>id</parameter> angegeben wird, ersetzt sie
+     die aktuelle Session-ID.
     </para>
     <para>
-     The constant <systemitem>SID</systemitem> can also be used to
-     retrieve the current name and session id as a string suitable for
-     adding to URLs.
+     Die Konstante <systemitem>SID</systemitem> kann auch dazu verwendet werden,
+     den aktuellen Namen und Session-ID als String, passend zum Hinzuf&uuml;gen
+     zu URLs, zu erhalten.
     </para>
    </refsect1>
   </refentry>
@@ -482,11 +564,11 @@ echo "The previous session name was $previous_name&lt;p&gt;";
    <refnamediv>
     <refname>session_register</refname>
     <refpurpose>
-     Register one or more variables with the current session
+     Eine oder mehrere Variablen in der aktuellen Session registrieren
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_register</function></funcdef>
@@ -496,19 +578,19 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_register</function> variable number of
-     arguments, any of which can be either a string holding the
-     variable name or an array consisting of such variable names or
-     other arrays. For each encountered variable name,
-     <function>session_register</function> registers the global
-     variable named by it with the current session.
+     <function>session_register</function> variable Anzahl von Argumenten die
+     jeweils entweder ein String sein, der den Variablennamen tr&auml;gt, oder
+     ein Array, der aus solchen Variablennamen oder anderen Arrays besteht.
+     F&uuml;r jeden Variablennamen registriert
+     <function>session_register</function> die globale Variable in der aktuellen
+     Session unter diesem Namen.
     </para>
     <para>
-     This function returns true when the variable is successfully
-     registered with the session.
+     Diese Funktion gibt true zur&uuml;ck, wenn die Variable erfolgreich in der
+     Session registriert wurde.
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
     </para>
@@ -519,11 +601,11 @@ echo "The previous session name was $previous_name&lt;p&gt;";
    <refnamediv>
     <refname>session_unregister</refname>
     <refpurpose>
-     Unregister a variable from the current session
+     Die Aufhebung der Registrierung einer Variablen in der aktuellen Session
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_unregister</function></funcdef>
@@ -531,18 +613,40 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_unregister</function> unregisters (forgets)
-     the global variable named <parameter>name</parameter> from the
-     current session.
+     <function>session_unregister</function> hebt die Registrierung der globalen
+     Variablen namens <parameter>name</parameter> in der aktuellen Session auf.
     </para>
     <para>
-     This function returns true when the variable is successfully
-     unregistered from the session.
+     Diese Funktion gibt true zur&uuml;ck, wenn die Aufhebung der Registrierung
+     der Variable in der Session erfolgt ist.
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.session-unset">
+   <refnamediv>
+    <refname>session_unset</refname>
+    <refpurpose>
+     Free all session variables
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>void <function>session_unset</function>
+      </funcdef>
+      <void/>
+     </funcprototype>
+    </funcsynopsis>
+    <para>  
+     The <function>session_unset</function> function free's all session variables
+     currently registered.
     </para>
    </refsect1>
   </refentry>
@@ -551,11 +655,11 @@ echo "The previous session name was $previous_name&lt;p&gt;";
    <refnamediv>
     <refname>session_is_registered</refname>
     <refpurpose>
-     Find out if a variable is registered in a session
+     &Uuml;berpr&uuml;fen, ob eine Variable in einer Session registriert ist
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_is_registered</function></funcdef>
@@ -563,25 +667,97 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_is_registered</function> returns true if there
-     is a variable with the name <parameter>name</parameter>
-     registered in the current session.
+     <function>session_is_registered</function> gibt true zur&uuml;ck, wenn in
+     der aktuellen Session eine Variable mit dem Namen
+     <parameter>name</parameter> registriert ist.
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
     </para>
    </refsect1>
   </refentry>
+  
+  <refentry id="function.session-get-cookie-params">
+   <refnamediv> 
+    <refname>session_get_cookie_params</refname>
+    <refpurpose>  
+     Get the session cookie parameters
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>
+       array <function>session_get_cookie_params</function>
+      </funcdef>
+      <void/>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     The <function>session_get_cookie_params</function> function returns an
+     arraywith the current session cookie information, the array contains
+     the following items:   
+     <itemizedlist>
+      <listitem>      
+       <simpara>
+        "lifetime" -  The lifetime of the cookie.
+       </simpara>     
+      </listitem>
+      <listitem>
+       <simpara>
+        "path" -  The path where information is stored.
+       </simpara>
+      </listitem>     
+      <listitem>
+       <simpara>      
+        "domain" -  The domain of the cookie.
+       </simpara>
+      </listitem>
+     </itemizedlist>   
+    </para>
+   </refsect1>
+  </refentry>  
+
+  <refentry id="function.session-set-cookie-params">
+   <refnamediv>
+    <refname>session_set_cookie_params</refname>
+    <refpurpose>
+     Set the session cookie parameters
+    </refpurpose>  
+   </refnamediv>   
+   <refsect1>      
+    <title>Beschreibung</title>
+    <funcsynopsis>  
+     <funcprototype>
+      <funcdef>void <function>session_set_cookie_params</function></funcdef>
+      <paramdef>
+       int <parameter>lifetime</parameter>
+      </paramdef>
+      <paramdef> 
+       string <parameter><optional>path</optional></parameter>
+      </paramdef>   
+      <paramdef>
+       string <parameter><optional>domain</optional></parameter>
+      </paramdef>   
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Set cookie parameters defined in the php.ini file.  The effect of this
+     function only lasts for the duration of the script.
+    </para>
+   </refsect1> 
+  </refentry>
 
   <refentry id="function.session-decode">
    <refnamediv>
     <refname>session_decode</refname>
-    <refpurpose>Decodes session data from a string</refpurpose>
+    <refpurpose>Decodiert die Daten einer Session aus einem String</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_decode</function></funcdef>
@@ -589,12 +765,12 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_decode</function> decodes the session data in
-     <parameter>data</parameter>, setting variables stored in the
-     session.
+     <function>session_decode</function> decodiert die Daten der Session in
+     <parameter>data</parameter> und setzt die Variablen, die in der Session
+     gespeichert sind.
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
     </para>
@@ -605,11 +781,11 @@ echo "The previous session name was $previous_name&lt;p&gt;";
    <refnamediv>
     <refname>session_encode</refname>
     <refpurpose>
-     Encodes the current session data as a string
+     Codiert die Daten der aktuellen Session als String
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcprototype>
       <funcdef>bool <function>session_encode</function></funcdef>
@@ -617,11 +793,11 @@ echo "The previous session name was $previous_name&lt;p&gt;";
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>session_encode</function> returns a string with the
-     contents of the current session encoded within.
+     <function>session_encode</function> gibt einen String mit dem codierten
+     Inhalt der aktuellen Session zur&uuml;ck.
      <note>
       <para>
-       This function was added in PHP 4.0.
+       Diese Funktion wurde in PHP 4.0 eingef&uuml;hrt.
       </para>
      </note>
     </para>
