@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.22 Maintainer: samesch Status: translation -->
+ <chapter id="faq.installation">
+  <title>Installation</title>
+  <titleabbrev>Installation</titleabbrev>
+
+  <para>
+   In diesem Abschnitt geht es um übliche Fragen zur Installation von
+   PHP. PHP gibt es für fast jedes Betriebssystem (außer vielleicht
+   für MacOS vor OSX) und fast jeden Webserver.
+  </para>
+  <para>
+   Um PHP zu installieren, folgen Sie Bitte den Anweisungen in der
+   Datei <ulink url="&url.file.installation;">INSTALL</ulink>, die sie
+   in der Distribution finden. Benutzer von Windows sollten auch die
+   Datei <ulink url="&url.file.readmewin;">install.txt</ulink> lesen.
+   Weitere hilfreiche Hinweie für Benutzer von Windows gibt es <link
+   linkend="install.windows">hier</link>.
+  </para>
+
+  <qandaset>
+   <qandaentry id="faq.installation.phpini">
+    <question>
+     <para>
+      Unix/Windows: Wo sollte sich meine &php.ini; befinden?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Unter UNIX sollte sie standardmäßig in
+      <filename>/usr/local/lib</filename> sein, was
+      <filename>&lt;install-path&gt;/lib</filename> ist. Die Meisten
+      werden das beim Übersetzen mit der Option <link
+      linkend="install.configure.with-config-file-path">--with-config-file-path</link>
+      ändern wollen. Sie können das, z.B. mit
+      <programlisting>
+--with-config-file-path=/etc
+      </programlisting>
+      festlegen. Dann kopieren Sie die
+      <filename>php.ini-dist</filename> der Distribution nach
+      <filename>/etc/php.ini</filename> und editieren sie, um alle
+      gewünschten lokalen Änderungen vorzunehmen.
+     </para>
+      <programlisting>
+--with-config-file-scan-dir=PATH
+      </programlisting>
+     <para>
+      Unter Windows ist der standardmäßige Pfad für die &php.ini; das
+      Windows-Verzeichnis. Falls die den Apache Webserver verwenden,
+      wird die &php.ini; zuerst im Apache-Installationsverzeichnis,
+      z.B. <filename>c:\program files\apache group\apache</filename>,
+      gesucht. Dadurch können Sie auf dem selben Rechner verschiedene
+      &php.ini;-Dateien für verschiedene Apache-Versionen haben.
+     </para>
+     <para>
+     Siehe auch das Kapitel über die <link
+     linkend="configuration.file">Konfigurationsdatei</link>.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.nodata">
+    <question>
+     <para>
+      Unix: I habe PHP installiert, aber jedesmal, wenn ich eine Seite
+      aufrufe, bekomme ich die Meldung 'Document Contains No Data'!
+      Woran liegt das?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Das bedeutet wahrscheinlich, dass PHP irgend ein Problem hat und
+      einen Core Dump (Speicherauszug) erzeugt. Schauen Sie in der
+      Fehler-Logdatei Ihres Servers nach, ob das der Fall ist und
+      versuchen Sie dann das Problem mit einem kleinen Test-Script
+      zu reproduzieren. Falls Sie sich mit 'gdb' auskennen, ist es
+      für die Entwickler beim Lokalisieren des Problems sehr
+      hilfreich, wenn Sie Ihrem Fehlerbericht einen Backtrace
+      hinzufügen. Falls Sie PHP als Apache-Modul verwenden, können Sie
+      in etwa Folgendes versuchen:
+      <itemizedlist>
+       <listitem>
+        <para>
+         Stoppen Sie Ihre httpd-Prozesse
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         gdb httpd
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Stoppen Sie Ihre httpd-Prozesse
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         &gt; run -X -f /pfad/zur/httpd.conf
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Rufen Sie mit Ihrem Browser die URL auf, die das Problem
+         verursacht
+        </para>
+       </listitem>      
+       <listitem>
+        <para>
+         &gt; run -X -f /path/to/httpd.conf
+        </para>
+       </listitem>      
+       <listitem>
+        <para>
+         gdb sollte Sie jetzt darüber in Kenntnis setzen, falls Sie
+         einen Core Dump bekommen
+        </para>
+       </listitem>      
+       <listitem>
+        <para>
+         Geben Sie ein: bt
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Sie sollten Ihren Backtrace in Ihren Fehlerbericht einfügen
+         und diesen unter
+         <ulink url="&url.php.bugs;">&url.php.bugs;</ulink> abgeben.
+        </para>
+       </listitem>
+      </itemizedlist>
+     </para>
+     <para>
+      Falls Sie in Ihrem Script Funktionen regulärer Ausdrücke
+      (<function>ereg</function> und Freunde) verwenden, sollten Sie
+      sicherstellen, dass Sie PHP und Apache mit dem selben
+      Programmpaket für reguläre Ausdrücke übersetzt haben. Mit PHP und
+      Apache 1.3.x sollte das automatisch der Fall sein.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.processing">
+    <question>
+     <para>
+      Unix: Ich habe PHP mit RPM-Paketen installiert, aber Apache
+      verarbeitet die PHP-Seiten nicht. Was ist da los?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Unter der Annahme, dass Sie sowohl Apache als auch PHP mit
+      RPM-Paketen installiert haben, müssen Sie einige oder alle der
+      folgenden Zeilen in die Datei &httpd.conf; einfügen oder die
+      Kommentarzeichen davor entfernen:
+      <programlisting>
+# Extra Modules
+AddModule mod_php.c
+AddModule mod_php3.c
+AddModule mod_perl.c
+
+# Extra Modules
+LoadModule php_module         modules/mod_php.so
+LoadModule php3_module        modules/libphp3.so     /* fuer PHP 3 */
+LoadModule php4_module        modules/libphp4.so     /* fuer PHP 4 */
+LoadModule perl_module        modules/libperl.so
+      </programlisting>
+      Und fügen Sie
+      <programlisting>
+AddType application/x-httpd-php3 .php3    /* fuer PHP 3 */
+AddType application/x-httpd-php .php      /* fuer PHP 4 */
+      </programlisting>
+      ... in die globalen Eigenschaften oder in die Eigenschaften der
+      VirtualDomain, für die Sie PHP-Unterstützung benötigen, ein.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.compile">
+    <question>
+     <para>
+      Unix: Ich habe PHP 3 mit RPM-Paketen installiert, aber
+      es läßt sich nicht mit der benötigten Datenbank-Unterstützung
+      übersetzen. Was ist da los?
+     </para>
+    </question>
+    <answer>
+     <para>
+      Aufgrund des Aufbaus von PHP 3 ist es nicht einfach, ein
+      vollständig flexibles PHP-RPM zu bauen. Dieses Problem wurde in
+      PHP 4 angegangen. Für PHP 3 empfehlen wir Ihnen, dass Sie nach
+      der Methode vorgehen, die in der Datei INSTALL.REDHAT der
+      PHP-Distribution beschrieben wird. Falls Sie darauf bestehen,
+      eine RPM-Version von PHP 3 zu verwenden, lesen Sie weiter...
+     </para>
+     <para>
+      The RPM packagers are setting up the RPMS to install
+      without database support to simplify installations <emphasis>and</emphasis>
+      because RPMS use /usr/ instead of the standard /usr/local/ directory for
+      files. You need to tell the RPM spec file which databases to support
+      and the location of the top-level of your database server.
+     </para>
+     <para>
+      This example will explain the process of adding support for the
+      popular MySQL database server, using the mod installation for Apache.
+     </para>
+     <para>
+      Of course all of this information can be adjusted for any database
+      server that PHP supports. We will assume you installed MySQL and Apache
+      completely with RPMS for this example as well.
+      <itemizedlist>
+       <listitem>
+	      <para>
+         First remove mod_php3 : 
+         <programlisting>
+rpm -e mod_php3
+         </programlisting>
+	      </para>
+ 	     </listitem>
+ 	     <listitem>
+	      <para>
+         Then get the source rpm and INSTALL it, NOT --rebuild
+         <programlisting>
+rpm -Uvh mod_php3-3.0.5-2.src.rpm
+         </programlisting>
+  	    </para>
+ 	     </listitem>
+ 	     <listitem>
+	      <para>
+	       Then edit the <filename>/usr/src/redhat/SPECS/mod_php3.spec</filename> file
+	      </para>
+	      <para>
+         In the %build section add the database support you want, and the path.
+	      </para>
+	      <para>
+         For MySQL  you would add
+         <programlisting>
+--with-mysql=/usr \
+         </programlisting>
+         The %build section will look something like this:
+         <programlisting>
+	./configure --prefix=/usr \
+	--with-apxs=/usr/sbin/apxs \
+	--with-config-file-path=/usr/lib \
+	--enable-debug=no \
+	--enable-safe-mode \
+	--with-exec-dir=/usr/bin \
+	--with-mysql=/usr \
+	--with-system-regex
+         </programlisting>
+	      </para>
+ 	     </listitem>
+ 	     <listitem>
+	      <para>
+	       Once this modification is made then build the binary rpm as follows:
+         <programlisting>
+rpm -bb /usr/src/redhat/SPECS/mod_php3.spec
+         </programlisting>
+	      </para>
+ 	     </listitem>
+ 	     <listitem>
+	      <para>
+	       Then install the rpm
+         <programlisting>
+rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
+         </programlisting>
+	      </para>
+ 	     </listitem>
+      </itemizedlist>
+      Make sure you restart Apache, and you now have PHP 3 with MySQL support
+      using RPM's. Note that it is probably much easier to just build
+      from the distribution tarball of PHP 3 and follow the instructions in
+      <filename>INSTALL.REDHAT</filename> found in that distribution.
+   	 </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.frontpage">
+    <question>
+     <para>
+      Unix: I patched Apache with the FrontPage extensions patch, and
+      suddenly PHP stopped working. Is PHP incompatible with the
+      Apache FrontPage extensions?
+     </para>
+    </question>
+    <answer>
+     <para>
+      No, PHP works fine with the FrontPage extensions. The problem
+      is that the FrontPage patch modifies several Apache structures,
+      that PHP relies on. Recompiling PHP (using 'make clean ; make')
+      after the FP patch is applied would solve the problem.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.blankscreen">
+    <question>
+     <para>
+      Unix/Windows: I have installed PHP, but when I try to
+      access a PHP script file via my browser, I get a blank screen.
+     </para>
+    </question>
+    <answer>
+     <para>
+      Do a 'view source' in the web browser and you will probably
+      find that you can see the source code of your PHP script.
+      This means that the web server did not send the script to
+      PHP for interpretation. Something is wrong with the server
+      configuration - double check the server configuration against
+      the PHP installation instructions.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.500error">
+    <question>
+     <para>
+      Unix/Windows: I have installed PHP, but when try to
+      access a PHP script file via my browser, I get a
+      server 500 error.
+     </para>
+    </question>
+    <answer>
+     <para>
+      Something went wrong when the server tried to run PHP. To
+      get to see a sensible error message, from the command line,
+      change to the directory containing the PHP executable
+      (<filename>php.exe</filename> on Windows) and run
+      <literal>php -i</literal>. If PHP has any problems running,
+      then a suitable error message will be displayed which will
+      give you a clue as to what needs to be done next. If you
+      get a screen full of html codes (the output of the
+      <function>phpinfo</function> function) then PHP is working,
+      and your problem may be related to your server configuration
+      which you should double check.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.undefinedsyms">
+    <question>
+     <para> 
+      Some operating systems: I have installed PHP without errors,
+      but when I try to start apache I get undefined symbol errors:
+      <programlisting>
+[mybox:user /src/php4] root# apachectl configtest
+ apachectl: /usr/local/apache/bin/httpd Undefined symbols:
+  _compress
+  _uncompress
+      </programlisting>
+     </para>
+    </question>
+    <answer>
+     <para>
+      This has actually nothing to do with PHP, but with the MySQL
+      client libraries. Some need --with-zlib, others do not. This
+      is also covered in the MySQL FAQ.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.cgierror">
+    <question>
+     <para>
+      Windows: I have installed PHP, but when I to access
+      a PHP script file via my browser, I get the error:
+      <programlisting>
+cgi error:
+ The specified CGI application misbehaved by not
+ returning a complete set of HTTP headers.
+ The headers it did return are:
+      </programlisting>
+     </para>
+    </question>
+    <answer>
+     <para>
+      This error message means that PHP failed to output anything
+      at all. To get to see a sensible error message, from the
+      command line, change to the directory containing the PHP
+      executable (<filename>php.exe</filename> on Windows) and run
+      <literal>php -i</literal>. If PHP has any problems running,
+      then a suitable error message will be displayed which will
+      give you a clue as to what needs to be done next. If you
+      get a screen full of html codes (the output of the
+      <function>phpinfo</function> function) then PHP is working.
+     </para>
+     <para>
+      Once PHP is working at the command line, try accessing the
+      script via the browser again. If it still fails then it
+      could be one of the following:
+     </para>
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        File permissions on your PHP script,
+        <filename>php.exe</filename>, <filename>php4ts.dll</filename>,
+        &php.ini; or any PHP extensions you are trying to load are such
+        that the anonymous internet user
+        <literal>ISUR_&lt;machinename&gt;</literal> cannot access them.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        The script file does not exist (or possibly isn't where you
+        think it is relative to your web root directory). Note that
+        for IIS you can trap this error by ticking the 'check file
+        exists' box when setting up the script mappings in the
+        Internet Services Manager. If a script file does not exist
+        then the server will return a 404 error instead. There is
+        also the additional benefit that IIS will do any
+        authentication required for you based on the NTLanMan
+        permissions on your script file.
+       </simpara>
+      </listitem>
+     </itemizedlist>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.phpandiis">
+    <question>
+     <para>
+      Windows: I've followed all the instructions, but still can't
+      get PHP and IIS to work together!
+     </para>
+    </question>
+    <answer>
+     <para>
+      Make sure any user who needs to run a PHP script has the rights
+      to run <filename>php.exe</filename>! IIS uses an anonymous user
+      which is added at the time IIS is installed. This user needs
+      rights to <filename>php.exe</filename>. Also, any authenticated
+      user will also need rights to execute <filename>php.exe</filename>.
+      And for IIS4 you need to tell it that PHP is a script engine.
+      Also, you will want to read <link
+      linkend="faq.installation.forceredirect">this faq</link>.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.forceredirect">
+    <question>
+     <para>
+       When running PHP as CGI with IIS, PWS, OmniHTTPD or Xitami,
+       I get the following error: <literal>Security Alert! PHP CGI
+       cannot be accessed directly.</literal>.
+     </para>
+    </question>
+    <answer>
+     <para>
+      You must set the <link linkend="ini.cgi.force-redirect">
+      cgi.force_redirect</link> directive to <literal>0</literal>.
+      It defaults to <literal>1</literal> so be sure the directive
+      isn't commented out (with a <literal>;</literal>).  Like
+      all directives, this is set in &php.ini;
+     </para>
+     <para>
+      Because the default is <literal>1</literal>, it's critical
+      that you're 100% sure that the correct &php.ini; file is being
+      read.  Read <link linkend="faq.installation.findphpini">this faq</link>
+      for details.
+     </para>
+    </answer>
+   </qandaentry>
+
+   <qandaentry id="faq.installation.findphpini">
+    <question>
+     <para>
+      How do I know if my &php.ini; is being found and read?  It
+      seems like it isn't as my changes aren't being implemented.
+     </para>
+    </question>
+    <answer>
+     <para>
+      To be sure your &php.ini; is being read by PHP, make a call to
+      <function>phpinfo</function> and near the top will be a
+      listing called <literal>Configuration File (php.ini)</literal>.
+      This will tell you where PHP is looking for &php.ini; and
+      whether or not it's being read.  If just a directory PATH exists
+      than it's not being read and you should put your &php.ini;
+      in that directory.  If &php.ini; is included within the PATH than
+      it is being read.
+     </para>
+     <para>
+      If &php.ini; is being read and you're running PHP as a module,
+      then be sure to restart your web server after making changes to
+      &php.ini;
+     </para>
+    </answer>
+   </qandaentry>
+
+  </qandaset>
+ </chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
