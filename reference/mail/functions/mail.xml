@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
-<!-- splitted from ./de/functions/mail.xml, last change in rev 1.2 -->
-<!-- last change to 'mail' in en/ tree in rev 1.2 -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.17 Maintainer: wiesemann Status: ready -->
   <refentry id="function.mail">
    <refnamediv>
     <refname>mail</refname>
@@ -15,32 +14,195 @@
       <methodparam><type>string</type><parameter>subject</parameter></methodparam>
       <methodparam><type>string</type><parameter>message</parameter></methodparam>
       <methodparam choice="opt"><type>string</type><parameter>additional_headers</parameter></methodparam>
+      <methodparam choice="opt"><type>string</type><parameter>additional_parameters</parameter></methodparam>
      </methodsynopsis>
     <simpara>
       <function>mail</function> veschickt die Nachricht in
       <parameter>message</parameter> an den Empfänger in
       <parameter>to</parameter>. Mehrere Empfänger können angegeben werden,
       indem ein Komma zwischen die Adressen in
-      <parameter>to</parameter> gesetzt wird.</simpara>
+      <parameter>to</parameter> gesetzt wird.
+      E-Mails mit angehängten Dateien und speziellen Inhaltstypen können mit
+      dieser Funktion gesendet werden. Dies wird durch MIME-Kodierung ermöglicht.
+      Für weitere Informationen siehe diesen <ulink
+      url="&url.email.mime.zend;">Zend-Artikel</ulink> oder die <ulink
+      url="&url.email.mime.pear;">PEAR Mime-Klassen</ulink>.
+     </simpara>     
+     <simpara>
+     Die folgenden RFCS könnten auch hilfreich sein:
+     <ulink url="&url.rfc;1896">RFC 1896</ulink>,
+     <ulink url="&url.rfc;2045">RFC 2045</ulink>,
+     <ulink url="&url.rfc;2046">RFC 2046</ulink>,
+     <ulink url="&url.rfc;2047">RFC 2047</ulink>,
+     <ulink url="&url.rfc;2048">RFC 2048</ulink> und
+     <ulink url="&url.rfc;2049">RFC 2049</ulink>.
+    </simpara>
+    <para>
+     <function>mail</function> gibt &true; zurück, wenn die Mail erfolgreich
+     für den Versand akzeptiert wurde, sonst &false;.
+    </para>
+    <warning>
+     <para>
+      Die Windows-Implementierung der <function>mail</function>-Funktion
+      unterscheidet sich stark von der Unix-Implemtierung. Zum einen benutzt
+      sie keine lokales Programm, um die Mails zu erstellen, sondern sie
+      arbeitet auf Sockets. D.h., dass ein <literal>MTA</literal> benötigt
+      wird, der auf einem Netzwerk-Socket lauscht (entweder auf dem eigenen
+      oder einem entfernten Rechner). Zum anderen werden die
+      benutzerdefinierten Header wie <literal>From:</literal>,
+      <literal>Cc:</literal>, <literal>Bcc:</literal> und
+      <literal>Date:</literal> <emphasis role="strong">nicht</emphasis>
+      direkt durch den <literal>MTA</literal> interpretiert, sondern zunächst
+      von <literal>PHP</literal> geparst. <literal>PHP</literal> &lt; 4.3
+      unterstützte nur den <literal>Cc:</literal>-Header (und berücksichtigte
+      die Groß-/Kleinschreibung). <literal>PHP</literal> &gt;= 4.3
+      unterstützt alle genannten Header und ist berücksichtigt nicht mehr die
+      Groß-/Kleinschreibung.
+     </para>
+    </warning>
     <para>
      <example>
-      <title>Verschicken von Mail.</title>
+      <title>Verschicke von Mail.</title>
       <programlisting>
-mail("rasmus@lerdorf.on.ca", "My Subject", "Line 1\nLine 2\nLine 3");
+<![CDATA[
+<?php
+mail("nobody@example.com", "Betreff", "Zeile 1\nZeile 2\nZeile 3");
+?>
+]]>
       </programlisting>
-     </example></para>
+     </example>
+    </para>
     <simpara>
      Wenn ein vierter String-Parameter übergeben wird, dann wird dieser
      an das Ende des Mail-Headers gehängt. Mehrfache Header werden
-     durch einen Zeilenumbruch getrennt.</simpara>
+     durch einen Zeilenumbruch getrennt.
+    </simpara>
+    <note>
+     <para>
+     Sie müssen die Header mit <literal>\r\n</literal> trennen, auch wenn
+     einige Unix-MTAs auch mit einem einfachen Zeilenumbruch
+     (<literal>\n</literal>) korrekt arbeiten.
+     </para>
+    </note>
     <para>
      <example>
-      <title>Verschicke Mail mit zusätzlichen Headers.</title>
+      <title>Verschicke Mail mit zusätzlichen Headern.</title>
       <programlisting>
-mail("nobody@aol.com", "the subject", $message,
-     "From: webmaster@$SERVER_NAME\nReply-To: webmaster@$SERVER_NAME\nX-Mailer: PHP/" . phpversion());
+<![CDATA[
+<?php
+mail("nobody@example.com", "Betreff", $message,
+     "From: webmaster@{$_SERVER['SERVER_NAME']}\r\n"
+    ."Reply-To: webmaster@{$_SERVER['SERVER_NAME']}\r\n"
+    ."X-Mailer: PHP/" . phpversion());
+?>
+]]>
       </programlisting>
-     </example></para>
+     </example>
+    </para>
+    <para>
+     Der Parameter <parameter>additional_parameters</parameter> kann benutzt
+     werden, um zusätzliche Parameter an das Programm zu übergeben, das
+     für den Mail-Versand über die Option <literal>sendmail_path</literal>
+     konfiguriert wurde. Zum Beispiel kann dies genutzt werden, um die
+     Envelope-Absenderadresse anzugeben, wenn sendmail benutzt wird
+     (Option <literal>-f</literal>). Eventuell müssen Sie den Benutzer,
+     unter dem Ihr Webserver läuft, als sendmail-Option übergeben, um zu
+     verhindern, dass Ihrer Mail ein 'X-Warning'-Header angehängt wird,
+     wenn Sie die Envelope-Absenderadresse auf diese Art setzen.
+     <example>
+      <title>Verschicke Mail mit zusätzlichen Headern und einem zusätzlichen Kommandozeilen-Parameter.</title>
+      <programlisting>
+<![CDATA[
+<?php
+mail("nobody@example.com", "Betreff", $message,
+     "From: webmaster@{$_SERVER['SERVER_NAME']}", "-fwebmaster@{$_SERVER['SERVER_NAME']}");
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <para>
+      Der fünfte Parameter wurde in PHP 4.0.5 hinzugefügt. Seit PHP 4.2.3 ist
+      dieser Parameter im <link linkend="ini.safe-mode">safe_mode</link>
+      deaktiviert; <function>mail</function> gibt eine Warnung aus und gibt
+      &false; zurück, wenn Sie den Parameter trotzdem verwenden.
+     </para>
+    </note>
+    <para>
+     Sie können einfache String-Zusammensetzungen verwenden, um komplexe
+     Mails zu erstellen.
+     <example>
+      <title>Verschicke komplexe Mail.</title>
+      <programlisting>
+<![CDATA[
+<?php
+/* Empfänger */
+$to  = "Mary <mary@example.com>" . ", " ; // beachten Sie das Komma
+$to .= "Kelly <kelly@example.com>";
+
+/* Betreff */
+$subject = "Geburtstags-Erinnerung für August";
+
+/* Nachricht */
+$message = '
+<html>
+<head>
+ <title>Geburtstags-Erinnerung für August</title>
+</head>
+<body>
+<p>Hier sind die Geburtstage im August!</p>
+<table>
+ <tr>
+  <th>Person</th><th>Tag</th><th>Monat</th><th>Jahr</th>
+ </tr>
+ <tr>
+  <td>Joe</td><td>3.</td><td>August</td><td>1970</td>
+ </tr>
+ <tr>
+  <td>Sally</td><td>17.</td><td>August</td><td>1973</td>
+ </tr>
+</table>
+</body>
+</html>
+';
+
+/* Um eine HTML-Mail zu senden, können Sie den den "Content-type"-Header.
+   setzen */
+$headers  = "MIME-Version: 1.0\r\n";
+$headers .= "Content-type: text/html; charset=iso-8859-1\r\n";
+
+/* zusätzliche Header */
+$headers .= "From: Geburtstags-Erinnerung <geburtstag@example.com>\r\n";
+
+$headers .= "Cc: geburtstagsarchiv@example.com\r\n";
+$headers .= "Bcc: geburtstagscheck@example.com\r\n";
+
+/* Verschicken der Mail */
+mail($to, $subject, $message, $headers);
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <para>
+       Achten Sie darauf, dass Sie keine Zeilenumbruch-Zeichen
+       in den Parametern <parameter>to</parameter> oder
+       <parameter>subject</parameter> verwenden, da sonst Ihre Mail
+       eventuell nicht korrekt gesendet werden kann.
+     </para>
+    </note>
+    <note>
+     <para>
+      Der <parameter>to</parameter>-Parameter darf nicht in der Form
+      &quot;irgendwas &lt;irgendwer@example.com&gt;&quot; sein, da
+      dies von PHP nicht korrekt an den MTA übergeben werden kann.
+     </para>
+    </note>
+    <para>
+     Siehe auch <function>imap_mail</function>.
+    </para>
    </refsect1>
   </refentry>
 
