@@ -54,6 +54,15 @@
      <link linkend="ini.track-vars"><literal>track_vars</literal></link>
      immer aktiviert.
     </para>
+     Seit PHP 4.1.0 steht <varname>$_SESSION</varname> genau wie
+     <varname>$_POST</varname>, <varname>$_GET</varname>,
+     <varname>$_REQUEST</varname> und so weiter, als globale Variable
+     zur Verfügung. Im Gegensatz zu
+     <varname>$HTTP_SESSION_VARS</varname> ist
+     <varname>$_SESSION</varname> immer global. Deshalb sollte
+     <literal>global</literal> nicht für <varname>$_SESSION</varname>
+     verwendet werden.
+    </para>
    </note>
    <para>
     Falls
@@ -61,9 +70,9 @@
     aktiviert und
     <link linkend="ini.register-globals"><literal>register_globals</literal></link>
     deaktiviert ist, können nur Bestandteile des globalen assoziativen
-    Arrays $HTTP_SESSION_VARS als Session-Variablen registriert
-    werden. Wiederhergestellte Session-Variablen stehen nur im Array
-    $HTTP_SESSION_VARS zur Verfügung.
+    Arrays <varname>$HTTP_SESSION_VARS</varname> als Session-Variablen
+    registriert werden. Wiederhergestellte Session-Variablen stehen
+    nur im Array <varname>$HTTP_SESSION_VARS</varname> zur Verfügung.
     <example> 
      <title>
       Registrierung einer Variablen bei aktiviertem
@@ -72,8 +81,52 @@
      <programlisting role="php">
 <![CDATA[
 <?php
-session_register("count");
-$HTTP_SESSION_VARS["count"]++;
+if (isset($HTTP_SESSION_VARS['zaehler'])) {
+   $HTTP_SESSION_VARS['zaehler']++;
+}
+else {
+   $HTTP_SESSION_VARS['zaehler'] = 0;
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Aus Gründen der Sicherheit und der Lesbarkeit des Codes wird die
+    Verwendung von <varname>$_SESSION</varname> (oder
+    <varname>$HTTP_SESSION_VARS</varname> bei PHP 4.0.6 oder
+    niedriger) empfohlen. Mit <varname>$_SESSION</varname> oder
+    <varname>$HTTP_SESSION_VARS</varname> werden die Funktionen
+    session_register()/session_unregister()/session_is_registered()
+    nicht benötigt. Der Benutzer kann auf die Session-Variable wie auf
+    eine normale Variable zugreifen.
+    <example>
+     <title>
+      Registrierung einer Variablen mit $_SESSION.
+     </title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Verwenden Sie bei PHP 4.0.6 oder niedriger $HTTP_SESSION_VARS
+if (!isset($_SESSION['zaehler'])) {
+    $_SESSION['zaehler'] = 0;
+}
+else {
+    $_SESSION['zarhler']++;
+?>
+]]>
+     </programlisting>
+    </example>
+    <example>
+     <title>
+      Aufheben der Registrierung einer Variablen mit $_SESSION.
+     </title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Verwenden Sie bei PHP 4.0.6 oder niedriger $HTTP_SESSION_VARS
+unset($_SESSION['zaehler']);
 ?>
 ]]>
      </programlisting>
@@ -85,28 +138,69 @@ $HTTP_SESSION_VARS["count"]++;
     aktiviert ist, können alle globalen Variablen als
     Session-Variablen registriert werden und die Session-Variablen
     werden als entsprechende globale Variablen wiederhergestellt.
-   </para>
-   <example>
-    <title>
-     Registrierung einer Variablen bei aktiviertem
-     <link linkend="ini.register-globals"><literal>register_globals</literal></link>
-    </title>
-    <programlisting role="php">
+    Da PHP wissen muss, welche globalen Variablen als
+    Session-Variablen registriert sind, muss der Benutzer Variablen mit
+    der Funktion session_register() registrieren, während
+    <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>
+    die Verwendung von session_register() nicht benötigt.
+    <caution>
+     <para>
+      Wenn Sie
+      <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>
+      verwenden und <link
+      linkend="ini.register-globals"><literal>register_globals</literal></link>
+      deaktivieren, sollten Sie <function>session_register</function>,
+      <function>session_is_registered</function> und
+      <function>session_unregister</function> nicht verwenden.
+     </para>
+     <para>
+      Wenn sie <link
+       linkend="ini.register-globals"><literal>register_globals</literal></link> aktivieren, sollten Sie <function>session_unregister</function>
+       verwenden, weil beim Deserialisieren von Session-Daten die
+       Session-Variablen als globale Variablen registriert werden. Die
+       Deaktivierung von
+       <link
+       linkend="ini.register-globals"><literal>register_globals</literal></link>
+       ist sowohl aus Sicherheitsgründen als auch wegen
+       der Performance empfehlenswert.
+     </para>
+    </caution>
+    <example>
+     <title>
+      Registrierung einer Variablen bei aktiviertem
+      <link linkend="ini.register-globals"><literal>register_globals</literal></link>
+     </title>
+     <programlisting role="php">
 <![CDATA[
 <?php
-session_register("count");
-$count++;
+if (!session_is_registered('zaehler')) {
+    session_register("zaehler");
+    $zaehler = 0;
+}
+else {
+    $zaehler++;
+}
 ?>
 ]]>
-    </programlisting>
-   </example>
+     </programlisting>
+    </example>
+   </para>
    <para>
     Wenn sowohl
     <link linkend="ini.track-vars"><literal>track_vars</literal></link>
     als auch
     <link linkend="ini.register-globals"><literal>register_globals</literal></link>
     aktiviert sind, dann referenzieren die globalen Variablen und die
-    Einträge von $HTTP_SESSION_VARS den selben Wert.
+    Einträge von
+    <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>
+    für bereits registrierte Variablen den selben Wert.
+   </para>
+   <para>
+    Wenn der Benutzer session_register() verwendet, um eine
+    Session-Variable zu registrieren, befindet sich diese Variable
+    nicht vor dem nächsten Laden aus dem Sessionspeicher (d.h. bei der
+    nächsten Anfrage) im Array von
+    <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>.
    </para>
    <para>
     Es gibt zwei Methoden, eine Session-ID zu übermitteln:
@@ -132,7 +226,8 @@ $count++;
    </para>
    <para>
     Wenn PHP mit
-    <link linkend="install.configure.enable-trans-sid"><literal>--enable-trans-sid</literal></link>
+    <link
+    linkend="install.configure.enable-trans-sid"><literal>--enable-trans-sid</literal></link>
     kompiliert wurde, kann es dies transparent machen. Wenn Sie diese
     Option aktivieren, werden relative URIs automatisch geändert,
     sodass sie die Session-ID enthalten. Alternativ können sie die
@@ -151,19 +246,26 @@ $count++;
      <programlisting role="php">
 <![CDATA[
 <?php
-session_register ("count");
-$count++;
+if (!session_is_registered('zaehler')) {
+    session_register('zaehler');
+    $zaehler = 1;
+}
+else {
+    $zaehler++;
+}
 ?>
 
-Hallo Besucher, Sie haben diese Seite <?php echo $count; ?> Mal
+Hallo Besucher, Sie haben diese Seite <?php echo $zaehler; ?> Mal
 aufgerufen.<p>
 
 <?php
 # für den Fall, dass der Benutzer Cookies deaktiviert hat,
-# ist das <?=SID?> nötig, um die Session-ID zu erhalten
+# ist das <?php echo SID?> nötig, um die Session-ID zu erhalten
+# (wenn die Option short tag aktiviert ist, kann <?=SID?> verwendet
+# werden)
 ?>
 
-Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
+Hier gehts <A HREF="nextpage.php?<?php echo SID?>">weiter</A>
 ]]>
      </programlisting>
     </example>
@@ -206,7 +308,9 @@ Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
        das an die Speicherprozedur übergeben wird. Wenn Sie die
        standardmäßige files Prozedur wählen, ist das der Pfad, unter
        dem die Dateien erzeugt werden. Grundeinstellung
-       <literal>/tmp</literal>.
+       <literal>/tmp</literal>. Wenn die Verzeichnistiefe von
+       <literal>session.save_path</literal> größer als zwei ist, wird
+       die garbage collection nicht durchgeführt.
       </simpara>
       <warning>
        <para>
@@ -290,14 +394,14 @@ Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
       <simpara>
        <literal>session.entropy_length</literal> spezifiziert die
        Anzahl der Bytes, die von der oben spezifizierten Datei gelesen
-       werden.  Grundeinstellung <literal>0</literal> (deaktiviert).
+       werden. Grundeinstellung <literal>0</literal> (deaktiviert).
       </simpara>
      </listitem>
      <listitem>
       <simpara>
        <literal>session.use_cookies</literal> spezifiziert, ob das
        Modul Cookies verwendet, um die Session-ID clientseitig zu
-       speichern.  Grundeinstellung <literal>1</literal> (aktiviert).
+       speichern. Grundeinstellung <literal>1</literal> (aktiviert).
       </simpara>
      </listitem>
      <listitem>
@@ -318,7 +422,7 @@ Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
       <simpara> 
        <literal>session.cache_limiter</literal> spezifiziert die
        Methode der Cacheverwaltung, die bei Session-Seiten benutzt
-       wird (nocache/private/private_no_expire/public).
+       wird (none/nocache/private/private_no_expire/public).
        Grundeinstellung <literal>nocache</literal>.
       </simpara>
      </listitem>
@@ -389,6 +493,22 @@ Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
       etwas an den Browser geschickt wird.
      </para>
     </note>
+    <simpara>
+     Wenn <literal>trans-sid</literal> aktiviert ist, registriert
+     <function>session_start</function> die interne Ausgaberoutine für
+     das Umschreiben von URLs. Verwendet ein Benutzer
+     <literal>ob_gzhandler</literal> oder ähnliches mit
+     <function>ob_start</function>, ist die Reihenfolge der
+     Augaberoutine wichtig für eine korrekte Ausgabe. Zum Beispiel
+     muss der Benutzer <literal>ob_gzhandler</literal> vor Beginn der
+     Session registrieren.
+    </simpara>
+    <note>
+     <simpara>
+      Die Verwendung von <literal>zlib.output_compression</literal>
+      ist <literal>ob_gzhandler</literal> vorzuziehen.
+     </simpara>
+    </note>
    </refsect1>
   </refentry>
 
@@ -421,13 +541,34 @@ Hier gehts <A HREF="nextpage.php?<?=SID?>">weiter</A>
       <programlisting role="php">
 <![CDATA[
 <?php
-# Initialisierung der Session.
-# Wenn Sie session_name("something") verwenden, vergessen Sie es jetzt
-# nicht!
+// Initialisierung der Session.
+// Wenn Sie session_name("irgendwas") verwenden, vergessen Sie es
+// jetzt nicht!
 session_start();
-# Löschen aller Session-Variablen.
+// Löschen aller Session-Variablen.
 session_unset();
-# Zum Schluß, löschen der Session.
+// Zum Schluß, löschen der Session.
+session_destroy();
+
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     <example>
+      <title>Löschen einer Session mit $_SESSION</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+
+// Initialisierung der Session.
+// Wenn Sie session_name("irgendwas") verwenden, vergessen Sie es
+// jetzt nicht!
+session_start();
+// Löschen aller Session-Variablen.
+unset($_SESSION);
+// Zum Schluß, löschen der Session.
 session_destroy();
 ?>
 ]]>
@@ -448,7 +589,9 @@ session_destroy();
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>session_name</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>Name</parameter></methodparam>
+      <methodparam choice="opt">
+       <type>string</type><parameter>Name</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_name</function> gibt den Namen der aktuellen
@@ -471,9 +614,9 @@ session_destroy();
      <programlisting role="php">
 <![CDATA[
 <?php
-# den Session-Namen auf WebsiteID setzen
-$previous_name = session_name ("WebsiteID");
-echo "Der vorhergehende Session-Name war $previous_name<p>";
+// den Session-Namen auf WebsiteID setzen
+$name_vorher = session_name ("WebsiteID");
+echo "Der vorhergehende Session-Name war $name_vorher<p>";
 ?>
 ]]>
      </programlisting>
@@ -492,7 +635,9 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>session_module_name</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>Modul</parameter></methodparam>
+      <methodparam choice="opt">
+       <type>string</type><parameter>Modul</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_module_name</function> gibt den Namen des
@@ -514,7 +659,9 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
     <title>Beschreibung</title>
       <methodsynopsis>
       <type>string</type><methodname>session_save_path</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>Pfad</parameter></methodparam>
+      <methodparam choice="opt">
+       <type>string</type><parameter>Pfad</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_save_path</function> gibt den Pfad des
@@ -545,7 +692,9 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>session_id</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>ID</parameter></methodparam>
+      <methodparam choice="opt">
+       <type>string</type><parameter>ID</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_id</function> gibt die Session-ID der aktuellen
@@ -554,8 +703,8 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
     </para>
     <para>
      Die Konstante <systemitem>SID</systemitem> kann auch dazu
-     verwendet werden, den aktuellen Namen und Session-ID als
-     Zeichenkette, passend zum Hinzufügen zu URLs, zu erhalten.
+     verwendet werden, den aktuellen Namen und die Session-ID als
+     Zeichenkette passend zum Anhängen an URLs zu erhalten.
     </para>
    </refsect1>
   </refentry>
@@ -571,8 +720,12 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>bool</type><methodname>session_register</methodname>
-      <methodparam><type>mixed</type><parameter>Name</parameter></methodparam>
-      <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
+      <methodparam>
+       <type>mixed</type><parameter>Name</parameter>
+      </methodparam>
+      <methodparam choice="opt">
+       <type>mixed</type><parameter>...</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_register</function> akzeptiert eine variable
@@ -584,10 +737,20 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
     </para>
     <caution>
      <para>
-      This registers a <emphasis>global</emphasis> variable. If you
-      want to register a session variable inside a function, you need
-      to make sure to make it global using <function>global</function>
-      or use the session arrays as noted below.
+      Diese Funktion registriert eine <emphasis>globale</emphasis>
+      Variable. Wenn Sie eine Session-Variable innerhalb einer
+      Funktion registrieren wollen, müssen Sie sicherstellen, dass Sie
+      sie mittels <function>global</function> global machen oder Sie
+      verwenden die nachstehend vermerkten Session-Arrays.
+     </para>
+    </caution>
+    <caution>
+     <para>
+      Wenn Sie
+      <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>
+      verwenden, sollten Sie <function>session_register</function>,
+      <function>session_is_registered</function> und
+      <function>session_unregister</function> nicht verwenden.
      </para>
     </caution>
     <para>
@@ -595,13 +758,15 @@ echo "Der vorhergehende Session-Name war $previous_name<p>";
      erfolgreich in der Session registriert wurden.
     </para>
     <para>
-     If <function>session_start</function> was not called before this function
-     is called, an implicit call to <function>session_start</function> with no
-     parameters will be made.
+     Wenn <function>session_start</function> nicht vor dieser Funktion
+     aufgerufen wurde, erfolgt ein impliziter Aufruf von
+     <function>session_start</function> ohne Parameter.
     </para>
     <para>
-     You can also create a session variable by simply setting the appropriate
-     member of the $HTTP_SESSION_VARS or $_SESSION (PHP >= 4.1.0) array.
+     Sie können eine Session-Variable auch erzeugen, indem Sie das
+     entsprechende Element des <varname>$HTTP_SESSION_VARS</varname>-
+     oder (PHP >= 4.1.0) <varname>$_SESSION</varname>-Arrays
+     setzen.
      <informalexample>
       <programlisting role="php">
 <![CDATA[
@@ -610,7 +775,7 @@ session_register("barney");
 
 $HTTP_SESSION_VARS["zim"] = "An invader from another planet.";
 
-# the auto-global $_SESSION array was introduced in PHP 4.1.0
+# Das auto-global $_SESSION-Array wurde mit PHP 4.1.0 eingeführt
 $_SESSION["spongebob"] = "He's got square pants.";
 ]]>
       </programlisting>
@@ -629,6 +794,12 @@ $_SESSION["spongebob"] = "He's got square pants.";
       Ressourcen zurückgeben befindet sich im Anhang
       <link linkend="resource">Liste von PHP Ressourcen</link>.
      </para>
+     <para>
+      Bei Verwendung von <varname>$_SESSION</varname> (oder
+      <varname>$HTTP_SESSION_VARS</varname> bei PHP 4.0.6 oder
+      niedriger) weisen Sie <varname>$_SESSION</varname> eine Variable
+      zu, also $_SESSION['var'] = 'ABC';
+     </para>
     </note>
     <para>
      Siehe auch: <function>session_is_registered</function> und
@@ -641,14 +812,17 @@ $_SESSION["spongebob"] = "He's got square pants.";
    <refnamediv>
     <refname>session_unregister</refname>
     <refpurpose>
-     Hebt die Registrierung einer Variablen in der aktuellen Session auf
+     Hebt die Registrierung einer Variablen in der aktuellen Session
+     auf
     </refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>bool</type><methodname>session_unregister</methodname>
-      <methodparam><type>string</type><parameter>Name</parameter></methodparam>
+      <methodparam>
+       <type>string</type><parameter>Name</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_unregister</function> hebt die Registrierung
@@ -659,6 +833,14 @@ $_SESSION["spongebob"] = "He's got square pants.";
      Diese Funktion gibt &true; zurück, wenn die Aufhebung der
      Registrierung der Variablen in der Session erfolgt ist.
     </para>
+    <note>
+     <para>
+      Benutzen Sie bei Verwendung von <varname>$_SESSION</varname>
+      (oder <varname>$HTTP_SESSION_VARS</varname> bei PHP 4.0.6 oder
+      niedriger) <function>unset</function> um die Registrierung einer
+      Session-Variablen aufzuheben.
+     </para>
+    </note>
     <caution>
      <para>
       Diese Funktion löscht die <parameter>Name</parameter>
@@ -666,6 +848,15 @@ $_SESSION["spongebob"] = "He's got square pants.";
       dass die Variable als Teil der Session gespeichert wird. Sie
       müssen <function>unset</function> aufrufen, um die entsprechende
       globale Variable zu entfernen.
+     </para>
+    </caution>
+    <caution>
+     <para>
+      Wenn Sie
+      <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>
+      verwenden, sollten Sie <function>session_register</function>,
+      <function>session_is_registered</function> und
+      <function>session_unregister</function> nicht verwenden.
      </para>
     </caution>
    </refsect1>
@@ -688,6 +879,14 @@ $_SESSION["spongebob"] = "He's got square pants.";
      Die Funktion <function>session_unset</function> befreit alle
      Session-Variablen, die gegenwärtig registriert sind.
     </para>
+    <note>
+     <para>
+      Benutzen Sie bei Verwendung von <varname>$_SESSION</varname>
+      (oder <varname>$HTTP_SESSION_VARS</varname> bei PHP 4.0.6 oder
+      niedriger) <function>unset</function> um die Registrierung einer
+      Session-Variablen aufzuheben, also unset($_SESSION);
+     </para>
+    </note>
    </refsect1>
   </refentry>
 
@@ -702,13 +901,32 @@ $_SESSION["spongebob"] = "He's got square pants.";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>bool</type><methodname>session_is_registered</methodname>
-      <methodparam><type>string</type><parameter>Name</parameter></methodparam>
+      <methodparam>
+       <type>string</type><parameter>Name</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
-     <function>session_is_registered</function> gibt &true; zurück, wenn
-     in der aktuellen Session eine Variable mit dem Namen
+     <function>session_is_registered</function> gibt &true; zurück,
+     wenn in der aktuellen Session eine Variable mit dem Namen
      <parameter>Name</parameter> registriert ist.
     </para>
+    <note>
+     <para>
+      Benutzen Sie bei Verwendung von <varname>$_SESSION</varname>
+      (oder <varname>$HTTP_SESSION_VARS</varname> bei PHP 4.0.6 oder
+      niedriger) <function>isset</function> um zu prüfen, ob eine
+      Variable in <varname>$_SESSION</varname> registriert ist.
+     </para>
+    </note>
+    <caution>
+     <para>
+      Wenn Sie
+      <varname>$HTTP_SESSION_VARS</varname>/<varname>$_SESSION</varname>
+      verwenden, sollten Sie <function>session_register</function>,
+      <function>session_is_registered</function> und
+      <function>session_unregister</function> nicht verwenden.
+     </para>
+    </caution>
    </refsect1>
   </refentry>
   
@@ -768,9 +986,15 @@ $_SESSION["spongebob"] = "He's got square pants.";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>void</type><methodname>session_set_cookie_params</methodname>
-      <methodparam><type>int</type><parameter>Lebensdauer</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>Pfad</parameter></methodparam>   
-      <methodparam choice="opt"><type>string</type><parameter>Domain</parameter></methodparam>   
+      <methodparam>
+       <type>int</type><parameter>Lebensdauer</parameter>
+      </methodparam>
+      <methodparam choice="opt">
+       <type>string</type><parameter>Pfad</parameter>
+      </methodparam>   
+      <methodparam choice="opt">
+       <type>string</type><parameter>Domain</parameter>
+      </methodparam>   
      </methodsynopsis>
     <para>
      Setzen der Cookie-Parameter, die in der php.ini definiert
@@ -791,7 +1015,9 @@ $_SESSION["spongebob"] = "He's got square pants.";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>bool</type><methodname>session_decode</methodname>
-      <methodparam><type>string</type><parameter>Daten</parameter></methodparam>
+      <methodparam>
+       <type>string</type><parameter>Daten</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_decode</function> dekodiert die Daten der
@@ -832,7 +1058,24 @@ $_SESSION["spongebob"] = "He's got square pants.";
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>void</type><methodname>session_set_save_handler</methodname>
-      <methodparam><type>string</type><parameter>öffnen</parameter></methodparam><methodparam><type>string</type><parameter>schließen</parameter></methodparam><methodparam><type>string</type><parameter>lesen</parameter></methodparam><methodparam><type>string</type><parameter>schreiben</parameter></methodparam><methodparam><type>string</type><parameter>löschen</parameter></methodparam><methodparam><type>string</type><parameter>gc</parameter></methodparam>
+      <methodparam>
+       <type>string</type><parameter>öffnen</parameter>
+      </methodparam>
+      <methodparam>
+       <type>string</type><parameter>schließen</parameter>
+      </methodparam>
+      <methodparam>
+       <type>string</type><parameter>lesen</parameter>
+      </methodparam>
+      <methodparam>
+       <type>string</type><parameter>schreiben</parameter>
+      </methodparam>
+      <methodparam>
+       <type>string</type><parameter>löschen</parameter>
+      </methodparam>
+      <methodparam>
+       <type>string</type><parameter>gc</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_set_save_handler</function> setzt die
@@ -869,6 +1112,13 @@ $_SESSION["spongebob"] = "He's got square pants.";
      Datenbank beinhaltet.
     </para>
     <para>
+     Damit die Speicherroutine funktioniert wie erwartet, muss die
+     read-Function immer einen String-Wert zurückgeben. Wenn es keine
+     Daten zu lesen gibt, geben Sie eine leere Zeichenkette zurück.
+     Rückgabewerte anderer Routinen werden in boolesche Ausdrücke
+     umgewandelt. TRUE für einen Erfolg, FALSE für einen Fehler.
+    </para>
+    <para>
      <example>
       <title>
        <function>session_set_save_handler</function> Beispiel
@@ -896,7 +1146,7 @@ function read ($id) {
     $sess_data = fread($fp, filesize($sess_file));
     return($sess_data);
   } else {
-    return("");
+    return(""); // Must return "" here.
   }
 
 }
@@ -953,7 +1203,9 @@ session_start();
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>session_cache_limiter</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>Cacheverwaltung</parameter></methodparam>
+      <methodparam choice="opt">
+       <type>string</type><parameter>Cacheverwaltung</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
      <function>session_cache_limiter</function> gibt die Bezeichnung
@@ -1012,20 +1264,21 @@ echo "Die Cacheverwaltung ist jetzt auf $cacheverwaltung gesetzt<p>";
   <refentry id='function.session-cache-expire'>
    <refnamediv>
     <refname>session_cache_expire</refname>
-    <refpurpose>
-     Liefert den aktuellen cache expire. Wenn new_cache_expire gegeben
-     ist, wird der aktuelle cache_expire durch new_cache_expire
-     ersetzt
-    </refpurpose>
+    <refpurpose>Liefert die aktuelle Cache-Verfallszeit</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>int</type><methodname>session_cache_expire</methodname>
-      <methodparam choice="opt"><type>int</type><parameter>new_cache_expire</parameter></methodparam>
+      <methodparam choice="opt">
+       <type>int</type><parameter>neue_cache_verfallszeit</parameter>
+      </methodparam>
      </methodsynopsis>
     <para>
-     &warn.undocumented.func;
+     <function>session_cache_expire</function> gibt die aktuelle
+     Cache-Verfallszeit zurück. Wenn neue_cache_verfallszeit gegeben
+     ist, wird die aktuelle cache_expire durch neue_cache_verfallszeit
+     ersetzt.
     </para>
    </refsect1>
   </refentry>
