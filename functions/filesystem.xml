@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.139 Maintainer: tom Status: ready -->
+<!-- EN-Revision: 1.142 Maintainer: tom Status: ready -->
 <reference id="ref.filesystem">
   <title>Funktionen des Dateisystems</title>
   <titleabbrev>Filesystem</titleabbrev>
@@ -706,6 +706,89 @@ fclose ($fd);
    </refsect1>
   </refentry>
 
+  <refentry id="function.file-register-wrapper">
+   <refnamediv>
+    <refname>file_register_wrapper</refname>
+    <refpurpose>Register a URL wrapper implemented as a PHP class</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+    <methodsynopsis>
+     <type>boolean</type><methodname>file_register_wrapper</methodname>
+     <methodparam><type>string</type><parameter>protocol</parameter></methodparam>
+     <methodparam><type>string</type><parameter>classname</parameter></methodparam>
+    </methodsynopsis>
+    <para>
+     Diese Funktion ist derzeit nur anhand des folgenden Beispieles dokumentiert:
+     <example> 
+      <title>Implementieren eines base64 encoding Protokolls</title>
+      <programlisting role="php">
+<![CDATA[
+class Base64EncodingStream {
+    var $fp = null;
+
+    function stream_open($path, $mode, $options, &$opened_path)
+    {
+        $this->fp = fopen($path, $mode);
+        return is_resource($this->fp);
+    }
+    function stream_close()
+    {
+        fclose($this->fp);
+    }
+    function stream_read($count)
+    {
+        return false; // Wir erlauben nur schreiben
+    }
+    function stream_write($data)
+    {
+        return fwrite($this->fp, base64_encode($data));
+    }
+    function stream_flush()
+    {
+        fflush($this->fp);
+        return true;
+    }
+    function stream_seek($offset, $whence)
+    {
+        return false;
+    }
+    function stream_gets()
+    {
+        return false;
+    }
+    function stream_tell()
+    {
+        return false;
+    }
+    function stream_eof()
+    {
+        return false;
+    }
+}
+file_register_wrapper("base64", "Base64EncodingStream")
+    or die("Failed to register protocol");
+
+copy("/tmp/inputfile.txt", "base64:///tmp/outputfile.txt");
+readfile("/tmp/outputfile");
+]]>
+      </programlisting>
+     </example>
+
+    </para>
+    <para>
+     <function>file_register_wrapper</function> gibt &false; zurück, falls
+     <parameter>protocol</parameter> bereits einen Handler hat, oder wenn
+     "fopen wrappers" deaktiviert sind.
+    </para>
+    <note>
+     <para>
+      Diese Funktion wurde in PHP 4.3.0 eingeführt.
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.file-get-contents">
    <refnamediv>
     <refname>file_get_contents</refname> 
@@ -723,6 +806,11 @@ fclose ($fd);
      außer dass <function>file_get_contents</function> die Datei in
      einem String zurückgibt.
     </para>
+    <note>
+     <para>
+      Diese Funktion wurde in PHP 4.3.0 eingeführt.
+     </para>
+    </note>
     &note.bin-safe;
     &tip.fopen-wrapper;
    </refsect1>
@@ -1227,15 +1315,15 @@ $fcontents = implode ('', file ('http://www.example.com/'));
    </refsect1>
   </refentry>
 
-  <refentry id="function.fgetwrapperdata">
+  <refentry id="function.file_get_wrapper_data">
    <refnamediv>
-    <refname>fgetwrapperdata</refname>
+    <refname>file_get_wrapper_data</refname>
     <refpurpose>Liefert Kopf-/Metadaten von geöffneten Dateien</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
-      <type>mixed</type><methodname>fgetwrapperdata</methodname>
+      <type>mixed</type><methodname>file_get_wrapper_data</methodname>
       <methodparam><type>int</type><parameter>fp</parameter></methodparam>
      </methodsynopsis>
     <simpara>
@@ -1246,7 +1334,7 @@ $fcontents = implode ('', file ('http://www.example.com/'));
     </simpara>
     <simpara>
      Das Format der zurückgegebenen Daten ist derzeit bewusst nicht
-     dokumentiert.
+     dokumentiert, und ist von dem verwendeten Wrapper abhängig.
     </simpara>
     <note>
      <para>
@@ -1290,7 +1378,7 @@ $fcontents = implode ('', file ('http://www.example.com/'));
      Antwortheader zu erhalten, benötigen Sie PHP ab Version 4.0.5. Die
      Headers werden in der Variable $http_response_header gespeichert.
      Ab PHP 4.3.0 (noch nicht freigegeben) kann die Header Information
-     mittels <function>fgetwrapperdata</function> geholt werden.
+     mittels <function>file_get_wrapper_data</function> geholt werden.
     </simpara>
     <simpara>
      HTTP Verbindungen sind nur zum Lesen, d.h. Sie können keine Daten
@@ -1307,8 +1395,12 @@ $fcontents = implode ('', file ('http://www.example.com/'));
      spezifizierten Server geöffnet und ein Zeiger auf die
      angeforderte Datei zurückgegeben.  Wenn der Server keinen
      passiven FTP-Modus unterstützt, wird diese Methode
-     fehlschlagen. Sie können Dateien entweder zum Schreiben oder zum
-     Lesen öffnen, jedoch nicht für beides gleichzeitig.
+     fehlschlagen. Sie können Dateien entweder zum Schreiben oder
+     zum Lesen öffnen, jedoch nicht für beides gleichzeitig. Wenn die
+     entfernte Datei bereits auf dem FTP-Server existiert und Sie
+     versuchen sie zum Schreiben zu öffnen, wird das nicht funktionieren.
+     Wenn Sie bestehende Dateien über FTP aktualisieren wollen, verwenden
+     Sie <function>ftp_connect</function>.
     </simpara>
     <simpara>
      Wenn <parameter>filename</parameter> "php://stdin",
