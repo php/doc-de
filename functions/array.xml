@@ -1,4 +1,5 @@
-<!-- EN-Revision: 1.86 Maintainer: tom Status: ready -->
+<?xml encoding="iso-8859-1"?>
+<!-- EN-Revision: 1.109 Maintainer: tom Status: ready -->
  <reference id="ref.array">
   <title>Array Funktionen</title>
   <titleabbrev>Arrays</titleabbrev>
@@ -87,7 +88,7 @@ $fruechte = array (
      <example>
       <title>Automatischer Index mit <function>array</function></title>
       <programlisting role="php">
-$array = array( 1, 1, 1, 1,  1, 8=>1,  4=>1, 19, 3=>13);
+$array = array( 1, 1, 1, 1, 1, 8=>1, 4=>1, 19, 3=>13);
 print_r($array);
       </programlisting>
      </example>
@@ -205,6 +206,18 @@ $result = array_diff ($array1, $array2);
      <varname>$result</varname>.  Mehrfache Vorkommen in $array1
      werden auf die gleiche Weise behandelt.
     </para>
+    <note>
+     <simpara>
+      Zwei Elemente werden nur dann als gleich angesehen, wenn
+      <literal>(string) $elem1 === (string) $elem2</literal>. In Worten:
+      Wenn die String-Repräsentation die gleiche ist.
+     </simpara>
+    </note>
+    <warning>
+     <simpara>
+      Dies war in PHP 4.0.4 fehlerhaft!
+     </simpara>
+    </warning>
     <para>
      Siehe auch <function>array_intersect</function>.
     </para>
@@ -285,14 +298,17 @@ $gerade_arr = array_filter($array2, "gerade");
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>array_flip</function> Gibt ein Array in umgekehrter
-     Reihenfolge zurück, d.h. Schlüssel von
+     <function>array_flip</function> Gibt ein <type>Array</type> in 
+     umgekehrter Reihenfolge zurück, d.h. Schlüssel von
      <parameter>trans</parameter> werden Werte, und umgekehrt werden
-     die Werte zu Schlüsseln. Beachten Sie, dass
-     <function>array_flip</function> nur mit den Typen Integer und
-     String arbeitet und eine Fehlermeldung ausgibt, wenn ein
-     ungültiger Schlüssel oder Wert entdeckt wird (z.B. vom Typ Array,
-     Double, Object, Boolean).
+     die Werte zu Schlüsseln. 
+    </para>
+    <para>
+     Beachten Sie, dass die Werte von <parameter>trans</parameter> gültige
+     Schlüssel sein müssen, z.B. haben sie entweder <type>integer</type>
+     oder <type>string</type> zu sein. Ist ein Wert vom falschen Typ wird 
+     eine Warnung ausgegeben, und das Schlüssel/Werte-Paar <emphasis>wird
+     nicht vertauscht</emphasis>.
     </para>
     <para>
      Kommt ein Wert mehrmals vor, wird der letzte Schlüssel mit seinem
@@ -405,6 +421,18 @@ $result = array_intersect ($array1, $array2);
      Dies speichert <literal>array ("a" =&gt; "grün", "rot");</literal> in
      <varname>$result</varname>
     </para>
+    <note>
+     <simpara>
+      Zwei Elemente werden nur dann als gleich angesehen, wenn
+      <literal>(string) $elem1 === (string) $elem2</literal>. In Worten:
+      Wenn die String-Repräsentation die gleiche ist.
+     </simpara>
+    </note>
+    <warning>
+     <simpara>
+      Dies war in PHP 4.0.4 fehlerhaft!
+     </simpara>
+    </warning>
     <para>
      Siehe auch <function>array_diff</function>.
     </para>
@@ -499,14 +527,16 @@ function array_keys ($arr, $term="") {
       <paramdef>mixed <parameter>callback</parameter></paramdef>
       <paramdef>array <parameter>arr1</parameter></paramdef>
       <paramdef>array
-       <parameter><optional>...</optional></parameter>
+       <parameter><optional>arr2...</optional></parameter>
       </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
-     <function>array_map</function> wendet die Callback-Funktion auf
-     alle Elemente von <parameter>arr1</parameter> an, und gibt ein
-     Array mit den modifizierten Werten zurück.
+     <function>array_map</function> gibt ein Array mit allen Elementen von
+     <parameter>arr1</parameter> zurück, nachdem die Callback-Funktion auf
+     jedes einzelne Element angewandt wurde. Die Anzahl Parameter, welche 
+     Callback-Funktion akzeptiert, sollte der Anzahl der an 
+     <function>array_map</function> übergebenen Arrays entsprechen.
     </para>
     <para>
      <example>
@@ -606,10 +636,7 @@ print_r($d);
     </para>
     <para>
      <example>
-      <title>
-       <function>array_map</function> - Erstellen eines Arrays mit
-       Arrays
-      </title>
+      <title>Erstellen eines Arrays mit Arrays</title>
       <programlisting role="php">
 $a = array(1, 2, 3, 4, 5);
 $b = array("one", "two", "three", "four", "five");
@@ -1078,7 +1105,7 @@ array_push ($stack, "+", 3);
      <example>
       <title><function>array_rand</function></title>
       <programlisting role="php">
-srand ((double) microtime() * 10000000);
+srand ((float) microtime() * 10000000);
 $input = array ("Neo", "Morpheus", "Trinity", "Cypher", "Tank");
 $rand_keys = array_rand ($input, 2);
 print $input[$rand_keys[0]]."\n";
@@ -1174,12 +1201,12 @@ $result_keyed = array_reverse ($input, TRUE);
       <programlisting role="php">
 function rsum($v, $w) {
     $v += $w;
-        return $v;
+    return $v;
 }
 
 function rmul($v, $w) {
     $v *= $w;
-        return $v;
+    return $v;
 }
 
 $a = array(1, 2, 3, 4, 5);
@@ -1372,7 +1399,7 @@ $output = array_slice ($input, 0, 3);   // liefert "a", "b", and "c"
     </para>
     <para>
      Hier einige Entsprechungen:
-     <programlisting>
+     <programlisting role="php">
 array_push ($input, $x, $y)     array_splice ($input, count ($input), 0, 
                                              array ($x, $y))
 array_pop ($input)              array_splice ($input, -1)
@@ -1435,7 +1462,7 @@ array_splice ($input, -1, 1, array("schwarz", "braun"));
      <example>
       <title><function>array_sum</function></title>
       <programlisting role="php">
-$a = array(2,4,6,8);
+$a = array(2, 4, 6, 8);
 echo "sum(a) = ".array_sum($a)."\n";
 // Ausgabe: sum(a) = 20
 
@@ -1472,6 +1499,21 @@ echo "sum(b) = ".array_sum($b)."\n";
      Schlüssel, für jeden Wert, und ignoriert alle folgenden
      Schlüssel.
     </para>
+    <note>
+     <simpara>
+      Zwei Elemente werden nur dann als gleich angesehen, wenn
+      <literal>(string) $elem1 === (string) $elem2</literal>. In Worten:
+      Wenn die String-Repräsentation die gleiche ist.
+     </simpara>
+     <simpara>
+      Das erste Element wird verwendet.
+     </simpara>
+    </note>
+    <warning>
+     <simpara>
+      Dies war in PHP 4.0.4 fehlerhaft!
+     </simpara>
+    </warning>
     <para>
      <example>
       <title><function>array_unique</function> example</title>
@@ -1490,26 +1532,21 @@ print_r($result);
      </example>
     </para>
     <para>
-     Beachten Sie, dass <function>array_unique</function> den Typ des
-     Wertes berücksichtigt. Dies ist normalerweise nicht so wichtig,
-     außer wenn Zahlen verglichen werden, welche unterschiedlichen
-     Typs sein können.  Dies könnte zu vewirrenden Ergebnissen führen:
-    </para>
-    <para>
      <example>
       <title><function>array_unique</function> und Typen</title>
       <programlisting role="php">
-$input = array (4,"3",3,"4",4,4);
+$input = array (4,"4","3",4,3,"3");
 $result = array_unique ($input);
-print_r($result);
-// Ausgabe :
-//Array
-//(
-//  [0] => 3
-//  [1] => 3
-//  [2] => 4
-//  [3] => 4
-//)
+var_dump($result);
+
+/* output:
+array(2) {
+   [0]=>
+   int(4)
+   [1]=>
+   string(1) "3"
+}
+*/
       </programlisting>
      </example>
     </para>
@@ -1632,7 +1669,9 @@ function array_values ($arr) {
       <funcdef>int <function>array_walk</function></funcdef>
       <paramdef>array <parameter>arr</parameter></paramdef>
       <paramdef>string <parameter>func</parameter></paramdef>
-      <paramdef>mixed <parameter>userdata</parameter></paramdef>
+      <paramdef>mixed 
+       <parameter><optional>userdata</optional></parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <simpara>
@@ -1752,10 +1791,10 @@ while (list ($key, $val) = each ($fruits)) {
     <para>
      <informalexample>
       <programlisting>
-fruits[a] = Zitrone
-fruits[d] = Orange
-fruits[b] = Banane
-fruits[c] = Apfel
+d = Zitrone
+a = Orange
+b = Banane
+c = Apfel
       </programlisting>
      </informalexample>
     </para>
@@ -1802,7 +1841,7 @@ fruits[c] = Apfel
      verwendet, bei denen die aktuelle Reihenfolge der Elemente
      bedeutend ist.
      <example>
-      <title><function>asort</function> example</title>
+      <title><function>asort</function></title>
       <programlisting role="php">
 $fruits = array ("d"=&gt;"Zitrone", "a"=&gt;"Orange", "b"=&gt;"Banane", "c"=&gt;"Apfel");
 asort ($fruits);
@@ -1819,10 +1858,10 @@ while (list ($key, $val) = each ($fruits)) {
     <para>
      <informalexample>
       <programlisting>
-fruits[c] = Apfel
-fruits[b] = Banane
-fruits[d] = Orange
-fruits[a] = Zitrone
+c = Apfel
+b = Banane
+a = Orange
+d = Zitrone
       </programlisting>
      </informalexample>
     </para>
@@ -1920,28 +1959,26 @@ $result = compact ("event", "nothing_here", $location_vars);
     </funcsynopsis>
     <para>
      Liefert die Anzahl von Elementen in <parameter>var</parameter>,
-     welche typischerweise ein Array ist (da alles andere ein Element
-     enthält).
+     welche typischerweise ein <type>Array</type> ist (da alles andere 
+     ein Element enthält).
     </para>
     <para>
-     Gibt 1 zurück, wenn die Variable kein Array ist.
+     Ist <parameter>var</parameter> kein Array, wird <literal>1</literal>
+     zurückgegeben (Ausnahme: <literal>count(&null;)</literal> ist gleich
+     <literal>0</literal>).
     </para>
-    <para>
-     Gibt 0 zurück, wenn die Variable nicht gesetzt, oder ein leeres
-     Array ist.
-     <warning>
-      <para>
-       <function>count</function> kann 0 zurückgeben wenn die Variable 
-       nicht gesetzt ist, aber sie könnte ebenfalls 0 zurückgeben, wenn 
-       eine Variable als leeres Array initialisiert wurde. Verwenden Sie 
-       <function>isset</function> um zu testen, ob eine Variable gesetzt 
-       ist.
-      </para>
-     </warning>
-    </para>
+    <warning>
+     <para>
+      <function>count</function> kann 0 zurückgeben wenn die Variable 
+      nicht gesetzt ist, aber sie könnte ebenfalls 0 zurückgeben, wenn 
+      eine Variable als leeres Array initialisiert wurde. Verwenden Sie 
+      <function>isset</function> um zu testen, ob eine Variable gesetzt 
+      ist.
+     </para>
+    </warning>
     <para>
      In der Sektion <link linkend="language.types.array">Arrays</link>
-     finden Sie eine detailierte Erklärung, wie Arrays in PHP
+     finden Sie eine detaillierte Erklärung, wie Arrays in PHP
      implementiert sind und wie sie benutzt werden.
     </para>
     <para>
@@ -2023,7 +2060,8 @@ $result = count ($b);
    <refnamediv>
     <refname>each</refname> 
     <refpurpose>
-     Liefert das nächste Paar (Schlüssel und Wert) eines Arrays
+     Liefert das aktuelle Paar (Schlüssel und Wert) eines Arrays und
+     rückt den Array Cursor vor   
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -2100,9 +2138,11 @@ while (list ($key, $val) = each ($HTTP_POST_VARS)) {
      </example>
     </para>
     <para>
-     Nachdem <function>each</function> ausgeführt wurde, bleibt der 
-     Array Cursor beim nächsten Element des Arrays, oder wenn am Ende 
-     des Arrays angelangt, bei dem letzten Element.
+     Nachdem <function>each</function> ausgeführt wurde, bleibt der
+     Array Cursor beim nächsten Element des Arrays, oder wenn am Ende
+     des Arrays angelangt, bei dem letzten Element. Sie müssen
+     <function>reset</function> verwenden, wenn Sie das Array erneut
+     mittels each durchgehen wollen.
     </para>
     <para>
      Siehe auch <function>key</function>, <function>list</function>,
@@ -2216,7 +2256,7 @@ while (list ($key, $val) = each ($HTTP_POST_VARS)) {
        <listitem>
         <simpara>
          Allen Variablennamen wird <parameter>prefix</parameter>
-         vorangestellt.  Seit PHP 4.0.5 gilt dies auch für numerische
+         vorangestellt. Seit PHP 4.0.5 gilt dies auch für numerische
          Schlüssel.
         </simpara>
        </listitem>
@@ -2381,7 +2421,7 @@ if (in_array(1.13, $a, TRUE))
       <funcdef>mixed <function>array_search</function></funcdef>
       <paramdef>mixed <parameter>needle</parameter></paramdef>
       <paramdef>array <parameter>haystack</parameter></paramdef>
-      <paramdef>bool <parameter>strict</parameter></paramdef>
+      <paramdef>bool <parameter><optional>strict</optional></parameter></paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
@@ -2390,8 +2430,8 @@ if (in_array(1.13, $a, TRUE))
      zurück, andernfalls &false;.
     </para>
     <para>
-     Ist der dritte Parameter <parameter>strict</parameter> auf 
-     &true; gesetzt, prüft <function>in_array</function>
+     Ist der optionale dritte Parameter <parameter>strict</parameter>
+     auf &true; gesetzt, prüft <function>in_array</function>
      auch dir Typen von <parameter>needle</parameter> in 
      <parameter>haystack</parameter>.
     </para>
@@ -2457,7 +2497,7 @@ $fruits = array ("d"=&gt;"Zitrone", "a"=&gt;"Orange", "b"=&gt;"Banane", "c"=&gt;
 krsort ($fruits);
 reset ($fruits);
 while (list ($key, $val) = each ($fruits)) {
-    echo "$key -&gt; $val\n";
+    echo "$key = $val\n";
 }
       </programlisting>
      </example>
@@ -2468,10 +2508,10 @@ while (list ($key, $val) = each ($fruits)) {
     <para>
      <informalexample>
       <programlisting>
-fruits[d] = Zitrone
-fruits[c] = Apfel
-fruits[b] = Banane
-fruits[a] = Orange
+d = Zitrone
+c = Apfel
+b = Banane
+a = Orange
       </programlisting>
      </informalexample>
     </para>
@@ -2516,7 +2556,7 @@ $fruits = array ("d"=&gt;"Zitrone", "a"=&gt;"Orange", "b"=&gt;"Banane", "c"=&gt;
 ksort ($fruits);
 reset ($fruits);
 while (list ($key, $val) = each ($fruits)) {
-    echo "$key -&gt; $val\n";
+    echo "$key = $val\n";
 }
       </programlisting>
      </example>
@@ -2527,10 +2567,10 @@ while (list ($key, $val) = each ($fruits)) {
     <para>
      <informalexample>
       <programlisting>
-fruits[a] = Orange
-fruits[b] = Banane
-fruits[c] = Apfel
-fruits[d] = Zitrone
+a = Orange
+b = Banane
+c = Apfel
+d = Zitrone
       </programlisting>
      </informalexample>     
     </para>
@@ -2855,13 +2895,13 @@ Array
      <example>
       <title><function>range</function> Beispiele</title>
       <programlisting role="php">
-foreach (range(0,9) as $number) {
+foreach(range(0, 9) as $number) {
     echo $number;
 }
-foreach (range('a','z') as $letter) {
+foreach(range('a', 'z') as $letter) {
     echo $letter;
 }
-foreach (range('z','a') as $letter) {
+foreach(range('z', 'a') as $letter) {
     echo $letter;
 }
       </programlisting>
@@ -2941,7 +2981,7 @@ $fruits = array ("Zitrone", "Orange", "Banane", "Apfel");
 rsort ($fruits);
 reset ($fruits);
 while (list ($key, $val) = each ($fruits)) {
-    echo "$key -&gt; $val\n";
+    echo "$key = $val\n";
 }
       </programlisting>
      </example>
@@ -2952,10 +2992,10 @@ while (list ($key, $val) = each ($fruits)) {
     <para>
      <informalexample>
       <programlisting>
-fruits[0] = Orange
-fruits[1] = Zitrone
-fruits[2] = Banane
-fruits[3] = Apfel
+0 = Zitrone
+1 = Orange
+2 = Banane
+3 = Apfel
       </programlisting>
      </informalexample>
     </para>
@@ -2997,7 +3037,7 @@ fruits[3] = Apfel
       <title><function>shuffle</function></title>
       <programlisting role="php">
 $numbers = range (1,20);
-srand ((double)microtime()*1000000);
+srand ((float)microtime()*1000000);
 shuffle ($numbers);
 while (list (, $number) = each ($numbers)) {
     echo "$number ";
@@ -3067,7 +3107,7 @@ $fruits = array ("Zitrone", "Orange", "Banane", "Apfel");
 sort ($fruits);
 reset ($fruits);
 while (list ($key, $val) = each ($fruits)) {
-    echo "fruits[".$key."] = ".$val; 
+    echo "fruits[".$key."] = ".$val."\n";
 }
  
 ?&gt;
@@ -3308,7 +3348,7 @@ while (list ($key, $value) = each ($a)) {
       </title>
       <programlisting role="php">
 function cmp ($a, $b) {
-    return strcmp($a["fruit"],$b["fruit"]);
+    return strcmp($a["fruit"], $b["fruit"]);
 } 
 
 $fruits[0]["fruit"] = "Zitronen";
@@ -3376,5 +3416,7 @@ sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
-vim: ts=1 sw=1 et syntax=sgml
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
