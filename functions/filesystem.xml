@@ -396,6 +396,33 @@ $df = diskfreespace("/"); // $df hält die Anzahl an freien Bytes
    </refsect1>
   </refentry>
 
+  <refentry id="function.fflush">
+   <refnamediv>
+    <refname>fflush</refname>
+    <refpurpose>Flushes the output to a file</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>fflush</function></funcdef>
+      <paramdef>int <parameter>fp</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     This function forces a write of all buffered output to the 
+     to the resource pointed to by the file handle 
+     <parameter>fp</parameter>. Returns true if succesful, false
+     otherwise.
+    </para>
+    <para>
+     The file pointer must be valid, and must point to a file
+     successfully opened by <function>fopen</function>,
+     <function>popen</function>, or <function>fsockopen</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.fgetc">
    <refnamediv>
     <refname>fgetc</refname>
@@ -1298,6 +1325,62 @@ fclose ($fd);
    </refsect1>
   </refentry>
 
+  <refentry id="function.fscanf">
+   <refnamediv>
+    <refname>fscanf</refname>
+    <refpurpose>Parses input from a file according to a format</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>mixed <function>fscanf</function></funcdef>
+      <paramdef>int <parameter>handle</parameter></paramdef>
+      <paramdef>string <parameter>format</parameter></paramdef>
+      <paramdef>string 
+       <parameter><optional>var1</optional></parameter>...
+      </paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     The function <function>fscanf</function> is similar to
+     <function>sscanf</function>, but it takes its input from a file
+     associated with <parameter>handle</parameter> and interprets the
+     input according to the specified
+     <parameter>format</parameter>. If only two parameters were passed
+     to this function, the values parsed will be returned as an array.
+     Otherwise, if optional parameters are passed, the function will
+     return the number of assigned values. The optional parameters
+     must be passed by reference.
+     <example>
+      <title><function>Fscanf</function> Example</title>
+      <programlisting role="php">
+$fp = fopen ("users.txt","r");
+while ($userinfo = fscanf ($fp, "%s\t%s\t%s\n")) {
+    list ($name, $profession, $countrycode) = $userinfo;
+    //... do something with the values
+}
+fclose($fp);
+      </programlisting>
+     </example>
+     <example>
+      <title>users.txt</title>
+      <programlisting>
+javier  argonaut        pe
+hiroshi sculptor        jp
+robert  slacker us
+luigi   florist it
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     See also <function>fread</function>, <function>fgets</function>,
+     <function>fgetss</function>, <function>sscanf</function>,
+     <function>printf</function>, and <function>sprintf</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.fseek">
    <refnamediv>
     <refname>fseek</refname>
@@ -1351,6 +1434,53 @@ fclose ($fd);
    </refsect1>
   </refentry>
 
+  <refentry id="function.fstat">
+   <refnamediv>
+    <refname>fstat</refname>
+    <refpurpose>
+     Gets information about a file using an open file pointer
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>fstat</function></funcdef>
+      <paramdef>int <parameter>fp</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Gathers the statistics of the file opened by the file
+     pointer fp.  This function is similar to the
+     <function>stat</function> function except that it operates
+     on an open file pointer instead of a filename.
+    </para>
+    <para>
+     Returns an array with the statistics of the file with the
+     following elements:
+     <orderedlist>
+      <listitem><simpara>device</simpara></listitem>
+      <listitem><simpara>inode</simpara></listitem>
+      <listitem><simpara>number of links</simpara></listitem>
+      <listitem><simpara>user id of owner</simpara></listitem>
+      <listitem><simpara>group id owner</simpara></listitem>
+      <listitem><simpara>device type if inode device *</simpara></listitem>
+      <listitem><simpara>size in bytes</simpara></listitem>
+      <listitem><simpara>time of last access</simpara></listitem>
+      <listitem><simpara>time of last modification</simpara></listitem>
+      <listitem><simpara>time of last change</simpara></listitem>
+      <listitem><simpara>blocksize for filesystem I/O *</simpara></listitem>
+      <listitem><simpara>number of blocks allocated</simpara></listitem>
+     </orderedlist>
+     * - only valid on systems supporting the st_blksize type--other
+     systems (i.e. Windows) return -1</para>
+    <para>
+     The results of this function are cached. See
+     <function>clearstatcache</function> for more details.
+    </para>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.ftell">
    <refnamediv>
     <refname>ftell</refname>
@@ -1383,6 +1513,29 @@ fclose ($fd);
      Siehe auch <function>fopen</function>,
      <function>popen</function>, <function>fseek</function> und
      <function>rewind</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.ftruncate">
+   <refnamediv>
+    <refname>ftruncate</refname>
+    <refpurpose>
+     Truncates a file to a given length.
+    </refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>int <function>ftruncate</function></funcdef>
+      <paramdef>int <parameter>fp</parameter></paramdef>
+      <paramdef>int <parameter>size</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     Takes the filepointer, fp, and truncates the file to length, size.
+     This function returns true on success and false on failure.
     </para>
    </refsect1>
   </refentry>
@@ -1669,6 +1822,48 @@ fclose ($fd);
    </refsect1>
   </refentry>
 
+  <refentry id="function.is-uploaded-file">
+   <refnamediv>
+    <refname>is_uploaded_file</refname>
+    <refpurpose>Tells whether the file was uploaded via HTTP POST.</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>is_uploaded_file</function></funcdef>
+      <paramdef>string <parameter>filename</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+
+    <para>
+     This function is available only in versions of PHP 3 after PHP
+     3.0.16, and in versions of PHP 4 after 4.0.2.
+    </para>
+
+    <para>
+     Returns true if the file named by <varname>filename</varname> was
+     uploaded via HTTP POST. This is useful to help ensure that a
+     malicious user hasn't tried to trick the script into working on
+     files upon which it should not be working--for instance,
+     <filename>/etc/passwd</filename>.
+    </para>
+
+    <para>
+     This sort of check is especially important if there is any chance
+     that anything done with uploaded files could reveal their
+     contents to the user, or even to other users on the same
+     system.
+    </para>
+
+    <para>
+     See also <function>move_uploaded_file</function>, and the section
+     <link linkend="features.file-upload">Handling file uploads</link>
+     for a simple usage example.
+    </para>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.link">
    <refnamediv>
     <refname>link</refname>
@@ -1767,6 +1962,117 @@ mkdir ("/path/to/my/dir", 0700);
     </para>
     <para>
      Siehe auch <function>rmdir</function>.
+    </para>
+   </refsect1>
+  </refentry>
+
+  <refentry id="function.move-uploaded-file">
+   <refnamediv>
+    <refname>move_uploaded_file</refname>
+    <refpurpose>Moves an uploaded file to a new location.</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>bool <function>move_uploaded_file</function></funcdef>
+      <paramdef>string <parameter>filename</parameter></paramdef>
+      <paramdef>string <parameter>destination</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+
+    <para>
+     This function is available only in versions of PHP 3 after PHP
+     3.0.16, and in versions of PHP 4 after 4.0.2.
+    </para>
+
+    <para>
+     This function checks to ensure that the file designated by
+     <parameter>filename</parameter> is a valid upload file (meaning
+     that it was uploaded via PHP's HTTP POST upload mechanism). If
+     the file is valid, it will be moved to the filename given by
+     <parameter>destination</parameter>.
+    </para>
+
+    <para>
+     If <parameter>filename</parameter> is not a valid upload file,
+     then no action will occur, and
+     <function>move_uploaded_file</function> will return
+     <literal>false</literal>. 
+    </para>
+
+    <para>
+     If <parameter>filename</parameter> is a valid upload file, but
+     cannot be moved for some reason, no action will occur, and
+     <function>move_uploaded_file</function> will return
+     <literal>false</literal>. Additionally, a warning will be issued.
+    </para>
+
+    <para>
+     This sort of check is especially important if there is any chance
+     that anything done with uploaded files could reveal their
+     contents to the user, or even to other users on the same
+     system.
+    </para>
+
+    <para>
+     See also <function>is_uploaded_file</function>, and the section
+     <link linkend="features.file-upload">Handling file uploads</link>
+     for a simple usage example.
+    </para>
+   </refsect1>
+  </refentry>
+
+
+  <refentry id="function.pathinfo">
+   <refnamediv>
+    <refname>pathinfo</refname>
+    <refpurpose>Returns information about a file path</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Description</title>
+    <funcsynopsis>
+     <funcprototype>
+      <funcdef>array <function>pathinfo</function></funcdef>
+      <paramdef>string <parameter>path</parameter></paramdef>
+     </funcprototype>
+    </funcsynopsis>
+    <para>
+     <function>pathinfo</function> returns an associative array
+     containing information about <parameter>path</parameter>.  The
+     following array elements are returned:
+     <parameter>dirname</parameter>, <parameter>basename</parameter>
+     and <parameter>extension</parameter>.
+    </para>
+    <para>
+     <example>
+      <title><function>pathinfo</function> Example</title>
+      <programlisting role="php">
+&lt;?php
+
+$path_parts = pathinfo("/www/htdocs/index.html");
+
+echo $path_parts["dirname"] . "\n";
+echo $path_parts["basename"] . "\n";
+echo $path_parts["extension"] . "\n";
+
+?&gt;
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Would produce:
+     <informalexample>
+      <programlisting>
+/www/htdocs
+index.html
+html
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     See also <function>dirname</function>,
+     <function>basename</function> and <function>realpath</function>.
     </para>
    </refsect1>
   </refentry>
