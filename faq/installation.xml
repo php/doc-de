@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.22 Maintainer: samesch Status: translation -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.24 Maintainer: samesch Status: translation -->
  <chapter id="faq.installation">
   <title>Installation</title>
   <titleabbrev>Installation</titleabbrev>
@@ -195,101 +195,113 @@ AddType application/x-httpd-php .php      /* fuer PHP 4 */
       eine RPM-Version von PHP 3 zu verwenden, lesen Sie weiter...
      </para>
      <para>
-      The RPM packagers are setting up the RPMS to install
-      without database support to simplify installations <emphasis>and</emphasis>
-      because RPMS use /usr/ instead of the standard /usr/local/ directory for
-      files. You need to tell the RPM spec file which databases to support
-      and the location of the top-level of your database server.
+      Um die Installation zu vereinfachen <emphasis>und</emphasis>
+      weil RPMs statt des Standardverzeichnisses /usr/local/ das
+      Verzeichnis /usr/ benutzen, konfigurieren die RPM-Paketbauer die
+      RPMs so, dass sie ohne Datenbank-Unterstützung installiert
+      werden. Sie müssen in der RPM spec Datei also angeben, welche
+      Datenbanken unterstützt werden sollen und wo sich die höchste
+      Verzeichnisebene Ihres Datenbank-Servers befindet.
      </para>
      <para>
-      This example will explain the process of adding support for the
-      popular MySQL database server, using the mod installation for Apache.
+      Dieses Beispiel erklärt die Vorgehensweise, mit der die
+      Unterstützung für den beliebten MySQL Datenbank-Server bei
+      gleichzeitiger Verwendung der Apache-Modul-Installation
+      hinzugefügt wird.
      </para>
      <para>
-      Of course all of this information can be adjusted for any database
-      server that PHP supports. We will assume you installed MySQL and Apache
-      completely with RPMS for this example as well.
+      Selbstverständlich kann die gesamte Information für jeden
+      Datenbank-Server angepasst werden, den PHP unterstützt. Es wird
+      bei diesem Beispiel davon ausgegangen, dass Sie MySQL und Apache
+      komplett mit RPMs installiert haben.
       <itemizedlist>
        <listitem>
-	      <para>
-         First remove mod_php3 : 
+        <para>
+         Entfernen Sie zuerst mod_php3 : 
          <programlisting>
 rpm -e mod_php3
          </programlisting>
-	      </para>
- 	     </listitem>
- 	     <listitem>
-	      <para>
-         Then get the source rpm and INSTALL it, NOT --rebuild
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Holen Sie sich dann das Source-RPM und INSTALLIEREN Sie es,
+         NICHT --rebuild
          <programlisting>
 rpm -Uvh mod_php3-3.0.5-2.src.rpm
          </programlisting>
-  	    </para>
- 	     </listitem>
- 	     <listitem>
-	      <para>
-	       Then edit the <filename>/usr/src/redhat/SPECS/mod_php3.spec</filename> file
-	      </para>
-	      <para>
-         In the %build section add the database support you want, and the path.
-	      </para>
-	      <para>
-         For MySQL  you would add
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Editieren Sie als Nächstes die Datei
+         <filename>/usr/src/redhat/SPECS/mod_php3.spec</filename>
+        </para>
+        <para>
+         Fügen Sie im %build Abschnitt die gewünschte
+         Datenbank-Unterstützung und den Pfad hinzu.
+        </para>
+        <para>
+         Für MySQL wäre das
          <programlisting>
 --with-mysql=/usr \
          </programlisting>
-         The %build section will look something like this:
+         Der %build Abschnitt sieht in etwa so aus:
          <programlisting>
-	./configure --prefix=/usr \
-	--with-apxs=/usr/sbin/apxs \
-	--with-config-file-path=/usr/lib \
-	--enable-debug=no \
-	--enable-safe-mode \
-	--with-exec-dir=/usr/bin \
-	--with-mysql=/usr \
-	--with-system-regex
+./configure --prefix=/usr \
+        --with-apxs=/usr/sbin/apxs \
+        --with-config-file-path=/usr/lib \
+        --enable-debug=no \
+        --enable-safe-mode \
+        --with-exec-dir=/usr/bin \
+        --with-mysql=/usr \
+        --with-system-regex
          </programlisting>
-	      </para>
- 	     </listitem>
- 	     <listitem>
-	      <para>
-	       Once this modification is made then build the binary rpm as follows:
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Nachdem Sie die Änderung vorgenommen haben, bauen Sie das
+         Binary-RPM folgendermaßen:
          <programlisting>
 rpm -bb /usr/src/redhat/SPECS/mod_php3.spec
          </programlisting>
-	      </para>
- 	     </listitem>
- 	     <listitem>
-	      <para>
-	       Then install the rpm
+        </para>
+       </listitem>
+       <listitem>
+        <para>
+         Dann installieren Sie das RPM
          <programlisting>
 rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
          </programlisting>
-	      </para>
- 	     </listitem>
+        </para>
+       </listitem>
       </itemizedlist>
-      Make sure you restart Apache, and you now have PHP 3 with MySQL support
-      using RPM's. Note that it is probably much easier to just build
-      from the distribution tarball of PHP 3 and follow the instructions in
-      <filename>INSTALL.REDHAT</filename> found in that distribution.
-   	 </para>
+      Wenn Sie nun den Apache neu starten, haben Sie PHP 3 mit
+      MySQL-Unterstützung unter Verwendung von RPMs. Beachten Sie,
+      dass es mit dem Tarball der PHP 3 Distribution unter Befolgen
+      der Anweisungen in <filename>INSTALL.REDHAT</filename>, das sich
+      in dieser Distribution befindet, wahrscheinlich wesentlich
+      einfacher zu bauen ist.
+     </para>
     </answer>
    </qandaentry>
 
    <qandaentry id="faq.installation.frontpage">
     <question>
      <para>
-      Unix: I patched Apache with the FrontPage extensions patch, and
-      suddenly PHP stopped working. Is PHP incompatible with the
-      Apache FrontPage extensions?
+      Unix: Ich habe Apache mit dem FrontPage-Erweiterungs-Patch
+      versehen und plötzlich funktioniert PHP nicht mehr. Ist PHP zur
+      FrontPage-Erweiterung für Apache inkompatibel?
      </para>
     </question>
     <answer>
      <para>
-      No, PHP works fine with the FrontPage extensions. The problem
-      is that the FrontPage patch modifies several Apache structures,
-      that PHP relies on. Recompiling PHP (using 'make clean ; make')
-      after the FP patch is applied would solve the problem.
+      Nein, PHP funktioniert bestens mit der FrontPage-Erweiterung.
+      Das Problem liegt darin, dass der FrontPage-Patch mehrere
+      Apache-Strukturen verändert, auf die sich PHP verlässt. Eine
+      Neuübersetzung von PHP (mittels 'make clean ; make'), nachdem
+      der Patch angewandt wurde, löst das Problem.
      </para>
     </answer>
    </qandaentry>
@@ -297,18 +309,20 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
    <qandaentry id="faq.installation.blankscreen">
     <question>
      <para>
-      Unix/Windows: I have installed PHP, but when I try to
-      access a PHP script file via my browser, I get a blank screen.
+      Unix/Windows: Ich habe PHP installiert, aber wenn ich versuche,
+      mit meinem Browser ein PHP-Script aufzurufen, erhalte ich eine
+      leere Seite.
      </para>
     </question>
     <answer>
      <para>
-      Do a 'view source' in the web browser and you will probably
-      find that you can see the source code of your PHP script.
-      This means that the web server did not send the script to
-      PHP for interpretation. Something is wrong with the server
-      configuration - double check the server configuration against
-      the PHP installation instructions.
+      Wenn Sie sich im Browser den Quelltext der Seite anschauen,
+      werden Sie vermutlich den Quellcode Ihres PHP-Scripts sehen
+      können. Das bedeutet, dass der Webserver das Script nicht zur
+      Interpretation an PHP übergeben hat. Mit Ihrer
+      Server-Konfiguration ist etwas nicht in Ordnung - überprüfen
+      Sie Ihre Server-Konfiguration nochmal genau anhand der
+      PHP-Installationsanleitung.
      </para>
     </answer>
    </qandaentry>
@@ -316,24 +330,26 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
    <qandaentry id="faq.installation.500error">
     <question>
      <para>
-      Unix/Windows: I have installed PHP, but when try to
-      access a PHP script file via my browser, I get a
-      server 500 error.
+      Unix/Windows: Ich habe PHP installiert, aber wenn ich versuche,
+      mit meinem Browser ein PHP-Script aufzurufen, erhalte ich vom
+      Server einen 500 Fehler.
      </para>
     </question>
     <answer>
      <para>
-      Something went wrong when the server tried to run PHP. To
-      get to see a sensible error message, from the command line,
-      change to the directory containing the PHP executable
-      (<filename>php.exe</filename> on Windows) and run
-      <literal>php -i</literal>. If PHP has any problems running,
-      then a suitable error message will be displayed which will
-      give you a clue as to what needs to be done next. If you
-      get a screen full of html codes (the output of the
-      <function>phpinfo</function> function) then PHP is working,
-      and your problem may be related to your server configuration
-      which you should double check.
+      Beim Versuch des Servers PHP zu starten ist etwas
+      schiefgegangen. Wechseln Sie auf der Kommandozeile
+      (in der Eingabeaufforderung) in das Verzeichnis, das die
+      ausführbare PHP-Datei (unter Windows
+      <filename>php.exe</filename>) enthält und lassen Sie
+      <literal>php -i</literal> laufen, um eine sinnvolle
+      Fehlermeldung zu bekommen. Falls PHP irgendwelche Probleme bei
+      der Ausführung hat, werden entsprechende Fehlermeldungen 
+      ausgegeben, die Ihnen Hinweise darauf liefern, was zu tun ist.
+      Falls sich der Bildschirm mit HTML-Quelltext füllt (die Ausgabe
+      der Funktion <function>phpinfo</function>), funktioniert PHP und
+      Ihr Problem könnte mit Ihrer Server-Konfiguration zusammen
+      hängen, die Sie dann nochmal genau überprüfen sollten.
      </para>
     </answer>
    </qandaentry>
@@ -341,21 +357,22 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
    <qandaentry id="faq.installation.undefinedsyms">
     <question>
      <para> 
-      Some operating systems: I have installed PHP without errors,
-      but when I try to start apache I get undefined symbol errors:
-      <programlisting>
+      Manche Betriebssysteme: Ich habe PHP ohne Fehlermeldungen
+      installiert, aber wenn ich versuche, Apache zu starten, erhalte
+      ich Fehler wegen undefinierter Symbole:
+            <programlisting>
 [mybox:user /src/php4] root# apachectl configtest
  apachectl: /usr/local/apache/bin/httpd Undefined symbols:
-  _compress
+  _compress  
   _uncompress
       </programlisting>
      </para>
     </question>
     <answer>
      <para>
-      This has actually nothing to do with PHP, but with the MySQL
-      client libraries. Some need --with-zlib, others do not. This
-      is also covered in the MySQL FAQ.
+      Das hat nichts mit PHP zu tun, sondern mit den
+      MySQL-Client-Bibliotheken. Manche benötigen --with-zlib, manche
+      nicht. Auf diese Frage wird in den MySQL FAQ eingegangen.
      </para>
     </answer>
    </qandaentry>
@@ -363,8 +380,9 @@ rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
    <qandaentry id="faq.installation.cgierror">
     <question>
      <para>
-      Windows: I have installed PHP, but when I to access
-      a PHP script file via my browser, I get the error:
+      Windows: Ich habe PHP installiert, aber wenn ich versuche,
+      mit meinem Browser ein PHP-Script aufzurufen, erhalte ich die
+      Fehlermeldung:
       <programlisting>
 cgi error:
  The specified CGI application misbehaved by not
@@ -375,42 +393,45 @@ cgi error:
     </question>
     <answer>
      <para>
-      This error message means that PHP failed to output anything
-      at all. To get to see a sensible error message, from the
-      command line, change to the directory containing the PHP
-      executable (<filename>php.exe</filename> on Windows) and run
-      <literal>php -i</literal>. If PHP has any problems running,
-      then a suitable error message will be displayed which will
-      give you a clue as to what needs to be done next. If you
-      get a screen full of html codes (the output of the
-      <function>phpinfo</function> function) then PHP is working.
+      Diese Fehlermeldung bedeutet, dass PHP daran gescheitert ist,
+      überhaupt irgendwas auszugeben. Wechseln Sie auf der
+      Kommandozeile (in der Eingabeaufforderung) in das Verzeichnis,
+      das die ausführbare PHP-Datei (unter Windows
+      <filename>php.exe</filename>) enthält und lassen Sie
+      <literal>php -i</literal> laufen, um eine sinnvolle
+      Fehlermeldung zu bekommen. Falls PHP irgendwelche Probleme bei
+      der Ausführung hat, werden entsprechende Fehlermeldungen
+      ausgegeben, die Ihnen Hinweise darauf liefern, was zu tun ist.
+      Falls sich der Bildschirm mit HTML-Quelltext füllt (die Ausgabe
+      der Funktion <function>phpinfo</function>), funktioniert PHP.
      </para>
      <para>
-      Once PHP is working at the command line, try accessing the
-      script via the browser again. If it still fails then it
-      could be one of the following:
+      Funktioniert PHP erst mal auf der Kommandozeile, versuchen Sie
+      nochmal, das Script mit dem Browser aufzurufen. Falls das immer
+      noch misslingt, könnte das eine der folgenden Ursachen haben:
      </para>
      <itemizedlist>
       <listitem>
        <simpara>
-        File permissions on your PHP script,
+        Die Zugriffsberechtigungen Ihres PHP-Scripts, Ihrer
         <filename>php.exe</filename>, <filename>php4ts.dll</filename>,
-        &php.ini; or any PHP extensions you are trying to load are such
-        that the anonymous internet user
-        <literal>ISUR_&lt;machinename&gt;</literal> cannot access them.
+        &php.ini; oder irgendeiner PHP-Erweiterung die Sie versuchen
+        zu laden, sind für den anonymen Internetbenutzer
+        <literal>ISUR_&lt;machinename&gt;</literal> nicht ausreichend.
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-        The script file does not exist (or possibly isn't where you
-        think it is relative to your web root directory). Note that
-        for IIS you can trap this error by ticking the 'check file
-        exists' box when setting up the script mappings in the
-        Internet Services Manager. If a script file does not exist
-        then the server will return a 404 error instead. There is
-        also the additional benefit that IIS will do any
-        authentication required for you based on the NTLanMan
-        permissions on your script file.
+        Die Scriptdatei existiert nicht (oder ist vielleicht, bezogen
+        auf Ihr Web-Wurzelverzeichnis, nicht da, wo Sie denken).
+        Beachten Sie, dass Sie beim IIS diesen Fehler aufspüren
+        können, wenn Sie im Internet Services Manager beim Einstellen
+        der script mappings die Option 'check file exists' ankreuzen.
+        Falls dann eine Scriptdatei nicht existiert gibt der Server
+        stattdessen einen 404 Fehler zurück. Das hat außerdem den
+        zusätzlichen Vorteil, dass der IIS die erforderlichen
+        Authentisierungen an Ihrem Script auf Grundlage der
+        NTLanMan-Berechtigungen für Sie durchführt.
        </simpara>
       </listitem>
      </itemizedlist>
@@ -420,20 +441,23 @@ cgi error:
    <qandaentry id="faq.installation.phpandiis">
     <question>
      <para>
-      Windows: I've followed all the instructions, but still can't
-      get PHP and IIS to work together!
+      Windows: Ich habe alle Anweisungen befolgt, aber ich erreiche
+      keine Zusammenarbeit zwischen PHP und den IIS.
      </para>
     </question>
     <answer>
      <para>
-      Make sure any user who needs to run a PHP script has the rights
-      to run <filename>php.exe</filename>! IIS uses an anonymous user
-      which is added at the time IIS is installed. This user needs
-      rights to <filename>php.exe</filename>. Also, any authenticated
-      user will also need rights to execute <filename>php.exe</filename>.
-      And for IIS4 you need to tell it that PHP is a script engine.
-      Also, you will want to read <link
-      linkend="faq.installation.forceredirect">this faq</link>.
+      Stellen Sie sicher, dass jeder Benutzer, der ein PHP-Script
+      ausführt, die Berechtigung hat <filename>php.exe</filename>
+      auzuführen! Der IIS verwendet den Benutzer anonymous, der bei
+      der Installation des IIS hinzugefügt wird. Dieser Benutzer
+      benötigt die entsprechenden Berechtigungen für
+      <filename>php.exe</filename>. Außerdem benötigt auch jeder
+      angemeldete Benutzer die Berechtigung
+      <filename>php.exe</filename> auszuführen. Dem IIS4 müssen Sie
+      mitteilen, dass PHP eine Script-Engine ist. Lesen Sie auch
+      <link
+      linkend="faq.installation.forceredirect">diese FAQ</link>.
      </para>
     </answer>
    </qandaentry>
@@ -441,24 +465,26 @@ cgi error:
    <qandaentry id="faq.installation.forceredirect">
     <question>
      <para>
-       When running PHP as CGI with IIS, PWS, OmniHTTPD or Xitami,
-       I get the following error: <literal>Security Alert! PHP CGI
-       cannot be accessed directly.</literal>.
+       Wenn Ich PHP mit IIS, PWS, OmniHTTPD oder Xitami als CGI laufen
+       lasse, bekomme ich die folgende Fehlermeldung:
+       <literal>Security Alert! PHP CGI cannot be accessed
+       directly.</literal>.
      </para>
     </question>
     <answer>
      <para>
-      You must set the <link linkend="ini.cgi.force-redirect">
-      cgi.force_redirect</link> directive to <literal>0</literal>.
-      It defaults to <literal>1</literal> so be sure the directive
-      isn't commented out (with a <literal>;</literal>).  Like
-      all directives, this is set in &php.ini;
+      Sie müssen die <link linkend="ini.cgi.force-redirect">
+      cgi.force_redirect</link>-Anweisung auf <literal>0</literal>
+      setzen. Weil diese Anweisung standardmäßig auf
+      <literal>1</literal> gesetzt ist, müssen Sie darauf achten, dass
+      sie nicht mit einem <literal>;</literal> auskommentiert ist. Wie
+      alle Anweisungen wird auch diese in der &php.ini; gesetzt.
      </para>
      <para>
-      Because the default is <literal>1</literal>, it's critical
-      that you're 100% sure that the correct &php.ini; file is being
-      read.  Read <link linkend="faq.installation.findphpini">this faq</link>
-      for details.
+      Wegen des standardmäßigen Werts von <literal>1</literal> ist es
+      äußerst wichtig sicherzustellen, dass die richtige &php.ini;
+      gelesen wird. Lesen Sie für Einzelheiten <link
+      linkend="faq.installation.findphpini">diese FAQ</link>.
      </para>
     </answer>
    </qandaentry>
@@ -466,25 +492,26 @@ cgi error:
    <qandaentry id="faq.installation.findphpini">
     <question>
      <para>
-      How do I know if my &php.ini; is being found and read?  It
-      seems like it isn't as my changes aren't being implemented.
+      Wie kann ich herausfinden, ob meine &php.ini; gefunden und
+      gelesen wird? Anscheinend ist das nicht der Fall, weil meine
+      Änderungen nicht übernommen werden.
      </para>
     </question>
     <answer>
      <para>
-      To be sure your &php.ini; is being read by PHP, make a call to
-      <function>phpinfo</function> and near the top will be a
-      listing called <literal>Configuration File (php.ini)</literal>.
-      This will tell you where PHP is looking for &php.ini; and
-      whether or not it's being read.  If just a directory PATH exists
-      than it's not being read and you should put your &php.ini;
-      in that directory.  If &php.ini; is included within the PATH than
-      it is being read.
+      Rufen Sie <function>phpinfo</function> auf, um zu überprüfen, ob
+      Ihre &php.ini; von PHP gelesen wird. Fast ganz oben gibt es
+      einen Punkt namens <literal>Configuration File
+      (php.ini)</literal>. Dort können Sie feststellen, wo PHP nach
+      der &php.ini; sucht und ob sie gelesen wird oder nicht. Falls es
+      dort nur einen VerzeichnisPFAD gibt, wird sie nicht gelesen und
+      Sie sollten Ihre &php.ini; in dieses Verzeichnis legen. Falls der
+      Pfad die &php.ini; beinhaltet, dann wird sie auch gelesen.
      </para>
      <para>
-      If &php.ini; is being read and you're running PHP as a module,
-      then be sure to restart your web server after making changes to
-      &php.ini;
+      Wenn Ihre &php.ini; gelesen wird und Sie PHP als Modul benutzen,
+      müssen Sie Ihren Webserver neu starten, nachdem Sie Änderungen
+      an der &php.ini; vorgenommen haben.
      </para>
     </answer>
    </qandaentry>
