@@ -1,54 +1,104 @@
  <reference id="ref.sem">
-  <title>Semaphore and Shared Memory Functions</title>
+  <title>Semaphor und Shared Memory Funktionen</title>
   <titleabbrev>Semaphore</titleabbrev>
 
   <partintro>
    <para>
-    This module provides semaphore functions using System V
-    semaphores.  Semaphores may be used to provide exclusive access to
-    resources on the current machine, or to limit the number of
-    processes that may simultaneously use a resource.
+	  Dieses Modul bietet Unterstützung für die Nutzung von Semaphoren
+    und gemeinamen Speichersegmenten mit Hilfe der UNIX System V
+    Mechanismen zur Interprozess-Kommunikation.
+	 </para>
+   <para>
+    Mit Hilfe von Semaphoren kann der exklusive Zugriff auf Resourcen
+    eines Systems sichergestellt oder die Anzahl der Prozesse begrenzt
+    werden, die gleichzeitig eine bestimmte Systemresource nutzen.
    </para>
    <para>
-    This module provides also shared memory functions using System V
-    shared memory. Shared memory may be used to provide access to
-    global variables. Different httpd-daemons and even other programs
-    (such as Perl, C, ...) are able to access this data to provide a
-    global data-exchange. Remember, that shared memory is NOT safe
-    against simultaneous access. Use semaphores for synchronization.
+	  Mit Hilfe gemeinsamer Speichersegmente (shared memory) können 
+    system-globale Variablen angelegt und bereitgestellt werden. 
+    Diese Speicherbereiche stehen allen Prozessen des Systems,
+    insbesondere aber allen parallel laufenden PHP-Instanzen 
+    zum Datenaustausch zur Verfügung. Beachten Sie bitte, das gemeinsame
+    Speichersegmente keinen Schutze vor konkurierenden gleichzeitigen
+    Zugriffen bieten. Benutzen Sie Semaphore für die Koordination
+    solcher Zugriffe.
+	 </para>
+	 <para>
     <table>
      <title>Limits of Shared Memory by the Unix OS</title>
      <tgroup cols="2">
       <tbody>
        <row>
-	<entry>SHMMAX</entry> 
-	<entry>max size of shared memory, normally 131072 bytes</entry>
+			  <entry>SHMMAX</entry> 
+			  <entry>
+				 Maximalgröße eines gemeinsamen Speicherbereichs, 
+         üblich sind 131072 Byte (128KB)
+        </entry>
        </row>
        <row>
-	<entry>SHMMIN</entry>
-	<entry>minimum size of shared memory, normally 1 byte</entry>
+			  <entry>SHMMIN</entry>
+			  <entry>
+				 Minimalgröße eines gemeinsamen Speicherbereichs,
+				 normalerweise 1 Byte
+			  </entry>
        </row>
        <row>
-	<entry>SHMMNI</entry> 
-	<entry>max amount of shared memory segments, normally 100</entry>
+			  <entry>SHMMNI</entry> 
+			  <entry>
+				 maximale Anzahl unterschiedlicher Speichersegmente,
+				 üblich sind 100
+			  </entry>
        </row>
        <row>
-	<entry>SHMSEG</entry>
-	<entry>max amount of shared memory per process, normally 6</entry>
+			  <entry>SHMSEG</entry>
+			  <entry>
+				 Anzahl der Speichersegmente, die ein einzelner Prozess
+         einbinden darf, üblich sind 6
+			  </entry>
        </row>
       </tbody>
      </tgroup>
     </table>
+   </para>
+   <para>
+    <example>
+		 <title>Koordinierter Zugriff auf gemeinsamen Speicher</title>
+      <programlisting role="php">
+&lt;?php
+// gemeinsames Speichersegment beschaffen
+if(! ($mkey = shm_attach(0x2328,1024,OctDec("666")))) 
+{ echo "shmem_attach fehlgeschlagen&lt;br>\n"; exit;}
+
+// Semaphor für Zugriffskoordination auf 
+// Speichersegment beschaffen
+if(! ($skey = sem_get(0x2328,1,OctDec("666")))) 
+{ echo "sem_get fehlgeschlagen&lt;br>\n"; exit;}
+
+// Zugriff anfordern
+if(! sem_acquire($skey))
+{ echo "sem_acquire fehlgeschlagen&lt;br>\n"; exit;}
+
+// Wert lesen, aktualisieren und schreiben
+$val = @shm_get_var($mkey,1);
+if($val===false) $val=1; else $val++;
+print "new value is $val&lt;br>\n";
+shm_put_var($mkey,1,$val);
+
+// Zugriff freigeben
+sem_release($skey);
+?&gt;
+     </programlisting>
+    </example>
    </para>
   </partintro>
 
   <refentry id="function.sem-get">
    <refnamediv>
     <refname>sem_get</refname>
-    <refpurpose>Get a semaphore id</refpurpose>
+    <refpurpose>Liefert ein Semaphore-Handle</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>sem_get</function></funcdef>
      <paramdef>int <parameter>key</parameter></paramdef>
@@ -60,25 +110,38 @@
      </paramdef>
     </funcsynopsis>
     <para>
-     Returns: A positive semaphore identifier on success, or false on
-     error.
+     Diese Funktion liefert ein Handle, das für den Zugriff auf das
+     Semaphore mit der Kennung <parameter>key</parameter> benutzt 
+     werden kann. 
     </para>
     <para>
-     <function>Sem_get</function> returns an id that can be used to
-     access the System V semaphore with the given key.  The semaphore
-     is created if necessary using the permission bits specified in
-     perm (defaults to 0666).  The number of processes that can
-     acquire the semaphore simultaneously is set to max_acquire
-     (defaults to 1).  Actually this value is set only if the process
-     finds it is the only process currently attached to the semaphore.
+		 Falls noch kein Semaphore mit dieser Kennung existiert, so wird
+     es neu angelegt. Die maximale Anzahl der gleichzeitig möglichen
+     Anforderungen und die Zugriffsrechte werden dabei über die Parameter 
+		 <parameter>max_aquire</parameter> und <function>Sem_get</function> 
+		 festgelegt.
+		</para>
+	  <para>
+		 Wird der angeforderte Semaphore zum Zeitpunkt des Aufrufs von keiner
+		 anderen Funktion genutzt, so kann über den optionalen Parameter
+     <parameter>max_aquire</parameter> die Anzahl der gelichzeitig 
+		 möglichen Anforderungen neu festgelegt werden, anderenfalls bleibt
+     der ursprüngliche Wert erhalten.
     </para>
     <para>
-     A second call to <function>sem_get</function> for the same key
-     will return a different semaphore identifier, but both
-     identifiers access the same underlying semaphore.
-    </para>  
+     Ein zweiter Aufruf der Funktion mit demselben 
+     <parameter>key</parameter> liefert ein weiteres, von dem ersten
+     verschiedenes, Handle, das aber trotzdem denselben darunterliegenden
+		 Semaphore anspricht.
+    </para>
+	  <para> 
+		 Wenn kein Semaphore mit der Kennung <parameter>key</parameter> 
+     angelegt werden kann oder die Rechte für den Zugriff auf einen 
+		 bestehendennicht ausreichen, so ist das Ergebnis
+     dieser Funktion der Wert FALSE.
+		</para>
     <para> 
-     See also: <function>sem_acquire</function> and
+     Siehe auch <function>sem_acquire</function> und
      <function>sem_release</function>.
     </para>
    </refsect1>
@@ -87,61 +150,69 @@
   <refentry id="function.sem-acquire">
    <refnamediv>
     <refname>sem_acquire</refname>
-    <refpurpose>Acquire a semaphore</refpurpose>
+    <refpurpose>Zugriff auf einen Semaphore anfordern</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>sem_acquire</function></funcdef>
      <paramdef>int <parameter>sem_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Returns: true on success, false on error.
-    </para>
+		 <function>sem_acquire</function> blockiert die Ausführung (falls
+     notwendig) solange, bis eine Anforderung eines Semaphores 
+     durchgeführt werden kann, d.h. solange die Anzahl der 
+		 gleichzeitigen Anforderungen bereits der maximalen Anzahl 
+		 entspricht.
+		</para>
     <para>
-     <function>Sem_acquire</function> blocks (if necessary) until the
-     semaphore can be acquired.  A process attempting to acquire a
-     semaphore which it has already acquired will block forever
-     if acquiring the semaphore would cause its max_acquire value to
-     be exceeded.
-    </para>
+		 Wird ein erfolgreich angeforderter Sempahore innerhalb eines
+     Requests nicht wieder freigegeben, so erfolgt die Freigabe
+		 nach Abarbeitung des Requests automatisch und es wird eine
+		 Warnung ausgegeben.
+		</para>
     <para>
-     After processing a request, any semaphores acquired by the
-     process but not explicitly released will be released automatically
-     and a warning will be generated.
+		 Diese Funktion liefert TRUE bei Erfolg und FALSE, wenn eine
+     Anforderung des Semaphores wegen eines Fehlers nicht möglich
+     ist.
     </para>
     <para> 
-     See also: <function>sem_get</function> and
+     Siehe auch <function>sem_get</function> und
      <function>sem_release</function>.
     </para>
+	  <warning>
+	   <para>
+		  Wird ein Semaphore ein zweites mal während desselben Request
+      angefordert, ohne zwischenzeitlich freigegeben worden zu 
+      sein, so kann dies dazu führen, das die weitere Ausführung
+      dieses Requests nicht mehr möglich ist.
+     </para>
+		</warning>
    </refsect1>
   </refentry>
 
   <refentry id="function.sem-release">
    <refnamediv>
     <refname>sem_release</refname>
-    <refpurpose>Release a semaphore</refpurpose>
+    <refpurpose>Freigabe eines angeforderten Semaphores</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>sem_release</function></funcdef>
      <paramdef>int <parameter>sem_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Returns: true on success, false on error.
+     <function>Sem_release</function> gibt einen zuvor angeforderten
+     Semaphore wieder frei. Die Anforderung und Freigabe kann 
+     innerhalb eines Prozesses mehrfach hintereinander erfolgen.
     </para>
     <para>
-     <function>Sem_release</function> releases the semaphore if it
-     is currently acquired by the calling process, otherwise
-     a warning is generated.
-    </para>
-    <para>
-      After releasing the semaphore, <function>sem_acquire</function>
-      may be called to re-acquire it.
+		 Die Funktion liefert TRUE, wenn ein angeforderter Semaphore
+     erfolgreich freigegeben wurde, ansonsten FALSE.
     </para>
     <para> 
-     See also: <function>sem_get</function> and
+     Siehe auch <function>sem_get</function> und
      <function>sem_acquire</function>.
     </para>
    </refsect1>
@@ -150,10 +221,12 @@
   <refentry id="function.shm-attach">
    <refnamediv>
     <refname>shm_attach</refname>
-    <refpurpose>Creates or open a shared memory segment</refpurpose>
+    <refpurpose>
+		 Anlegen oder anbinden eines gemeinsamen Speichersegments
+	  </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>shm_attach</function></funcdef>
      <paramdef>int <parameter>key</parameter></paramdef> 
@@ -165,39 +238,55 @@
      </paramdef>
     </funcsynopsis>
     <para>
-     <function>Shm_attach</function> returns an id that that can be
-     used to access the System V shared memory with the given key, the
-     first call creates the shared memory segment with mem_size
-     (default: sysvshm.init_mem in the <link
-     linkend="configuration.file">configuration file</link>, otherwise
-     10000 bytes) and the optional perm-bits (default: 0666).
+		 <function>shm_attach</function> gibt ein Handle für den Zugriff
+     auf den gemeinsamen Speicherbereich mit der Kennung 
+     <parameter>key</parameter> zurück. 
+		</para>
+	  <para>
+		 Falls noch kein Bereich mit dieser Kennung existiert, so wird er 
+		 mit einer Größe von <parameter>memsize</parameter> Byte (Vorgabe 
+		 ist der Parameter <parameter>sysvshm.init_mem</parameter> aus der 
+		 <link linkend="configuration.file">Konfigurationsdatei</link>
+     bzw. 10000 Byte) und den Zugriffsberechtigungen gemäß
+     <parameter>perm</parameter> (Vorgabe ist der Wert 0666, der
+     Lese- und Schreibzugriffe für alle Benutzer gestattet) an.
     </para>
     <para>
-     A second call to <function>shm_attach</function> for the same
-     <parameter>key</parameter> will return a different shared memory
-     identifier, but both identifiers access the same underlying
-     shared memory. <parameter>Memsize</parameter> and
-     <parameter>perm</parameter> will be ignored.
+     Ein zweiter Aufruf der Funktion mit demselben 
+     <parameter>key</parameter> liefert ein weiteres, von dem ersten
+     verschiedenes, Handle, das aber trotzdem denselben gemeinsamen
+     Speicherbereich anspricht.
     </para>
+	  <para> 
+		 Wenn kein Bereich mit der Kennung <parameter>key</parameter> 
+     angelegt werden kann oder die Rechte für den Zugriff auf ein 
+		 bestehendes Segment nicht ausreichen, so ist das Ergebnis
+     dieser Funktion der Wert FALSE.
+		</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.shm-detach">
    <refnamediv>
     <refname>shm_detach</refname>
-    <refpurpose>Disconnects from shared memory segment</refpurpose>
+    <refpurpose>
+     Beenden der Anbindung an ein gemeinsames Speichersegment
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>shm_detach</function></funcdef>
      <paramdef>int <parameter>shm_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-     <function>Shm_detach</function> disconnects from the shared
-     memory given by the <parameter>shm_identifier</parameter> created
-     by <function>shm_attach</function>. Remember, that shared memory
-     still exist in the Unix system and the data is still present.
+     <function>Shm_detach</function> beendet die Anbindung eines
+     gemeinsamen Speicherbreichs mit dem Handle 
+		 <parameter>shm_identifier</parameter>, das zuvor über 
+		 <function>shm_attach</function> angebunden wurde. 
+		 Das Segment an sich und die darin enthaltenen Daten bleiben
+     erhalten und stehen nach erneuter Anbindung in diesem oder
+     einem anderen Prozess wieder zur Verfügung.
     </para>
    </refsect1>
   </refentry>
@@ -205,17 +294,24 @@
   <refentry id="function.shm-remove">
    <refnamediv>
     <refname>shm_remove</refname> 
-    <refpurpose>Removes shared memory from Unix systems</refpurpose>
+    <refpurpose>Entfernt ein gemeinsames Speichersegment</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>shm_remove</function></funcdef>
-     <paramdef>int <parameter>shm_identifier</parameter></paramdef>
+     <paramdef>int <parameter>key</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Removes shared memory from Unix systems. All data will be
-     destroyed.
+		 Diese Funktion gibt ein gemeinsames Speichersegment wieder
+     frei, dabei gehen alle Daten innerhalb des Segmentes
+     verloren.
+    </para>
+    <para>
+		 Diese Funktion liefert TRUE, wenn das Segment erfolgreich 
+		 entfernt wurde, oder FALSE, wenn kein Segment mit der Kennung 
+     <parameter>key</parameter> existierte oder die Zugriffsrechte
+     auf ein bestehendes Segment nicht für ein Löschen ausreichen.
     </para>
    </refsect1>
   </refentry>
@@ -223,11 +319,13 @@
   <refentry id="function.shm-put-var">
    <refnamediv>
     <refname>shm_put_var</refname> 
-    <refpurpose>Inserts or updates a variable in shared
-     memory</refpurpose>
+    <refpurpose>
+		 Aktualisiert einen in einem gemeinsamen Speicherbereich
+	   angelegten Wert.
+    </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>shm_put_var</function></funcdef>
      <paramdef>int <parameter>shm_identifier</parameter></paramdef>
@@ -235,9 +333,18 @@
      <paramdef>mixed <parameter>variable</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Inserts or updates a <parameter>variable</parameter> with a given
-     <parameter>variable_key</parameter>. All variable-types (double,
-     int, string, array) are supported.
+		 Diese Funktion weist einer Variable mit der Kennung 
+		 <parameter>variable_key</parameter>
+     in einem gemeinsamen Speichersegment den Wert von
+		 <parameter>variable</parameter> zu, beim ersten Zugriff wird 
+     <parameter>variable_key</parameter> neu angelegt.
+		</para>
+	  <para>
+		 Diese Funktion liefert FALSE zurück, wenn der verbleibende
+     Speicherplatz im angegebenen Segment 
+     <parameter>shm_identifier</parameter> zur Aufnahme des Wertes
+     von <parameter>variable</parameter> nicht mehr ausreicht,
+     ansonsten TRUE.
     </para> 
    </refsect1>
   </refentry>
@@ -245,20 +352,24 @@
   <refentry id="function.shm-get-var">
    <refnamediv>
     <refname>shm_get_var</refname> 
-    <refpurpose>Returns a variable from shared memory
+    <refpurpose>
+		 Liest einen in einem gemeinsamen Speicherbereich
+	   angelegten Wert.
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>mixed <function>shm_get_var</function></funcdef>
      <paramdef>int <parameter>id</parameter></paramdef>
      <paramdef>int <parameter>variable_key</parameter></paramdef>
     </funcsynopsis>
     <para>
-     <function>Shm_get_var</function> returns the variable with a given
-     <parameter>variable_key</parameter>. The variable is still present
-     in the shared memory.
+     <function>Shm_get_var</function> liefert den Wert mit der Kennung
+     <parameter>variable_key</parameter> aus einem gemeinsamen 
+		 Speicherbereich. Der Wert im gemeinsamen Speicher bleibt weiter 
+     vorhanden. Existiert kein Wert mit der angegebenen Kennung, 
+     so wird eine Warnung erzeugt und FALSE zurückgegeben.
     </para>
    </refsect1>
   </refentry>
@@ -266,20 +377,29 @@
   <refentry id="function.shm-remove-var">
    <refnamediv>
     <refname>shm_remove_var</refname> 
-    <refpurpose>Removes a variable from shared memory
+    <refpurpose>
+		 Entfernt einen in einem gemeinsamen Speicherbereich
+	   angelegten Wert.
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>shm_remove_var</function></funcdef>
      <paramdef>int <parameter>id</parameter></paramdef>
      <paramdef>int <parameter>variable_key</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Removes a variable with a given <parameter>variable_key</parameter>
-     and frees the occupied memory.
+     Diese Funktion entfernt den Wert mit der Kennung 
+     <parameter>variable_key</parameter> aus einem gemeinsamen
+     Speichersegment und stellt den hiervon genutzten Speicher 
+		 innerhalb des egmentes wieder zur Verfügung.
     </para>
+    <para>
+		 Diese Funktion liefert TRUE bei Erfolg und FALSE, falls kein
+     Wert mit der Kennung <parameter>variable_key</parameter> im
+		 Speichersegment angelegt war.
+	  </para>
    </refsect1>
   </refentry>
 
