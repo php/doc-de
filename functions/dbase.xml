@@ -1,103 +1,100 @@
  <reference id="ref.dbase">
-  <title>dBase functions</title>
+  <title>dBase Funktionen</title>
   <titleabbrev>dBase</titleabbrev>
 
   <partintro>
    <simpara>
-    These functions allow you to access records stored in dBase-format
-    (dbf) databases.</simpara>
+    Diese Funktionen erlauben ihnen den Zugriff auf Datensätze, die im dBase-Format (also in dBase-Datenbanken)
+    (dbf) vorliegen.</simpara>
    <simpara>
-    There is no support for indexes or memo fields. There is no support
-    for locking, too. Two concurrent webserver processes modifying the
-    same dBase file will very likely ruin your database.</simpara>
+    Es gibt keine Unterstützug für Indizes oder Memo-Felder. Auch Sperrfunktionen für Datensätze / -banken
+    sind nicht vorhanden. Zwei gleichzeitig ablaufende Webserver-Prozesse, die die selbe dBase-Datei bearbeiten,
+    werden ihre Datenbank zerstören.</simpara>
    <simpara>
-    Unlike SQL databases, dBase "databases" cannot change the database
-    definition afterwards.  Once the file is created, the database
-    definition is fixed. There are no indexes that speed searching or
-    otherwise organize your data. dBase files are simple sequential
-    files of fixed length records. Records are appended to the end of
-    the file and delete records are kept until you call
-    <function>dbase_pack()</function>.</simpara>
+    Anders als bei SQL-Datenbanken können in dBase-"Datenbanken" die Felddefinitionen nicht 
+    nachträglich geändert werden. Nachdem die dbf-Datei erzeugt wurde, sind die Definitionen
+    festgelegt. Es werden keine Index-Funktionen unterstützt, die Abfragen beschleunigen oder
+    etwa ihre Datenorganisation unterstützen. dBase-Dateien sind einfache sequentielle Dateien
+    mit fester Datensatzlänge. Neue Datensätze werden am Dateiende angehängt und
+    gelöschte Datensätze werden beibehalten, bis sie <function>dbase_pack()</function> aufrufen.</simpara>
    <simpara>
-    We recommend that you do not use dBase files as your production
-    database. Choose any real SQL server instead; MySQL or Postgres
-    are common choices with PHP. dBase support is here to allow you
-    to import and export data to and from your web database, since the
-    file format is commonly understood with Windows spreadsheets
-    and organizers. Import and export of data is about all that
-    dBase support is good for.</simpara>
+    Wir empfehlen, keine Produktions-DBF-Datenbanken zu benutzen. Wählen sie zur Nutzung von Produktions-
+    Daten mit PHP nur echte SQL-Server-Datenbanken; MySQL oder Postgres sind dabei eine gute Wahl.
+    dBase-Unterstützung durch PHP dient hauptsächlich dem Im- und Export von Daten 
+    zu oder aus ihrer Web-Datenbank, wobei das DBF-Datei-Format vor allem wegen der Windows-Tabellenkalulationen
+    und -Organizer unterstützt wird. Im- und Export ist der einzige Grund für die dBase-Unterstützung
+    durch PHP.</simpara>
   </partintro>
 
   <refentry id="function.dbase-create">
    <refnamediv>
     <refname>dbase_create</refname>
-    <refpurpose>creates a dBase database</refpurpose>
+    <refpurpose>Erzeugt eine dBase-Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>dbase_create</function></funcdef>
      <paramdef>string <parameter>filename</parameter></paramdef>
      <paramdef>array <parameter>fields</parameter></paramdef>
     </funcsynopsis>
     <para>
-	The <parameter>fields</parameter> parameter is an array of
-	arrays, each array describing the format of one field in the
-	database. Each field consists of a name, a character
-	indicating the field type, a length, and a precision.</para>
+	Der <parameter>fields</parameter>-Parameter ist ein Array, bestehend aus
+	Arrays. Jedes Array beschreibt das Format eines Feldes der
+	Datenbank. Jedes Feld-Array besteht aus einem Namen, einem Zeichen zur Festlegung
+	des Feldtyps, der Länge und der Nachkommastellen.</para>
 	<para>
-	The types of fields available are:
+	Die verfügbaren Feldtypen sind:
 	<variablelist>
 	 <varlistentry>
 	  <term>L</term>
 	  <listitem><simpara>
-	   Boolean. These do not have a length or precision.</simpara></listitem>
+	   Boolean. Diese haben keine Länge oder Nachkommstellen.</simpara></listitem>
 	 </varlistentry>
 	 <varlistentry>
 	  <term>M</term>
 	  <listitem><simpara>
-	   Memo. (Note that these aren't supported by PHP.)
-	   These do not have a length or precision.</simpara></listitem>
+	   Memo. (Beachten sie, dass diese von PHP nicht unterstützt werden.)
+	   Auch diese haben keine Länge oder Nachkommastellen.</simpara></listitem>
 	 </varlistentry>
 	 <varlistentry>
 	  <term>D</term>
 	  <listitem><simpara>
-	   Date (stored as YYYYMMDD).  These do not have a length
-	   or precision.</simpara></listitem>
+	   Datum (gespeichert als JJJJMMTT). Ebenfalls keine Länge und
+	   Nachkommastellen.</simpara></listitem>
 	 </varlistentry>
 	 <varlistentry>
 	  <term>N</term>
 	  <listitem><simpara>
-	   Number. These have both a length and a precision (the
-	   number of digits after the decimal point).</simpara></listitem>
+	   Zahl. Diese haben sowohl eine Angabe der Länge als auch der Nachkommastellen.</simpara></listitem>
 	 </varlistentry>
 	 <varlistentry>
 	  <term>C</term>
 	  <listitem><simpara>
-	   String.</simpara></listitem>
+	   Zeichenkette / String / Charakter. Hier ist eine Längenangabe erforderlich.</simpara></listitem>
 	 </varlistentry>
 	</variablelist></para>
 	<para>
-	If the database is successfully created, a dbase_identifier
-	is returned, otherwise false is returned.
+	Konnte die Datenbank erfolgreich erzeugt werden, wird ein dbase_identifier
+	zurück gegeben, anderenfalls false / falsch.
 
      <example>
-      <title>Creating a dBase database file</title>
+      <title>Erzeugen einer dBase-Datenbank-Datei</title>
 <programlisting role="php">
-// "database" name
+// "Datenbank"-Name
 $dbname = "/tmp/test.dbf";
 
-// database "definition"
+// Datenbank-"Definitionen"
 $def =
     array(
-        array("date",     "D"),
-        array("name",     "C",  50),
-        array("age",      "N",   3, 0),
-        array("email",    "C", 128),
-        array("ismember", "L")
+        array("Datum",       "D"),
+        array("Name",        "C",  50),
+        array("Alter",       "N",   3, 0),
+        array("Email",       "C", 128),
+        array("IstMitglied", "L")
     );
 
-// creation
+// Erzeugung
 if (!dbase_create($dbname, $def))
     print "&lt;strong>Error!&lt;/strong>";
 
@@ -109,85 +106,85 @@ if (!dbase_create($dbname, $def))
   <refentry id="function.dbase-open">
    <refnamediv>
     <refname>dbase_open</refname>
-    <refpurpose>opens a dBase database</refpurpose>
+    <refpurpose>Öffnet eine dBase-Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>dbase_open</function></funcdef>
      <paramdef>string <parameter>filename</parameter></paramdef>
      <paramdef>int <parameter>flags</parameter></paramdef>
     </funcsynopsis>
     <para>
-	The flags correspond to those for the open() system call.
-	(Typically 0 means read-only, 1 means write-only, and 2
-	means read and write.)</para>
+	Die flags entsprechen denen des open()-Systemaufrufs
+	(normalerweise bedeutet 0 Nur-Lesen, 1 Nur-Schreiben und 2
+	Lesen und Schreiben).</para>
 	<para>
-	Returns a dbase_identifier for the opened database, or
-	false if the database couldn't be opened.</para>
+	Gibt einen dbase_identifier für die geöffnete Datenbank zurück oder
+	false / falsch, wenn die Datenbank nicht geöffnet werden konnte.</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-close">
    <refnamediv>
     <refname>dbase_close</refname>
-    <refpurpose>close a dBase database</refpurpose>
+    <refpurpose>Schließt eine dBase-Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>bool <function>dbase_close</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Closes the database associated with <parameter>dbase_identifier</parameter>.</para>
+	Schließt die per <parameter>dbase_identifier</parameter> definierte Datenbank.</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-pack">
    <refnamediv>
     <refname>dbase_pack</refname>
-    <refpurpose>packs a dBase database</refpurpose>
+    <refpurpose>Entfernt die als gelöscht markierten Datensätze aus der Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>bool <function>dbase_pack</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Packs the specified database (permanently deleting all records
-	marked for deletion using <function>dbase_delete_record</function>.</para>
+	Entfernt die in der angegebenen Datenbank als gelöscht markierten Datensätze endgültig (physisch).
+	Betroffen sind alle vorher per <function>dbase_delete_record</function> als gelöscht markierten Datensätze.</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-add-record">
    <refnamediv>
     <refname>dbase_add_record</refname>
-    <refpurpose>add a record to a dBase database</refpurpose>
+    <refpurpose>Hängt einen neuen Datensatz an eine dBase-Datenbank an</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>bool <function>dbase_add_record</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
      <paramdef>array <parameter>record</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Adds the data in the <parameter>record </parameter>to the
-	database. If the number of items in the supplied record isn't
-	equal to the number of fields in the database, the operation
-	will fail and false will be returned.</para>
+	Hängt den per <parameter>record</parameter> definierten Datensatz an die
+	Datenbank an. Wenn die Anzahl der Einträge im angegebenen Record nicht gleich ist mit
+        der Anzahl der Felder in der Datenbank, wird dieser Befehl scheitern und
+	false / falsch zurück geben.</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-replace-record">
    <refnamediv>
     <refname>dbase_replace_record</refname>
-    <refpurpose>replace a record in a dBase database</refpurpose>
+    <refpurpose>Ersetzt einen Datensatz in einer dBase-Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>bool <function>dbase_replace_record</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
@@ -195,101 +192,101 @@ if (!dbase_create($dbname, $def))
      <paramdef>int <parameter>dbase_record_number</parameter></paramdef>
     </funcsynopsis>
     <simpara>
-     Replaces the data associated with the record
-     <parameter>record_number</parameter> with the data in the
-     <parameter>record</parameter> in the database. If the number of items in
-     the supplied record is not equal to the number of fields in the database,
-     the operation will fail and false will be returned.</simpara>
+     Überschreibt die Daten des Datensatzes
+     <parameter>record_number</parameter> mit den Daten aus
+     <parameter>record</parameter> in der Datenbank. Falls die Anzahl der definierten Einträge ungleich der
+     Anzahl der Datenfelder in dem angesprochenen Datensatz ist,
+     wird die Ausführung diese Befehls abgewiesen und false / falsch zurück gegeben.</simpara>
      
     <simpara>
-     <parameter>dbase_record_number</parameter> is an integer which spans from
-     1 to the number of records in the database (as returned by
-     <function>dbase_numrecords</function>).</simpara>
+     <parameter>dbase_record_number</parameter> ist ein Integer-Wert, der von 1 bis zur Anzahl der
+     Datensatz-Anzahl der Datenbank reicht (wie er bei Aufruf der Funktion
+     <function>dbase_numrecords</function> zurück gegeben wird).</simpara>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-delete-record">
    <refnamediv>
     <refname>dbase_delete_record</refname>
-    <refpurpose>deletes a record from a dBase database</refpurpose>
+    <refpurpose>Markiert einen Datensatz als gelöscht</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Bschreibung</title>
     <funcsynopsis>
      <funcdef>bool <function>dbase_delete_record</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
      <paramdef>int <parameter>record</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Marks <parameter>record</parameter> to be deleted from the database.
-	To actually remove the record from the database, you must
-	also call <function>dbase_pack</function>.</para>
+	Markiert den Datensatz <parameter>record</parameter> in der Datenbank als gelöscht.
+	Um ihn wirklich (physisch) zu entfernen, müssen sie noch die Funktion
+	<function>dbase_pack</function> aufrufen.</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-get-record">
    <refnamediv>
     <refname>dbase_get_record</refname>
-    <refpurpose>gets a record from a dBase database</refpurpose>
+    <refpurpose>Liest einen Datensatz aus einer dBase-Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>array <function>dbase_get_record</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
      <paramdef>int <parameter>record</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Returns the data from <parameter>record</parameter> in an array. The
-	array is indexed starting at 0, and includes an associative
-	member named 'deleted' which is set to 1 if the record has
-	been marked for deletion (see <function>dbase_delete_record</function>.</para>
+	Gint die Daten von <parameter>record</parameter> in einem Aray zurück. Das Array
+	hat einen bei 0 beginnenden Index und enthält einen zusätzlichen Bereich der mit
+	'deleted' bezeichnet wird. Dieser ist auf 1 gesetzt, wenn der Datensatz als
+	gelöscht markiert ist (siehe <function>dbase_delete_record</function>).</para>
     <para>
-        Each field is converted to the appropriate PHP type. (Dates
-        are left as strings.)</para>
+        Jedes Feld wird in den entsprechenden PHP-Typ umgesetzt (Datumsangaben
+        sind Zeichenketten / Strings).</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-get-record-with-names">
    <refnamediv>
     <refname>dbase_get_record_with_names</refname>
-    <refpurpose>gets a record from a dBase database as an associative array</refpurpose>
+    <refpurpose>Gibt einen Datensatz einer dBase-Datenbank als assoziatives Array zurück</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>array <function>dbase_get_record_with_names</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
      <paramdef>int <parameter>record</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Returns the data from <parameter>record</parameter> in an
-	associative array.  The array also includes an associative member
-	named 'deleted' which is set to 1 if the record has been marked
-	for deletion (see <function>dbase_delete_record</function>.</para>
+	Gibt die Daten von <parameter>record</parameter> in einem
+	assoziativen Array zurück.  Das Array enthält auch einen assoziativen Bereich, der
+	'deleted' heisst und auf 1 steht, wenn der Datensatz als
+	gelöscht markiert ist (siehe <function>dbase_delete_record</function>).</para>
     <para>
-        Each field is converted to the appropriate PHP type. (Dates
-        are left as strings.)</para>
+        Jedes Feld wird in den entsprechenden PHP-Typ konvertiert (Datumsangaben werden zu
+        Zeichenketten / strings).</para>
    </refsect1>
   </refentry>
 
   <refentry id="function.dbase-numfields">
    <refnamediv>
     <refname>dbase_numfields</refname>
-    <refpurpose>find out how many fields are in a dBase database</refpurpose>
+    <refpurpose>Stellt fest, wieviele Felder eine dBase-Datenbank hat</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>dbase_numfields</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Returns the number of fields (columns) in the specified
-	database. Field numbers are between 0 and dbase_numfields($db)-1,
-        while record numbers are between 1 and dbase_numrecords($db).
+	Gibt die Anzahl der Datenfelder (Spalten) in der angegebenen Datenbank
+	zurück. Feld-Nummern sind Werte zwischen 0 und dbase_numfields($db)-1,
+        wogegen Datensatz-Werte zwischen 1 und dbase_numrecords($db) sein kann.
     <example>
-     <title>Using <function>dbase_numfields</function></title>
+     <title>Gebrauch von <function>dbase_numfields</function></title>
      <programlisting>
 $rec = dbase_get_record($db, $recno);
 $nf  = dbase_numfields($db);
@@ -303,18 +300,18 @@ for ($i=0; $i &lt; $nf; $i++) {
   <refentry id="function.dbase-numrecords">
    <refnamediv>
     <refname>dbase_numrecords</refname>
-    <refpurpose>find out how many records are in a dBase database</refpurpose>
+    <refpurpose>Ermittelt die Anzahl an Datensätzen einer dBase-Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>dbase_numrecords</function></funcdef>
      <paramdef>int <parameter>dbase_identifier</parameter></paramdef>
     </funcsynopsis>
     <para>
-	Returns the number of records (rows) in the specified
-	database. Record numbers are between 1 and dbase_numrecords($db),
-        while field numbers are between 0 and dbase_numfields($db)-1.</para>
+	Gibt die Anzahl der Datensätze (Zeilen) in der angegebenen Datenbank
+	zurück. Datensatz-Nummern können Werte zwischen 1 und dbase_numrecords($db) sein,
+        wogegen Feld-Werte zwischen 0 und dbase_numfields($db)-1 sein können.</para>
    </refsect1>
   </refentry>
 
@@ -330,7 +327,7 @@ sgml-always-quote-attributes:t
 sgml-indent-step:1
 sgml-indent-data:t
 sgml-parent-document:nil
-sgml-default-dtd-file:"../manual.ced"
+sgml-default-dtd-file:"../../manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
