@@ -1,38 +1,303 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
+<!-- EN-Revision: 1.24 Maintainer: tom Status: working -->
  <chapter id="features.error-handling">
   <title>Fehlerbehandlung</title>
+ 
+  <para>
+   Es gibt verschiedene Arten von Fehlermeldungen und Warnungen in PHP.
+   Diese sind:
+
+   <table>
+    <title>PHP Fehlertypen</title>
+    <tgroup cols="4">
+     <thead>
+      <row>
+       <entry>Wert</entry>
+       <entry>Konstante</entry>
+       <entry>Beschreibung</entry>
+       <entry>Bemerkung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>1</entry>
+       <entry>E_ERROR</entry>
+       <entry>Schwere Laufzeitfehler</entry>
+       <entry></entry>
+      </row>
+      <row>
+       <entry>2</entry>
+       <entry>E_WARNING</entry>
+       <entry>Laufzeit-Warnungen (keine schweren Fehler)</entry>
+       <entry></entry>
+      </row>
+      <row>
+       <entry>4</entry>
+       <entry>E_PARSE</entry>
+       <entry>Fehler beim Parsen während des Kompilierens</entry>
+       <entry></entry>
+      </row>
+      <row>
+       <entry>8</entry>
+       <entry>E_NOTICE  </entry>
+       <entry>
+        Mitteilungen zur Laufzeit (weniger ernst als Warnungen)
+       </entry>
+       <entry></entry>
+      </row>
+      <row>
+       <entry>16</entry>
+       <entry>E_CORE_ERROR</entry>
+       <entry>Schwere Fehler während dem Start von PHP</entry>
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry>32</entry>
+       <entry>E_CORE_WARNING</entry>
+       <entry>
+        Warnungen (keine schweren Fehler) während dem Start von PHP
+       </entry> 
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry>64</entry>
+       <entry>E_COMPILE_ERROR</entry>
+       <entry>Schwere Fehler während des Kompilierens</entry>
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry>128</entry>
+       <entry>E_COMPILE_WARNING</entry>
+       <entry>Warnungen (keine schweren Fehler) während des Kompilierens</entry>
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry>256</entry>
+       <entry>E_USER_ERROR</entry>
+       <entry>Vom Benutzer erzeugte Fehlermeldung</entry>
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry>512</entry>
+       <entry>E_USER_WARNING</entry>
+       <entry>Vom Benutzer erzeugte Warnung</entry>
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry>1024</entry>
+       <entry>E_USER_NOTICE </entry>
+       <entry>Vom Benutzer erzeugte Mitteilungen</entry>
+       <entry>Nur PHP 4</entry>
+      </row>
+      <row>
+       <entry></entry>
+       <entry>E_ALL</entry>
+       <entry>Alle der oben genannten, welche unterstützt werden</entry>
+       <entry></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+  </para>
 
   <para>
-  Es gibt 4 verschiedene Arten von Fehlermeldungen und Warnungen in PHP.
-  Das sind:   
+   Aus den obigen Werten (numerisch oder symbolisch) wird eine Bitmaske
+   erstellt, welche die zu meldenden Fehler angibt. Sie können die 
+   <link linkend="language.operators.bitwise">Bit-Operatoren</link>
+   verwenden um diese Werte zu kombinieren, oder um bestimmte Fehlertypen
+   auszunehmen. Beachten Sie, dass innerhalb der <filename>php.ini</filename>
+   nur '|', '~', '!', und '&amp;' erkannt werden, und dass innerhalb der
+   <filename>php3.ini</filename> keine Bit-Operatoren möglich sind.
+  </para>
+  <para>
+   In PHP 4 ist die Standardeinstellung für <link
+   linkend="ini.error-reporting">error_reporting</link>
+   <literal>E_ALL &amp; ~E_NOTICE</literal>, d.h. es werden abgesehen vom
+   E_NOTICE-Level alle Fehler und Warnungen angezeigt. In PHP 3 ist die
+   Standardeinstellung <literal>(E_ERROR | E_WARNING | E_PARSE)</literal>,
+   was das gleiche bedeutet. Beachten Sie, dass in der
+   <filename>php3.ini</filename> von PHP 3 keine Konstanten unterstützt
+   werden, d.h. die Einstellungen von <link
+   linkend="ini.error-reporting">error_reporting</link> müssen numerisch
+   angegeben werden, in diesem Fall <literal>7</literal>.
+  </para>
 
-   <itemizedlist>
-    <listitem><simpara>1 - Normale Funktionsfehler</simpara></listitem>
-    <listitem><simpara>2 - Normale Warnungen</simpara></listitem> 
-    <listitem><simpara>4 - Parser-Fehler</simpara></listitem> 
-    <listitem><simpara>8 - Mitteilungen (Warnungen, die ignoriert werden
-    können, die aber eventuell auf einen Fehler im Code schließen lassen.)
-    </simpara></listitem>
-   </itemizedlist></para>
+  <para>
+   Die Anfangseinstellung kann in der ini Datei mittels der <link
+   linkend="ini.error-reporting">error_reporting</link> Direktive,
+   sowie in Ihrer Apache <filename>httpd.conf</filename> Datei mittels
+   der php_error_reporting (php3_error_reporting in PHP 3) Direktive
+   geändert werden. Sie kann aber auch während der Laufzeit innerhalb
+   eines Skriptes mittels der Funktion
+   <function>error_reporting</function> gesetzt werden.
+  </para>
+  
+  <warning>
+   <para>
+    Während eines Upgrades Ihres Codes oder Servers von PHP 3 auf PHP 4
+    sollten Sie diese Einstellungen und Aufrufe von
+    <function>error_reporting</function> kontrollieren, sonst könnten
+    Sie die Meldung neuer Fehlertypen, speziell E_COMPILE_ERROR,
+    deaktivieren. Dies könnte dazu fühen, dass Sie ein leeres Dokument
+    ohne jeden Hinweis auf die Ursache des Problems erhalten.
+   </para>
+  </warning>
+    
+  <para>
+   All <link linkend="language.expressions">PHP expressions</link> can
+   also be called with the "@" prefix, which turns off error reporting
+   for that particular expression.  If an error occurred during such
+   an expression and the <link
+   linkend="ini.track-errors">track_errors</link> feature is enabled,
+   you can find the error message in the global variable
+   <literal>$php_errormsg</literal>.
+  </para>
 
-  <simpara>
-   Die oben aufgeführten Fehlernummern werden addiert, um den Fehlerlevel
-   festzulegen. Der standardmäßige Wert ist 7, d.h. 1 + 2 + 4 oder, anders
-   ausgedrückt, es werden alle Fehlermeldungen außer den Mitteilungen
-   ausgegeben. Der Fehlerlevel kann in der Konfigurationsdatei php3.ini
-   durch die Option error_reporting gesetzt werden.
-   Es ist auch möglich, den Fehlerlevel in der Apache-Konfigurationsdatei
-   httpd.conf durch die Option php3_error_reporting oder zur Laufzeit 
-   durch ein Skript, das die Funktion <function>error_reporting</function>
-   nutzt, zu setzen.</simpara>
-	
-  <simpara>	
-   Alle <link linkend="language.expressions">PHP-Funktionen</link> können auch mit
-   vorangestelltem "@" aufgerufen werden. Das bewirkt das Unterdrücken der
-   Fehlermeldung für die Funktion. Bei auftretendem Fehler und eingeschalteter
-   <link linkend="ini.track-errors">track_errors</link> Option wird die
-   entsprechende Fehlermeldung in der globalen Variablen $php_errormsg 
-   gespeichert.</simpara>
+  <note>
+   <para>
+    The <link linkend="language.operators.errorcontrol">@
+    error-control operator</link> prefix will not disable messages
+    that are the result of parse errors.
+   </para>
+  </note>
+
+  <warning>
+   <para>
+    Currently the <link linkend="language.operators.errorcontrol">@
+    error-control operator</link> prefix will even disable error
+    reporting for critical errors that will terminate script
+    execution. Among other things, this means that if you use <link
+    linkend="language.operators.errorcontrol">@</link> to suppress
+    errors from a certain function and either it isn't available or
+    has been mistyped, the script will die right there with no
+    indication as to why.
+   </para>
+  </warning>
+
+  <para>
+   Below we can see an example of using the error handling capabilities in
+   PHP. We define a error handling function which logs the information into
+   a file (using an XML format), and e-mails the developer in case a critical
+   error in the logic happens.
+   <example>
+    <title>Using error handling in a script</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// we will do our own error handling
+error_reporting(0);
+
+// user defined error handling function
+function userErrorHandler ($errno, $errmsg, $filename, $linenum, $vars) {
+    // timestamp for the error entry
+    $dt = date("Y-m-d H:i:s (T)");
+
+    // define an assoc array of error string
+    // in reality the only entries we should
+    // consider are 2,8,256,512 and 1024
+    $errortype = array (
+                1   =>  "Error",
+                2   =>  "Warning",
+                4   =>  "Parsing Error",
+                8   =>  "Notice",
+                16  =>  "Core Error",
+                32  =>  "Core Warning",
+                64  =>  "Compile Error",
+                128 =>  "Compile Warning",
+                256 =>  "User Error",
+                512 =>  "User Warning",
+                1024=>  "User Notice"
+                );
+    // set of errors for which a var trace will be saved
+    $user_errors = array(E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE);
+    
+    $err = "<errorentry>\n";
+    $err .= "\t<datetime>".$dt."</datetime>\n";
+    $err .= "\t<errornum>".$errno."</errornum>\n";
+    $err .= "\t<errortype>".$errortype[$errno]."</errortype>\n";
+    $err .= "\t<errormsg>".$errmsg."</errormsg>\n";
+    $err .= "\t<scriptname>".$filename."</scriptname>\n";
+    $err .= "\t<scriptlinenum>".$linenum."</scriptlinenum>\n";
+
+    if (in_array($errno, $user_errors))
+        $err .= "\t<vartrace>".wddx_serialize_value($vars,"Variables")."</vartrace>\n";
+    $err .= "</errorentry>\n\n";
+    
+    // for testing
+    // echo $err;
+
+    // save to the error log, and e-mail me if there is a critical user error
+    error_log($err, 3, "/usr/local/php4/error.log");
+    if ($errno == E_USER_ERROR)
+        mail("phpdev@mydomain.com","Critical User Error",$err);
+}
+
+
+function distance ($vect1, $vect2) {
+    if (!is_array($vect1) || !is_array($vect2)) {
+        trigger_error("Incorrect parameters, arrays expected", E_USER_ERROR);
+        return NULL;
+    }
+
+    if (count($vect1) != count($vect2)) {
+        trigger_error("Vectors need to be of the same size", E_USER_ERROR);
+        return NULL;
+    }
+
+    for ($i=0; $i<count($vect1); $i++) {
+        $c1 = $vect1[$i]; $c2 = $vect2[$i];
+        $d = 0.0;
+        if (!is_numeric($c1)) {
+            trigger_error("Coordinate $i in vector 1 is not a number, using zero", 
+                            E_USER_WARNING);
+            $c1 = 0.0;
+        }
+        if (!is_numeric($c2)) {
+            trigger_error("Coordinate $i in vector 2 is not a number, using zero", 
+                            E_USER_WARNING);
+            $c2 = 0.0;
+        }
+        $d += $c2*$c2 - $c1*$c1;
+    }
+    return sqrt($d);
+}
+
+$old_error_handler = set_error_handler("userErrorHandler");
+
+// undefined constant, generates a warning
+$t = I_AM_NOT_DEFINED;
+
+// define some "vectors"
+$a = array(2,3,"foo");
+$b = array(5.5, 4.3, -1.6);
+$c = array (1,-3);
+
+// generate a user error
+$t1 = distance($c,$b)."\n";
+
+// generate another user error
+$t2 = distance($b,"i am not an array")."\n";
+
+// generate a warning
+$t3 = distance($a,$b)."\n";
+
+?>
+]]>
+    </programlisting>
+   </example>
+   This is just a simple example showing how to use the 
+   <link linkend="ref.errorfunc">Error Handling and Logging
+   functions</link>.
+  </para>
+
+  <para>
+   See also <function>error_reporting</function>,
+   <function>error_log</function>,
+   <function>set_error_handler</function>,
+   <function>restore_error_handler</function>, 
+   <function>trigger_error</function>,
+   <function>user_error</function>
+  </para>
 
  </chapter>
 
@@ -47,9 +312,12 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../manual.ced"
+sgml-default-dtd-file:"../../manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
