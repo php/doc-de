@@ -13,8 +13,11 @@
     In diesem Dokument werden ein Reihe von Begriffen benutzt, die
     hier kurz erläutert werden sollen.
     <simplelist>
-     <member>Anfrageergebnis, Ergebnis - Die Rückgabe auf eine SELECT-Anweisung
-      an die Datenbank. Ein Ergebnis kann man sich als Tabelle vorstellen,
+     <member>Anfrageergebnis, Ergebnis - Die Rückgabe auf eine Anfrage
+      an den Datenbankserver. Anfragen können sowohl Datenbankanfragen sein, die
+      Teile des Datenbankinhalts umfassen oder Informationen über eine
+      Datenbank oder den Datenbankserver liefern. Ist das Ergebnis eine
+      Datenbankanfrage kann man es sich als Tabelle vorstellen,
       in der die Zeilen die Datensätze sind und die Felder den Spalten
       ensprechen. Ein Ergebnis besteht aus 0 oder beliebig vielen Datensätzen.</member>
      <member>Ergebnis-Kennung - Eine Referenz auf ein Ergebnis. Über diese
@@ -142,7 +145,8 @@
     <para> 
      <function>mysql_close</function> schließt die Verbindung zur
      MySQL-Datenbank, die zur Verbindungs-Kennung gehört.
-     Wenn die Verbindungs-Kennung nicht angegeben wird, wird die aktuelle
+     Wenn die <parameter>Verbindungs-Kennung</parameter> nicht angegeben wird,
+     wird die aktuelle
      Verbindung geschlossen.
     </para>
     <note>
@@ -978,20 +982,20 @@ mysql_close();
    <refnamediv>
     <refname>mysql_field_len</refname> 
     <refpurpose>
-     Returns the length of the specified field
+     Liefert die Länge eines Feldes
     </refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>mysql_field_len</function></funcdef>
-     <paramdef>int <parameter>result</parameter></paramdef>
-     <paramdef>int <parameter>field_offset</parameter></paramdef>
+     <paramdef>int <parameter>Ergebnis-Kennung</parameter></paramdef>
+     <paramdef>int <parameter>Feldoffset</parameter></paramdef>
     </funcsynopsis>
     <para>
-     <function>mysql_field_len</function> returns the length of the
-     specified field.  For downward compatibility
-     <function>mysql_fieldlen</function> can also be used.
+     <function>mysql_field_len</function> liefert die Länge des Feldes mit
+     dem übergebenen Feldoffset. Für Rückwärtskompatibilität kann
+     <function>mysql_fieldlen</function> verwendet werden.
     </para>
    </refsect1>
   </refentry>
@@ -999,23 +1003,23 @@ mysql_close();
   <refentry id="function.mysql-free-result">
    <refnamediv>
     <refname>mysql_free_result</refname>
-    <refpurpose>Free result memory</refpurpose>
+    <refpurpose>Entfernt ein Ergebnis</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>mysql_free_result</function></funcdef>
-     <paramdef>int <parameter>result</parameter></paramdef>
+     <paramdef>int <parameter>Ergebnis-Kennung</parameter></paramdef>
     </funcsynopsis>
     <para>
-     <function>mysql_free_result</function> only needs to be called if
-     you are worried about using too much memory while your script is
-     running. All associated result memory for the specified result
-     identifier will automatically be freed.
+     <function>mysql_free_result</function> entfernt ein Ergebnis und gibt
+     den belegten Speicher frei. Die Funktion muss nur dann aufgerufen werden,
+     wenn der Speicherbedarf zur Laufzeit des Skripts zu hoch wird. Nach
+     Ablauf des Skripts wird der Speicher ohnehin freigegeben.
     </para>
     <para>
-     For downward compatibility <function>mysql_freeresult</function>
-     can also be used.
+     Für Rückwärtskompatibilität kann <function>mysql_freeresult</function>
+     verwendet werden.
     </para>
    </refsect1>
   </refentry>
@@ -1024,7 +1028,7 @@ mysql_close();
    <refnamediv>
     <refname>mysql_insert_id</refname>
     <refpurpose>
-     Get the id generated from the previous INSERT operation
+     Liefert die Kennung einer vorherigen INSERT-Operation
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -1038,12 +1042,11 @@ mysql_close();
      </paramdef>
     </funcsynopsis>
     <para> 
-     <function>mysql_insert_id</function> returns the ID generated for
-     an AUTO_INCREMENTED field.  It will return the auto-generated ID
-     returned by the last INSERT query performed using the given
-     <parameter>Verbindungs-Kennung</parameter>.  If
-     <parameter>Verbindungs-Kennung</parameter> isn't specified, the last
-     opened link is assumed.
+     <function>mysql_insert_id</function> liefert die Kennung (ID), die bei
+     der letzten INSERT-Operation für
+     eine automatisch inkrementiertes Feld (AUTO_INCREMENTED) vergeben wurde.
+     Wenn die <parameter>Verbindungs-Kennung</parameter> nicht angegeben wird,
+     wird die aktuelle Verbindung verwendet.
     </para>
    </refsect1>
   </refentry>
@@ -1051,14 +1054,14 @@ mysql_close();
   <refentry id="function.mysql-list-fields">
    <refnamediv>
     <refname>mysql_list_fields</refname>
-    <refpurpose>List MySQL result fields</refpurpose>
+    <refpurpose>Listet die Felder einer Tabelle auf</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>mysql_list_fields</function></funcdef>
-     <paramdef>string <parameter>database_name</parameter></paramdef>
-     <paramdef>string <parameter>table_name</parameter></paramdef>
+     <paramdef>string <parameter>Datenbankname</parameter></paramdef>
+     <paramdef>string <parameter>Tabellenname</parameter></paramdef>
      <paramdef>int 
       <parameter>
        <optional>Verbindungs-Kennung</optional>
@@ -1066,24 +1069,26 @@ mysql_close();
      </paramdef>
     </funcsynopsis>
     <para>
-     <function>mysql_list_fields</function> retrieves information
-     about the given tablename. Arguments are the database name and
-     the table name. A result pointer is returned which can be used
-     with <function>mysql_field_flags</function>,
+     <function>mysql_list_fields</function> fordert Information über eine
+     Tabelle an.
+     Argumente sind der Datenbankname und der Tabellenname.
+     the table name. Die zurückgelieferte Ergebnis-Kennung kann von den
+     Funktionen
+     <function>mysql_field_flags</function>,
      <function>mysql_field_len</function>,
      <function>mysql_field_name</function> und
-     <function>mysql_field_type</function>.
+     <function>mysql_field_type</function> verwendet werden.
     </para>
     <para>
-     A result identifier is a positive integer. The function returns
-     -1 if a error occurs. A string describing the error will be
-     placed in <literal>$phperrmsg</literal>, and unless the function
-     was called as <literal>@mysql()</literal> then this error string
-     will also be printed out.
+     Die Erbebnis-Kennung is ein positiver ganzzahliger Wert.
+     Die Funktion liefert -1 im Fehlerfall. Eine mögliche Fehlermeldung
+     wird in der Variablen <literal>$phperrmsg</literal> abgelegt, es sei
+     denn die Funktion wurde als <literal>@mysql()</literal> aufgerufen.
+     In diesem Fall wird die Fehlermeldung ausgegeben.
     </para>
     <para>
-     For downward compatibility <function>mysql_listfields</function>
-     can also be used.
+     Für Rückwärtskompatibilität kann <function>mysql_listfields</function>
+     verwendet werden.
     </para>
    </refsect1>
   </refentry>
@@ -1092,7 +1097,7 @@ mysql_close();
    <refnamediv>
     <refname>mysql_list_dbs</refname> 
     <refpurpose>
-     List databases available on on MySQL server
+     Liefert eine Liste der verfügbaren Datenbanken auf dem Server
     </refpurpose>
    </refnamediv>
    <refsect1>
@@ -1106,14 +1111,14 @@ mysql_close();
      </paramdef>
     </funcsynopsis>
     <para>
-     <function>mysql_list_dbs</function> will return a result pointer
-     containing the databases available from the current mysql
-     daemon. Use the <function>mysql_tablename</function> function to
-     traverse this result pointer.
+     <function>mysql_list_dbs</function> liefert die Kennung eines Ergebnisses,
+     dass alle Datenbanken auf dem Datenbankserver enthält.
+     Benutzen Sie die Funktion <function>mysql_tablename</function>, um das
+     Ergebnis zu durchlaufen.
     </para>
     <para>
-     For downward compatibility <function>mysql_listdbs</function> can
-     also be used.
+     Für Rückwärtskompatibilität kann <function>mysql_listdbs</function>
+     verwendet werden.
     </para>
    </refsect1>
   </refentry>
@@ -1121,13 +1126,13 @@ mysql_close();
   <refentry id="function.mysql-list-tables">
    <refnamediv>
     <refname>mysql_list_tables</refname>
-    <refpurpose>List tables in a MySQL database</refpurpose>
+    <refpurpose>Liefert eine Liste der Tabellen in einer Datenbank</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>mysql_list_tables</function></funcdef>
-     <paramdef>string <parameter>database</parameter></paramdef>
+     <paramdef>string <parameter>Datenbankname</parameter></paramdef>
      <paramdef>int 
       <parameter>
        <optional>Verbindungs-Kennung</optional>
@@ -1135,15 +1140,15 @@ mysql_close();
      </paramdef>
     </funcsynopsis>
     <para> 
-     <function>mysql_list_tables</function> takes a database name and
-     returns a result pointer much like the
-     <function>mysql_db_query</function> function.  The
-     <function>mysql_tablename</function> function should be used to
-     extract the actual table names from the result pointer.
+     <function>mysql_list_tables</function> liefert eine Liste der Datenbank
+     mit dem übergegebenen Namen, ähnlich wie die Funktion
+     <function>mysql_db_query</function> bei Datenbankanfragen. Die
+     Funktion <function>mysql_tablename</function> sollte genutzt werden,
+     um die tatsächlichen Namen der Tabellen im Ergebnis zu erfragen.
     </para>
     <para>
-     For downward compatibility <function>mysql_listtables</function>
-     can also be used.
+     Für Rückwärtskompatibilität kann <function>mysql_listtables</function>
+     verwendet werden.
     </para>
    </refsect1>
   </refentry>
@@ -1151,17 +1156,17 @@ mysql_close();
   <refentry id="function.mysql-num-fields">
    <refnamediv>
     <refname>mysql_num_fields</refname>
-    <refpurpose>Get number of fields in result</refpurpose>
+    <refpurpose>Liefert die Anzahl der Felder in einem Ergebnis</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>mysql_num_fields</function></funcdef>
-     <paramdef>int <parameter>result</parameter></paramdef>
+     <paramdef>int <parameter>Ergebnis-Kennung</parameter></paramdef>
     </funcsynopsis>
     <para> 
-     <function>mysql_num_fields</function> returns the number of
-     fields in a result set.
+     <function>mysql_num_fields</function> liefert die Anzahl der Felder in
+     einem Ergebnis.
     </para>
     <para> 
      Siehe auch: 
@@ -1170,8 +1175,8 @@ mysql_close();
      <function>mysql_fetch_field</function>,
      <function>mysql_num_rows</function>.</para>
     <para>
-     For downward compatibility <function>mysql_numfields</function>
-     can also be used.
+     Für Rückwärtskompatibilität kann <function>mysql_numfields</function>
+     verwendet werden.
     </para>
    </refsect1>
   </refentry>
@@ -1179,27 +1184,27 @@ mysql_close();
   <refentry id="function.mysql-num-rows">
    <refnamediv>
     <refname>mysql_num_rows</refname>
-    <refpurpose>Get number of rows in result</refpurpose>
+    <refpurpose>Liefert die Anzahl der Datensätze im Ergebnis</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
      <funcdef>int <function>mysql_num_rows</function></funcdef>
-     <paramdef>int <parameter>result</parameter></paramdef>
+     <paramdef>int <parameter>Ergebnis-Kennung</parameter></paramdef>
     </funcsynopsis>
     <para>
-     <function>mysql_num_rows</function> returns the number of rows in
-     a result set.
+     <function>mysql_num_rows</function> liefert die Anzahl der Datensätze im
+     Ergebnis
     </para>
     <para>
      Siehe auch:  
      <function>mysql_db_query</function>, 
-     <function>mysql_query</function> and, 
+     <function>mysql_query</function> und, 
      <function>mysql_fetch_row</function>.
     </para>
     <para>
-     For downward compatibility <function>mysql_numrows</function> can
-     also be used.
+     Für Rückwärtskompatibilität kann <function>mysql_numrows</function>
+     verwendet werden.
     </para>
    </refsect1>
   </refentry>
