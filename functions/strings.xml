@@ -2,7 +2,7 @@
   <title>String-Funktionen</title>
   <titleabbrev>Strings</titleabbrev>
 <!-- Anmerkung des Übersetzers:
-     entspricht /en/functions/strings.xml 1.47 -->
+     entspricht /en/functions/strings.xml 1.58 -->
 
   <partintro>
    <simpara>
@@ -11,6 +11,14 @@
     den Abschnitten zu regulären Ausdrücken (regular expression)
     und der URL-Handhabung gefunden werden.
    </simpara>
+   <para>
+    Informationen zum Funktionsweise von Strings (insbesondere beim
+    Gebrauch von einfachen bzw. doppelten Anführungszeichen und
+    Escape-Sequenzen) erhalten sie unter dem
+    <link linkend="language.types.string">Strings</link>-Eintrag
+    unter <link linkend="language.types">Typen</link> des Manuals.
+   </para>
+
   </partintro>
 
   <refentry id="function.addcslashes">
@@ -134,12 +142,12 @@ $escaped = addcslashes ($not_escaped, "\0..\37!@\177..\377");
      ohne evtl. vorhandene führende Leerzeichen zurück. In dem String
      enthaltene Zeilenvorschübe werden entfernt.
      <example>
-      <title><function>Chop</function> Beispiel:</title>
+      <title><function>Chop</function>-Beispiel:</title>
       <programlisting role="php">
 $string_mit_NL = "          10 führende Leerzeichen mit \n\n neuer Zeile";
 echo chop($string_mit_NL);
 
-Die Ausgabe lautet:
+// Die Ausgabe lautet:
 10 führende Leerzeichen mit neuer Zeile
       </programlisting>
      </example>
@@ -152,7 +160,8 @@ Die Ausgabe lautet:
      </para>
     </note>
     <para>
-     Siehe auch <function>trim</function>.
+     Siehe auch <function>trim</function>, <function>ltrim</function>
+     und <function>rtrim</function>.
     </para>
    </refsect1>
   </refentry>
@@ -430,6 +439,12 @@ $neuer_string = chunk_split (base64_encode($daten));
      2-Zeichen Salt oder das längere 12-Zeichen MD5-Salt unterstützt.
     </simpara>
     <simpara>
+     Wenn sie das gegebene Salt benutzen, sollten sie beachten, dass
+     dieser Wert nur einmal bestimmt wird. Rufen sie diese Funktion nun
+     rekursiv auf, beeinflusst das nicht nur das Ergebnis, sondern
+     unter Umständen auch die Sicherheit.
+    </simpara>  
+    <simpara>
      Die Standard-DES-Verschlüsselung <function>crypt</function>
      enthält das Salt als erste 2 Zeichen der Ausgabe.
     </simpara>
@@ -583,6 +598,9 @@ $pieces = explode (" ", $pizza);
        <function>get_html_translation_table</function>
       </funcdef>
       <paramdef>int <parameter>table</parameter></paramdef>
+      <paramdef>
+       int <parameter><optional>quote_style</optional></parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
@@ -592,7 +610,12 @@ $pieces = explode (" ", $pizza);
      htmlentities</function> benutzt wird. Es gibt zwei neue 
      Parameter (<parameter>HTML_ENTITIES</parameter> und
      <parameter>HTML_SPECIALCHARS</parameter>), die es ihnen
-     ermöglichen, die gewünschte Tabelle auszuwählen.
+     ermöglichen, die gewünschte Tabelle auszuwählen und wie bei den
+     <function>htmlspecialchars</function> bzw.
+     <function>htmlentities</function>-Funktionen können sie optional
+     den Quote-Stil, mit dem sie arbeiten, angeben. Voreingestellt ist
+     der ENT_COMPAT-Modus. Vergleichen sie dazu die Modus-Beschreibung
+     unter <function>htmlspecialchars</function>.
      <example>
       <title>Beispiel zur Übersetzungs-Tabelle</title>
       <programlisting role="php">
@@ -756,16 +779,25 @@ $original = strtr ($str, $trans);
      <funcprototype>
       <funcdef>string <function>htmlentities</function></funcdef>
       <paramdef>string <parameter>string</parameter></paramdef>
+      <paramdef>
+       int <parameter><optional>quote_style</optional></parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
-     Diese Funktion ist identisch zu 
-     <function>Htmlspecialchars</function>, ausser dass alle Zeichen,
-     die HTML-Code-Entsprechungen haben in diese Codes umgewandelt
-     werden.
+     Diese Funktion ist völlig identisch zu 
+     <function>htmlspecialchars</function>, ausser dass alle Zeichen,
+     die HTML-Code-Entsprechungen haben, in diese Codes umgewandelt
+     werden. Wie bei htmlspecialchars() gibt es ein optionales zweites
+     Argument, das die Behandlung von einfachen bzw. den doppelten
+     Anführungszeichen beeinflusst. Im Modus ENT_COMPAT (default)
+     werden nur die doppelten, im Modus ENT_QUOTES beide Arten und im
+     Modus ENT_NOQUOTES keine Anführungszeichen umgewandelt.
     </para>
     <para>
-     Gegenwärtig wird der ISO-8859-1-Zeichensatz verwendet.
+     Gegenwärtig wird der ISO-8859-1-Zeichensatz verwendet. Beachten
+     sie, dass das optionale 2. Argument erst ab PHP 3.0.17 bzw. PHP
+     4.0.3. verfügbar ist.
     </para>
     <para>
      Siehe auch <function>htmlspecialchars</function> und
@@ -787,20 +819,32 @@ $original = strtr ($str, $trans);
      <funcprototype>
       <funcdef>string <function>htmlspecialchars</function></funcdef>
       <paramdef>string <parameter>string</parameter></paramdef>
+      <paramdef>
+       int <parameter><optional>quote_style</optional></parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
      Bestimmte Zeichen haben eine spezielle Bedeutung in HTML und
-     sollten im HTML-Code dargestellt werden, um ihre Bedeutung zu
-     behalten. Diese Funktion liefert einen String zurück, der diese
-     Bedingungen erfüllt.
+     sollten in HTML-Code dargestellt werden, um ihre Bedeutung zu
+     behalten. Diese Funktion liefert einen String zurück, in dem 
+     diese Darstellung / Umsetzung teilweise durchgeführt wird. Die
+     hier vorgenommenen Umsetzungen sind nützlich für die alltägliche
+     Web-Programmierung. Sofern sie eine vollständige Umsetzung der
+     HTML-Zeichen benötigen, sollten sie statt dessen
+     <function>htmlentities</function> verwenden.
     </para>
     <simpara>
      Sinnvoll beim Schutz von benutzerabhängigen Texteingaben (z.B. in
-     Gästebuch-Formularen).
+     Gästebuch-Formularen). Das optionale 2. Argument (Quote-Stil) 
+     beeinflusst die Behandlung der einfachen und doppelten
+     Anführungsstriche. Der Modus ENT_COMPAT (default) ist
+     abwärtskompatibel und behandelt nur die doppelten, nicht aber die
+     einfachen Anführungsstriche. ENT_QUOTES behandelt beide und
+     ENT_NOQUOTES keine Art(en) von Anführungszeichen.
     </simpara>
     <para>
-     Gegenwärtig werden folgende Umwandlungen vorgenommen:
+     Folgende Umsetzungen werden vorgenommen:
      <itemizedlist>
       <listitem>
        <simpara>
@@ -809,7 +853,14 @@ $original = strtr ($str, $trans);
       </listitem>
       <listitem>
        <simpara>
-        '&quot;' (doppelte Anführungszeichen) werden zu '&amp;quot;'
+        '&quot;' (doppelte Anführungszeichen) wird zu '&amp;quot;',
+                 wenn ENT_NOQUOTES nicht gesetzt ist
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        '&#039;' (einfaches Anführungszeichen) wird zu '&amp;#039;',
+                 wenn ENT_QUOTES gesetzt ist
        </simpara>
       </listitem>
       <listitem>
@@ -823,11 +874,19 @@ $original = strtr ($str, $trans);
        </simpara>
       </listitem>
      </itemizedlist>
+     <example>
+      <title><function>htmlspecialchars</function>-Beispiel:</title>
+      <programlisting role="php">
+$neu = htmlspecialchars("&lt;a href='test'&gt;Test&lt;/a&gt;", ENT_QUOTES);
+      </programlisting>
+     </example>
     </para>
     <para>
      Beachten sie, dass diese Funktion nur die o.a. Umwandlungen
      durchführt. Zur vollständigen Code-Umwandlung siehe
-     <function>htmlentities</function>.
+     <function>htmlentities</function>. Beachten sie auch, dass das
+     optionale 2. Argument erst ab PHP 3.0.17 bzw. PHP 4.0.3. verfügbar
+     ist.
     </para>
     <para>
      Siehe auch <function>htmlentities</function> und
@@ -956,8 +1015,8 @@ $Trennung_durch_Doppelpunkt = implode (":", $array);
      "\n", "\r", "\t", "\v", "\0" und das Leerzeichen.
     </para>
     <para>
-     Siehe auch <function>chop</function> und
-     <function>trim</function>.
+     Siehe auch <function>chop</function>, <function>rtrim</function>
+     und <function>trim</function>.
     </para>
    </refsect1>
   </refentry>
@@ -1096,12 +1155,17 @@ if (ord ($str) == 10) {
      <funcprototype>
       <funcdef>void <function>parse_str</function></funcdef>
       <paramdef>string <parameter>str</parameter></paramdef>
+      <paramdef>
+       array <parameter><optional>arr</optional></parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
      Durchsucht <parameter>str</parameter> als ob er der Query-String
-     einer URL-Übergabe via GET wäre und gibt die Werte als Werte
-     eines Arrays zurück.
+     einer URL-Übergabe via GET wäre und gibt die Werte 
+     Variableninhalte zurück. Ist der zweite Parameter 
+     <parameter>arr</parameter> gegeben, werden die Variablen-Werte in
+     diesem Array als dessen Elemente gespeichert.
     </para>
     <para>
      <example>
@@ -1115,15 +1179,6 @@ echo $zweiter[1]; /* gibt "nochwas" aus */
       </programlisting>
      </example>
     </para>
-    <note>
-     <para>
-      Zur Zeit ist es erforderlich, in der <filename>php.ini</filename>
-      <link linkend="ini.register-globals">register_globals</link> auf
-      &quot;on&quot; zu setzen. Diese Eigenschaft kann in Versionen
-      nach PHP 4.0.2 geändert werden. Diese Funktion kann auch ein
-      Array an Werten zurück geben.
-     </para> 
-    </note>	 
    </refsect1>
   </refentry>
 
@@ -1257,8 +1312,8 @@ $getrimmt = rtrim ($line);
      </example>
     </para>
     <para>
-     Siehe auch <function>trim</function> und
-     <function>ltrim</function>.
+     Siehe auch <function>chop</function>, <function>ltrim</function>
+     und <function>trim</function>.
     </para>
    </refsect1>
   </refentry>
@@ -1514,84 +1569,90 @@ soundex ("Lukasiewicz") == soundex ("Lissajous") == 'L222';
      die <function>printf</function>-Funktion.
     </simpara>
     <para>
-     Jede der Formatierugs-Anweisungen besteht aus den folgenden
-     Elementen (in alphabetischer Reihenfolge):
+     Jede der Formatierugs-Anweisungen besteht aus einem 
+     Prozent-Zeichen gefolgt von einem oder mehrereren der folgenden
+     Elemente (in alphabetischer Reihenfolge):
      <orderedlist>
       <listitem>
        <simpara>
-  Einem optionalen <emphasis>Füll-Zeichen</emphasis>, das den String
-  bis rechts auffüllt. Dies kann ein Leerzeichen oder eine  
-  <literal>0</literal> (das Null-Zeichen) sein. Als Füllzeichen
-  voreingestellt ist das Leerzeichen. Andere Füllzeichen können durch
-  Voranstellung eines einfachen Anführungszeichens
-  (<literal>'</literal>) definiert werden. Beachten sie die folgenden
-  Beispiele.
+        Einem optionalen <emphasis>Füll-Zeichen</emphasis>, das den
+        String bis rechts auffüllt. Dies kann ein Leerzeichen oder eine
+        <literal>0</literal> (das Null-Zeichen) sein. Als Füllzeichen
+        voreingestellt ist das Leerzeichen. Andere Füllzeichen können
+        durch Voranstellung eines einfachen Anführungszeichens
+        (<literal>'</literal>) definiert werden. Beachten sie die
+        folgenden Beispiele.
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-	Einer optionalen Angabe der <emphasis>Ausrichtung</emphasis>, ob die
-  Ausgabe also nach links oder nach rechts (default) ausgerichtet
-  werden soll. Um den Text links auszurichten müssen sie das Zeichen 
-  <literal>-</literal> angeben.
+        Einer optionalen Angabe der <emphasis>Ausrichtung</emphasis>,
+        ob die Ausgabe also nach links oder nach rechts (default)
+        ausgerichtet werden soll. Um den Text links auszurichten müssen
+        sie das Zeichen <literal>-</literal> angeben.
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-  Optional einem Wert für die <emphasis>Längen-Angabe</emphasis>,
-  also der Wert für die mindestenst zurückzugebenden Zeichen.
+        Optional einem Wert für die <emphasis>Längen-Angabe</emphasis>,
+        also der Wert für die mindestenst zurückzugebenden Zeichen.
        </simpara>
       </listitem>
       <listitem>
        <simpara>
-  Optional einem Wert für die Anzahl der auszugebenden
-  <emphasis>Nachkomma-Stellen</emphasis>. Dieser Wert hat nur Einfluss
-  auf Werte vom Typ "double" (eine weitere hilfreiche Funktion für die
-  Formatierung von Zahlen ist <function>number_format</function>).
+        Optional einem Wert für die Anzahl der auszugebenden
+        <emphasis>Nachkomma-Stellen</emphasis>. Dieser Wert hat nur
+        Einfluss auf Werte vom Typ "double" (eine weitere hilfreiche
+        Funktion für die Formatierung von Zahlen ist
+        <function>number_format</function>).
        </simpara>
       </listitem>
       <listitem>
        <para>
-  Einer <emphasis>Typ-Angabe</emphasis> welche den Type enthält, als
-  die das Argument angesehen werden soll. Mögliche Angaben sind:
-	<simplelist>
-	 <member>
-	  <literal>%</literal> - ein Prozent-Zeichen ("%"). Es ist kein
-    Argument erforderlich.
-	 </member>
-	 <member>
-	  <literal>b</literal> - das Argument wird als Integer angesehen und
-    als Binär-Wert ausgegeben.
-	 </member>
-	 <member>
-	  <literal>c</literal> - das Argument wird als Integer angesehen und
-    das entsprechende ASCII-Zeichen wird ausgegeben.
-	 </member>
-	 <member>
-	  <literal>d</literal> - das Argument wird als Integer angesehen und
-    ein Dezimalwert ausgegeben.
-	 </member>
-	 <member>
-	  <literal>f</literal> - das Argument wird als "double" angesehen und
-    eine Fließkomma-Zahl ausgegeben.
-	 </member>
-	 <member>
-	  <literal>o</literal> - das Argument wird als Integer angesehen und
-    und als Oktalwert ausgegeben.
-	 </member>
-	 <member>
-	  <literal>s</literal> - das Argument wird als String angesehen und
-    als solcher ausgegeben.
-	 </member>
-	 <member>
-	  <literal>x</literal> - das Argument wird als Integer angesehen und
-    als Hexadezimal-Wert ausgegeben (mit Kleinbuchstaben).
-	 </member>
-	 <member>
-	  <literal>X</literal> - das Argument wird als Integer angesehen und
-    als Hexadezimal-Wert ausgegeben (mit Großbuchstaben).
-	 </member>
-	</simplelist>
+        Einer <emphasis>Typ-Angabe</emphasis> welche den Typ enthält,
+        als der das Argument angesehen werden soll. Mögliche Angaben
+        sind:
+        <simplelist>
+         <member>
+          <literal>%</literal> - ein Prozent-Zeichen ("%"). Es ist kein
+          Argument erforderlich.
+         </member>
+         <member>
+          <literal>b</literal> - das Argument wird als Integer
+          angesehen und als Binär-Wert ausgegeben.
+         </member>
+         <member>
+          <literal>c</literal> - das Argument wird als Integer
+          angesehen und das entsprechende ASCII-Zeichen wird
+          ausgegeben.
+         </member>
+         <member>
+          <literal>d</literal> - das Argument wird als Integer
+          angesehen und ein Dezimalwert ausgegeben.
+         </member>
+         <member>
+          <literal>f</literal> - das Argument wird als "double"
+          angesehen und eine Fließkomma-Zahl ausgegeben.
+         </member>
+         <member>
+          <literal>o</literal> - das Argument wird als Integer
+          angesehen und und als Oktalwert ausgegeben.
+         </member>
+         <member>
+          <literal>s</literal> - das Argument wird als String angesehen
+          und als solcher ausgegeben.
+         </member>
+         <member>
+          <literal>x</literal> - das Argument wird als Integer
+          angesehen und als Hexadezimal-Wert ausgegeben (mit
+          Kleinbuchstaben).
+         </member>
+         <member>
+          <literal>X</literal> - das Argument wird als Integer
+          angesehen und als Hexadezimal-Wert ausgegeben (mit
+          Großbuchstaben).
+         </member>
+        </simplelist>
        </para>
       </listitem>
      </orderedlist>
@@ -2891,7 +2952,7 @@ echo substr_replace ($var, '', 10, -1) . "&lt;br&gt;\n";
    <refnamediv>
     <refname>trim</refname> 
     <refpurpose>
-     Entfernt überflüssige Zeichen ("whitespace" am Anfang und Ende
+     Entfernt überflüssige Zeichen ("whitespace") am Anfang und Ende
      eines Strings
     </refpurpose>
    </refnamediv>
@@ -2910,8 +2971,8 @@ echo substr_replace ($var, '', 10, -1) . "&lt;br&gt;\n";
      "\v", "\0" und normale Leerzeichen.
     </para>
     <para>
-     Siehe auch <function>chop</function> und
-     <function>ltrim</function>.
+     Siehe auch <function>chop</function>, <function>ltrim</function>,
+     und <function>rtrim</function>.
     </para>
    </refsect1>
   </refentry>
@@ -3016,6 +3077,9 @@ $text = ucwords ($text); // $text ist jetzt: "Markus Ist Ein Kleines
       <paramdef>string
        <parameter><optional>break</optional></parameter>
       </paramdef>
+      <paramdef>int
+       <parameter><optional>cut</optional></parameter>
+      </paramdef>
      </funcprototype>
     </funcsynopsis>
     <para>
@@ -3031,12 +3095,18 @@ $text = ucwords ($text); // $text ist jetzt: "Markus Ist Ein Kleines
      und / oder <parameter>break</parameter> nicht angegeben werden.
     </para>
     <para>
+     Steht <parameter>cut</parameter> auf 1, wird der String immer an
+     der vorgegebenen Länge umgebrochen. Ist ein Wort also länger als
+     die gegebene Länge, wird es mitten drin umgebrochen (siehe zweites
+     Beispiel)
+    </para>
+    <para>
      <example>
       <title><function>Wordwrap</function>-Beispiel:</title>
       <programlisting role="php">
 $text = "Der schnelle braune Fuchs springt über den blöden Hund.";
-$newtext = wordwrap( $text, 20 );
-echo "$newtext\n";
+$neuertext = wordwrap( $text, 20 );
+echo "$neuertext\n";
       </programlisting>
      </example>
     </para>
@@ -3048,6 +3118,29 @@ echo "$newtext\n";
       <programlisting>
 Der schnelle braune 
 Fuchs springt über den blöden Hund.
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     <example>
+      <title><function>wordwrap</function> example</title>
+      <programlisting role="php">
+$text = "Ein sehr langes Wooooooooooort.";
+$neuertext = wordwrap( $text, 8, "\n", 1);
+echo "$neuertext\n";
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Dieses Beispiel gibt aus:
+    </para>
+    <para>
+     <informalexample>
+      <programlisting>
+Ein sehr
+langes W
+oooooooo
+ooort.
       </programlisting>
      </informalexample>
     </para>
