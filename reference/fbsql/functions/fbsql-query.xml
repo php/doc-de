@@ -1,101 +1,100 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.1 Maintainer: spic Status: working -->
-<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.1 Maintainer: spic Status: ready -->
+<!-- $Revision: 1.3 $ -->
 <!-- splitted from ./en/functions/fbsql.xml, last change in rev 1.1 -->
   <refentry id="function.fbsql-query">
    <refnamediv>
     <refname>fbsql_query</refname>
-    <refpurpose>Send a FrontBase query</refpurpose>
+    <refpurpose>Sendet eine FrontBase-Abfrage</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
      <methodsynopsis>
       <type>resource</type><methodname>fbsql_query</methodname>
-      <methodparam><type>string</type><parameter>query</parameter></methodparam>
-      <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter></methodparam>
+      <methodparam><type>string</type><parameter>Abfrage</parameter></methodparam>
+      <methodparam choice="opt"><type>resource</type><parameter>Verbindungskennung</parameter></methodparam>
      </methodsynopsis>
-    <para> 
-     <function>fbsql_query</function> sends a query to the currently
-     active database on the server that's associated with the
-     specified link identifier.  If
-     <parameter>link_identifier</parameter> isn't specified, the last
-     opened link is assumed.  If no link is open, the function tries
-     to establish a link as if <function>fbsql_connect</function> was
-     called with no arguments, and use it.
+    <para>
+     <function>fbsql_query</function> sendet eine Abfrage an die momentan
+     active Datenbank auf dem Server, der mit der Verbindungskennung
+     spezifiziert ist.  Wenn die
+     <parameter>Verbindungskennung</parameter> nicht angegeben ist, wird die
+     zuletzt geöffnete Verbindung verwendet.  Wenn keine Verbindung offen ist, wird versucht
+     eine Verbindung aufzubauen. Dies geschieht in der gleichen Weise, als ob <function>fbsql_connect</function> was
+     ohne Argumente aufgerufen wird.
     </para>
     <note>
      <para>
-      The query string shall always end with a semicolon.
+      Der Abfrage-String soll immer mit einem Semikolon enden.
      </para>
     </note>
     <para>
-     <function>fbsql_query</function> returns &true; (non-zero) or &false;
-     to indicate whether or not the query succeeded.  A return value
-     of &true; means that the query was legal and could be executed by
-     the server.  It does not indicate anything about the number of
-     rows affected or returned. It is perfectly possible for a query
-     to succeed but affect no rows or return no rows.
+     <function>fbsql_query</function> liefert zur Überprüfung des Erfolgs der Abfrage
+     &true; (Nicht NULL) oder &false; zurück.  Ein &true;-Rückgabewert
+     bestätigt, dass die Abfrage gültig war und vom Server ausgeführt werden konnte.
+     Über den Rückgabewert können nicht die betroffenen oder selektierten Datensätze ermittelt werden.
+     Es ist sogar möglich, dass die Abfrage erfolgreich war, aber keine
+     Datensätze betroffen oder selektiert werden.
     </para>
     <para>
-     The following query is syntactically invalid, so
-     <function>fbsql_query</function> fails and returns &false;:
+     Die folgende Abfrage ist syntaktisch falsch, so dass
+     <function>fbsql_query</function> fehlschlägt und &false; zurückliefert:
      <example>
-      <title><function>fbsql_query</function> example</title>
+      <title><function>fbsql_query</function> Beispiel</title>
       <programlisting role="php">
 <![CDATA[
 <?php
 $result = fbsql_query ("SELECT * WHERE 1=1")
-    or die ("Invalid query");
+    or die ("Abfrage gescheitert");
 ?>
 ]]>
       </programlisting>
      </example>
     </para>
     <para>
-     The following query is semantically invalid if
-     <literal>my_col</literal> is not a column in the table
-     <literal>my_tbl</literal>, so <function>fbsql_query</function>
-     fails and returns &false;:
+     Die folgende Abfrage ist sematisch falsch, wenn
+     <literal>my_col</literal> keine Spalte in der Tabelle
+     <literal>my_tbl</literal> ist. Deshalb schlägt <function>fbsql_query</function>
+     fehl und liefert &false; zurück:
      <example>
       <title><function>fbsql_query</function> example</title>
       <programlisting role="php">
 <![CDATA[
 <?php
 $result = fbsql_query ("SELECT my_col FROM my_tbl")
-    or die ("Invalid query");
+    or die ("Abfrage gescheitert");
 ?>
 ]]>
       </programlisting>
      </example>
     </para>
     <para>
-     <function>fbsql_query</function> will also fail and return
-     &false; if you don't have permission to access the table(s)
-     referenced by the query.
+     <function>fbsql_query</function> schlägt ebenso fehl und liefert
+     &false;, wenn Sie keine Berechtigung zum Zugriff auf die verwiesene(n)
+     Tabelle(n) haben.
     </para>
     <para>
-     Assuming the query succeeds, you can call
-     <function>fbsql_num_rows</function> to find out how many rows
-     were returned for a SELECT statement or
-     <function>fbsql_affected_rows</function> to find out how many
-     rows were affected by a DELETE, INSERT, REPLACE, or UPDATE
-     statement.
+     Wenn die Abfrage ist erfolgreich ist, können Sie
+     <function>fbsql_num_rows</function> aufrufen, um herauszufinden
+     wie viele Datensätze von einer SELECT-Abfrage zurückgeliefert wurde.
+     Falls Sie eine DELETE-, INSERT-, REPLACE- oder UPDATE-Abfrage verwendet haben,
+     können Sie <function>fbsql_affected_rows</function> verwendet, um
+     die betroffenen Datensätze herauszufinden.
     </para>
     <para>
-     For SELECT statements, <function>fbsql_query</function> returns a
-     new result identifier that you can pass to
-     <function>fbsql_result</function>.  When you are done with the
-     result set, you can free the resources associated with it by
-     calling <function>fbsql_free_result</function>.  Although, the
-     memory will automatically be freed at the end of the script's
-     execution.
+     Nur bei SELECT-Abfragen wird <function>fbsql_query</function> eine
+     neue Ergebniskennung zurück, die Sie an
+     <function>fbsql_result</function übergeben können>.  Wenn die Bearbeitung des
+     Ergebnisses abgeschlossen ist, können Sie die belegten Resourcen durch den Aufruf
+     von <function>fbsql_free_result</function> freigeben. Bei Scriptende wird der
+     belegte Speicher automatisch freigegeben.
     </para>
     <para>
-     See also: <function>fbsql_affected_rows</function>,
+     Siehe auch: <function>fbsql_affected_rows</function>,
      <function>fbsql_db_query</function>,
      <function>fbsql_free_result</function>,
      <function>fbsql_result</function>,
-     <function>fbsql_select_db</function>, and
+     <function>fbsql_select_db</function> und
      <function>fbsql_connect</function>.
     </para>
    </refsect1>
