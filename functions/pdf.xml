@@ -96,7 +96,9 @@
       <function>pdf_set_info_keywords</function> benötigen nicht mehr
       die Info-Struktur als ersten Parameter sondern das PDF-Dokument.
       Dies bedeutet zudem, dass das PDF-Dokument vor dem Aufruf dieser
-      Funktion geöffnet werden muss.
+      Funktion geöffnet werden muss. Die obigen Funktionen können und
+      sollten zudem durch die Funktion <function>pdf_set_info</function>
+      ersetzt werden.
      </simpara>
     </listitem>
     <listitem>
@@ -335,246 +337,53 @@ fclose($fp);
     </example></para>
    </partintro>
 
-  <refentry id="function.pdf-get-info">
+  <refentry id="function.pdf-set-info">
    <refnamediv>
-    <refname>PDF_get_info</refname>
-    <refpurpose>Liefert eine leere Info-Struktur für ein PDF-Dokument</refpurpose>
+    <refname>PDF_set_info</refname>
+    <refpurpose>Setzt Info-Feld der Dokumenteninformation</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
     <funcsynopsis>
-     <funcdef>info <function>pdf_get_info</function></funcdef>
-     <paramdef>string <parameter>Dateiname</parameter></paramdef>
+     <funcdef>void <function>pdf_set_info</function></funcdef>
+     <paramdef>int <parameter>PDF Dokument</parameter></paramdef>
+     <paramdef>string <parameter>Feldname</parameter></paramdef>
+     <paramdef>string <parameter>Wert</parameter></paramdef>
     </funcsynopsis>
     <para>
-     Die Funktion <function>PDF_get_info</function> liefert eine
-     leere Info-Struktur für das PDF-Dokument. Sie sollte mit
-     sinnvollen Werten wie z.B. den Namen des Autors, dem Title usw.
-     gefüllt werden.
+     Die Funktion <function>PDF_set_info</function> setzt ein
+     Feld der Dokumenteninformation.
+     Mögliche Informationsfelder die gesetzt werden können sind
+     'Subject', 'Title', 'Creator', 'Author', 'Keywords' sowie ein Feld mit
+     einem beliebigen Namen.
+     Die Funktion kann vor dem
+     Beginnen einer Seite aufgerufen werden.
+
+     <example>
+      <title>Dokumenteninformation setzen</title>
+      <programlisting>
+&lt;?php 
+$fd = fopen("test.pdf", "w");
+$pdfdoc = pdf_open($fd);
+pdf_set_info($pdfdoc, "Author", "Uwe Steinmann");
+pdf_set_info($pdfdoc, "Creator", "Uwe Steinmann");
+pdf_set_info($pdfdoc, "Title", "Testing Info Fields");
+pdf_set_info($pdfdoc, "Subject", "Test");
+pdf_set_info($pdfdoc, "Keywords", "Test, Fields");
+pdf_set_info($pdfdoc, "CustomField", "What ever makes sense");
+pdf_begin_page($pdfdoc, 595, 842);
+pdf_end_page($pdfdoc);
+pdf_close($pdfdoc);
+?>
+</programlisting></example></para>
 
     <note><simpara>
-     Diese Funktion exestiert nicht, wenn pdflib 2.x verwendet wird. 
-    </simpara></note></para>
-
-    <para>
-     Siehe auch <function>PDF_set_info_creator</function>,
-              <function>PDF_set_info_author</function>,
-              <function>PDF_set_info_keywords</function>,
+     Diese Funktion ersetzt <function>PDF_set_info_keywords</function>,
               <function>PDF_set_info_title</function>,
-              <function>PDF_set_info_subject</function>.</para>
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.pdf-set-info-creator">
-   <refnamediv>
-    <refname>PDF_set_info_creator</refname>
-    <refpurpose>Setzt das Erzeuger-Feld der Info-Struktur</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-    <funcsynopsis>
-     <funcdef>void <function>pdf_set_info_creator</function></funcdef>
-     <paramdef>info <parameter>info</parameter></paramdef>
-     <paramdef>string <parameter>Erzeuger</parameter></paramdef>
-    </funcsynopsis>
-    <para>
-     Die Funktion <function>PDF_set_info_creator</function> setzt das
-     Erzeuger-Feld eines PDF-Dokument.
-     Die Funktion muss nach
-     <function>PDF_get_info</function> und vor
-     <function>PDF_open</function> aufgerufen werden.
-     Ein Aufruf der Funktion nach <function>PDF_open</function>
-     hat keinen Effekt auf das Dokument.
-
-    <note><simpara>
-     Diese Funktion ist nicht Teil der pdflib.
-    </simpara></note>
-
-    <note><simpara>
-     Diese Funktion benötigt bei Verwendung von pdflib 2.x einen anderen
-     ersten Parameter. Der erste Parameter muss der Deskriptor des
-     PDF-Dokuments sein, wie er von der Funktion <function>pdf_open</function>
-     zurück geliefert wird. Infolgedessen, muss
-     <function>pdf_open</function> vor dieser Funktion aufgerufen werden.
-    </simpara></note></para>
-
-    <para>
-     Siehe auch <function>PDF_get_info</function>,
-              <function>PDF_set_info_keywords</function>,
-              <function>PDF_set_info_title</function>,
-              <function>PDF_set_info_subject</function>.</para>
-
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.pdf-set-info-title">
-   <refnamediv>
-    <refname>PDF_set_info_title</refname>
-    <refpurpose>Setzt das Titel-Feld der Info-Structur</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-    <funcsynopsis>
-     <funcdef>void <function>pdf_set_info_title</function></funcdef>
-     <paramdef>info <parameter>Info</parameter></paramdef>
-     <paramdef>string <parameter>Titel</parameter></paramdef>
-    </funcsynopsis>
-    <para>
-     Die Funktion <function>PDF_set_info_title</function> setzt das
-     Titel-Feld des PDF-Dokuments.
-     Die Funktion muss nach
-     <function>PDF_get_info</function> und vor
-     <function>PDF_open</function> aufgerufen werden.
-     Ein Aufruf der Funktion nach <function>PDF_open</function>
-     hat keinen Effekt auf das Dokument.
-
-    <note><simpara>
-     Diese Funktion ist nicht Teil der pdflib.
-    </simpara></note>
-
-    <note><simpara>
-     Diese Funktion benötigt bei Verwendung von pdflib 2.x einen anderen
-     ersten Parameter. Der erste Parameter muss der Deskriptor des
-     PDF-Dokuments sein, wie er von der Funktion <function>pdf_open</function>
-     zurück geliefert wird. Infolgedessen, muss
-     <function>pdf_open</function> vor dieser Funktion aufgerufen werden.
-    </simpara></note></para>
-
-    <para>
-     Siehe auch <function>PDF_get_info</function>,
+              <function>PDF_set_info_subject</function>,
               <function>PDF_set_info_creator</function>,
-              <function>PDF_set_info_author</function>,
-              <function>PDF_set_info_keywords</function>,
-              <function>PDF_set_info_subject</function>.</para>
-
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.pdf-set-info-subject">
-   <refnamediv>
-    <refname>PDF_set_info_subject</refname>
-    <refpurpose>Setzt Thema-Feld der Info-Struktur</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-    <funcsynopsis>
-     <funcdef>void <function>pdf_set_info_subject</function></funcdef>
-     <paramdef>info <parameter>info</parameter></paramdef>
-     <paramdef>string <parameter>subject</parameter></paramdef>
-    </funcsynopsis>
-    <para>
-     Die Funktion <function>PDF_set_info_subject</function> setzt das
-     Thema-Feld des PDF-Dokuments.
-     Die Funktion muss nach
-     <function>PDF_get_info</function> und vor
-     <function>PDF_open</function> aufgerufen werden.
-     Ein Aufruf der Funktion nach <function>PDF_open</function>
-     hat keinen Effekt auf das Dokument.
-
-    <note><simpara>
-     Diese Funktion ist nicht Teil der pdflib.
-    </simpara></note>
-
-    <note><simpara>
-     Diese Funktion benötigt bei Verwendung von pdflib 2.x einen anderen
-     ersten Parameter. Der erste Parameter muss der Deskriptor des
-     PDF-Dokuments sein, wie er von der Funktion <function>pdf_open</function>
-     zurück geliefert wird. Infolgedessen, muss
-     <function>pdf_open</function> vor dieser Funktion aufgerufen werden.
+              <function>PDF_set_info_sybject</function>.
     </simpara></note></para>
-
-    <para>
-     Siehe auch <function>PDF_get_info</function>,
-              <function>PDF_set_info_creator</function>,
-              <function>PDF_set_info_author</function>,
-              <function>PDF_set_info_title</function>,
-              <function>PDF_set_info_keywords</function>.</para>
-
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.pdf-set-info-keywords">
-   <refnamediv>
-    <refname>PDF_set_info_keywords</refname>
-    <refpurpose>Setzt des Stichwort-Feld der Info-Struktur</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-    <funcsynopsis>
-     <funcdef>void <function>pdf_set_info_keywords</function></funcdef>
-     <paramdef>info <parameter>Info</parameter></paramdef>
-     <paramdef>string <parameter>Stichworte</parameter></paramdef>
-    </funcsynopsis>
-    <para>
-     Die Funktion <function>PDF_set_info_keywords</function> setzt das
-     Stichwort-Feld des PDF-Dokuments.
-     Die Funktion muss nach
-     <function>PDF_get_info</function> und vor
-     <function>PDF_open</function> aufgerufen werden.
-     Ein Aufruf der Funktion nach <function>PDF_open</function>
-     hat keinen Effekt auf das Dokument.
-
-    <note><simpara>
-     Diese Funktion ist nicht Teil der pdflib.
-    </simpara></note>
-
-    <note><simpara>
-     Diese Funktion benötigt bei Verwendung von pdflib 2.x einen anderen
-     ersten Parameter. Der erste Parameter muss der Deskriptor des
-     PDF-Dokuments sein, wie er von der Funktion <function>pdf_open</function>
-     zurück geliefert wird. Infolgedessen, muss
-     <function>pdf_open</function> vor dieser Funktion aufgerufen werden.
-    </simpara></note></para>
-
-    <para>
-     Siehe auch <function>PDF_get_info</function>,
-              <function>PDF_set_info_creator</function>,
-              <function>PDF_set_info_author</function>,
-              <function>PDF_set_info_title</function>,
-              <function>PDF_set_info_subject</function>.</para>
-
-   </refsect1>
-  </refentry>
-
-  <refentry id="function.pdf-set-info-author">
-   <refnamediv>
-    <refname>PDF_set_info_author</refname>
-    <refpurpose>Setzt das Autor-Feld der Info-Structur</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-    <funcsynopsis>
-     <funcdef>void <function>pdf_set_info_author</function></funcdef>
-     <paramdef>info <parameter>info</parameter></paramdef>
-     <paramdef>string <parameter>author</parameter></paramdef>
-    </funcsynopsis>
-    <para>
-     Die Funktion <function>PDF_set_info_author</function> setzt das
-     Autor-Feld des PDF-Dokuments.
-     Die Funktion muss nach
-     <function>PDF_get_info</function> und vor
-     <function>PDF_open</function> aufgerufen werden.
-     Ein Aufruf der Funktion nach <function>PDF_open</function>
-     hat keinen Effekt auf das Dokument.
-
-    <note><simpara>
-     Diese Funktion ist nicht Teil der pdflib.
-    </simpara></note>
-
-    <note><simpara>
-     Diese Funktion benötigt bei Verwendung von pdflib 2.x einen anderen
-     ersten Parameter. Der erste Parameter muss der Deskriptor des
-     PDF-Dokuments sein, wie er von der Funktion <function>pdf_open</function>
-     zurück geliefert wird. Infolgedessen, muss
-     <function>pdf_open</function> vor dieser Funktion aufgerufen werden.
-    </simpara></note></para>
-
-    <para>
-     Siehe auch <function>PDF_get_info</function>,
-              <function>PDF_set_info_creator</function>,
-              <function>PDF_set_info_keywords</function>,
-              <function>PDF_set_info_title</function>,
-              <function>PDF_set_info_subject</function>.</para>
 
    </refsect1>
   </refentry>
