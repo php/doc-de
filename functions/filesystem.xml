@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.126 Maintainer: tom Status: ready -->
+<!-- EN-Revision: 1.130 Maintainer: tom Status: ready -->
 <reference id="ref.filesystem">
   <title>Funktionen des Dateisystems</title>
   <titleabbrev>Filesystem</titleabbrev>
+
+  <partintro>
+   <simpara>
+    Verwandte Funktionen finden Sie in den Abschnitten <link
+    linkend="ref.dir">Verzeichnis-Funktionen</link> und <link
+    linkend="ref.exec">Funktionen zur Programmausführung</link>.
+   </simpara>
+  </partintro>
 
   <refentry id="function.basename">
    <refnamediv>
@@ -227,6 +235,14 @@ if (!copy($file, $file.'.bak')) {
       </programlisting>
      </example>
     </para>
+    <note>
+     <para>
+      Ab PHP 4.3.0 können die Parameter <parameter>source</parameter> und
+      <parameter>dest</parameter> auch URLs sein, wenn "fopen wrappers"
+      aktiviert ist. Weitere Details hierzu finden Sie unter
+      <function>fopen</function>.
+     </para>
+    </note>
     <warning>
      <para>
       Sollte die Zieldatei bereits existieren, wird sie überschrieben.
@@ -696,6 +712,28 @@ fclose ($fd);
    </refsect1>
   </refentry>
 
+  <refentry id="function.file-get-contents">
+   <refnamediv>
+    <refname>file_get_contents</refname> 
+    <refpurpose>Liest die gesamte Datei in einen String</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+     <methodsynopsis>
+      <type>string</type><methodname>file_get_contents</methodname>
+      <methodparam><type>string</type><parameter>filename</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>use_include_path</parameter></methodparam>
+     </methodsynopsis>
+    <para> 
+     Diese Funktion ist mit <function>readfile</function> identisch,
+     außer dass <function>file_get_contents</function> die Datei in
+     einem String zurückgibt.
+    </para>
+    &note.bin-safe;
+    &tip.fopen-wrapper;
+   </refsect1>
+  </refentry>
+  
   <refentry id="function.file">
    <refnamediv>
     <refname>file</refname>
@@ -747,11 +785,17 @@ $fcontents = implode ('', file ('http://www.php.net/'));
       </programlisting>
      </informalexample>
     </para>
+    <note>
+     <para>
+      Ab PHP 4.3.0 können Sie <function>file_get_contents</function>
+      verwenden, um den Inhalt einer Datei als binären String zu bekommen.
+     </para>
+    </note>
     &note.not-bin-safe;
     &tip.fopen-wrapper;
     <para>
      Siehe auch <function>readfile</function>,
-     <function>fopen</function>, <function>fsockopen</function>, und 
+     <function>fopen</function>, <function>fsockopen</function> und 
      <function>popen</function>.
     </para>
    </refsect1>
@@ -1188,6 +1232,35 @@ $fcontents = implode ('', file ('http://www.php.net/'));
    </refsect1>
   </refentry>
 
+  <refentry id="function.fgetwrapperdata">
+   <refnamediv>
+    <refname>fgetwrapperdata</refname>
+    <refpurpose>Liefert Kopf-/Metadaten von geöffneten Dateien</refpurpose>
+   </refnamediv>
+   <refsect1>
+    <title>Beschreibung</title>
+     <methodsynopsis>
+      <type>mixed</type><methodname>fgetwrapperdata</methodname>
+      <methodparam><type>int</type><parameter>fp</parameter></methodparam>
+     </methodsynopsis>
+    <simpara>
+     Diese Funktion gibt die Kopf- oder Metadaten von mittels 
+     <function>fopen</function> geöffneten Dateien zurück. Dies ist
+     hilfreich, um Antwort headers von HTTP Verbindungen, oder andere
+     Statistiken anderer Ressourcen zu erhalten.
+    </simpara>
+    <simpara>
+     Das Format der zurückgegebenen Daten ist derzeit bewusst nicht
+     dokumentiert.
+    </simpara>
+    <note>
+     <para>
+      Diese Funktion wurde in PHP 4.3.0 eingeführt.
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
   <refentry id="function.fopen">
    <refnamediv>
     <refname>fopen</refname>
@@ -1206,16 +1279,27 @@ $fcontents = implode ('', file ('http://www.php.net/'));
     <simpara>
      Wenn <parameter>filename</parameter> mit "http://" (nicht case
      sensitive) beginnt, wird zu dem spezifiziertem Server eine HTTP
-     1.0 Connection geöffnet, die Seite mittels der HTTP GET Methode
+     1.0 Verbindung geöffnet, die Seite mittels der HTTP GET Methode
      angefordert, und ein Dateizeiger auf den Anfang des Textes der 
      Antwort zurückgegeben. Ein 'Host:' header wird mit der Anfrage 
 	 geschickt, um namens-basierte Virtual Hosts zu verarbeiten.
     </simpara>
     <simpara>
+     Ab PHP 4.3.0 (noch nicht freigegeben) können Sie eine HTTP Verbindung
+     über SSL mit "https://" verwenden, wenn Sie PHP mit Unterstützung für
+     OpenSSL kompiliert haben.
+    </simpara>
+    <simpara>
      Beachten Sie, dass Ihnen der Dateizeiger nur den Empfang des 
-     <emphasis>body</emphasis> aus der Antwort erlaubt; mit dieser 
-     Funktion können Sie auf den HTTP response header nicht zugreifen.
-     Weiters sind HTTP Verbindungen nur zum Lesen.
+     <emphasis>body</emphasis> aus der Antwort erlaubt. Um den HTTP
+     Antwortheader zu erhalten, benötigen Sie PHP ab Version 4.0.5. Die
+     Headers werden in der Variable $http_response_header gespeichert.
+     Ab PHP 4.3.0 (noch nicht freigegeben) kann die Header Information
+     mittels <function>fgetwrapperdata</function> geholt werden.
+    </simpara>
+    <simpara>
+     HTTP Verbindungen sind nur zum Lesen, d.h. Sie können keine Daten
+     schreiben oder Dateien an eine HTTP Ressource kopieren.
     </simpara>
     <simpara>
      In älteren Versionen als PHP 4.0.5 werden Weiterleitungen (HTTP 
@@ -2062,9 +2146,9 @@ if($fp){
      Funktion weiterhelfen:
      <note>
       <para>
-       Dies funktioniert <emphasis>nicht</emphasis> in Versionen nach
-       PHP 4.0.2. Das liegt an der internen Funktionalität von PHP,
-       welche sich nach dieser Version geändert hat.
+       Das folgende Beispiel funktioniert <emphasis>nicht</emphasis> in
+       Versionen nach PHP 4.0.2. Das liegt an der internen Funktionalität
+       von PHP, welche sich nach dieser Version geändert hat.
       </para>
      </note>
      <programlisting role="php">
@@ -2555,7 +2639,7 @@ pclose($fp);
     </para>
     <para>
      Wenn <parameter>filename</parameter> mit "ftp://" (nicht case
-     sensitive) beginnt, wird eine FTP Verindung zu dem
+     sensitive) beginnt, wird eine FTP Verbindung zu dem
      spezifiziertem Server hergestellt und die angeforderte Datei wird
      auf der Standartausgabe ausgegeben. Wenn der Server keinen
      passiven Mode unterstützt, wird diese Funktion fehlschlagen.
