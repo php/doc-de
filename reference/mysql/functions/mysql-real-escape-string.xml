@@ -1,66 +1,172 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.9 Maintainer: betz Status: ready -->
-
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.14 Maintainer: betz Status: ready -->
   <refentry id="function.mysql-real-escape-string">
    <refnamediv>
     <refname>mysql_real_escape_string</refname>
     <refpurpose>
-     Escapes special characters in a string for use in a SQL statement,
-     taking into account the current charset of the connection.
+     Maskiert spezielle Zeichen innerhalb eines Strings für die Benutzung in
+     einer SQL-Anweisung
     </refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Description</title>
+    <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>mysql_real_escape_string</methodname>
       <methodparam><type>string</type><parameter>unescaped_string</parameter></methodparam>
       <methodparam choice="opt"><type>resource</type><parameter>Ergebnis-Kennung</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Diese Funktion maskiert spezielle Zeichen in
-     <parameter>unescaped_string</parameter>, unter Berücksichtigung
-      des aktuellen Zeichensatzes der Verbindung, zur sicheren Benutzung
-      in <function>mysql_query</function>.
+     <variablelist>
+      <varlistentry>
+       <term><parameter>unescaped_string</parameter></term>
+       <listitem><simpara>Zeichenkette, die maskiert werden soll</simpara>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><parameter>Ergebnis-Kennung</parameter> (optional)</term>
+       <listitem><simpara>Eine MySQL Verbindungsressource</simpara></listitem>
+      </varlistentry>
+     </variablelist>
     </para>
-    <note>
-     <simpara>
-      Die Zeichen <literal>%</literal> und <literal>_</literal> werden von 
-      <function>mysql_real_escape_string</function> nicht maskiert.
-     </simpara>
-    </note>
+    <para>
+     Diese Funktion maskiert spezielle Zeichen in
+     <parameter>unescaped_string</parameter>, unter Berücksichtigung des
+     aktuellen Zeichensatzes der Verbindung, zur sicheren Benutzung in
+     <function>mysql_query</function>. Falls Sie vorhaben, binäre Daten
+     einzufügen, müssen Sie diese Funktion benutzen.
+    </para>
+    <para>
+     <function>mysql_real_escape_string</function> ruft die MySQL
+     Bibliotheksfunktion mysql_escape_string auf, diese stellt den folgenden
+     Zeichen einen Backslash voran:
+     <literal>NULL</literal>, <literal>\x00</literal>, <literal>\n</literal>,
+     <literal>\r</literal>, <literal>\</literal>, <literal>'</literal>,
+     <literal>"</literal> und <literal>\x1a</literal>.
+    </para>
     <para>
      <example>
-      <title><function>mysql_real_escape_string</function> Beispiel</title>
+      <title>Einfaches <function>mysql_real_escape_string</function> Beispiel</title>
       <programlisting role="php">
 <![CDATA[
 <?php
-$link = mysql_connect('localhost', 'mysql_user', 'mysql_password');
-if (!$link) {
-    die('Keine Verbindung möglich: ' . mysql_error());
+// verbinden
+$link = mysql_connect('mysql_host', 'mysql_user', 'mysql_password')
+    OR die(mysql_error());
+
+// Anfrage
+$query = sprintf("SELECT * FROM users WHERE user='%s' AND password='%s'",
+            mysql_real_escape_string($user),
+            mysql_real_escape_string($password));
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Bevor Sie eine Anfrage an MySQL absetzten, müssen Sie immer diese Funktion
+     verwenden (mit einigen Ausnahmen), um Ihre Daten sicher zu machen. Falls
+     Sie <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>
+     aktiviert haben und mit Daten aus Benutzereingaben arbeiten, müssen Sie
+     vorher Ihre Daten mit <function>stripslashes</function> behandeln. Falls
+     Ihre Daten aus anderen Quellen stammen und Sie
+     <link linkend="ini.magic-quotes-runtime">magic_quotes_runtime</link>
+     aktiviert haben, müssen Sie ebenfalls Ihre Daten mit
+     <function>stripslashes</function> behandeln. Falls Sie diesen Rat nicht
+     beherzigen, ist Ihre Anwendung anfällig für SQL Code-Einschleusung. Hier
+     ein Beispiel:
+    </para>
+    <para>
+     <example>
+      <title>Ein Beispiel für SQL Code-Einschleusung</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Anfrage an die Datenbank zum prüfen, ob übereinstimmende user vorhanden sind
+$query = "SELECT * FROM users WHERE user='{$_POST['username']}' AND password='{$_POST['password']}'";
+mysql_query($query);
+
+// Wir haben $_POST['password'] nicht überprüft, könnte alles mögliche enthalten
+// was ein User will. Zum Beispiel:
+$_POST['username'] = 'aidan';
+$_POST['password'] = "' OR 1=1";
+
+// Die gesendete Anfrage an MySQL würde sein:
+echo $query;
+?>
+]]>
+      </programlisting>
+       <para>
+        Gesendete Anfrage an MySQL:
+       </para>
+      <screen>
+<![CDATA[
+SELECT * FROM users WHERE name='aidan' AND password='' OR 1=1
+]]>
+      </screen>
+      <para>
+       Diesers Vorgehen würde es jeder beliebigen Person erlauben, sich ohne
+       gültiges Passwort einzuloggen! Bei der Verwendung von
+       <function>mysql_real_escape_string</function> für jede Variable wird
+       dies verhindert.
+      </para>
+      <programlisting role="php">
+<![CDATA[
+<?php
+/**
+ * Variable für sichere Verwendung quotieren
+ */
+function quote_smart($value)
+{
+    // stripslashes, falls nötig
+    if (get_magic_quotes_gpc()) {
+        $value = stripslashes($value);
+    }
+
+    // quotieren, falls kein integer
+    if (!is_int($value)) {
+        $value = "'" . mysql_real_escape_string($value) . "'";
+    }
+
+    return $value;
 }
-$item = "Zak's und Derick's Laptop";
-$escaped_item = mysql_real_escape_string($item, $link);
-printf("Escaped string: %s\n", $escaped_item);
+
+// verbinden
+$link = mysql_connect('mysql_host', 'mysql_user', 'mysql_password')
+    OR die(mysql_error());
+
+// sichere Anfrage formulieren
+$query = sprintf("SELECT * FROM users WHERE user=%s AND password=%s",
+            quote_smart($_POST['username']),
+            quote_smart($_POST['password']));
+
+mysql_query($query);
 ?>
 ]]>
       </programlisting>
       <para>
-       Das Beispiel oben führt zu dieser Ausgabe:
+       Die Anfrage wird nun korrekt ausgeführt und Code-Einschleusung ist nicht
+       mehr möglich.
       </para>
-      <screen>
-<![CDATA[
-Escaped string: Zak\'s und Derick\'s Laptop
-]]>
-      </screen>
      </example>
     </para>
+    <note>
+     <simpara>
+      Die Zeichen <literal>%</literal> und <literal>_</literal> werden von 
+      <function>mysql_real_escape_string</function> nicht maskiert. Diese
+      Zeichen sind für MySQL Platzhalter, wenn sie zusammen mit
+      <literal>LIKE</literal>, <literal>GRANT</literal>, oder
+      <literal>REVOKE</literal> benutzt werden.
+     </simpara>
+    </note>
     <para>
      Siehe auch:
-     <function>mysql_escape_string</function>,
      <function>mysql_client_encoding</function>,
-     <function>addslashes</function> und die
-     <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>
+     <function>addslashes</function>,
+     <function>stripslashes</function>,
+     die <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>
+     und die
+     <link linkend="ini.magic-quotes-runtime">magic_quotes_runtime</link>
      Einstellung.
     </para>
    </refsect1>
