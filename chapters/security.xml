@@ -1,3 +1,4 @@
+<!-- up-to-date against phpdoc/en/chapters/security.xml:1.23 -->
 <chapter id="security">
   <title>Sicherheit</title>
 
@@ -281,22 +282,30 @@ AddHandler php-script .php
    <simpara>
     Es wurde festgestellt, dass wenn einmal die Sicherheitsmaßnahmen so 
     weit eingerichtet sind dass dem PHP User (in diesem Fall ein Apache 
-    User) nur mehr ein geringes Risiko bleibt, PHP schon oft daran gehindert 
-    wurde, virenverseuchte Dateien in das Userverzeichnis zu schreiben. Oder 
-    vielleicht wurde es auch daran gehindert, auf nicht öffentliche 
-    Datenbanken zuzugreifen oder diese ga zu verändern. In gleicher Weise 
-    wird auch davor "geschützt", gewollte Dateien zu schreiben oder 
-    Datenbanktransaktionen durchzuführen.
+    User) nur mehr ein geringes Risiko bleibt, PHP daran gehindert wird, 
+    virenverseuchte Dateien in das Benutzerverzeichnis zu schreiben. Oder 
+    vielleicht wurde es auch daran gehindert, auf Datenbanken zuzugreifen 
+    oder diese gar zu verändern. In gleicher Weise wird auch davor 
+    abgehalten, "gute" oder "bösartige" Dateien zu schreiben, oder "gute" 
+    bzw. "bösartige" Datenbanktransaktionen durchzuführen.
    </simpara>
    <simpara>
     Ein häufig gemachter Fehler in Punkto Sicherheit ist Apache Root-Rechte
-    zu erteilen. 
+    zu erteilen, oder die Möglichkeiten von Apache in einer anderen Weise 
+    auszuweiten. 
    </simpara>
    <simpara>
     Die Ausweitung der Benutzerrechte für Apache auf root ist sehr 
     gefährlich, und kann dem gesamten System schaden, denn mit sudo, 
     chroot, oder anderwärtig als root zu arbeiten sollte niemand anders 
     als den Sicherheitsprofis überlassen werden.
+   </simpara>
+   <simpara>
+    Es gibt auch ein paar einfachere Lösungen. Mit 
+    <function>open_basedir()</function> können Sie kontrollieren, welche 
+    Verzeichnisse PHP benutzen darf oder nicht. Sie können auch einen 
+    Bereich nur für Apache einrichten, um alle webbasierten Aktivitäten
+    auf nicht-Benutzer- bzw. nicht-System-Dateien einzuschränken.
    </simpara>
   </sect1>
 
@@ -333,7 +342,7 @@ AddHandler php-script .php
      <programlisting role="php">
 &lt;?php
 // Löschen einer Datei aus dem Heimatverzeichnis des Users
-$username = $user_submitted_name;
+$username = $HTTP_POST_VARS['user_submitted_name'];
 $homedir = "/home/$username";
 $file_to_delete = "$userfile";
 unlink ($homedir/$userfile);
@@ -382,15 +391,15 @@ echo "/home/../etc/passwd wurde gelöscht!";
 &lt;?php
 // löscht eine Datei von der Festplatte, auf die
 // der PHP user Zugriff hat. 
-$username = $HTTP_REMOTE_USER;  // verwenden Sie eine Authentifizierungs-
-                                // Methode
+$username = $HTTP_SERVER_VARS['REMOTE_USER']; // verwendet eine 
+                                              // Authentifizierungsmethode
 $homedir = "/home/$username";
 
 $file_to_delete = basename("$userfile"); // den Pfad entfernen
 unlink ($homedir/$file_to_delete);
 
 $fp = fopen("/home/logging/filedelete.log","+a"); //logge die Löschung
-$logstring = "$HTTP_REMOTE_USER $homedir $file_to_delete";
+$logstring = "$username $homedir $file_to_delete";
 fputs ($fp, $logstring);
 fclose($fp);
 
@@ -398,21 +407,30 @@ echo "$file_to_delete wurde gelöscht!";
 ?&gt;
      </programlisting>
     </example>
-    Als Alternative ziehen Sie vielleicht eine speziellere Prüfung vor: 
+    Auch dies nicht völlig makellos. Wenn Ihr Authentifizierungssystem
+    Benutzern erlauben sollte, deren eigene Logins zu kreieren, und ein 
+    Benutzer wählt den Login "../etc", ist das System wieder aufgedeckt.
+    Aus diesem Grund ziehen Sie es vielleicht vor, einen besseren Check 
+    zu schreiben:
     <example>
      <title>Sicherere Dateinamensprüfung</title>
      <programlisting role="php">
 &lt;?php
-$username = getenv("REMOTE_USER");
+$username = $HTTP_SERVER_VARS['REMOTE_USER']; // verwendet eine 
+                                              // Authentifizierungsmethode
 $homedir = "/home/$username";
 
 if (!ereg('^[^./][^/]*$', $userfile))
     die('bad filename'); // "DIE", gehen Sie nicht weiter
-    
+     
+if (!ereg('^[^./][^/]*$', $username))
+     die('bad username'); // "DIE", gehen Sie nicht weiter    
 //etc...
 ?&gt;
      </programlisting>
     </example> 
+   </para>
+   <para>
     Abhängig vom Betriebssystem gibt es eine große Anzahl Dateien mit der
     Sie sich befassen sollten, inklusive Einträge für Geräte (/dev/ oder 
     com1), Konfigurationsdateien (/etc/ Dateien und die .ini Dateien), gut
@@ -424,13 +442,29 @@ if (!ereg('^[^./][^/]*$', $userfile))
 
   <sect1 id="security.errors">
    <title>Fehlerbehandlung</title>
-   <simpara>
+   <para>
+    PHP Security hat zwei Seiten der Fehlerbehandlung. Eine ist für die
+    Erhöhung der Sicherheit vorteilhaft, die andere ist schädlich.
+   </para>
+   <para>
     Eine Standard-Angriffstaktik beinhaltet die Erstellung eines Profils
     des anzugreifenden Systems, indem die aufgrund der Einspeisung von
     unzulässigen Daten zurückgegebenen Fehlermeldungen anhand deren 
-    Art und des Kontextes ausgewertet werden.
-   </simpara>
-   <simpara>
+    Art und des Kontextes ausgewertet werden. Wenn z.B. ein Angreifer 
+    Informationen über eine auf einem eingesendeten Formular basierte 
+    Seite zusammengetragen hat, kann er versuchen, Variablen zu 
+    überschreiben bzw. zu modifizieren:
+    <example>
+     <title>Angreifervariablen mit einer eigenen HTML Seite</title>
+     <programlisting role="php">
+&lt;form method="post" action="attacktarget?username=badfoo&amp;password=badfoo"&gt;
+&lt;input type="hidden" name="username" value="badfoo"&gt;
+&lt;input type="hidden" name="password" value="badfoo"&gt;
+&lt;/form&gt;
+     </programlisting>
+    </example> 
+   </para>
+   <para>
     Die normalerweise zurückgegebenen PHP Fehler können für den Entwickler
     hilfreich sein, wenn dieser ein Skript debuggen möchte, Hinweise auf 
     eine nicht korrekt arbeitende Funktion oder Datei, oder die PHP Datei 
@@ -441,16 +475,37 @@ if (!ereg('^[^./][^/]*$', $userfile))
     <function>highlight_file</function> zur Fehlersuche zu verwenden, 
     jedoch kann dies in einem lebenden System auch versteckte Variablen, 
     ungeprüfte Syntax und andere gefährliche Informationen aufdecken.
-   </simpara>
-   <simpara>
+    Speziell gefährlich ist es, Code von bekannten Quellen mit integrierten 
+    Debugging Handlern auszuführen, oder weit verbreitete Debuggingtechniken 
+    zu verwenden. Wenn ein Angreifer die von Ihnen benutzte generelle 
+    Technik herausfindet, kann er versuchen, mit Brute-Force Ihre Seite zu 
+    knacken, indem er verschiedene allgemein gebräuchliche Debug Strings 
+    sendet:
+    <example>
+     <title>Ausnutzen von gebräuchlichen Debugging Variablen</title>
+     <programlisting role="php">
+&lt;form method="post" action="attacktarget?errors=Y&amp;showerrors=1"&amp;debug=1"&gt;
+&lt;input type="hidden" name="errors" value="Y"&gt;
+&lt;input type="hidden" name="showerrors" value="1"&gt;
+&lt;input type="hidden" name="debug" value="1"&gt;
+&lt;/form&gt;
+     </programlisting>
+    </example>     
+   </para>
+   <para>
+    Ungeachtet der Fehlerbehandlungsmethode führt die Möglichkeit ein
+    System nach Fehlermeldungen sondieren dazu, dass einem Angreifer mehr
+    Informationen geboten werden.
+   </para>
+   <para>
     Zum Beispiel weist schon alleine der Stil einer Fehlermeldung darauf
     hin, dass auf einem System PHP läuft. Wenn der Angreifer auf eine
     .html Seite kommt und untersuchen möchte welches System im Hintergrund 
     läuft (um nach bekannten Systemschwächen zu suchen), könnte dieser 
     mittels der Einspeisung von falschen Daten herausfinden, dass ein 
     System mit PHP aufgebaut ist.
-   </simpara>
-   <simpara>
+   </para>
+   <para>
     Ein Fehler einer Funktion gibt Aufschluss darüber, ob ein System eine 
     bestimmte Datenbankapplikation benutzt, oder gibt Hinweise darauf, 
     wie eine Webseite programmiert bzw. entworfen wurde. Dies erlaubt
@@ -460,15 +515,15 @@ if (!ereg('^[^./][^/]*$', $userfile))
     der Authentifizierung in einem Skript bestimmen (anhand der 
     Zeilennummern in den Fehlermeldungen), wie auch durch "Herumstochern"
     Missbrauchsmöglichkeiten an verschiedenen Stellen im Script herausfinden.
-   </simpara>
-   <simpara>
+   </para>
+   <para>
     Eine Fehlermeldung des Dateisystems oder eines generellen PHP-Errors
     welche Rechte der Server hat, wie auch die Struktur und Organisation 
     der Dateien auf dem Webserver. Vom Entwickler geschriebene 
     Fehlermeldungen können das Problem verschlimmern, bis hin zum Preisgeben 
     von zuvor "versteckten" Informationen.
-   </simpara>
-   <simpara>
+   </para>
+   <para>
     Es gibt drei bedeutende Lösungen zu diesem Thema. Die erste ist, alle 
     Funktionen zu überprüfen und zu versuchen, die Menge an Fehlermeldungen 
     zu ersetzen. Die zweite ist, die Ausgabe von Fehlermeldungen am laufenden 
@@ -476,9 +531,104 @@ if (!ereg('^[^./][^/]*$', $userfile))
     PHP Funktionen zur Fehlerbehandlung seinen eigenen Error-handler zu 
     schreiben. Abhängig von Ihrer Sicherheitspolitik könnte jede der drei 
     Lösungen für Sie geeignet sein.
-   </simpara>
+   </para>
+   <para>
+    Ein Weg, diesen Punkt vorzeitig zu behandeln ist, das PHP eigene 
+    <function>error_reporting</function> zu benutzen, um Ihren Code 
+    sicherer zu gestalten und möglicherweise gefährliche Nutzungen von 
+    Variablen zu entdecken. Wenn Sie Ihren Code noch vor dem Einsatz 
+    mit E_ALL testen, können Bereiche entdecken, in denen Ihre Variablen 
+    eventuell für Verseuchung oder andere Modifikationen offen sind. 
+    Sind Sie bereit zum Einsatz, können Sie Ihren Code mit E_NONE vor 
+    Sondierungen schützen.
+    <example>
+     <title>Gefährliche Variablen mit E_ALL finden</title>
+     <programlisting role="php">
+&lt;?php
+if ($username) {  // Vor Verwendung nicht initialisiert oder geprüft
+    $good_login = 1; 
+}
+if ($good_login == 1) { // Wenn der obige Test fehlschlägt, ist vor der
+                        // Verwendung nicht initialisiert oder geprüft
+    fpassthru ("/highly/sensitive/data/index.html");
+}
+?&gt;
+     </programlisting>
+    </example>
+   </para>
   </sect1>
   
+  <sect1 id="security.registerglobals">
+   <title>Verwendung von Register Globals</title>
+   <para>
+    Ein Feature von PHP zur Erhöhung der Sicherheit ist die Konfiguration
+    von PHP mit register_globals = off. Mit Deaktivierung der Möglichkeit,
+    irgendeine vom Benutzer übertragenen Variable in den PHP Code zu 
+    injizieren, können Sie die Anzahl "vergifteter" Variablen reduzieren, 
+    welche ein potentieller Angreifer zufügen könnte. Dieser benötigt mehr 
+    Zeit, um sich Übermittlungen auszudenken, und Ihre internen Variablen 
+    sind effektiv von den übergebenen Benutzervariablen isoliert.
+   </para>
+   <para>
+    Während dies den benötigten Aufwand mit PHP zu arbeiten leicht erhöht 
+    ist dargelegt, dass die Vorteile gegenüber dem Aufwand klar überwiegen.
+    <example>
+     <title>Ohne register_globals=off arbeiten</title>
+     <programlisting role="php">
+&lt;?php
+if ($username) {  // kann vom User mit get/post/cookies übermittelt werden
+    $good_login = 1; 
+}
+
+if ($good_login == 1) { // kann vom User mit get/post/cookies übermittelt werden
+    fpassthru ("/highly/sensitive/data/index.html");
+}
+?&gt;
+     </programlisting>
+    </example>
+    <example>
+     <title>Mit register_globals = off arbeiten</title>
+     <programlisting role="php">
+&lt;?php
+if($HTTP_COOKIE_VARS['username']){ 
+    // kann nur von einem Cookie kommen
+    $good_login = 1;
+    fpassthru ("/highly/sensitive/data/index.html");
+}
+?&gt;
+     </programlisting>
+    </example>
+    Dies weise genutzt ist es auch möglich, präventive Messungen 
+    durchzuführen, um bei versuchten Vorstößen zu warnen. Wenn Sie
+    im Voraus wissen, woher eine Variable kommen soll, können Sie 
+    prüfen, ob die übermittelten Daten nicht einen unpassenden Weg
+    genommen haben. Obwohl dies nicht garantiert, dass Daten nicht 
+    nur ausgedacht sind, erfordert es von einem Angreifer, auch den
+    richtigen Weg zu finden. 
+    <example>
+     <title>Entdecken einfacher Manipulationen von Variablen</title>
+     <programlisting role="php">
+&lt;?php
+if ($HTTP_COOKIE_VARS['username'] &amp;&amp;
+    !$HTTP_POST_VARS['username'] &amp;&amp;
+    !$HTTP_GET_VARS['username'] ) { 
+    // Durchführen anderer Checks, ob der Benutzername gültig ist...
+    $good_login = 1;
+    fpassthru ("/highly/sensitive/data/index.html");
+} else {
+   mail("admin@example.com", "Possible breakin attempt", $HTTP_SERVER_VARS['REMOTE_ADDR']);
+   echo "Security violation, admin has been alerted.";
+   exit;
+}
+?&gt;
+     </programlisting>
+    </example>
+    Natürlich heißt ein einfaches Aktivieren von register globals nicht,
+    dass Ihr Code nun automatisch sicher ist. Jeder Teil mit Daten sollte
+    auch auf andere Arten geprüft werden.
+   </para>
+  </sect1>
+
   <sect1 id="security.variables">
    <title>Vom Nutzer übermittelte Daten</title>
    <para>
@@ -496,7 +646,8 @@ if (!ereg('^[^./][^/]*$', $userfile))
 // oder vielleicht dem eines anderen Benutzers?
 unlink ($evil_var);
 
-// Schreibe die Log-Information von deren Zugriff... oder vielleicht nicht?
+// Schreibe die Log-Information von deren Zugriff... 
+// oder vielleicht einen /etc/password Eintrag?
 fputs ($fp, $evil_var);
 
 // Führe etwas triviales aus... oder rm -rf *?
@@ -551,6 +702,51 @@ exec ($evil_var);
     zu arbeiten kann auch helfen, Sie vor Variablen zu warnen, welche 
     benutzt werden, bevor sie geprüft oder initialisiert wurden (so können 
     Sie verhindern, dass mit ungewöhnlichen Daten gearbeitet wird).
+   </para>
+  </sect1>
+
+  <sect1 id="security.hiding">
+   <title>Verstecken von PHP</title>
+   <para>
+    Ein paar einfache Techniken helfen PHP zu Verstecken, um einen nach 
+    Schwächen in Ihrem System suchenden Angreifer möglicherweise langsamer 
+    Wenn Sie in Ihrer php.ini expose_php = off zu machen. setzen, 
+    reduzieren Sie damit die ihm zur Verfügung stehenden Informationen.
+   </para>
+   <para>
+    Eine andere Taktik ist, den Webserver wie z.B. Apache entweder mittels 
+    einer .htaccess Direktive oder in der Apache Konfigurationsdatei selbst 
+    so konfigurieren, dass dieser verschiedene Dateitypen durch PHP parst.
+    So können Sie irreführende Dateierweiterungen verwenden: 
+    <example>
+     <title>PHP als andere Sprache ausgeben</title>
+     <programlisting role="php">
+# Lasse PHP Code wie andere Arten von Code aussehen
+AddType application/x-httpd-php .asp .py .pl
+     </programlisting>
+    </example>
+    Oder komplett unklar machen:
+    <example>
+     <title>Verwenden von unbekannten Typen für PHP Dateierweiterungen</title>
+     <programlisting role="php">
+# Lasse PHP Code wie unbekannte Typen aussehen
+AddType application/x-httpd-php .bop .foo .133t
+     </programlisting>
+    </example>
+    Oder verstecken Sie ihn als html Code, was einen leichten 
+    Performanceverlust bedeutet, da alle html Dateien durch die PHP
+    Engine geparst werden:
+    <example>
+     <title>Verwenden von html Typen für PHP Dateierweiterungen</title>
+     <programlisting role="php">
+# Lasse PHP code wie html aussehen
+AddType application/x-httpd-php .htm .html
+     </programlisting>
+    </example>
+    Um dies effektiv arbeiten zu lassen, müssen Sie Ihre PHP Dateien 
+    nach den obigen Dateierweiterungen umbenennen. Während dies eine 
+    Form der Sicherheit durch Verhüllung ist, ist es ein kleines 
+    präventives Maß mit ein paar Nachteilen.
    </para>
   </sect1>
 
