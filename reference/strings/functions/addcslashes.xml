@@ -1,48 +1,83 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.7 Maintainer: sammywg Status: working -->
 <!-- splitted from ./de/functions/strings.xml, last change in rev 1.2 -->
-<!-- last change to 'addcslashes' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.58/EN.1.2 -->
   <refentry id="function.addcslashes">
    <refnamediv>
     <refname>addcslashes</refname>
-    <refpurpose>
-     Stellt Zeichen eines Strings ein "\" voran (wie in C)
-    </refpurpose>
+    <refpurpose>Stellt bestimmten Zeichen eines Strings ein "\" voran (wie in C)</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Beschreibung:</title>
+    <title>Beschreibung</title>
      <methodsynopsis>
       <type>string</type><methodname>addcslashes</methodname>
       <methodparam><type>string</type><parameter>str</parameter></methodparam>
       <methodparam><type>string</type><parameter>charlist</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Es wird ein String zurück gegeben, in dem jedem Zeichen, das in
-     <parameter>charlist</parameter> steht, ein "\" voran gestellt
-     wurde. Teile wie <literal>\n</literal>, <literal>\r</literal>
-     etc. werden wie in C übergangen, ASCII-Zeichen kleiner als 32
-     und grösser als 126 werden in ihren oktal-Wert umgesetzt. Seien
-     Sie bei der Umsetzung von alphanumerischen Zeichen vorsichtig.
-     Sie können in <parameter>charlist</parameter> einen Bereich wie
-     "\0..\37" angeben. Dadurch wird allen ASCII-Zeichen von 0 bis
-     31 ein "\" voran gestellt.
+     Gibt eine Zeichenkette zurück, in der allen Zeichen, die in 
+     <parameter>charlist</parameter> aufgeführt sind, ein "\" vorangestellt ist.
+     <literal>\n</literal>, <literal>\r</literal> etc. werden im C-Stil
+     escaped, Zeichen mit einem ASCII-Wert kleiner als 32 oder höher als
+     126 werden in ihren Oktalwert umgewandelt.
+    </para>
+    <para>
+     Seien Sie besonders vorsichtig, wenn Sie Zeichen wie 0, a, b, f, n, r
+     t oder v escapen möchten. Sie werden zu \0, \a, \b, \f, \n, \r, \t 
+     oder \v gewandelt.
+     In PHP sind \0 (NULL), \r (Wagenrücklauf), \n (Neue Zeile) und \t
+     (Tabulator) vordefinierte Escape-Sequenzen, während in C alle der 
+     genannten Zeichen vordefinierte Escape-Sequenzen sind.
+    </para>
+    <para>
+     <parameter>charlist</parameter>-Angaben wie "\0..\37" (oktal) bewirken 
+     ein Escapen aller Zeichen mit einem ASCII-Code zwischen 0 und 31 (dezimal).
      <example>
-      <title><function>addcslashes</function> Beispiel:</title>
+      <title><function>addcslashes</function> Beispiel</title>
       <programlisting role="php">
-$escaped = addcslashes ($not_escaped, "\0..\37!@\177..\377");
+<![CDATA[
+<?php
+$escaped = addcslashes($nicht_escaped, "\0..\37!@\177..\377");
+?>
+]]>
       </programlisting>
      </example>
-     <note>
-      <simpara>
-       Diese Funktion ist ab Version PHP4b3-dev verfügbar.</simpara>
-     </note>
+    </para>
+    <para>
+     Wenn Sie eine Zeichensequenz im charlist-Parameter notieren, 
+     informieren Sie sich darüber, welche Zeichen sich zwischen dem
+     ersten und dem letzten Zeichen befinden!
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+echo addcslashes('foo[ ]', 'A..z');
+// Ausgabe:  \f\o\o\[ \]
+// Alle groß- und kleingeschriebenen Buchstaben werden escaped
+// ... aber ebenfalls die Zeichen [\]^_` sowie die Tabulatoren, Zeilenwechsel
+// Wagenvorlauf-Zeichen etc.
+?>
+]]>
+      </programlisting>
+     </informalexample>
+     Beachten Sie zudem, dass sofern das erste Zeichen einer Sequenz einen höheren
+     ASCII-Wert hat als das zweite, keine Sequenz erstellt wird. Nur das erste und 
+     das letzte Zeichen sowie Punkte werden dann escaped. Verwenden Sie die Funktion 
+     <function>ord</function>, um den ASCII-Wert eines Zeichens zu ermitteln.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+echo addcslashes("zoo['.']", 'z..A');
+// Ausgabe:  \zoo['\.']
+?>
+]]>
+      </programlisting>
+     </informalexample>
     </para>
     <para>
      Siehe auch <function>stripcslashes</function>, 
      <function>stripslashes</function>, 
-     <function>htmlspecialchars</function>,
      <function>htmlspecialchars</function> und 
      <function>quotemeta</function>.
     </para>
