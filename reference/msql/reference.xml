@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='iso-8859-1' ?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision 1.5: Maintainer: conni Status: ready -->
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.12 Maintainer: conni Status: ready -->
 
  <reference id='ref.msql'>
   <title>mSQL Funktionen</title>
@@ -11,41 +11,77 @@
    &reftitle.intro;
 
     <para>
-     Diese Funktionen erlauben Ihnen, auf einen mSQL-Datenbankserver
+     Mit diesen Funktionen können Sie auf einen mSQL-Datenbankserver
      zuzugreifen. Mehr Informationen über mSQL findet man bei <ulink url="&url.msql;"> &url.msql;</ulink>.
     </para> 
-   </section> 
-    
-   <section id="msql.installation">
-    &reftitle.install;
-    <para>   
-     Um über diese Funktionen verfügen zu können, müssen
-     Sie PHP mit der mSQL-Unterstützung kompilieren, indem Sie die
-     Option
-     <option role='configure'>--with-msql[=dir]</option> angeben.
-     Das Standardverzeichnis ist <filename class="directory">/usr/local/Hughes</filename>.
-    </para>
-   </section> 
-   
-   <section id="msql.configuration">
-    &reftitle.runtime;
-    <para>
-    </para>
    </section>
 
+   &reference.msql.configure;
+
+   &reference.msql.ini;
+    
    <section id="msql.resources">
     &reftitle.resources;
     <para>
+	Im mSQL-Modul gibt es zwei Ressource-Typen: Die erste ist eine 
+	Verbindungskennung einer Datenbankverbindung und die zweite Ressource
+	ist eine Ergebniskennung für ein Abfrageergebnis.
     </para>
    </section>
 
    &reference.msql.constants;
+
+   <section id="msql.examples">
+   &reftitle.examples;
+    <para>
+	 In diesem einfachen Beispiel wird eine Verbindung zum mSQL Datenbankserver aufgebaut, eine Abfrage ausgeführt, das Abfrageergebnis
+	 ausgegeben und die Verbindung wieder geschlossen. 
+     <example>
+      <title>Eine Abfrage ausführen</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+/* Verbindungsaufbau zum Datenbankserver */
+$link = msql_connect('localhost', 'username', 'password')
+    or die('Verbindungsaufbau fehlgeschlagen : ' . msql_error($link));
+
+msql_select_db('database', $link)
+    or die('Konnte die Datenbank nicht auswählen');
+
+/* SQL Abfrage senden */
+$query = 'SELECT * FROM my_table';
+$result = msql_query($query, $link) or die('Abfrage fehlgeschlagen : ' . msql_error($link));
+
+/* Abfrageergebnisse in HTML ausgeben*/
+echo "<table>\n";
+while ($row = msql_fetch_array($result, MSQL_ASSOC)) {
+    echo "\t<tr>\n";
+    foreach ($row as $col_value) {
+        echo "\t\t<td>$col_value</td>\n";
+    }
+    echo "\t</tr>\n";
+}
+echo "</table>\n";
+
+/* Speicher wieder freigeben */
+msql_free_result($result);
+
+/* Verbindung schliessen */
+msql_close($link);
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+   </section>
 
   </partintro>
 
 &reference.msql.functions;
 
  </reference>
+
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
