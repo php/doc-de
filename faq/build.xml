@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.18 Maintainer: nohn Status: ready -->
-<!-- $Revision: 1.8 $ -->
+<!-- EN-Revision: 1.31 -->
+<!-- $Revision: 1.9 $ -->
 <chapter id="faq.build">
   <title>Probleme bei der Compilierung</title>
   <titleabbrev>Probleme bei der Compilierung</titleabbrev>
@@ -52,18 +52,76 @@
      <para>
       Sie müssen dem configure/setup-Script die Top-Level-Pfad des
       Apache-Source-Trees mitteilen. Das bedeutet, dass z.B.
-      <literal>--with-apache=/path/to/apache</literal> korrekt ist,
-      <literal>--with-apache=/path/to/apache/src</literal> jedoch
-      <emphasis>nicht</emphasis>.
+      <option role="configure">--with-apache=/path/to/apache</option>
+      <emphasis>anstatt</emphasis> <option
+      role="configure">--with-apache=/path/to/apache/src</option>
+      angegeben werden muss.  
      </para>
     </answer>
    </qandaentry>
 
+  <qandaentry id="faq.build.lex">
+   <question>
+    <para>
+     Sie werden während dem Ausführen von (<literal>./configure</literal>), mit
+     einem Fehler wie dem Folgenden konfrontiert:
+    </para>
+    <para>
+     <screen>
+      checking lex output file root... ./configure: lex: command not found
+      configure: error: cannot find output from lex; giving up
+     </screen>
+    </para>
+   </question>
+   <answer>
+    <para>
+	 Stellen Sie sicher, dass Sie
+	 <link linkend="install.unix">Installation</link> gründlich gelesen haben
+	 und nehmen Sie zur Kenntnis, das sowohl flex als auch bison zum Kompilieren
+	 von PHP installiert sein müssen. Abhängig von Ihrem System müssen Sie flex
+	 und bison entweder von einer Source oder einem Packet wie z.B. RPM
+	 installieren.
+    </para>
+   </answer>
+  </qandaentry>
+
+  <qandaentry id="faq.build.apache-sharedcore">
+   <question>
+    <para>
+	 Warum bekomme ich folgende Meldung, wenn ich versuche Apache zu starten?
+    </para>
+    <para>
+     <screen>
+      fatal: relocation error: file /path/to/libphp4.so:
+      symbol ap_block_alarms: referenced symbol not found
+     </screen>
+    </para>
+   </question>
+   <answer>
+    <para>
+	 Dieser Fehler tritt in der Regel auf, wenn man den Apache Kern als
+	 gemeinsam verwendete DSO Bibliothek compiliert. Versuchen Sie Apache neu zu
+	 konfigurieren und stellen Sie sicher, dass zumindest die folgenden Flags
+	 gesetzt sind:
+    </para>
+    <para>
+     <screen>
+     --enable-shared=max --enable-rule=SHARED_CORE
+     </screen>
+    </para>
+    <para>
+     Für weiter Informationen lesen Sie die Apache <filename>INSTALL</filename>
+	 Datei oder die Apache <ulink url="&url.apachedso;">DSO manual page</ulink>.
+    </para>
+   </answer>
+  </qandaentry>
+  
    <qandaentry id="faq.build.not-found">
     <question>
      <para>
-      When I run configure, it says that it can't find the 
-      include files or library for GD, gdbm, or some other package!
+      Wenn ich configure ausführe, bekomme ich die Fehlermeldung, dass
+      die include Dateien oder die GD, gdbm, etc. Bibliotheken nicht 
+      gefunden werden konnten. 
      </para>
     </question>
     <answer>
@@ -97,8 +155,8 @@
     </question>
     <answer>
      <para>
-       Sie müssen Bison updaten. Die aktuellste Version findet sich
-       unter <ulink url="&url.bison;">&url.bison;</ulink>.
+      Sie müssen Bison updaten. Die aktuellste Version findet sich
+      unter <ulink url="&url.bison;">&url.bison;</ulink>.
      </para>
     </answer>
    </qandaentry>
@@ -138,11 +196,11 @@
       werden '-ldl' und Datenbankbibliothken vergessen.
      </para>
      <para>
-      Wenn Sie mit Apache 1.2.x linken, haben Sie daran gedacht, die
+      Haben Sie beim linken mit Apache 1.2.x daran gedacht, die
       benötigten Informationen in die EXTRA_LIBS-Zeile des
       Konfigurationsscriptes einzufügen, und haben Sie das configure-Script
       des Apache wiederholt ausgeführt? Weitere Informationen dazu finden
-      Sie im <ulink url="&url.file.installation;">INSTALL</ulink> File
+      Sie in der <ulink url="&url.file.installation;">INSTALL</ulink> Datei
       Ihrer Distribution.
      </para>
      <para>
@@ -193,22 +251,21 @@
        <listitem>
         <simpara>
 	 Wechseln Sie in das Verzeichnis
-	 <filename class="directory">/&lt;path&gt;/apache-1.3/src</filename> und bearbeiten die
-	 Datei <filename>Configuration</filename>.
-         Fügen Sie <literal>AddModule modules/php4/libphp4.a</literal>
-	 hinzu.
+	 <filename class="directory">/&lt;path&gt;/apache-1.3/src</filename> und
+	 bearbeiten die Datei <filename>Configuration</filename>.
+     Fügen Sie <literal>AddModule modules/php4/libphp4.a</literal> hinzu.
         </simpara>
        </listitem>
        <listitem>
         <simpara>
-         Führen Sie <command>./Configure</command>, gefolgt von
+         Führen Sie <command>./configure</command>, gefolgt von
 	 <literal>make</literal> aus.
         </simpara>
        </listitem>
        <listitem>
         <simpara>
-	 Nun sollte eine lauffähige Version eines PHP-fähigen Apaches
-	 compiliert sein. 
+	 Nun sollte eine lauffähige Version eines PHP-fähigen Apaches compiliert
+	 sein.
         </simpara>
        </listitem>
       </itemizedlist>
@@ -228,7 +285,7 @@
     <question>
      <para>
       Ich habe die Schritte, die zur Installation des Apache-Modules
-      unter UNIX nötig sind, aber wenn ich mit meinem Browser PHP-Scripts
+      unter Unix nötig sind, aber wenn ich mit meinem Browser PHP-Scripts
       aufrufe, werde ich aufgefordert, die Dateien zu speichern.
      </para>
     </question>
@@ -261,9 +318,8 @@
 	 (für PHP 4) lauten.
         </simpara>
         <simpara> 
-	 Stellen Sie ebenfalls sicher, dass diese AddType-Anweisung
-	 sich nicht in einem &lt;Virtualhost&gt; oder &lt;Directory&gt; Block
-	 befindet.
+	 Stellen Sie ebenfalls sicher, dass diese AddType-Anweisung sich nicht in
+	 einem &lt;Virtualhost&gt; oder &lt;Directory&gt; Block befindet.
         </simpara>
        </listitem>
        <listitem>
@@ -294,7 +350,7 @@
     <answer>
      <para>
        Die Datei <filename>libphp4.a</filename> soll nicht existieren,
-       der Apache wird es generieren.
+       Apache wird sie selbst generieren.
      </para>
     </answer>
    </qandaentry>
@@ -320,8 +376,8 @@
     <question>
      <para>
       Wenn ich versuche, PHP mittels der Option
-      <literal>--with-apxs</literal> zu compilieren, bekomme ich komische
-      Fehlermeldungen.
+	  <option role="configure">--with-apxs</option> zu compilieren, bekomme ich
+	  komische Fehlermeldungen.
      </para>
     </question>
     <answer>
@@ -416,6 +472,42 @@ $ gcc -E test.c >/dev/null
     </answer>
    </qandaentry>
    
+   <qandaentry id="faq.build.mysql.tempnam">
+    <question>
+     <para>
+	  Beim Compilieren von PHP mit MySQL läuft configure zwar ohne Probleme,
+	  aber beim Ausführen von <literal>make</literal> bekomme ich einen Fehler
+	  wie den Folgenden:
+      <emphasis>ext/mysql/libmysql/my_tempnam.o(.text+0x46): In function
+      my_tempnam': /php4/ext/mysql/libmysql/my_tempnam.c:103: the
+      use of tempnam' is dangerous, better use mkstemp'</emphasis>
+      Was habe ich falsch gemacht?
+     </para>
+    </question>
+    <answer>
+     <para>
+	  Zuerst ist es wichtig, dass Sie sich darüber im klaren sind, dass dies
+	  eine <literal>Warnung</literal> ist und kein Fehler.
+	  Weil dies aber oft die letzte sichtbare Ausgabe von
+	  <literal>make</literal> ist, sieht es oft wie ein Fehler aus.
+	  Natürlich bricht der Compilier ab, falls Sie ihn so konfiguriert haben,
+	  dass er bei Warnungen abbrechen soll! Beachten Sie, das die MySQL
+	  Unterstützung standardmässig aktiviert ist.
+     </para>
+     <note>
+      <para>
+	   Bei PHP 4.3.2 sehen Sie den folgenden Text nachdem make beended wurde:
+      </para>
+      <para>
+       <screen>
+        Build complete.
+        (Warnungen über tempnam und tmpnam können Sie getrost ignorieren.)
+       </screen>
+      </para>
+     </note>
+    </answer>
+   </qandaentry>
+
    <qandaentry id="faq.build.upgrade">
     <question>
      <para>
@@ -429,7 +521,7 @@ $ gcc -E test.c >/dev/null
       Entweder schauen sie in die
       <filename>config.nice</filename>-Datei im Source-Tree ihrer aktuellen
       PHP-Version nach, oder Sie führen folgendes Script aus:
-      <programlisting>
+      <programlisting rol="php">
 <![CDATA[
        <?php phpinfo(); ?> 
 ]]>
@@ -451,6 +543,27 @@ $ gcc -E test.c >/dev/null
      </para>
     </answer>
    </qandaentry>   
+   <qandaentry id="faq.installation.needgnu">
+    <question>
+     <para>
+	  Wenn ich PHP compiliere habe ich den Eindruck zufällige Fehler zu
+	  bekommen. Ich verwende Solaris.
+     </para>
+    </question>
+    <answer>
+     <para>
+      Die Verwendung von nicht-GNU Programmen beim Compilieren kann Probleme
+	  verursachen. Verwenden sie GNU Programme um sicherzustellen, dass das
+	  Compilieren fehlerfrei klappt. Z.B. wird auf Solaris die Verwendung der
+	  SunOS BSK-kompatiblen Version oder der Solaris Version von
+	  <literal>sed</literal> nicht funktionieren. Verwenden Sie statt dessen die
+	  GNU oder Sun POSIX (xpg4) Version von <literal>sed</literal>
+	  Links: <ulink url="&url.sed;">GNU sed</ulink>,
+	  <ulink url="&url.flex;">GNU flex</ulink>, and
+      <ulink url="&url.bison;">GNU bison</ulink>.
+     </para>
+    </answer>
+   </qandaentry>
   </qandaset>
  </chapter>
 
