@@ -1,45 +1,94 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- splitted from ./de/functions/pgsql.xml, last change in rev 1.13 -->
-<!-- last change to 'pg-lo-create' in en/ tree in rev 1.2 -->
+<!-- $Revision: 1.5 $ -->
 <!-- EN-Revision: 1.2 Maintainer: conni Status: ready -->
-<!-- OLD-Revision: 1.78/EN.1.2 -->
-  <refentry id='function.pg-lo-create'>
-   <refnamediv>
-    <refname>pg_lo_create</refname>
-    <refpurpose>Erzeugt ein Large Object</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>pg_lo_create</methodname>
-      <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>pg_lo_create</function> erzeugt ein Large Object und
-     liefert dessen <varname>oid</varname> zurück.
-     <parameter>connection</parameter> bezeichnet eine gültige
-     Datenbankverbindung, die mit <function>pg_connect</function>
-     oder <function>pg_pconnect</function> geöffnet wurde. Die
-     Zugriffsmethoden von PostgreSQL, INV_READ, INV_WRITE und
-     INV_ARCHIVE werden nicht unterstützt, ein Large Object wird
-     immer mit Lese- und Schreibzugriff erzeugt. INV_ARCHIVE wurde
-     von PostgreSQL selber (ab Version 6.3 und höher) entfernt. Die
-     Funktion gibt den Objektbezeichner oid des Large Objects zurück
-     oder &false;, falls ein Fehler auftrat.
-    </para>
-    <para>
-     Um die Large Object (lo) Schnittstelle benutzen zu können,
-     müssen die Kommandos innerhalb einer Transaktion ausgeführt
-     werden. 
-    </para>
-    <note>
-     <para>
-      Diese Funktion ersetzt die Funktion <literal>pg_locreate()</literal>.
-     </para>
-    </note>
-   </refsect1>
-  </refentry>
+<refentry id="function.pg-lo-create">
+ <refnamediv>
+  <refname>pg_lo_create</refname>
+  <refpurpose>Erzeugt ein Large Object</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>pg_lo_create</methodname>
+   <methodparam choice="opt"><type>resource</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>pg_lo_create</function> erzeugt ein Large Object und gibt
+   dessen dessen <varname>OID</varname> zurück. Die Zugriffsmethoden von
+   PostgreSQL, <constant>INV_READ</constant>, <constant>INV_WRITE</constant> und
+   <constant>INV_ARCHIVE</constant> werden nicht unterstützt. Ein Large
+   Object wird immer mit Lese- und Schreibzugriff erzeugt.
+   <constant>INV_ARCHIVE</constant> wurde von PostgreSQL (ab Version 6.3
+   und höher) entfernt. 
+  </para>
+  <para>
+   Um die Large Object (lo) Schnittstelle benutzen zu können, müssen die
+   Kommandos innerhalb einer Transaktion ausgeführt werden.
+  </para>
+  <para>
+   Anstelle der Large ObjectSchnittstelle (für die es keine
+   Zugriffssteuerung gibt und deren Benutzung etwas schwerfällig ist)
+   können Sie den PostgreSQL Datentyp <varname>bytea</varname> und die
+   Funktion <function>pg_escape_bytea</function> benutzen. 
+  </para>
+  <note>
+   <para>
+    Diese Funktion ersetzt die Funktion <function>pg_locreate</function>.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Verbindungskennung, die (unter anderenm) von den
+       Funktionen <function>pg_query</function>,
+       <function>pg_query_params</function> oder 
+       <function>pg_execute</function> zurückgegeben wurde.      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Ein Large Object <varname>OID</varname> oder &false;, 
+   falls ein Fehler auftrat.
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>pg_lo_create</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+   $database = pg_connect("dbname=jacarta");
+   pg_query($database, "begin");
+   $oid = pg_lo_create($database);
+   echo "$oid\n";
+   $handle = pg_lo_open($database, $oid, "w");
+   echo "$handle\n";
+   pg_lo_write($handle, "Daten fuer das Large Object");
+   pg_lo_close($handle);
+   pg_query($database, "commit");
+?>
+]]>
+    </programlisting>
+   </example> 
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
