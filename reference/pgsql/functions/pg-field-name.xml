@@ -1,38 +1,125 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- splitted from ./de/functions/pgsql.xml, last change in rev 1.9 -->
-<!-- last change to 'pg-field-name' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: conni Status: ready -->
-<!-- OLD-Revision: 1.78/EN.1.2 -->
-<!-- $Revision: 1.4 $ -->
-  <refentry id='function.pg-field-name'>
-   <refnamediv>
-    <refname>pg_field_name</refname>
-    <refpurpose>Gibt den Namen eines Feldes zurück</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>string</type><methodname>pg_field_name</methodname>
-      <methodparam><type>resource</type><parameter>result</parameter></methodparam>
-      <methodparam><type>int</type><parameter>field_number</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>pg_field_name</function> gibt den Feldnamen mit der
-     übergebenen <parameter>field_number</parameter> aus der durch
-     <parameter>result</parameter> bezeichneten 
-     PostgreSQL-Ergebnismenge zurück. Die Feldnummerierung beginnt
-     bei 0.
-    </para>
-    <note>
-     <para>
-      Diese Funktion ersetzt die Funktion <literal>pg_fieldname()</literal>.
-     </para>
-    </note>
-    <para>
-     Siehe auch <function>pg_field_num</function>.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.10 Maintainer: conni Status: ready -->
+<refentry id="function.pg-field-name">
+ <refnamediv>
+  <refname>pg_field_name</refname>
+  <refpurpose>Gibt den Namen eines Feldes zurück</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>pg_field_name</methodname>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam><type>int</type><parameter>field_number</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>pg_field_name</function> gibt den Feldnamen mit der
+   übergebenen <parameter>field_number</parameter> aus der durch
+   <parameter>result</parameter> bezeichneten 
+   PostgreSQL-Ergebnismenge zurück. Die Feldnummerierung beginnt bei 0.	 
+  </para>
+  <note>
+   <para>
+    Diese Funktion ersetzt die Funktion <function>pg_fieldname</function>.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>result</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Verbindungskennung, die (unter anderenm) von den
+       Funktionen <function>pg_query</function>,
+       <function>pg_query_params</function> oder 
+       <function>pg_execute</function> zurückgegeben wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>field_number</parameter></term>
+      <listitem>
+       <para>
+        Die Feldnummer, beginnend bei 0.
+       </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Der Feldname oder &false;, falls ein Fehler auftrat.
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Informationen über Felder abfragen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+  $dbconn = pg_connect("dbname=publisher") or die
+           ("Konnte keine Verbindung aufbauen.");
+
+  $res = pg_query($dbconn, "select * from authors where author = 'Orwell'");
+  $i = pg_num_fields($res);
+  for ($j = 0; $j < $i; $j++) {
+      echo "Spalte $j\n";
+      $fieldname = pg_field_name($res, $j);
+      echo "Feldname: $fieldname\n";
+      echo "Feldlänge in Zeichen: " . pg_field_prtlen($res, $fieldname) . " Zeichen\n";
+      echo "Feldlänge in Bytes: " . pg_field_size($res, $j) . " Bytes\n";
+      echo "Feldtyp: " . pg_field_type($res, $j) . " \n\n";
+  }
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Spalte 0
+Feldname: author
+Feldlänge in Zeichen: 6 Zeichen
+Feldlänge in Bytes: -1 Bytes
+Feldtyp: varchar 
+
+Spalte 1
+Feldname: year
+Feldlänge in Zeichen: 4 Zeichen
+Feldlänge in Bytes: 2 Bytes
+Feldtyp: int2 
+
+Spalte 2
+Feldname: title
+Feldlänge in Zeichen: 24 Zeichen
+Feldlänge in Bytesr: -1 Bytes
+Feldtyp: varchar 
+]]>
+    </screen>
+   </example> 
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pg_field_num</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
