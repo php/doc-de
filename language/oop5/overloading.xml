@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.10 Maintainer: simp Status: ready -->
+ <sect1 id="language.oop5.overloading">
+  <title>Überladung</title>
+
+  <para>
+   Sowohl Methodenaufrufe als auch Zugriffe auf Member können mittels der
+   __call, __get und __set Methoden überladen werden. Diese Methoden werden
+   nur ausgelöst, wenn Ihr Objekt oder abgeleitetes Objekt den Member oder
+   die Methode, auf die Sie zuzugreifen versuchen, nicht enthält.
+   Alle Überladungsmethoden müssen als 
+   <link linkend="language.oop5.visibility">public</link> definiert werden.
+  </para>
+
+  <sect2 id="language.oop5.overloading.members">
+   <title>Member überladen</title>
+
+   <methodsynopsis>
+    <type>void</type><methodname>__set</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+    <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
+   </methodsynopsis>
+   <methodsynopsis>
+    <type>mixed</type><methodname>__get</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   </methodsynopsis>
+
+   <para>
+    Klassenmember können überladen werden, um eigenen in Ihrer Klasse
+    definierten Code auszuführen, indem man diese speziell benannten
+    Methoden definiert. Der Parameter <varname>$name</varname> ist der Name
+    der Variablen, die gesetzt oder zurückgeliefert werden soll.
+    Der Parameter <varname>$value</varname> der __set() Methode spezifiziert
+    den Wert, den das Objekt der Variable <varname>$name</varname> zuweisen
+    soll.
+   </para>
+
+   <example>
+    <title>Beispiel für Überladung mit __get() und __set()</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Setter
+{
+    public $n;
+    private $x = array("a" => 1, "b" => 2, "c" => 3);
+
+    public function __get($nm)
+    {
+        print "Liefere [$nm]\n";
+
+        if (isset($this->x[$nm])) {
+            $r = $this->x[$nm];
+            print "Gebe zurück: $r\n";
+            return $r;
+        } else {
+            echo "Nichts!\n";
+        }
+    }
+
+    public function __set($nm, $val)
+    {
+        print "Setze [$nm] auf $val\n";
+
+        if (isset($this->x[$nm])) {
+            $this->x[$nm] = $val;
+            echo "OK!\n";
+        } else {
+            echo "Nicht OK!\n";
+        }
+    }
+}
+
+$foo = new Setter();
+$foo->n = 1;
+$foo->a = 100;
+$foo->a++;
+$foo->z++;
+var_dump($foo);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+Setze [a] auf 100
+OK!
+Liefere [a]
+Gebe zurück: 100
+Setze [a] auf 101
+OK!
+Liefere [z]
+Nichts!
+Setze [z] auf 1
+Nicht OK!
+object(Setter)#1 (2) {
+  ["n"]=>
+  int(1)
+  ["x:private"]=>
+  array(3) {
+    ["a"]=>
+    int(101)
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+  }
+}
+
+]]>
+    </screen>
+
+   </example>
+  </sect2>
+
+  <sect2 id="language.oop5.overloading.methods">
+   <title>Methodenüberladung</title>
+
+   <methodsynopsis>
+    <type>mixed</type><methodname>__call</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+    <methodparam><type>array</type><parameter>arguments</parameter></methodparam>
+   </methodsynopsis>
+
+   <para>
+    Klassenmethoden können überladen werden, um eigenen in Ihrer Klasse
+    definierten Code auszuführen, indem man diese speziell benannte
+    Methode definiert. Der <varname>$name</varname> Parameter ist der Name
+    der Funktion, deren Benutzung angefordert wurde. Die Argumente, die der
+    Funktion übergeben wurden, werden als ein Array im <varname>$arguments</varname>
+    Parameter definiert. Der von der __call() Methode zurückgegebene Wert wird
+    dem Aufrufer der Methode zurückgegeben.
+   </para>
+
+   <example>
+    <title>Beispiel für Überladung mit __call</title>
+    <programlisting role="php">
+  <![CDATA[
+<?php
+class Caller
+{
+    private $x = array(1, 2, 3);
+
+    public function __call($m, $a)
+    {
+        print "Methode $m aufgerufen:\n";
+        var_dump($a);
+        return $this->x;
+    }
+}
+
+$foo = new Caller();
+$a = $foo->test(1, "2", 3.4, true);
+var_dump($a);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+
+Methode test aufgerufen:
+array(4) {
+    [0]=>
+    int(1)
+    [1]=>
+    string(1) "2"
+    [2]=>
+    float(3.4)
+    [3]=>
+    bool(true)
+}
+array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    int(3)
+}
+]]>
+    </screen>
+   </example>
+
+  </sect2>
+
+ </sect1>
+ 
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
