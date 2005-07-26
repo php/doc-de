@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.4 Maintainer: simp Status: ready -->
+ <sect1 id="language.oop5.cloning">
+  <title>Objekte klonen</title>
+  
+  <para>
+   Eine Kopie eines Objektes mit vollständig replizierten Eigenschaften zu
+   erzeugen ist nicht immer das gewünschte Verhalten. Ein gutes Beispiel für
+   die Notwendigkeit von Kopierkonstruktoren ist ein Objekt, welches ein GTK 
+   Fenster repräsentiert und dieses Objekt enthält die Resource des GTK 
+   Fensters. Wenn Sie ein Duplikat dieses Objektes erzeugen, könnten Sie
+   ein neues Fenster mit gleichen Eigenschaften erzeugen wollen und das neue
+   Objekt soll die Resource des neuen Fensters speichern.
+   Ein weiteres Beispiel ist ein Objekt, welches eine Referenz auf ein anderes
+   Objekt, das es benutzt, hält und wenn das Vaterobjekt repliziert wird, will
+   man eine neue Instanz dieses anderen Objektes erzeugen, damit das Replikat
+   eine eigene Kopie besitzt.
+  </para>
+
+  <para>
+   Eine Objektkopie wird durch die Nutzung des clone Schlüsselwortes (welches 
+   wenn möglich die __clone() Methode des Objektes aufruft) erzeugt. Die 
+   __clone() Methode eines Objektes kann nicht direkt aufgerufen werden.
+  </para>
+
+  <informalexample>
+   <programlisting>
+<![CDATA[
+$kopie_des_objektes = clone $objekt;
+]]>
+   </programlisting>
+  </informalexample>
+
+  <para>
+   Wenn ein Objekt geklont wird, wird PHP 5 eine seichte Kopie der Eigenschaften
+   des Objektes durchführen. Alle Eigenschaften, die Referenzen auf andere 
+   Variablen sind, werden Referenzen bleiben. Falls eine __clone() Methode
+   definiert ist, wird die __clone() Methode des frisch erzeugten Objektes
+   aufgerufen, um alle notwendigen Eigenschaften die geändert werden müssen
+   ändern zu können.
+  </para>
+
+  <example>
+   <title>Ein Objekt klonen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class SubObject
+{
+    static $instanzen = 0;
+    public $instanz;
+
+    public function __construct() {
+        $this->instanz = ++self::$instanzen;
+    }
+
+    public function __clone() {
+        $this->instanz = ++self::$instanzen;
+    }
+}
+
+class MyCloneable
+{
+    public $objekt1;
+    public $objekt2;
+
+    function __clone()
+    {
+        // Erzwinge eine Kopie von this->object,
+        // andernfalls wird es auf das selbe Objekt zeigen
+        $this->objekt1 = clone($this->objekt1);
+    }
+}
+
+$obj = new MyCloneable();
+
+$obj->objekt1 = new SubObject();
+$obj->objekt2 = new SubObject();
+
+$obj2 = clone $obj;
+
+
+print("Original Objekt:\n");
+print_r($obj);
+
+print("geklontes Objekt:\n");
+print_r($obj2);
+
+?> 
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen role="php">
+<![CDATA[
+Original Object:
+MyCloneable Object
+(
+    [object1] => SubObject Object
+        (
+            [instanz] => 1
+        )
+
+    [object2] => SubObject Object
+        (
+            [instanz] => 2
+        )
+
+)
+Cloned Object:
+MyCloneable Object
+(
+    [objekt1] => SubObject Object
+        (
+            [instanz] => 3
+        )
+
+    [objekt2] => SubObject Object
+        (
+            [instanz] => 2
+        )
+
+)
+]]>
+
+   </screen>
+
+  </example>
+
+ </sect1>
+ 
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
