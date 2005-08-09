@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.10 Maintainer: simp Status: ready -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.11 Maintainer: simp Status: ready -->
  <sect1 id="language.oop5.overloading">
   <title>Überladung</title>
 
@@ -9,8 +9,13 @@
    __call, __get und __set Methoden überladen werden. Diese Methoden werden
    nur ausgelöst, wenn Ihr Objekt oder abgeleitetes Objekt den Member oder
    die Methode, auf die Sie zuzugreifen versuchen, nicht enthält.
-   Alle Überladungsmethoden müssen als 
-   <link linkend="language.oop5.visibility">public</link> definiert werden.
+   Keine Überladungsmethode darf 
+   <link linkend="language.oop5.visibility">statisch</link> definiert sein.
+  </para>
+  <para>
+   Seit PHP 5.1.0 ist es ebenfalls möglich, die Funktionen 
+   <function>isset</function> und <function>unset</function> mittels der
+   jeweiligen Methoden __isset und __unset zu überladen.
   </para>
 
   <sect2 id="language.oop5.overloading.members">
@@ -25,6 +30,14 @@
     <type>mixed</type><methodname>__get</methodname>
     <methodparam><type>string</type><parameter>name</parameter></methodparam>
    </methodsynopsis>
+   <methodsynopsis>
+    <type>bool</type><methodname>__isset</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   </methodsynopsis>
+   <methodsynopsis>
+    <type>void</type><methodname>__unset</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   </methodsynopsis>
 
    <para>
     Klassenmember können überladen werden, um eigenen in Ihrer Klasse
@@ -37,7 +50,7 @@
    </para>
 
    <example>
-    <title>Beispiel für Überladung mit __get() und __set()</title>
+    <title>Beispiel für Überladung mit __get(), __set(), __isset() und __unset()</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -46,20 +59,20 @@ class Setter
     public $n;
     private $x = array("a" => 1, "b" => 2, "c" => 3);
 
-    public function __get($nm)
+    private function __get($nm)
     {
-        print "Liefere [$nm]\n";
+        echo "Liefere [$nm]\n";
 
         if (isset($this->x[$nm])) {
             $r = $this->x[$nm];
-            print "Gebe zurück: $r\n";
+            echo "Gebe zurück: $r\n";
             return $r;
         } else {
             echo "Nichts!\n";
         }
     }
 
-    public function __set($nm, $val)
+    private function __set($nm, $val)
     {
         print "Setze [$nm] auf $val\n";
 
@@ -70,6 +83,20 @@ class Setter
             echo "Nicht OK!\n";
         }
     }
+
+    private function __isset($nm)
+    {
+        echo "Prüfe, ob $nm gesetzt ist\n";
+
+        return isset($this->x[$nm]);
+    }
+
+    private function __unset($nm)
+    {
+        echo "Lösche $nm\n";
+
+        unset($this->x[$nm]);
+    }
 }
 
 $foo = new Setter();
@@ -77,6 +104,15 @@ $foo->n = 1;
 $foo->a = 100;
 $foo->a++;
 $foo->z++;
+
+var_dump(isset($foo->a)); //true
+unset($foo->a);
+var_dump(isset($foo->a)); //false
+
+// Dies wird nicht an die Methode __isset() übergeben,
+// weil 'n' eine public Eigenschaft ist
+var_dump(isset($foo->n));
+
 var_dump($foo);
 ?>
 ]]>
@@ -94,13 +130,19 @@ Liefere [z]
 Nichts!
 Setze [z] auf 1
 Nicht OK!
+
+Prüfe, ob a gesetzt ist
+bool(true)
+Lösche a
+Prüfe, ob a gesetzt ist
+bool(false)
+bool(true)
+
 object(Setter)#1 (2) {
   ["n"]=>
   int(1)
   ["x:private"]=>
-  array(3) {
-    ["a"]=>
-    int(101)
+  array(2) {
     ["b"]=>
     int(2)
     ["c"]=>
