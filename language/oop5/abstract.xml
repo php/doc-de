@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.9 Maintainer: simp Status: ready -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.13 Maintainer: simp Status: ready -->
  <sect1 id="language.oop5.abstract">
-  <title>Objekt Abstraktion</title>
+  <title>Klassenabstraktion</title>
 
   <para>
    PHP 5 führt abstrakte Klassen und Methoden ein. Es ist nicht erlaubt, eine
@@ -13,10 +13,13 @@
   </para>
 
   <para>
-   Die Klasse, die die abstrakte Methode implementiert, muss die selbe oder eine
-   schwächere <link linkend="language.oop5.visibility">Sichtbarkeit</link>
-   definieren. Wenn die abstrakte Methode als protected definiert ist, muss die
-   Funktionsimplementierung entweder als protected oder public definiert sein.
+   Wenn eine abstrakte Klasse abgeleitet wird, müssen alle in der Deklaration
+   der Vaterklasse abstrakt bezeichneten Methoden durch das Kind definiert 
+   werden. Zusätzlich müssen diese Methoden mit der selben (oder einer 
+   schwächeren) <link linkend="language.oop5.visibility">Sichtbarkeit</link>
+   definiert werden. Wenn die abstrakte Methode zum Beispiel als protected
+   definiert ist, muss die Funktionsimplementierung entweder als protected
+   oder public definiert sein.
   </para>
 
   <example>
@@ -26,12 +29,13 @@
 <?php
 abstract class AbstractClass
 {
-    // Die abgeleitete Klasse zwingen, diese Methode zu definieren
+    // Die abgeleitete Klasse zwingen, diese Methoden zu definieren
     abstract protected function getValue();
+    abstract protected function prefixValue($prefix);
 
     // Gemeinsame Methode
     public function printOut() {
-        print $this->getValue();
+        print $this->getValue() . "\n";
     }
 }
 
@@ -40,6 +44,10 @@ class ConcreteClass1 extends AbstractClass
     protected function getValue() {
         return "ConcreteClass1";
     }
+
+    public function prefixValue($prefix) {
+        return "{$prefix}ConcreteClass1";
+    }
 }
 
 class ConcreteClass2 extends AbstractClass
@@ -47,17 +55,31 @@ class ConcreteClass2 extends AbstractClass
     public function getValue() {
         return "ConcreteClass2";
     }
-
+    
+    public function prefixValue($prefix) {
+        return "{$prefix}ConcreteClass2";
+    }
 }
 
 $class1 = new ConcreteClass1;
 $class1->printOut();
+echo $class1->prefixValue('FOO_') ."\n";
 
 $class2 = new ConcreteClass2;
 $class2->printOut();
+echo $class2->prefixValue('FOO_') ."\n";
 ?>
 ]]>
    </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+ConcreteClass1
+FOO_ConcreteClass1
+ConcreteClass2
+FOO_ConcreteClass2
+]]>
+   </screen>
   </example>
 
    <para>
