@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- splitted from ./en/functions/pcntl.xml, last change in rev 1.2 -->
+<!-- EN-Revision: 1.8 Maintainer: simp Status: ready -->
+ <refentry id="function.pcntl-signal">
+  <refnamediv>
+   <refname>pcntl_signal</refname>
+   <refpurpose>Richtet eine Signalverarbeitung ein</refpurpose>
+  </refnamediv>
+  <refsect1>
+   <title>Beschreibung</title>
+    <methodsynopsis>
+     <type>bool</type><methodname>pcntl_signal</methodname>
+     <methodparam><type>int</type><parameter>signo</parameter></methodparam>
+     <methodparam><type>callback</type><parameter>handle</parameter></methodparam>
+     <methodparam choice="opt"><type>bool</type><parameter>restart_syscalls</parameter></methodparam>
+    </methodsynopsis>
+   <para>
+    Die Funktion <function>pcntl_signal</function> richtet eine neue
+    Signalverarbeitung für das in <parameter>signo</parameter> angegebene
+    Signal ein. Die Signalverarbeitung wird auf <parameter>handler</parameter>
+    gesetzt, was entweder der Name einer benutzerdefinierten Funktion oder
+    eine der beiden globalen Konstanten SIG_IGN oder SIG_DFL sein kann.
+    Der optionale Parameter <parameter>restart_syscalls</parameter> gibt an,
+    ob der Neustart von Systemaufrufen verwendet werden soll, wenn das Signal
+    eintrifft und ist vorgegeben als &true;.
+   </para>
+   <para>
+    &return.success;
+   </para>
+   <note>
+    <para>
+     Der optionale Parameter <parameter>restart_syscalls</parameter> wurde mit
+     PHP 4.3.0. verfügbar.
+    </para>
+   </note>
+   <note>
+    <para>
+     Die Fähigkeit, eine Objektmethode als Callback zu verwenden, wurde in PHP
+     4.3.0. verfügbar. Beachten Sie, dass die Verwendung einer Objektmethode als
+     Signalverarbeitung den Referenzzähler des Objektes erhöht, weshalb das
+     Objekt bestehen bleibt bis entweder der Handler geändert wird oder das
+     Skript endet.
+    </para>
+   </note>
+   <example>
+    <title><function>pcntl_signal</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Verwendung von Ticks wird seit PHP 4.3.0. benötigt
+declare(ticks = 1);
+
+// Signalverarbeitungsfunktion
+function sig_handler($signo) 
+{
+
+     switch ($signo) {
+         case SIGTERM:
+             // Aufgaben zum Beenden bearbeiten
+             exit;
+             break;
+         case SIGHUP:
+             // Aufgaben zum Neustart bearbeiten
+             break;
+         case SIGUSR1:
+             echo "Caught SIGUSR1...\n";
+             break;
+         default:
+             // Alle anderen Signale bearbeiten
+     }
+
+}
+
+echo "Richte neue Signalverarbeitung ein...\n";
+
+// Signalverarbeitung einrichten
+pcntl_signal(SIGTERM, "sig_handler");
+pcntl_signal(SIGHUP,  "sig_handler");
+pcntl_signal(SIGUSR1, "sig_handler");
+
+// oder ein Objekt verwenden, ab PHP 4.3.0 möglich
+// pcntl_signal(SIGUSR1, array($obj, "tu_etwas");
+
+echo "Erzeuge signal SIGTERM an mich selbst...\n";
+
+// sende SIGUSR1 an die aktuelle Prozess ID
+posix_kill(posix_getpid(), SIGUSR1);
+
+echo "Fertig\n"
+
+?>
+]]>
+    </programlisting>
+   </example>
+   <note>
+    <para>
+     Seit PHP 4.3.0. benutzt PCNTL Ticks als Signalverarbeitungsmechanismus,
+     welcher wesentlich schneller als der zuvor verwendete Mechanismus ist.
+     Dieser Wechsel folgt der selben Semantik wie die Verwendung von 
+     "<link linkend="control-structures.declare.ticks">Benutzer Ticks</link>".
+     Man verwendet die 
+     <link linkend="control-structures.declare">declare()</link> Anweisung, um 
+     die Stellen in seinem Programm anzugeben, in denen Callbacks stattfinden 
+     dürfen, damit die Signalverarbeitung korrekt funktioniert (wie im obigen
+     Beispiel).
+    </para>
+   </note>
+   <para>
+    Siehe auch <function>pcntl_fork</function> und
+    <function>pcntl_waitpid</function>.
+   </para>
+  </refsect1>
+ </refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
