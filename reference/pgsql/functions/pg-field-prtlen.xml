@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.9 Maintainer: conni Status: ready -->
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.11 Maintainer: conni Status: ready -->
 <refentry id="function.pg-field-prtlen">
  <refnamediv>
   <refname>pg_field_prtlen</refname>
@@ -15,6 +15,12 @@
    <methodparam choice="opt"><type>int</type><parameter>row_number</parameter></methodparam>
    <methodparam><type>mixed</type><parameter>field_name_or_number</parameter></methodparam>
   </methodsynopsis>
+  <methodsynopsis>
+   <type>int</type><methodname>pg_field_prtlen</methodname>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>field_name_or_number</parameter></methodparam>
+  </methodsynopsis>
+
   <para>
    <function>pg_field_prtlen</function> gibt die aktuelle Länge (Anzahl der
    Zeichen) eines bestimmten Wertes in einem PostgreSQL
@@ -70,6 +76,55 @@
   &reftitle.returnvalues;
   <para>
    Die Anzahl der Zeichen in dem Feld oder &false;, falls ein Fehler auftrat.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Informationen über Spalten ermitteln</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+  $dbconn = pg_connect("dbname=publisher") or die("Verbindungsaufbau fehlgeschlagen");
+
+  $res = pg_query($dbconn, "select * from authors where author = 'Orwell'");
+  $i = pg_num_fields($res);
+  for ($j = 0; $j < $i; $j++) {
+      echo "Spalte $j\n";
+      $fieldname = pg_field_name($res, $j);
+      echo "Spaltenname: $fieldname\n";
+      echo "Anzahl Druckzeichen: " . pg_field_prtlen($res, $fieldname) . " characters\n";
+      echo "Anzahl Bytes im speicher: " . pg_field_size($res, $j) . " bytes\n";
+      echo "Spaltentyp: " . pg_field_type($res, $j) . " \n\n";
+  }
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Spalte 0
+Spaltenname: author
+Anzahl Druckzeichen: 6 characters
+Anzahl Bytes im speicher: -1 bytes
+Spaltentyp: varchar 
+
+Spalte 1
+Spaltenname: year
+Anzahl Druckzeichen: 4 characters
+Anzahl Bytes im speicher: 2 bytes
+Spaltentyp: int2 
+
+Spalte 2
+Spaltenname: title
+Anzahl Druckzeichen: 24 characters
+Anzahl Bytes im speicher: -1 bytes
+Spaltentyp: varchar 
+]]>
+    </screen>
+   </example> 
   </para>
  </refsect1>
  
