@@ -1,31 +1,96 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- splitted from ./de/functions/pgsql.xml, last change in rev 1.9 -->
-<!-- last change to 'pg-lo-tell' in en/ tree in rev 1.74 -->
-<!-- EN-Revision: 1.2 Maintainer: conni Status: ready -->
-<!-- OLD-Revision: 1.78/EN.1.74 -->
-  <refentry id='function.pg-lo-tell'>
-   <refnamediv>
-    <refname>pg_lo_tell</refname>
-    <refpurpose>
-     Returns current position of large object
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>pg_lo_tell</methodname>
-      <methodparam><type>resource</type><parameter>large_object</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>pg_lo_tell</function> returns current position (offset
-     from the beginning of large object).
-    </para>
-    <para>
-     Siehe auch <function>pg_lo_seek</function>.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.6 Maintainer: conni Status: ready -->
+<refentry id='function.pg-lo-tell'>
+ <refnamediv>
+  <refname>pg_lo_tell</refname>
+  <refpurpose>
+   Gibt die aktuelle Lese- oder Schreibposition in einem Large Object zurück
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>pg_lo_tell</methodname>
+   <methodparam><type>resource</type><parameter>large_object</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>pg_lo_tell</function> gibt die aktuelle Position (Offset vom
+   Anfang des Large Objects aus) des internen Zeigers zurück.
+  </para>
+  <para>
+   Um die Large Object (lo) Schnittstelle benutzen zu können, müssen 
+   die Kommandos innerhalb einer Transaktion ausgeführt werden.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>large_object</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Large Object Ressource (LOB), die von der Funktion 
+       <function>pg_lo_open</function> zurückgegeben wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Die aktuelle Lese- oder Schreibposition in einem  (in Bytes) vom
+   Anfang des Large Objects aus. Falls ein Fehler auftritt, ist der
+   Rückgabewert negativ.
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>pg_lo_tell</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+   $doc_oid = 189762345;
+   $database = pg_connect("dbname=jacarta");
+   pg_query($database, "begin");
+   $handle = pg_lo_open($database, $doc_oid, "r");
+   // Überspringe die ersten 50000 Bytes
+   pg_lo_seek($handle, 50000, PGSQL_SEEK_SET);
+   // Test, wieviele Bytes übersprungen wurden
+   $offset = pg_lo_tell($handle);
+   echo "Die aktuelle Position ist: $offset";
+   pg_query($database, "commit");
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Die aktuelle Position ist: 50000
+]]>
+    </screen>
+   </example> 
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pg_lo_seek</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
