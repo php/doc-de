@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.7 Maintainer: conni Status: ready -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.12 Maintainer: conni Status: ready -->
 <refentry id="function.pg-last-oid">
  <refnamediv>
   <refname>pg_last_oid</refname> 
-  <refpurpose>Gibt den Objektbezeichner des zuletzt eingefügten Datensatzes zurück</refpurpose>
+  <refpurpose>Gibt den Objektbezeichner (OID) des zuletzt eingefügten Datensatzes zurück</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -15,28 +15,84 @@
   </methodsynopsis>
   <para>
    <function>pg_last_oid</function> wird benutzt, um den Object 
-   Identifier <varname>oid</varname>, der dem zuletzt eingefügten 
-   Datensatz (Tupel) zugewiesen wurde, auszulesen.
-   <parameter>result</parameter> muss die Ergebniskennung des
-   letzten Kommandos sein, das mit <function>pg_query</function> an
-   den Server gesendet wurde, und dieses Kommando muss ein INSERT
-   gewesen sein. Die Funktion gibt einen positiven Integerwert
-   zurück, wenn es einen gültigen <varname>oid</varname> gibt.
-   Falls ein Fehler auftritt, oder das letzte Kommando, das mit
-   <function>pg_query</function> gesendet wurde, kein INSERT war,
-   oder der INSERT fehlgeschlagen ist, wird &false; zurückgegeben.
+   Identifier <varname>OID</varname> des zuletzt eingefügten 
+   Datensatzes zu ermitteln.
   </para>
   <para>
-   Das OID-Feld wurde in der PostgreSQL-Version 7.2 optional. Falls eine
+   Ab PostgreSQL 7.2 ist das Feld OID optional und ab der Version 8.1 wird
+   es nicht mehr standardmässig in den Tabellen enthalten sein. Falls eine
    Tabelle ohne OID definiert wurde, muss mit der Funktion
    <function>pg_result_status</function> geprüft werden, ob ein Datensatz
    korrekt eingefügt wurde.  
+  </para>
+  <para>
+   Um den Wert eines <literal>SERIAL</literal>-Feldes in einem gerade
+   eingefügten Datensatz zu erhalten, ist der Aufruf der
+   PostgreSQL-Funktion <literal>CURRVAL</literal> notwendig. Dem Aufruf
+   muss der Name der in dieser Datenbanksitzung zuletzt benutzten Sequenz
+   übergeben werden. Ist der Name dieser Sequenz unbekannt, muss er ab
+   PostgreSQL 8.0 mittels der Funktion <literal>pg_get_serial_sequence</literal> ermittelt werden. 
+  </para>
+  <para>
+   PostgreSQL enthält eine Funktion <literal>LASTVAL</literal>, die den
+   Wert der zuletzt benutzten Sequenz der aktuellen Datenbanksitzung
+   zurückgibt. Sie macht die Angabe von Sequenz, Tabelle und Spalte
+   überflüssig.
   </para>
   <note>
    <para>
     Diese Funktion ersetzt die Funktion <function>pg_getlastoid</function>.
    </para>
   </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>result</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Abfrageergebnis, das (unter anderem) von <function>pg_query</function>,
+       <function>pg_query_params</function> oder <function>pg_execute</function>
+       zurückgegeben wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Ein <type>string</type> mit der OID des zuletzt eingefügten
+   Datensatzes für die angegebene <parameter>connection</parameter>
+   oder &false;, falls ein Fehler auftrat oder falls es keine OID gibt.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>pg_last_oid</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+  $pgsql_conn = pg_connect("dbname=mark host=localhost");
+  
+  $res1 = pg_query("CREATE TABLE test (a INTEGER) WITH OIDS");
+
+  $res2 = pg_query("INSERT INTO test VALUES (1)");
+  
+  $oid = pg_last_oid($res2);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="seealso">

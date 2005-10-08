@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.4 Maintainer: conni Status: ready -->
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.6 Maintainer: conni Status: ready -->
 <refentry id='function.pg-get-result'>
  <refnamediv>
   <refname>pg_get_result</refname>
@@ -17,16 +17,91 @@
   </methodsynopsis>
   <para>
    <function>pg_get_result</function> gibt die Ergebniskennung einer
-   asynchronen Abfrage zurück, die mit <function>pg_send_query</function> an
-   den Datenbankserver gesendet wurde. Mit <function>pg_send_query</function> 
-   können mehrere Abfragen an den Server geschickt werden, deren Ergebnisse
-   mit <function>pg_get_result</function> nacheinander abgefragt werden
-   können. Die Funktion gibt die Ergebniskennung zurück oder &false;, falls
-   es keine Ergebnisse mehr gibt.
+   asynchronen Abfrage zurück, die mit <function>pg_send_query</function>,
+   <function>pg_send_query_params</function> oder    <function>pg_send_execute</function> an
+   den Datenbankserver gesendet wurde.
+  </para>
+  <para>   
+   Mit <function>pg_send_query</function> und auch den anderen
+   asynchronen Abfragefunktionen können mehrere Abfragen an den Server
+   geschickt werden. Deren Ergebnisse können mit
+   <function>pg_get_result</function> nacheinander abgefragt werden.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Verbindungskennung.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Die Ergebniskennung als <type>resource</type> or &false;, falls es
+   keine Ergebnisse gibt.
+  </para>
+ </refsect1> 
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>pg_get_result</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+  $dbconn = pg_connect("dbname=publisher") or die("Verbindungsaufbau fehlgeschlagen");
+
+  if (!pg_connection_busy($dbconn)) {
+      pg_send_query($dbconn, "select * from authors; select count(*) from authors;");
+  }
+  
+  $res1 = pg_get_result($dbconn);
+  echo "Der erste Aufruf von pg_get_result(): $res1\n";
+  $rows1 = pg_num_rows($res1);
+  echo "$res1 hat $rows1 Zeilen\n\n";
+  
+  $res2 = pg_get_result($dbconn);
+  echo "Der zweite Aufruf von pg_get_result(): $res2\n";
+  $rows2 = pg_num_rows($res2);
+  echo "$res2 hat $rows2 Zeilen\n";
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Der erste Aufruf von pg_get_result(): Resource id #3
+Resource id #3 hat 3 Zeilen
+
+Der zweite Aufruf von pg_get_result(): Resource id #4
+Resource id #4 hat 1 Zeilen
+]]>
+    </screen>
+   </example> 
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pg_send_query</function></member>
+   </simplelist>
   </para>
  </refsect1>
 </refentry>
-
 
 <!-- Keep this comment at the end of the file
 Local variables:
