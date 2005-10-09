@@ -1,48 +1,129 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!-- EN-Revision: 1.3 Maintainer: conni Status: ready -->
-<!-- $Revision: 1.5 $ -->
-  <refentry id='function.pg-set-client-encoding'>
-   <refnamediv>
-    <refname>pg_set_client_encoding</refname>
-    <refpurpose>
-     Setzt die Kodierung des Clients
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>pg_set_client_encoding</methodname>
-      <methodparam choice='opt'><type>resource</type><parameter>connection</parameter></methodparam>
-      <methodparam><type>string</type><parameter>encoding</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>pg_set_client_encoding</function> setzt die Kodierung
-     des Clients und gibt bei Erfolg 0 zurück, anderenfalls -1.
-    </para>
-    <para>
-     <parameter>encoding</parameter> ist die Kodierung des Clients und
-     kann einen der Werte SQL_ASCII, EUC_JP, EUC_CN, EUC_KR, EUC_TW,
-     UNICODE, MULE_INTERNAL, LATINX (X=1...9), KOI8, WIN, ALT, SJIS,
-     BIG5 odeer WIN1250 haben. Die verfügbaren Kodierungen sind von
-     Ihrer PostgreSQL-Version und der libpq abhängig. Schauen Sie im
-     PostgreSQL-Manual, welche Kodierung Ihre Version unterstützt. 
-    </para>
-    <note>
-     <para>
-      Diese Funktion arbeitet ab PHP Version 4.0.3 oder höher und
-      PostgreSQL 7.0 oder höher. Die unterstützten Kodierungen sind
-      von der PostgreSQL-Version abhängig. Weitere Informationen 
-      entnehmen Sie dem PostgreSQL-Manual. 
-     </para>
-     <para>
-      Diese Funktion ersetzt die Funktion <function>pg_setclientencoding</function>.
-     </para>
-    </note>
-    <para>
-     Siehe auch <function>pg_client_encoding</function>.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.6 $ -->
+<refentry id="function.pg-set-client-encoding">
+ <refnamediv>
+  <refname>pg_set_client_encoding</refname>
+  <refpurpose>
+   Setzt die Kodierung des Clients
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>pg_set_client_encoding</methodname>
+   <methodparam><type>string</type><parameter>encoding</parameter></methodparam>
+  </methodsynopsis>
+  <methodsynopsis>
+   <type>int</type><methodname>pg_set_client_encoding</methodname>
+   <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
+   <methodparam><type>string</type><parameter>encoding</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>pg_set_client_encoding</function> setzt die Kodierung
+   des Clients und gibt bei Erfolg 0 zurück, anderenfalls -1.
+  </para>
+  <para>
+   PostgreSQL konvertiert Daten automatisch aus der Kodierung des
+   Backends in die des Frontends.
+  </para>
+  <note>
+   <para>
+    Diese Funktion ersetzt die Funktion     <function>pg_setclientencoding</function>.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Verbindungkennung. Falls <parameter>connection</parameter>
+       nicht angegeben wurde, wird die zuletzt mit <function>pg_connect</function> oder
+       <function>pg_pconnect</function> geöffnete Verbindung benutzt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>encoding</parameter></term>
+     <listitem>
+      <para>
+       Die gewünschte Kosierung des Clients. Sie können aus den folgenden
+       Kodierungen wählen: <literal>SQL_ASCII</literal>, <literal>EUC_JP</literal>, 
+       <literal>EUC_CN</literal>, <literal>EUC_KR</literal>, <literal>EUC_TW</literal>, 
+       <literal>UNICODE</literal>, <literal>MULE_INTERNAL</literal>, <literal>LATINX</literal> (X=1...9), 
+       <literal>KOI8</literal>, <literal>WIN</literal>, <literal>ALT</literal>, <literal>SJIS</literal>, 
+       <literal>BIG5</literal> oder <literal>WIN1250</literal>.
+      </para>
+      <para>
+       Welche Kodierungen genau verfügbar sind, hängt von der verwendeten
+       PostgreSQL-Version ab. Schauen Sie daher in das
+       PostgreSQL-Handbuch, welche Kodierungen unterstützt werden.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt bei Erfolg 0 zurück oder -1 bei einem Fehler.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>pg_set_client_encoding</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$conn = pg_pconnect("dbname=publisher");
+if (!$conn) {
+  echo "Ein Fehler ist aufgetreten.\n";
+  exit;
+}
+
+// Die Kodierung des Clients wird auf UNICODE gesetzt. Die Daten werden
+// automatisch aus der Kodierung des Backends nach UNICODE konvertiert.  
+pg_set_client_encoding($conn, UNICODE);
+
+$result = pg_query($conn, "SELECT author, email FROM authors");
+if (!$result) {
+  echo "Ein Fehler ist aufgetreten.\n";
+  exit;
+}
+
+// UTF-8 Daten ausgeben
+while ($row = pg_fetch_row($result)) {
+  echo "Autor: $row[0]  E-mail: $row[1]";
+  echo "<br />\n";
+}
+ 
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pg_client_encoding</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
