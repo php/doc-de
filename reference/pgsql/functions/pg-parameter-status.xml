@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.9 Maintainer: conni Status: ready -->
+<refentry id="function.pg-parameter-status">
+ <refnamediv>
+  <refname>pg_parameter_status</refname>
+  <refpurpose>Gibt den Wert einer aktuellen Server-Einstellung zurück.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>pg_parameter_status</methodname>
+   <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
+   <methodparam><type>string</type><parameter>param_name</parameter></methodparam>
+  </methodsynopsis>
+  <methodsynopsis>
+   <type>string</type><methodname>pg_parameter_status</methodname>
+   <methodparam><type>string</type><parameter>param_name</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+    Gibt den aktuellen Wert der Server-Einstellung <parameter>param_name</parameter> zurück.
+  </para>
+  <para>
+    Bestimmte Servereinstellungen (Parameter) werden beim Verbindungsaufbau
+    oder, wenn sich ihr Wert ändert, automatich vom Server gemeldet. Mit
+    <function>pg_parameter_status</function> können Sie diese Einstellungen
+    abfragen. Zurückgegeben wird entweder der aktuelle Wert des
+    Parameters, falls dieser bekannt ist, anderenfalls &false;.
+  </para>
+  <para>
+    In PostgreSQL 8.0 werden die Werte für folgende Parameter zurückgegeben: <literal>server_version</literal>, 
+    <literal>server_encoding</literal>, <literal>client_encoding</literal>, <literal>is_superuser</literal>,
+    <literal>session_authorization</literal>, <literal>DateStyle</literal>, <literal>TimeZone</literal>
+    und <literal>integer_datetimes</literal>.
+    (<literal>server_encoding</literal>, <literal>TimeZone</literal> und 
+    <literal>integer_datetimes</literal>
+    werden von PostgreSQL vor 8.0 nicht zurückgegeben.) Beachten Sie, dass 
+    <literal>server_version</literal>, <literal>server_encoding</literal>
+    und <literal>integer_datetimes</literal> nach dem Start von PostgreSQL
+    nicht mehr verändert werden können.
+  </para>
+  <para>
+    PostgreSQL 7.3 oder darunter geben gar keine Servereinstellungen
+    zurück. <function>pg_parameter_status</function> kann trotzdem benutzt
+    werden, um die Werte von <literal>server_version</literal> und 
+    <literal>client_encoding</literal> zu ermitteln. Es wird empfohlen, in
+    Anwendungen <function>pg_parameter_status</function> zu verwenden,
+    anstatt speziellen Code zu schreiben, um diese Werte zu erhalten.
+  </para>
+  <caution>
+    <para>
+      In PostgreSQL-Versionen vor 7.4 wird ein nachträgliches (nach dem
+      Start des Servers) Ändern von <literal>client_encoding</literal> mit
+      dem Kommando <literal>SET</literal>  von <function>pg_parameter_status</function> ignoriert.
+     </para>
+  </caution>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+       PostgreSQL Verbindungkennung. Falls <parameter>connection</parameter>
+       nicht angegeben wurde, wird die zuletzt mit <function>pg_connect</function> oder
+       <function>pg_pconnect</function> geöffnete Verbindung benutzt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>param_name</parameter></term>
+     <listitem>
+       <para>
+        Mögliche Werte für <parameter>param_name</parameter> sind: 
+        <literal>server_version</literal>, <literal>server_encoding</literal>, <literal>client_encoding</literal>,
+        <literal>is_superuser</literal>,    <literal>session_authorization</literal>, 
+        <literal>DateStyle</literal>, <literal>TimeZone</literal> und
+        <literal>integer_datetimes</literal>.
+       </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>Ein <type>string</type>, der den Wert des Parameters enthält oder &false;, falls ein Fehler auftrat oder der Parameter ungültig ist.
+  <parameter>param_name</parameter>.</para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>pg_parameter_status</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+  $dbconn = pg_connect("dbname=publisher") or die("Verbindungsaufbau fehlgeschlagen");
+
+  echo "Server encoding: ", pg_parameter_status($dbconn, "server_encoding");
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Server encoding: SQL_ASCII
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
