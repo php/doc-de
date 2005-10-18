@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.6 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.23 Maintainer: simp Status: ready -->
   <refentry id="function.sort">
    <refnamediv>
     <refname>sort</refname>
@@ -9,13 +9,17 @@
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
-      <type>void</type><methodname>sort</methodname>
-      <methodparam><type>array</type><parameter>array</parameter></methodparam>
+      <type>bool</type><methodname>sort</methodname>
+      <methodparam><type>array</type><parameter role="reference">array</parameter></methodparam>
       <methodparam choice="opt"><type>int</type><parameter>sort_flags</parameter></methodparam>
      </methodsynopsis>
     <para>
      Diese Funktion sortiert ein Array. Die Elemente werden
      aufsteigend vom niedrigsten zum höchsten Wert sortiert.
+    </para>
+    &note.no-key-association;
+    <para>
+     &return.success;
     </para>
     <para>
      <example>
@@ -24,19 +28,15 @@
 <![CDATA[
 <?php
 
-$fruits = array ("Zitrone", "Orange", "Banane", "Apfel");
-sort ($fruits);
-reset ($fruits);
-while (list ($key, $val) = each ($fruits)) {
-    echo "fruits[".$key."] = ".$val."\n";
-}
+$fruits = array("Zitrone", "Orange", "Banane", "Apfel");
+sort($fruits);
+foreach ($fruits as $key => $val) {
+    echo "fruits[" . $key . "] = " . $val . "\n";}
 
 ?>
 ]]>
       </programlisting>
-      <para>
-       Dieses Beispiel würde folgendes anzeigen:
-      </para>
+      &example.outputs;
       <screen>
 <![CDATA[
 fruits[0] = Apfel
@@ -59,13 +59,22 @@ fruits[3] = Zitrone
      Flags für Sortiertypen:
      <itemizedlist>
       <listitem>
-       <simpara>SORT_REGULAR - Vergleiche Einträge normal</simpara>
+       <simpara><constant>SORT_REGULAR</constant> - Vergleiche Einträge normal
+       (keine Typen Ändern)</simpara>
       </listitem>
       <listitem>
-       <simpara>SORT_NUMERIC - Vergleiche Einträge numerisch</simpara>
+       <simpara><constant>SORT_NUMERIC</constant> - Vergleiche Einträge numerisch</simpara>
       </listitem>
       <listitem>
-       <simpara>SORT_STRING - Vergleiche Einträge als Strings</simpara>
+       <simpara><constant>SORT_STRING</constant> - Vergleiche Einträge als Strings</simpara>
+      </listitem>
+      <listitem>
+       <simpara><constant>SORT_LOCALE_STRING</constant> - Vergleiche Einträge als String, 
+        basierend auf den aktuellen lokalen Einstellungen. In PHP 4.4.0 und 5.0.2 hinzugefügt.
+        Vor PHP 6 benutzt dies die lokalen Einstellungen des Systems, welche mittels
+        <function>setlocale</function> umgestellt werden können. Ab PHP 6 muss dafür die
+        Function <function>i18n_loc_set_default</function> verwendet werden.
+       </simpara>
       </listitem>
      </itemizedlist>
     </para>
@@ -74,9 +83,17 @@ fruits[3] = Zitrone
       Der zweite Parameter wurde in PHP 4 eingeführt.
      </para>
     </note>
+    <warning>
+     <simpara>
+      Seien Sie vorsichtig, wenn Sie Arrays mit Werten verschiedener
+      Typen verwenden, da <function>sort</function> unvorhergesehene
+      Ergebnisse verursachen kann.
+     </simpara>
+    </warning>
     <para>
      Siehe auch <function>arsort</function>,
      <function>asort</function>, <function>ksort</function>,
+     <function>krsort</function>,
      <function>natsort</function>, <function>natcasesort</function>,
      <function>rsort</function>, <function>usort</function>,
      <function>array_multisort</function> und
