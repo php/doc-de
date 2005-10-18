@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.11 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.23 Maintainer: simp Status: ready -->
   <refentry id="function.usort">
    <refnamediv>
     <refname>usort</refname>
@@ -12,8 +12,8 @@
    <refsect1>
     <title>Beschreibung</title>
      <methodsynopsis>
-      <type>void</type><methodname>usort</methodname>
-      <methodparam><type>array</type><parameter>array</parameter></methodparam>
+      <type>bool</type><methodname>usort</methodname>
+      <methodparam><type>array</type><parameter role="reference">array</parameter></methodparam>
       <methodparam><type>callback</type><parameter>cmp_function</parameter></methodparam>
      </methodsynopsis>
     <para>
@@ -39,30 +39,37 @@
       </para>
      </note>
     </para>
+    &note.no-key-association;
+    <para>
+     &return.success;
+    </para>
     <para>
      <example>
       <title><function>usort</function></title>
       <programlisting role="php">
 <![CDATA[
 <?php
-function cmp ($a, $b) {
-    if ($a == $b) return 0;
+function cmp($a, $b)
+{
+    if ($a == $b) {
+        return 0;
+    }
     return ($a < $b) ? -1 : 1;
 }
 
-$a = array (3, 2, 5, 6, 1);
+
+
+$a = array(3, 2, 5, 6, 1);
 
 usort ($a, "cmp");
 
-while (list ($key, $value) = each ($a)) {
+foreach ($a as $key => $value) {
     echo "$key: $value\n";
 }
 ?>
 ]]>
       </programlisting>
-      <para>
-       Dieses Beispiel würde folgendes anzeigen:
-      </para>
+      &example.outputs;
       <screen>
 <![CDATA[
 0: 1
@@ -88,7 +95,7 @@ while (list ($key, $value) = each ($a)) {
       <programlisting role="php">
 <![CDATA[
 <?php
-function cmp ($a, $b) {
+function cmp($a, $b) {
     return strcmp($a["fruit"], $b["fruit"]);
 }
 
@@ -98,19 +105,17 @@ $fruits[2]["fruit"] = "Trauben";
 
 usort($fruits, "cmp");
 
-while (list ($key, $value) = each ($fruits)) {
+while (list ($key, $value) = each($fruits)) {
     echo "\$fruits[$key]: " . $value["fruit"] . "\n";
 }
 ?>
 ]]>
       </programlisting>
       <para>
-       Wird ein mehrdimensionales Array sortiert, enthalten $a und $b
-       Referenzen zu dem ersten Index des Arrays.
+       Wird ein mehrdimensionales Array sortiert, enthalten <varname>$a</varname>
+       und <varname>$b</varname> Referenzen zu dem ersten Index des Arrays.
       </para>
-      <para>
-       Dieses Beispiel würde folgendes anzeigen:
-      </para>
+      &example.outputs;
       <screen>
 <![CDATA[
 $fruits[0]: Äpfel
@@ -142,7 +147,9 @@ class TestObj {
     {
         $al = strtolower($a->name);
         $bl = strtolower($b->name);
-        if ($al == $bl) return 0;
+        if ($al == $bl) {
+            return 0;
+        }
         return ($al > $bl) ? +1 : -1;
     }
 }
@@ -151,17 +158,15 @@ $a[] = new TestObj("c");
 $a[] = new TestObj("b");
 $a[] = new TestObj("d");
 
-uasort($a, array ("TestObj", "cmp_obj"));
+usort($a, array ("TestObj", "cmp_obj"));
 
 foreach ($a as $item) {
-    print $item->name."\n";
+    echo $item->name."\n";
 }
 ?>
 ]]>
       </programlisting>
-      <para>
-       Dieses Beispiel würde folgendes anzeigen:
-      </para>
+      &example.outputs;
       <screen>
 <![CDATA[
 b
