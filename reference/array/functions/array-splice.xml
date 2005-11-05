@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.7 $ -->
-<!-- EN-Revision: 1.7 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.8 $ -->
+<!-- EN-Revision: 1.16 Maintainer: simp Status: ready -->
+<!-- CREDITS: tom -->
   <refentry id="function.array-splice">
    <refnamediv>
     <refname>array_splice</refname>
@@ -13,7 +14,7 @@
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>array</type><methodname>array_splice</methodname>
-      <methodparam><type>array</type><parameter>input</parameter></methodparam>
+      <methodparam><type>array</type><parameter role="reference">input</parameter></methodparam>
       <methodparam><type>int</type><parameter>offset</parameter></methodparam>
       <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
       <methodparam choice="opt"><type>array</type><parameter>
@@ -26,7 +27,8 @@
      angegebenen Elemente des Arrays <parameter>input</parameter>, und
      ersetzt diese durch die Elemente des Arrays
      <parameter>replacement</parameter>, wenn angegeben und gibt ein
-     Array mit den entfernten Elemente zurück.
+     Array mit den entfernten Elemente zurück. Beachten Sie, dass numerische 
+     Schlüssel in <parameter>input</parameter> nicht erhalten werden.
     </para>
     <para>
      Ist <parameter>offset</parameter> positiv, beginnt der zu
@@ -56,12 +58,14 @@
      <parameter>length</parameter> so angegeben dass nichts entfernt
      wird, werden die Elemente von <parameter>replacement</parameter>
      an der von <parameter>offset</parameter> spezifizierten Stelle
-     eingefügt. Tipp: Soll die Ersetzung durch nur ein Element erfolgen
-     ist es nicht nötig ein Array zu anzugeben es sei denn, dieses
-     Element ist selbst ein Array.
+     eingefügt. Beachten Sie, dass Schlüssel in der Ersetzung nicht erhalten
+     werden. Wenn <parameter>replacement</parameter> nur aus einem Element
+     besteht ist es nicht notwendig, <literal>array()</literal> anzugeben,
+     es sei denn, dieses Element ist selbst ein Array.
     </para>
     <para>
-     Hier einige Entsprechungen:
+     Die folgenden Anweisungen ändern alle den Wert von 
+     <varname>$input</varname> auf die gleiche Art:
      <table>
       <title><function>array_splice</function> equivalents</title>
       <tgroup cols="2">
@@ -79,7 +83,7 @@
           array_pop($input) 
          </entry>
          <entry>
-          array_splice($input, -1)
+          array_splice($input, 0, -1)
          </entry>
         </row>
         <row>
@@ -100,7 +104,7 @@
         </row>
         <row>
          <entry>
-          $a[$x] = $y
+          $input[$x] = $y // für Arrays, in denen Schlüssel dem Offset entsprechen
          </entry>
          <entry>
           array_splice($input, $x, 1, $y)
@@ -119,28 +123,30 @@
       <programlisting role="php">
 <![CDATA[
 <?php
-$input = array ("rot", "grün", "blau", "gelb");
-array_splice ($input, 2);
-// $input ist nun array ("rot", "grün")
+$input = array("rot", "grün", "blau", "gelb");
+array_splice($input, 2);
+// $input ist nun array("rot", "grün")
 
-$input = array ("rot", "grün", "blau", "gelb");
-array_splice ($input, 1, -1);
-// $input ist nun array ("rot", "gelb")
+$input = array("rot", "grün", "blau", "gelb");
+array_splice($input, 1, -1);
+// $input ist nun array("rot", "gelb")
 
-$input = array ("rot", "grün", "blau", "gelb");
-array_splice ($input, 1, count($input), "orange");
-// $input ist nun array ("rot", "orange")
+$input = array("rot", "grün", "blau", "gelb");
+array_splice($input, 1, count($input), "orange");
+// $input ist nun array("rot", "orange")
 
-$input = array ("rot", "grün", "blau", "gelb");
-array_splice ($input, -1, 1, array("schwarz", "braun"));
-// $input ist nun array ("rot", "grün", "blau", "schwarz", "braun")
+$input = array("rot", "grün", "blau", "gelb");
+array_splice($input, -1, 1, array("schwarz", "braun"));
+// $input ist nun array("rot", "grün", "blau", "schwarz", "braun")
 ?>
 ]]>
       </programlisting>
      </example>
     </para>
     <para>
-     Siehe auch <function>array_slice</function>.
+     Siehe auch <function>array_slice</function>,
+     <function>unset</function>, und
+     <function>array_merge</function>.
     </para>
    </refsect1>
   </refentry>

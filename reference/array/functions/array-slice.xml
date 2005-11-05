@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.5 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.11 Maintainer: simp Status: ready -->
+<!-- CREDITS: tom -->
   <refentry id="function.array-slice">
    <refnamediv>
     <refname>array_slice</refname>
@@ -12,9 +13,8 @@
       <type>array</type><methodname>array_slice</methodname>
       <methodparam><type>array</type><parameter>array</parameter></methodparam>
       <methodparam><type>int</type><parameter>offset</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>
-        length
-       </parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
+      <methodparam choice="opt"><type>bool</type><parameter>preserve_keys</parameter></methodparam>
      </methodsynopsis>
     <para>
      <function>array_slice</function> liefert die mittels
@@ -23,7 +23,7 @@
      <parameter>array</parameter>
     </para>
     <para>
-     Ist <parameter>offset</parameter> positiv, beginnt die Sequenz bei
+     Ist <parameter>offset</parameter> nicht negativ, beginnt die Sequenz bei
      diesem Offset in dem <parameter>array</parameter>. Ist
      <parameter>offset</parameter> negativ, beginnt die Sequenz
      <parameter>offset</parameter> Elemente vor dem Ende von
@@ -40,9 +40,10 @@
      Ende von <parameter>array</parameter>.
     </para>
     <para>
-     Beachten Sie, dass <function>array_slice</function> Schlüssel
-     ignoriert, und Offsets sowie Längen anhand der aktuellen
-     Positionen berechnet.
+     Beachten Sie, dass <function>array_slice</function> nach Vorgabe
+     die Schlüssel des Arrays zurücksetzt. Seit PHP 5.0.2 können Sie dieses
+     Verhalten ändern, indem Sie <parameter>preserve_keys</parameter> auf
+     &true; setzen.
     </para>
     <para>
      <example>
@@ -50,19 +51,38 @@
       <programlisting role="php">
 <![CDATA[
 <?php
-$input = array ("a", "b", "c", "d", "e");
+$input = array("a", "b", "c", "d", "e");
 
-$output = array_slice ($input, 2);      // liefert "c", "d", und "e"
-$output = array_slice ($input, 2, -1);  // liefert "c", "d"
-$output = array_slice ($input, -2, 1);  // liefert "d"
-$output = array_slice ($input, 0, 3);   // liefert "a", "b", und "c"
+$output = array_slice($input, 2);      // liefert "c", "d", und "e"
+$output = array_slice($input, -2, 1);  // liefert "d"
+$output = array_slice($input, 0, 3);   // liefert "a", "b", und "c"
+
+// Beachten Sie die Unterschiede in den Schlüsseln
+print_r(array_slice($input, 2, -1));
+print_r(array_slice($input, 2, -1, true));
 ?>
 ]]>
       </programlisting>
+      &example.outputs;
+      <screen>
+<![CDATA[
+Array
+(
+    [0] => c
+    [1] => d
+)
+Array
+(
+    [2] => c
+    [3] => d
+)
+]]>
+      </screen>
      </example>
     </para>
     <para>
-     Siehe auch <function>array_splice</function>.
+     Siehe auch <function>array_splice</function> und
+     <function>unset</function>.
     </para>
    </refsect1>
   </refentry>
