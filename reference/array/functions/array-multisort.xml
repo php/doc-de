@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.6 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.17 Maintainer: simp Status: ready -->
+<!-- CREDITS: tom -->
   <refentry id="function.array-multisort">
    <refnamediv>
     <refname>array_multisort</refname>
@@ -14,13 +15,20 @@
       <methodparam choice="opt"><type>mixed</type><parameter>arg</parameter></methodparam>
       <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
       <methodparam choice="opt"><type>array</type><parameter>...</parameter></methodparam>
+     <!-- Parameters don't need to be passed by reference -->
      </methodsynopsis>
     <para>
-     <function>array_multisort</function> wird zum Sortieren von
+     &return.success;
+    </para>
+    <para><function>array_multisort</function> wird zum Sortieren von
      entweder mehreren Arrays auf einmal, oder eines
-     multidimensionalen Arrays (entsprechend einer von mehreren
-     Dimensionen) benutzt. Bei der Sortierung werden die
+     multidimensionalen Arrays nach einer oder mehreren Dimensionen
+     benutzt. Bei der Sortierung werden die
      Schlüsselassoziationen beibehalten.
+    </para>
+    <para>
+     Assoziative (<type>string</type>) Schlüssel werden beibehalten, aber
+     numerische Schlüssel werden neu nummeriert.
     </para>
     <para>
      Die angegebenen Arrays werden als Spalten einer Tabelle
@@ -31,7 +39,7 @@
     </para>
     <para>
      Die Struktur der Argumente ist etwas ungewöhnlich, aber
-     flexibel. Das aller erste Argument muss ein Array sein. Die
+     flexibel. Das erste Argument muss ein Array sein. Die
      nachfolgenden Argumente können entweder ein Array oder eines der
      folgenden Sortierflags sein.
     </para>
@@ -39,10 +47,10 @@
      Flags für Sortierreihenfolge:
      <itemizedlist>
       <listitem>
-       <simpara>SORT_ASC - sortiere in aufsteigender Reihenfolge</simpara>
+       <simpara><constant>SORT_ASC</constant> - sortiere in aufsteigender Reihenfolge</simpara>
       </listitem>
       <listitem>
-       <simpara>SORT_DESC - sortiere in absteigender Reihenfolge</simpara>
+       <simpara><constant>SORT_DESC</constant> - sortiere in absteigender Reihenfolge</simpara>
       </listitem>
      </itemizedlist>
     </para>
@@ -50,13 +58,13 @@
      Flags für Sortiertypen:
      <itemizedlist>
       <listitem>
-       <simpara>SORT_REGULAR - vergleiche Felder normal</simpara>
+       <simpara><constant>SORT_REGULAR</constant> - vergleiche Felder normal</simpara>
       </listitem>
       <listitem>
-       <simpara>SORT_NUMERIC - vergleiche Felder numerisch</simpara>
+       <simpara><constant>SORT_NUMERIC</constant> - vergleiche Felder numerisch</simpara>
       </listitem>
       <listitem>
-       <simpara>SORT_STRING - vergleiche Felder als Strings</simpara>
+       <simpara><constant>SORT_STRING</constant> - vergleiche Felder als Strings</simpara>
       </listitem>
      </itemizedlist>
     </para>
@@ -64,8 +72,8 @@
      Es kann nur ein Sortierflag des selben Typs nach jedem Array
      spezifiziert werden. Sortierflags nach einem Array Argument
      gelten nur für dieses Array, und werden vor jedem neuen Array
-     Argument zu den Defaultflags SORT_ASC und SORT_REGULAR
-     zurückgesetzt.
+     Argument zu den Defaultflags <constant>SORT_ASC</constant> und 
+     <constant>SORT_REGULAR</constant> zurückgesetzt.
     </para>
     <para>
      &return.success;
@@ -76,14 +84,12 @@
       <programlisting role="php">
 <![CDATA[
 <?php
-$ar1 = array ("10", 100, 100, "a");
-$ar2 = array (1, 3, "2", 1);
-array_multisort ($ar1, $ar2);
+$ar1 = array("10", 100, 100, "a");
+$ar2 = array(1, 3, "2", 1);
+array_multisort($ar1, $ar2);
 ?>
 ]]>
       </programlisting>
-     </example>
-    </para>
     <para>
      In diesem Beispiel enthält das erste Array nach dem Sortieren 10,
      "a", 100, 100. Das zweite Array wird 1, 1, "2", 3 enthalten. Die
@@ -91,26 +97,195 @@ array_multisort ($ar1, $ar2);
      ersten Arrays entsprechen (100 und 100) wurden ebenfalls
      sortiert.
     </para>
+      <screen>
+<![CDATA[
+array(4) {
+  [0]=> string(2) "10"
+  [1]=> string(1) "a"
+  [2]=> int(100)
+  [3]=> int(100)
+}
+array(4) {
+  [0]=> int(1)
+  [1]=> int(1)
+  [2]=> string(1) "2"
+  [3]=> int(3)
+}
+]]>
+      </screen>
+     </example>
+    </para>
+
     <para>
      <example>
       <title>Sortieren eines mehrdimensionalen Arrays</title>
       <programlisting role="php">
 <![CDATA[
 <?php
-$ar = array (array ("10", 100, 100, "a"), array (1, 3, "2", 1));
-array_multisort ($ar[0], SORT_ASC, SORT_STRING,
-                 $ar[1], SORT_NUMERIC, SORT_DESC);
+$ar = array(
+       array("10", 11, 100, 100, "a"),
+       array(   1,  2, "2",   3,   1)
+      );
+array_multisort($ar[0], SORT_ASC, SORT_STRING,
+                  $ar[1], SORT_NUMERIC, SORT_DESC);
+var_dump($ar);
 ?>
 ]]>
       </programlisting>
+      <para>
+       In diesem Beispiel wird sich das erste Array nach der Sortierung
+       in "10", 100, 100, 11, "a" ändern (es wurde als Strings in
+       aufsteigender Reihenfolge sortiert). Das Zweite wird 
+       1, 3, "2", 2, 1 enthalten (sortiert als Zahlen in absteigender Reihe).
+      </para>
+      <screen>
+<![CDATA[
+array(2) {
+  [0]=> array(5) {
+    [0]=> string(2) "10"
+    [1]=> int(100)
+    [2]=> int(100)
+    [3]=> int(11)
+    [4]=> string(1) "a"
+  }
+  [1]=> array(5) {
+    [0]=> int(1)
+    [1]=> int(3)
+    [2]=> string(1) "2"
+    [3]=> int(2)
+    [4]=> int(1)
+  }
+}
+]]>
+      </screen>
      </example>
     </para>
+
     <para>
-     In diesem Beispiel enthält das erste Array nach dem Sortieren 10,
-     100, 100, "a" (wurde als Strings in aufsteigender Reihenfolge
-     sortiert), und das zweite enthält 1, 3, "2", 1 (numerisch und
-     absteigender Reihenfolge sortiert).
+     <example>
+      <title>Datenbankdaten sortieren</title>
+      <para>
+       In diesem Beispiel repräsentiert jedes Element des Arrays
+       <varname>data</varname> eine Zeile einer Tabelle. Dieser Typ
+       von Datensätzen ist typisch für Datenbankinhalte.
+      </para>
+      <para>
+       Beispieldaten:
+      </para>
+      <screen>
+<![CDATA[
+Band   | Auflage
+-------+--------
+    67 |       2
+    86 |       1
+    85 |       6
+    98 |       2
+    86 |       6
+    67 |       7
+]]>
+      </screen>
+      <para>
+       Die Daten als <varname>data</varname> genanntes Array. Dieses würde
+       üblicherweise erhalten, indem man zum Beispiel mit 
+       <function>mysql_fetch_assoc</function> eine Schleife baut. 
+      </para>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$data[] = array('Band' => 67, 'Auflage' => 2);
+$data[] = array('Band' => 86, 'Auflage' => 1);
+$data[] = array('Band' => 85, 'Auflage' => 6);
+$data[] = array('Band' => 98, 'Auflage' => 2);
+$data[] = array('Band' => 86, 'Auflage' => 6);
+$data[] = array('Band' => 67, 'Auflage' => 7);
+?>
+]]>
+      </programlisting>
+      <para>
+       In diesem Beispiel werden wir nach <varname>Band</varname> absteigend
+       sortieren und nach <varname>Auflage</varname> aufsteigend.
+      </para>
+      <para>
+       Wir haben ein Array von Zeilen, aber 
+       <function>array_multisort</function> benötigt ein Array von Spalten,
+       daher benutzen wir den Code unten, um die Spalten zu bekommen und
+       dann die Sortierung durchzuführen.
+      </para>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Hole eine Liste von Spalten
+foreach ($data as $key => $row) {
+    $band[$key]  = $row['band'];
+    $auflage[$key] = $row['auflage'];
+}
+
+// Die Daten mit band absteigend, Auflage aufsteigend sortieren
+// Geben Sie $data als letzten Parameter an, um nach dem gemeinsamen
+// Schlüssel zu sortieren.
+array_multisort($band, SORT_DESC, $auflage, SORT_ASC, $data);
+?>
+]]>
+      </programlisting>
+      <para>
+       Der Datensatz ist jetzt sortiert und wird wie folgt aussehen:
+      </para>
+      <screen>
+<![CDATA[
+Band   | Auflage
+-------+--------
+    98 |       2
+    86 |       1
+    86 |       6
+    85 |       6
+    67 |       2
+    67 |       7
+]]>
+      </screen>
+     </example>
     </para>
+
+    <para>
+     <example>
+      <title>Groß-/Kleinschreibung nicht beachtende Sortierung</title>
+      <para>
+       Sowohl <constant>SORT_STRING</constant> als auch 
+       <constant>SORT_REGULAR</constant> beachten die Groß-/Kleinschreibung,
+       weshalb Strings, welche mit großem Buchstaben beginnen, vor Strings
+       einsortiert werden, die mit kleinem Buchstaben anfangen.
+      </para>
+      <para>
+       Um eine Suche durchzuführen, die die Groß-/Kleinschreibung nicht
+       beachtet, muss man erzwingen, dass die Sortierreihenfolge von einer
+       Kopie des Originalarrays in Kleinschreibung festgelegt wird.
+      </para>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$array = array('Alpha', 'atomar', 'Beta', 'bank');
+$array_lowercase = array_map('strtolower', $array);
+
+array_multisort($array_lowercase, SORT_ASC, SORT_STRING, $array);
+
+print_r($array);
+?>
+]]>
+      </programlisting>
+      &example.outputs;
+      <screen>
+<![CDATA[
+Array
+(
+    [0] => Alpha
+    [1] => atomar
+    [2] => bank
+    [3] => Beta
+)
+]]>
+      </screen>
+     </example>
+    </para>
+
    </refsect1>
   </refentry>
 
