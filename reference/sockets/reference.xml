@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision 1.7: Maintainer: conni Status: ready -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision 1.27: Maintainer: conni Status: ready -->
+<!-- Purpose: remote.other -->
+<!-- Membership: bundled -->
+
  <reference id="ref.sockets">
   <title>Socket Funktionen</title>
   <titleabbrev>Sockets</titleabbrev>
@@ -17,15 +20,14 @@
 	 agieren.
     </para>
     <para>
-	 Für eine allgemeinere clientseitige Socket Schnittstelle siehe
-     <function>fsockopen</function> und
-     <function>pfsockopen</function>.     
+	 Für eine allgemeinere clientseitige Socket Schnittstelle siehe <function>stream_socket_client</function>, <function>stream_socket_server</function>,
+     <function>fsockopen</function> und      <function>pfsockopen</function>.     
     </para>
     <para>
 	 Wenn man diese Funktionen benutzt, darf man nicht vergessen,
      dass, obwohl viele der Funktionen gleichlautende Namen wie ihre
      Entsprechungen in C haben, sie dennoch oft unterschiedliche
-     Deklarationen haben. Bitte lesen Sie die Deklarationen, um
+     Deklarationen haben. Bitte lesen Sie die Beschreibungen, um
      Verwirrung zu vermeiden.
     </para>
     <para>
@@ -34,11 +36,9 @@
      manpages und es gibt jede Menge von Tutorials und Informationen
 	 über Socketprogrammierung in C im Internet. Vieles davon kann mit
 	 leichten Änderungen für die Socketprogrammierung mit PHP benutzt
-	 werden.
-     Die <ulink url="&url.socket.faq;">UNIX Socket FAQ</ulink> ist 
+	 werden. Die <ulink url="&url.socket.faq;">UNIX Socket FAQ</ulink> ist 
 	 dafür ein guter Anfang.
     </para>
-    &warn.experimental;
    </section>
    
    <section id="sockets.requirements">
@@ -46,16 +46,8 @@
     &no.requirement;
    </section>
    
-   <section id="sockets.installation">
-    &reftitle.install;
-    <para>
-     Die hier beschriebenen Socket Funktionen sind Teil einer PHP
-     Erweiterung, die beim Kompilieren mit der Option <option
-     role="configure">--enable-sockets</option> beim Befehl
-     <command>configure</command> eingebunden werden muss.
-    </para>
-   </section>
-   
+   &reference.sockets.configure;  
+
    <section id="sockets.configuration">
     &reftitle.runtime;
     &no.config;
@@ -75,7 +67,7 @@
 	 Schnittstelle zu den mächtigen BSD-Funktionen zur Verfügung zu
 	 stellen. Es wurde darauf geachtet, dass die Funktionen sowohl
 	 unter Win32 als auch unter Unix-Implementierungen arbeiten. Fast
-	 alle Socket-Funktionen können unter besonderen Umständen
+	 alle Socket-Funktionen können unter bestimmten Umständen
 	 fehlschlagen und deshalb eine <constant>E_WARNING</constant>-
 	 Meldung ausgeben, die den aufgetretenen Fehler beschreibt. Dies
 	 ist manchmal nicht wünschenswert für den Entwickler. Zum Beispiel
@@ -86,7 +78,7 @@
 	 der Fehlercode innerhalb der Anwendung mit der Funktion
 	 <function>socket_last_error</function> aufgefangen. Sie können
 	 auch die Funktion <function>socket_strerror</function> mit diesem
-	 Fehlercode aufrufen, um einen String, der den Fehler beschreibt,
+	 Fehlercode aufrufen, um eine Fehlerbeschreibung zu erhalten.
 	 zu erhalten. Nähere Informationen finden Sie bei diesen beiden
 	 Funktionen. 
     </para>
@@ -210,14 +202,14 @@ $service_port = getservbyname ('www', 'tcp');
 $address = gethostbyname ('www.example.com');
 
 /* einen TCP/IP Socket erzeugen. */
-$socket = socket_create (AF_INET, SOCK_STREAM, 0);
+$socket = socket_create (AF_INET, SOCK_STREAM, SOL_TCP);
 if ($socket < 0) {
     echo "socket_create() fehlgeschlagen: Grund: " . socket_strerror ($socket) . "\n";
 } else {
     echo "OK.\n";
 }
 
-echo "Versuche, eine Verbindung zu '$address' auf Port  '$service_port' aufzubauen ...";
+echo "Versuche, eine Verbindung zu '$address' auf Port '$service_port' aufzubauen ...";
 $result = socket_connect ($socket, $address, $service_port);
 if ($result < 0) {
     echo "socket_connect() fehlgeschlagen.\nGrund: ($result) " . socket_strerror($result) . "\n";
@@ -225,7 +217,9 @@ if ($result < 0) {
     echo "OK.\n";
 }
 
-$in = "HEAD / HTTP/1.0\r\n\r\n";
+$in = "HEAD / HTTP/1.1\r\n";
+$in .= "Host: www.example.com\r\n";
+$in .= "Connection: Close\r\n\r\n";
 $out = '';
 
 echo "Einen HTTP HEAD Request senden ...";
