@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision 1.6: Maintainer: conni Status: ready -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.15 Maintainer: conni Status: ready -->
 <reference id="ref.shmop">
   <title>Shared Memory Funktionen (Gemeinsamer Speicher)</title>
   <titleabbrev>shmop</titleabbrev>
@@ -11,17 +11,23 @@
    <para>
     Shmop ist eine Sammlung einfach anzuwendender PHP-Funktionen,
     mit denen man mit PHP UNIX shared-memory-Segmente beschreiben,
-    auslesen und löschen kann. Die Funktionen können mit Windows
-    nicht eingesetzt werden, da Windows keinen gemeinsamen
-    Speicher unterstützt.
-    Um shmop zu nutzen, müssen Sie PHP mit der Option --enable-shmop kompilieren.
+    auslesen und löschen kann.
    </para>
    <note>
     <simpara>
-     Die Funktionen, die in diesem Kapitel erklärt werden, beginnen
-     in PHP 4.0.3 alle mit <literal>shm</literal>, anstelle von 
-	 <literal>shmop</literal>.
+     Ältere Windows-Versionen vor Windows2000 unterstützen keinen
+     gemeinsamen Speicher. Unter Windows können diese Funktionen nur
+     benutzt werden, wenn PHP als Modul des Webservers, wie etwa
+     Apache oder IIS, läuft. (Mit CLI und CGI können die Funktionen
+     nicht verwendet werden.)
     </simpara>
+    </note>
+    <note>
+     <simpara>
+      Die Funktionen, die in diesem Kapitel erklärt werden, beginnen
+      in PHP 4.0.3 alle mit <literal>shm</literal>, anstelle von 
+	  <literal>shmop</literal>.
+     </simpara>
     </note>
    </section>
 
@@ -30,14 +36,7 @@
     &no.requirement;
    </section>
 
-   <section id="shmop.installation">
-    &reftitle.install;
-    <para>
-     Um die shmop-Funktionen benutzen zu können, müssen Sie php mit
-	 der Option <option role="configure">--enable-shmop</option>
-	 kompilieren. 
-    </para>
-   </section>
+   &reference.shmop.configure;
 
    <section id="shmop.configuration">
     &reftitle.runtime;
@@ -67,7 +66,7 @@
 // Erstelle einen 100 Byte grossen gemeinsam genutzten Speicherblock
 // mit mit der System_ID if 0xff3
 $shm_id = shmop_open(0xff3, "c", 0644, 100);
-if(!$shm_id) {
+if (!$shm_id) {
     echo "Konnte kein gemeinsames Speichersegment erstellen\n";
 }
 
@@ -77,18 +76,18 @@ echo "SHM Block mit: ".$shm_size. " Bytes wurde erstellt.\n";
 
 // Teststring in den gemeinsamen Speicher schreiben
 $shm_bytes_written = shmop_write($shm_id, "mein gemeinsamer Speicherblock", 0);
-if($shm_bytes_written != strlen("mein gemeinsamer Speicherblock")) {
+if ($shm_bytes_written != strlen("mein gemeinsamer Speicherblock")) {
     echo "Konnte nicht den gesamten String schreiben\n";
 }
 
 // Den Teststring wieder auslesen
 $my_string = shmop_read($shm_id, 0, $shm_size);
-if(!$my_string) {
+if (!$my_string) {
     echo "Konnte nicht aus dem gemeinsamen Speicher lesen\n";
 }
 echo "Die Daten im gemeinsamen Speicher waren: ".$my_string."\n";
 
-// Den Speicherblock löschen und den gemeinsamen Speicher schliessen
+// Den Speicherblock löschen und das Speichersegment schliessen
 if(!shmop_delete($shm_id)) {
     echo "Konnte den gemeinsamen Speicherblock nicht zum Löschen markieren.";
 }
