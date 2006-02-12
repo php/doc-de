@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.4 Maintainer: conni Status: ready -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.7 Maintainer: conni Status: ready -->
   <refentry id="function.socket-create">
    <refnamediv>
     <refname>socket_create</refname>
@@ -14,49 +14,181 @@
       <methodparam><type>int</type><parameter>type</parameter></methodparam>
       <methodparam><type>int</type><parameter>protocol</parameter></methodparam>
      </methodsynopsis>
-     &warn.experimental.func;
     <para>
 	 Erzeugt einen Kommunikationsendpunkt (einen Socket) und gibt einen
-	 Socket-Deskriptor zurück.
+     Socket-Deskriptor zurück. Ein typisches Netzwerk besteht aus zwei
+     Sockets, von denen der eine die Rolle des Clients und der andere die
+     Rolle des Servers übernimmt.
     </para>
     <para>
-     Der <parameter>domain</parameter> Parameter legt die Domain fest
-	 (Protokoll-Familie), die für die Kommunikation benutzt wird.
-	 Gegenwärtig  verstehen Sockets <constant>AF_INET</constant> und
-	 <constant>AF_UNIX</constant>. <constant>AF_INET</constant> wird
-	 normalererweise für die Internet-Kommunikation benutzt.
-	 <constant>AF_UNIX</constant> verwendet Pfadnamen zur Identifikation
-	 von Sockets und kann daher nur für die lokale Kommunikation benutzt
-	 werden (welche andererseits schneller ist). 
+     Der <parameter>domain</parameter> Parameter legt die Protokollfamilie
+     fest, die  für die Kommunikation vom Socket benutzt wird. 
     </para>
+
+    <table>
+    <title>Folgende Adressen/Protokollfamilien sind verfügbar:</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Domain</entry>
+       <entry>Beschreibung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>AF_INET</entry>
+       <entry>
+        IPv4 basierete Internet-Protokolle. TCP und UDP sind allgemein
+        gebräuchliche Protokolle dieser Familie.
+       </entry>
+      </row>
+      <row>
+       <entry>AF_INET6</entry>
+       <entry>
+        IPv6 basierete Internet-Protokolle. TCP und UDP sind allgemein
+        gebräuchliche Protokolle dieser Familie. Diese Unterstützung gibt
+        es seit PHP 5.0.0.
+       </entry>
+      </row>
+      <row>
+       <entry>AF_UNIX</entry>
+       <entry>
+        Protokollfamilie für die lokale Kommunikation. Hohe Effizienz und
+        ein geringer Overhead machen sie zur ersten Wahl für IPC
+        (Inter-Process-Communication).
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </table>
     <para>
-     Der <parameter>type</parameter> Parameter bestimmt den Socket-Typ.
-	 Dies ist entweder <constant>SOCK_STREAM</constant>,
-     <constant>SOCK_DGRAM</constant>, <constant>SOCK_SEQPACKET</constant>,
-	 <constant>SOCK_RAW</constant>, <constant>SOCK_RDM</constant> oder
-     <constant>SOCK_PACKET</constant>. Die beiden meistbenutzten Typen sind
-	 <constant>SOCK_DGRAM</constant> für die (verbindungslose)
-	 <literal>UDP</literal> Kommunikation, und
-	 <constant>SOCK_STREAM</constant> für die <literal>TCP</literal>
-     Kommunikation.
+     Der Parameter <parameter>type</parameter> bestimmt den
+     Kommunikationstyp, den der Socket verwenden soll.
     </para>
+    <table>
+    <title>Die möglichen Socket-Typen sind:</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Type</entry>
+       <entry>Beschreibung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>SOCK_STREAM</entry>
+       <entry>
+         Stellt zuverlässige, sequentielle verbindungsorientierte Streams
+         im Vollduplexmodus zur Verfügung. Ein externer Mechanismus zur
+         Datenübertragung kann unterstützt werden. Das TCP-Protokoll
+         beruht auf diesem Socket.Typ.
+       </entry>
+      </row>
+      <row>
+       <entry>SOCK_DGRAM</entry>
+       <entry>
+         Unterstützt Datagramme (verbindunglos, Nachrichten vorgegebener
+         Maximallänge, deren Übertragung nicht zuverlässig ist). Das
+         UDP-Protikoll beruht auf diesem Socket-Typ.
+       </entry>       
+      </row>
+        <row>
+       <entry>SOCK_SEQPACKET</entry>
+       <entry>
+         Stellt eine zuverlässige, sequentielle. bidirektionale
+         verbindungsorientierte Übertragungsweg für Datagramme 
+         vorgegebener Maximallänge zur Verfügung. Ein Empfänger muss 
+         bei jeder Leseanforderung das gesamte Datenpaket lesen. 
+       </entry>       
+      </row>
+      <row>
+       <entry>SOCK_RAW</entry>
+       <entry>
+         Stellt einen Zugang mit einem nicht bestimmten Netzwerkprotokoll
+         zur Verfügung. Dieser spezielle Socket-Typ kann dazu benutzt
+         werden, um manuell ein Protokoll eines beliebigen Typs zu
+         erstellen. Solche Sockets werden üblicherweise benutzt, um ICMP
+         Requests zu senden (wie etwa ping oder traceroute usw.).
+       </entry>
+      </row>
+      <row>
+       <entry>SOCK_RDM</entry>
+       <entry>
+         Stellt eine zuverlässige Schicht für Datagramme zur Verfügung, in
+         der die Reihenfolge der Datagramme nicht garantiert wird. Dies
+         ist in Ihrem Betriebssytem höchstwahrscheinlich nicht
+         implementiert.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </table>    
     <para>
-     <parameter>protocol</parameter> gibt das Protokoll an, welches
-	 entweder <constant>SOL_UDP</constant> oder
-	 <constant>SOL_TCP</constant> ist.
+     Der Parameter <parameter>protocol</parameter> setzt das spezifische
+     Protokoll innerhalb der angegebenen <parameter>domain</parameter>,
+     das vom zurückgegebenen Socket für die Kommunikation benutzt wird.
+     Der passende Wert kann ermittelt werden, indem der Name an die
+     Funktion <function>getprotobyname</function>übergeben wird. Wenn TCP
+     oder UDP gewünscht werden, können auch die entsprechenden Konstanten
+     <constant>SOL_TCP</constant> oder <constant>SOL_UDP</constant>
+     benutzt werden.
     </para>
+    <table>
+    <title>Gebräuchliche Protokolle</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Name</entry>
+       <entry>Beschreibung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>icmp</entry>
+       <entry>
+        Das Internet Control Message Protocol wird hauptsächlich von
+        Gateways und Hosts benutzt, um Datagramm-Fehler zu melden. Das
+        Kommando "ping" (das in den meisten modernen Betriebssystemen
+        enthalten ist) ist ein Beispiel für eine Anwendung von ICMP.
+       </entry>
+      </row>
+      <row>
+       <entry>udp</entry>
+       <entry>
+        Das User Datagram Protocol ist ein verbindungsloses,
+        unzuverlässiges Protokoll, mit dem Datensätze fester Länge
+        versendet werden können. Aufgrund dieser geringen Anforderungen
+        braucht UDP nur einen minimalen Protokoll-Overhead.
+       </entry>       
+      </row>
+        <row>
+       <entry>tcp</entry>
+       <entry>
+        Das Transmission Control Protocol ist ein zuverlässiges,
+        verbindungsorientiertes, Stream-orientiertes Protokoll für den
+        Vollduplex-Betrieb. Bei TCP ist garantiert, dass alle Datenpakete
+        in derselben Reihenfolge empfangen werden, in der sie gesendet
+        wurden. Falls während der Übertragung ein Datenpaket verlorengeht,
+        wird es von TCP erneut versendet, und zwar solange, bis der
+        Empfängerhost den Eingang dieses Paktes zurückmeldet. Aus Gründen
+        der Zuverlässigkeit und Leistung ist TCP so implementiert, dass es
+        eigenständig die oktalen Grenzen der darunterliegenden Datagramm-
+        Kommunikationschicht anpassen kann. Aus diesem Grund müssen TCP
+        Anwendungen in der Lage sein, auch Teilübertragungen empfangen zu
+        können.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </table>
     <para>
-     Bei Erfolg gibt die Funktion einen Socket-Deskriptor zurück, bei einem
-	 Fehler wird &false; zurückgegeben. Der aktuelle Fehlercode kann mit
-	 <function>socket_last_error</function> ermittelt werden. Dieser
-	 Fehlercode kann an die Funktion 
+     Bei Erfolg gibt <function>socket_create</function> einen
+     Socket-Deskriptor zurück, bei einem Fehler wird &false;
+     zurückgegeben. Der aktuelle Fehlercode kann mit
+	 <function>socket_last_error</function>
+     ermittelt werden. Dieser Fehlercode kann an die Funktion
      <function>socket_strerror</function> übergeben werden, um eine
-	 textuelle Beschreibing des Fehlers zu erhalten. 
-    </para>
-    <para>
-     Weitere Informationen über die Benutzung der Funktion
-	 <function>socket_create</function>, als auch über die Bedeutung der
-	 verschiedenen Parameter finden Sie auf der Unix man page socket (2).
+	 textuelle Beschreibing des Fehlers zu erhalten.
     </para>
     <note>
      <para>
