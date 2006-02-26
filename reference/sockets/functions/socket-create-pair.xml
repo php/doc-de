@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision 1.2: Maintainer: conni Status: ready -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.12 Maintainer: conni Status: ready -->
   <refentry id="function.socket-create-pair">
    <refnamediv>
     <refname>socket_create_pair</refname>
-    <refpurpose>Erzeugt ein paar von unverwechselbaren Sockets und speichert sie in fds. </refpurpose>
+    <refpurpose>Erzeugt ein paar von unverwechselbaren Sockets und speichert sie in einem Array. </refpurpose>
    </refnamediv>
    <refsect1>
     <title>Beschreibung</title>
@@ -15,9 +15,243 @@
       <methodparam><type>int</type><parameter>protocol</parameter></methodparam>
       <methodparam><type>array</type><parameter>&amp;fd</parameter></methodparam>
      </methodsynopsis>
-     &warn.experimental.func;
+
     <para>
-     &warn.undocumented.func;
+     <function>socket_create_pair</function> erzeugt zwei nicht
+     unterscheidbare verbundene Sockets und speichert sie im Array
+     <parameter>fd</parameter>. Diese Funktion wird allgemein bei der
+     Inter-Prozess-Kommunikation (IPC) verwendet.
+    </para>
+    <para>
+     Der Parameter <parameter>domain</parameter> bestimmt die
+     Protokollfamilie, die von den Sockets benutzt werden. 
+    </para>
+    <table>
+    <title>Mögliche Adressen/Protokollfamilien</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Domain</entry>
+       <entry>Beschreibung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>AF_INET</entry>
+       <entry>
+        IPv4 basiertes Internetprotokoll. TCP und UDP sind
+        gebräuchliche Protokolle dieser Familie (die nur von Windows
+        unterstützt wird).
+       </entry>
+      </row>
+      <row>
+       <entry>AF_INET6</entry>
+       <entry>
+        IPv6 basierte Internetprotokolle. TCP und UDP sind
+        gebräuchliche Protokolle dieser Familie. Die Unterstützung für
+        IPv6 wurde mit PHP 5.0.0 eingeführt und wird nur unter windows
+        unterstützt. 
+       </entry>
+      </row>
+      <row>
+       <entry>AF_UNIX</entry>
+       <entry>
+        Protokollfamilie für die lokale Kommunikation. Hohe Effizienz
+        bei wenig Overhead machen diese Familie zur besten Wahl für die
+        Inter-Prozess-Kommunikation. 
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </table>
+    <para>
+     Der Parameter <parameter>type</parameter> gibt den
+     Kommunikationstyp an, den der Socket verwenden soll.
+    </para>
+    <table>
+    <title>Die möglichen Socket-Typen sind:</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Type</entry>
+       <entry>Beschreibung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>SOCK_STREAM</entry>
+       <entry>
+         Stellt zuverlässige, sequentielle verbindungsorientierte Streams
+         im Vollduplexmodus zur Verfügung. Ein externer Mechanismus zur
+         Datenübertragung kann unterstützt werden. Das TCP-Protokoll
+         beruht auf diesem Socket.Typ.
+       </entry>
+      </row>
+      <row>
+       <entry>SOCK_DGRAM</entry>
+       <entry>
+         Unterstützt Datagramme (verbindunglos, Nachrichten vorgegebener
+         Maximallänge, deren Übertragung nicht zuverlässig ist). Das
+         UDP-Protikoll beruht auf diesem Socket-Typ.
+       </entry>       
+      </row>
+        <row>
+       <entry>SOCK_SEQPACKET</entry>
+       <entry>
+         Stellt eine zuverlässige, sequentielle. bidirektionale
+         verbindungsorientierte Übertragungsweg für Datagramme 
+         vorgegebener Maximallänge zur Verfügung. Ein Empfänger muss 
+         bei jeder Leseanforderung das gesamte Datenpaket lesen. 
+       </entry>       
+      </row>
+      <row>
+       <entry>SOCK_RAW</entry>
+       <entry>
+         Stellt einen Zugang mit einem nicht bestimmten Netzwerkprotokoll
+         zur Verfügung. Dieser spezielle Socket-Typ kann dazu benutzt
+         werden, um manuell ein Protokoll eines beliebigen Typs zu
+         erstellen. Solche Sockets werden üblicherweise benutzt, um ICMP
+         Requests zu senden (wie etwa ping oder traceroute usw.).
+       </entry>
+      </row>
+      <row>
+       <entry>SOCK_RDM</entry>
+       <entry>
+         Stellt eine zuverlässige Schicht für Datagramme zur Verfügung, in
+         der die Reihenfolge der Datagramme nicht garantiert wird. Dies
+         ist in Ihrem Betriebssytem höchstwahrscheinlich nicht
+         implementiert.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </table>
+    <para>
+     Der Parameter <parameter>protocol</parameter> setzt das spezifische
+     Protokoll innerhalb der angegebenen <parameter>domain</parameter>,
+     das vom zurückgegebenen Socket für die Kommunikation benutzt wird.
+     Der passende Wert kann ermittelt werden, indem der Name an die
+     Funktion <function>getprotobyname</function>übergeben wird. Wenn TCP
+     oder UDP gewünscht werden, können auch die entsprechenden Konstanten
+     <constant>SOL_TCP</constant> oder <constant>SOL_UDP</constant>
+     benutzt werden.
+    </para>
+    <table>
+    <title>Gebräuchliche Protokolle</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Name</entry>
+       <entry>Beschreibung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>icmp</entry>
+       <entry>
+        Das Internet Control Message Protocol wird hauptsächlich von
+        Gateways und Hosts benutzt, um Datagramm-Fehler zu melden. Das
+        Kommando "ping" (das in den meisten modernen Betriebssystemen
+        enthalten ist) ist ein Beispiel für eine Anwendung von ICMP.
+       </entry>
+      </row>
+      <row>
+       <entry>udp</entry>
+       <entry>
+        Das User Datagram Protocol ist ein verbindungsloses,
+        unzuverlässiges Protokoll, mit dem Datensätze fester Länge
+        versendet werden können. Aufgrund dieser geringen Anforderungen
+        braucht UDP nur einen minimalen Protokoll-Overhead.
+       </entry>       
+      </row>
+        <row>
+       <entry>tcp</entry>
+       <entry>
+        Das Transmission Control Protocol ist ein zuverlässiges,
+        verbindungsorientiertes, Stream-orientiertes Protokoll für den
+        Vollduplex-Betrieb. Bei TCP ist garantiert, dass alle Datenpakete
+        in derselben Reihenfolge empfangen werden, in der sie gesendet
+        wurden. Falls während der Übertragung ein Datenpaket verlorengeht,
+        wird es von TCP erneut versendet, und zwar solange, bis der
+        Empfängerhost den Eingang dieses Paktes zurückmeldet. Aus Gründen
+        der Zuverlässigkeit und Leistung ist TCP so implementiert, dass es
+        eigenständig die oktalen Grenzen der darunterliegenden Datagramm-
+        Kommunikationschicht anpassen kann. Aus diesem Grund müssen TCP
+        Anwendungen in der Lage sein, auch Teilübertragungen empfangen zu
+        können.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </table>
+    <para>
+    <example>
+    <title><function>socket_create_pair</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$sockets = array();
+/* ein Socket-Paar erzeugen */
+if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $sockets)) {
+    echo socket_strerror(socket_last_error());
+}
+/* Daten senden und empfangen */
+if (!socket_write($sockets[0], "ABCdef123\n", strlen("ABCdef123\n"))) {
+    echo socket_strerror(socket_last_error());
+}
+if (!$data = socket_read($sockets[1], strlen("ABCdef123\n"), PHP_BINARY_READ)) {
+    echo socket_strerror(socket_last_error());
+}
+var_dump($data);
+
+/* Sockets schliessen */
+socket_close($sockets[0]);
+socket_close($sockets[1]);
+?>
+]]>
+    </programlisting>
+    </example>
+    </para>
+    <para>
+    <example>
+    <title><function>socket_create_pair</function> IPC Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$ary = array();
+$strone = 'Nachricht vom Elternprozess.';
+$strtwo = 'Nachricht vom Kindprozess.';
+if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $ary)) {
+    echo socket_strerror(socket_last_error());
+}
+$pid = pcntl_fork();
+if ($pid == -1) {
+    echo 'Konnte keinen Kindprozess erzeugen.';
+} elseif ($pid) {
+    /* Elternprozess */
+    socket_close($ary[0]);
+    if (!socket_write($ary[1], $strone, strlen($strone))) {
+        echo socket_strerror(socket_last_error());
+    }
+    if (socket_read($ary[1], strlen($strtwo), PHP_BINARY_READ) == $strtwo) {
+        echo "Empfangen: $strtwo\n";
+    }
+    socket_close($ary[1]);
+} else {
+    /* Kindprozess */
+    socket_close($ary[1]);
+    if (!socket_write($ary[0], $strtwo, strlen($strtwo))) {
+        echo socket_strerror(socket_last_error());
+    }
+    if (socket_read($ary[0], strlen($strone), PHP_BINARY_READ) == $strone) {
+        echo "Empfangen: $strone\n";
+    }
+    socket_close($ary[0]);
+}
+?>
+]]>
+    </programlisting>
+    </example>
     </para>
    </refsect1>
   </refentry>
