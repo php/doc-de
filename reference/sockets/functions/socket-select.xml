@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision 1.7: Maintainer: conni Status: ready -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.13 Maintainer: conni Status: ready -->
 
   <refentry id="function.socket-select">
    <refnamediv>
@@ -13,14 +13,12 @@
     <title>Beschreibung</title>
      <methodsynopsis>
       <type>int</type><methodname>socket_select</methodname>
-
-     <methodparam><type>resource</type><parameter>&amp;read</parameter></methodparam>
-      <methodparam><type>resource</type><parameter>&amp;write</parameter></methodparam>
-      <methodparam><type>resource</type><parameter>&amp;except</parameter></methodparam>
+      <methodparam><type>array</type><parameter role="reference">read</parameter></methodparam>
+      <methodparam><type>array</type><parameter role="reference">write</parameter></methodparam>
+      <methodparam><type>array</type><parameter role="reference">except</parameter></methodparam>
       <methodparam><type>int</type><parameter>tv_sec</parameter></methodparam>
       <methodparam choice="opt"><type>int</type><parameter>tv_usec</parameter></methodparam>
      </methodsynopsis>
-     &warn.experimental.func;
     <para>
      Die Funktion <function>socket_select</function> nimmt als Parameter
      Socket-Arrays entgegen und wartet, ob diese ihren Status ändern.
@@ -61,19 +59,25 @@
      <function>socket_select</function> beendet ist.
     </para>
     <para>
-     Example:
-     <programlisting role="php">
+     <example>
+      <title><function>socket_select</function> Beispiel</title>
+      <programlisting role="php">
 <![CDATA[
-/* Vorbereiten des read Arrays */
+<?php
+/* Das Array zum Lesen vorbereiten */
 $read = array($socket1, $socket2);
 
-if (false === ($num_changed_sockets = socket_select($read, $write = NULL, $except = NULL, 0))) {
+$num_changed_sockets = socket_select($read, $write = NULL, $except = NULL, 0);
+
+if ($num_changed_sockets === false) {
     /* Fehlerbehandlung */
-else if ($num_changed_sockets > 0) {
-    /* Mindesten bei einem Socket ist etwas interessantes passiert */
+} else if ($num_changed_sockets > 0) {
+    /* Mindestes an einem Socket ist etwas interessantes passiert */
 }
+?>
 ]]>
-     </programlisting>
+      </programlisting>
+     </example>
     </para>
     <note>
      <para>
@@ -83,11 +87,16 @@ else if ($num_changed_sockets > 0) {
       erwarten. Sie können stattdessen eine temporäre Variable oder einen
       Ausdruck, in dem der am weitesten links stehende Teilausdruck eine
       temporäre Variable ist, benutzen. 
-      <programlisting role="php">
+      <example>
+       <title>&null; mit <function>socket_select</function> benutzen</title>
+       <programlisting role="php">
 <![CDATA[
+<?php
 socket_select($r, $w, $e = NULL, 0);
+?>
 ]]>
-     </programlisting>
+       </programlisting>
+      </example>
      </para>
     </note>
     <para>
@@ -115,13 +124,19 @@ socket_select($r, $w, $e = NULL, 0);
      Operator <literal>===</literal> benutzen. Weil
      <function>socket_select</function> auch 0 zurückgeben kann, wird der
      Vergleich mit <literal>==</literal> sonst zu &true; ausgewertet. 
-     <programlisting role="php">
+     <example>
+      <title>Understanding <function>socket_select</function>'s result</title>
+      <programlisting role="php">
 <![CDATA[
+<?php
 if (false === socket_select($r, $w, $e = NULL, 0)) {
-    echo "socket_select() fehlgeschlagen, Grund: " . socket_strerror(socket_last_error()) . "\n";
+    echo "socket_select() failed, reason: " .
+        socket_strerror(socket_last_error()) . "\n";
 }
+?>
 ]]>
-     </programlisting>
+       </programlisting>
+      </example>
      </para>
     </note>
     <note>
@@ -164,8 +179,8 @@ if (false === socket_select($r, $w, $e = NULL, 0)) {
         <simpara>
          Fast allen Socket-Implementierungen ist gemeinsam, dass sie nur
          eine einzige Ausnahme in dem <parameter>except</parameter>
-         Array auffangen können. Dies ist, wenn mehr Daten ankommen, als
-         der Socket lesen kann.  
+         Array auffangen können. Dies ist, wenn ausserordentlich Daten
+         höherer Priorität empfangen werden.
         </simpara>
        </listitem>
       </itemizedlist>
