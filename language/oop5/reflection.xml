@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
-<!-- EN-Revision: 1.16 Maintainer: simp Status: ready -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.18 Maintainer: simp Status: ready -->
  <sect1 id="language.oop5.reflection">
   <title>Reflection</title>
   <sect2 id="language.oop5.reflection.introduction">
@@ -8,7 +8,7 @@
    <para>
     PHP 5 bringt eine komplette Reflection API mit, die Möglichkeiten bietet, um
     Klassen, Interfaces, Funcktionen und Methoden ebenso wie auch Extensions
-    zu reverse-engineeren. Zusätzlich bietet die Reflection API Wege,
+    zur?ckzuentwickeln. Zusätzlich bietet die Reflection API Wege,
     dokumentarische Kommentare von Funktionen, Klassen und Methoden abzufragen.
    </para>
    <para>
@@ -127,7 +127,7 @@ Class [ <internal> class Exception ] {
    <title><classname>ReflectionFunction</classname></title>
    <para>
     Die  <classname>ReflectionFunction</classname> Klasse lässt Sie
-    Funktionen reverse-engineeren.
+    Funktionen zur?ckentwickeln.
    </para>
    <informalexample>
     <programlisting role="php">
@@ -138,7 +138,7 @@ class ReflectionFunction implements Reflector
     final private __clone()
     public object __construct(string name)
     public string __toString()
-    public static string export()
+    public static string export(string name, bool return)
     public string getName()
     public bool isInternal()
     public bool isUserDefined()
@@ -147,7 +147,7 @@ class ReflectionFunction implements Reflector
     public int getEndLine()
     public string getDocComment()
     public array getStaticVariables()
-    public mixed invoke(mixed* args)
+    public mixed invoke(mixed args)
     public mixed invokeArgs(array args)
     public bool returnsReference()
     public ReflectionParameter[] getParameters()
@@ -247,10 +247,10 @@ class ReflectionParameter implements Reflector
     final private __clone()
     public object __construct(string name)
     public string __toString()
-    public static string export()
+    public static string export(mixed function, mixed parameter, bool return)
     public string getName()
     public bool isPassedByReference()
-    public ReflectionClass getClass()
+    public ReflectionClass getDeclaringClass()
     public bool isArray()
     public bool allowsNull()
     public bool isOptional()
@@ -318,7 +318,7 @@ foreach ($reflect->getParameters() as $i => $param) {
    <title><classname>ReflectionClass</classname></title>
    <para>
     Die <classname>ReflectionClass</classname> Klasse erlaubt es, Klassen
-    zu reverse-engineeren.
+    zur?ckzuentwickeln.
    </para>
    <informalexample>
     <programlisting role="php">
@@ -329,7 +329,7 @@ class ReflectionClass implements Reflector
     final private __clone()
     public object __construct(string name)
     public string __toString()
-    public static string export()
+    public static string export(mixed class, bool return)
     public string getName()
     public bool isInternal()
     public bool isUserDefined()
@@ -354,7 +354,8 @@ class ReflectionClass implements Reflector
     public bool isFinal()
     public int getModifiers()
     public bool isInstance(stdclass object)
-    public stdclass newInstance(mixed* args)
+    public stdclass newInstance(mixed args)
+    public stdclass newInstanceArgs(array args)
     public ReflectionClass getParentClass()
     public bool isSubclassOf(ReflectionClass class)
     public array getStaticProperties()
@@ -375,7 +376,8 @@ class ReflectionClass implements Reflector
      <function>hasConstant</function>, <function>hasMethod</function>,
      <function>hasProperty</function>, <function>getStaticPropertyValue</function>
      und <function>setStaticPropertyValue</function> wurden in PHP 5.1.0 
-     hinzugefügt.
+     hinzugefügt, w?hrend <function>newInstanceArgs</function> in PHP 5.1.3 dazu
+     kam.
     </simpara>
    </note>
    <para>
@@ -483,12 +485,34 @@ if ($class->isInstantiable()) {
     </simpara>
    </note>
   </sect2>
+  <sect2 id="language.oop5.reflection.reflectionobject">
+   <title><classname>ReflectionObject</classname></title>
+   <para>
+    Die Klasse <classname>ReflectionObject</classname> erlaubt das Zur?ckentwickeln
+    von Objekten.
+   </para>
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class ReflectionObject extends ReflectionClass
+{
+    final private __clone()
+    public object __construct(mixed object)
+    public string __toString()
+    public static string export(mixed object, bool return)
+}
+?>
+]]>
+    </programlisting>
+   </informalexample>
+  </sect2>
 
   <sect2 id="language.oop5.reflection.reflectionmethod">
    <title><classname>ReflectionMethod</classname></title>
    <para>
     Die <classname>ReflectionMethod</classname> Klasse erlaubt es, 
-    Klassenmethoden zu reverse-engineeren.
+    Klassenmethoden zur?ckzuentwickeln.
    </para>
    <informalexample>
     <programlisting role="php">
@@ -498,8 +522,8 @@ class ReflectionMethod extends ReflectionFunction
 {
     public __construct(mixed class, string name)
     public string __toString()
-    public static string export()
-    public mixed invoke(stdclass object, mixed* args)
+    public static string export(mixed class, string name, bool return)
+    public mixed invoke(stdclass object, mixed args)
     public mixed invokeArgs(stdclass object, array args)
     public bool isFinal()
     public bool isAbstract()
@@ -619,7 +643,7 @@ var_dump($method->invoke(NULL));
    <title><classname>ReflectionProperty</classname></title>
    <para>
     Die <classname>ReflectionProperty</classname> Klasse lässt Sie 
-    Klasseneigenschaften reverse-engineeren.
+    Klasseneigenschaften zur?ckentwickeln.
    </para>
    <informalexample>
     <programlisting role="php">
@@ -630,7 +654,7 @@ class ReflectionProperty implements Reflector
     final private __clone()
     public __construct(mixed class, string name)
     public string __toString()
-    public static string export()
+    public static string export(mixed class, string name, bool return)
     public string getName()
     public bool isPublic()
     public bool isPrivate()
@@ -715,7 +739,7 @@ var_dump($obj);
    <title><classname>ReflectionExtension</classname></title>
    <para>
     Die <classname>ReflectionExtension</classname> Klasse lässt Sie
-    Extensions reverse-engineeren. Man kann alle geladenen Extensions zur
+    Extensions zur?ckentwickeln. Man kann alle geladenen Extensions zur
     Laufzeit mittels <function>get_loaded_extensions</function> abrufen.
    </para>
    <informalexample>
@@ -726,7 +750,7 @@ class ReflectionExtension implements Reflector {
     final private __clone()
     public __construct(string name)
     public string __toString()
-    public static string export()
+    public static string export(string name, bool return)
     public string getName()
     public string getVersion()
     public ReflectionFunction[] getFunctions()
