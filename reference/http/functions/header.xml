@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.27 Maintainer: sammywg Status: working -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.31 Maintainer: sammywg Status: ready -->
   <refentry id="function.header">
    <refnamediv>
     <refname>header</refname>
@@ -14,22 +14,28 @@
       <methodparam choice="opt"><type>bool</type><parameter>replace</parameter></methodparam>
       <methodparam choice="opt"><type>int</type><parameter>http_response_code</parameter></methodparam>
      </methodsynopsis>
-    <para>
-     <function>header</function> wird zum Senden von
-     <acronym>HTTP</acronym> Anfangsinformationen (Headern) im Rohformat
-     benutzt. Weitere Informationen über die <acronym>HTTP</acronym> Header
-     finden Sie in der <ulink url="&url.rfc;2616">HTTP/1.1 Spezifikation</ulink>.
-    </para>
-    <para>
-     Der optionale Parameter <parameter>replace</parameter> gibt an, ob der
-     Header einen vorhergehenden gleichartigen Header ersetzten soll, oder ob
-     ein zweiter Header des selben Typs hinzugefügt werden soll. Standardmäßig
-     wird ersetzt, wenn Sie als zweites Argument &false; übergeben, können Sie
-     so mehrere Header desselben Typs erzwingen. Zum Beispiel:
-    </para>
-    <para>
-     <informalexample>
-      <programlisting role="php">
+     <para>
+      <function>header</function> wird zum Senden von
+      <acronym>HTTP</acronym> Anfangsinformationen (Headern) im Rohformat
+      benutzt. Weitere Informationen über die <acronym>HTTP</acronym> Header
+      finden Sie in der <ulink url="&url.rfc;2616">HTTP/1.1 Spezifikation</ulink>.
+     </para>
+     <note>
+      <para>
+       Seit PHP 4.4.2 und PHP 5.1.2 unterbindet die Funktion das gleichzeitige
+       Versenden mehrerer Header zum Schutz gegen Header Injection Angriffe.
+      </para>
+     </note>
+     <para>
+      Der optionale Parameter <parameter>replace</parameter> gibt an, ob der
+      Header einen vorhergehenden gleichartigen Header ersetzten soll, oder ob
+      ein zweiter Header des selben Typs hinzugefügt werden soll. Standardmäßig
+      wird ersetzt, wenn Sie als zweites Argument &false; übergeben, können Sie
+      so mehrere Header desselben Typs erzwingen. Zum Beispiel:
+     </para>
+     <para>
+      <informalexample>
+       <programlisting role="php">
 <![CDATA[
 <?php
 header('WWW-Authenticate: Negotiate');
@@ -106,12 +112,15 @@ exit;
       <literal>$_SERVER['PHP_SELF']</literal> und <function>dirname</function>
       aus einem relativen Link einen absoluten URI selbst erstellen:
       <informalexample>
-       <programlisting>
+       <programlisting role="php">
 <![CDATA[
 <?php
-header("Location: http://" . $_SERVER['HTTP_HOST']
-                      . rtrim(dirname($_SERVER['PHP_SELF']), '/\\')
-                      . "/" . $relative_url);
+/* Redirect auf eine andere Seite im aktuell angeforderten Verzeichnis */
+$host  = $_SERVER['HTTP_HOST'];
+$uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+$extra = 'mypage.php';
+header("Location: http://$host$uri/$extra");
+exit;
 ?>
 ]]>
        </programlisting>
