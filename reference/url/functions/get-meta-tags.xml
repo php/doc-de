@@ -1,50 +1,90 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.8 Maintainer: sammywg Status: ready -->
 <!-- splitted from ./de/functions/strings.xml, last change in rev 1.2 -->
-<!-- last change to 'get-meta-tags' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.58/EN.1.2 -->
   <refentry id="function.get-meta-tags">
    <refnamediv>
     <refname>get_meta_tags</refname>
-    <refpurpose>
-     Liest die Attribut-Inhalte aller Meta-Tags aus und gibt diese
-     als Array zurück
-    </refpurpose>
+    <refpurpose>Liest alle content-Attribute der Meta-Tags einer Datei aus und
+     gibt ein Array zurück</refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>array</type><methodname>get_meta_tags</methodname>
-      <methodparam><type>string</type><parameter>filename</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>use_include_path</parameter></methodparam>
-     </methodsynopsis>
+
+   <refsect1 role="description">
+    &reftitle.description;
+    <methodsynopsis>
+     <type>array</type><methodname>get_meta_tags</methodname>
+     <methodparam><type>string</type><parameter>filename</parameter></methodparam>
+     <methodparam choice="opt"><type>bool</type><parameter>use_include_path</parameter></methodparam>
+    </methodsynopsis>
     <para>
-     Öffnet <parameter>filename</parameter> und untersucht diese Zeile
-     für Zeile auf das Vorkommen von &lt;meta>-Tags der Form
+     Öffnet <parameter>filename</parameter> und untersucht die Datei Zeile
+     für Zeile auf das Vorkommen von &lt;meta&gt;-Tags. Es kann eine lokale
+     Datei oder ein <acronym>URL</acronym> übergeben werden. Das Parsen wird
+     beim ersten Auftreten von <literal>&lt;/head&gt;</literal> beendet.
+    </para>
+    <para>
+     Setzen Sie <parameter>use_include_path</parameter> auf &true;, versucht PHP,
+     das angegebene File innerhalb des mittels <link
+     linkend="ini.include-path">include_path</link> angegebenen standardmäßigen
+     Include-Pfades zu finden und zu öffnen. Diese Option kann nur auf lokale
+     Dateien angewendet werden, nicht auf URLs.
+    </para>
+    <para>
      <example>
-      <title>Meta-Tags Beispiel:</title>
+      <title>Was <function>get_meta_tags</function> untersucht</title>
       <programlisting role="html">
-&lt;meta name="author" content="Name">
-&lt;meta name="tags" content="PHP3-Dokumentation">
-&lt;/head> &lt;!-- Ende der Untersuchung -->
+<![CDATA[
+<meta name="author" content="name">
+<meta name="keywords" content="php documentation">
+<meta name="DESCRIPTION" content="a php manual">
+<meta name="geo.position" content="49.33;-86.59">
+</head> <!-- das Parsen wird hier beendet -->
+]]>
       </programlisting>
      </example>
-     (Eine auf einem MAC erzeugte Datei kann nicht unter UNIX auf
-     Meta-Tags untersucht werden, da die Zeilenenden anders sind.)
-    </para>
-    <para> 
-     Der Wert der name-Eigenschaft wird Schlüssel, der Wert der
-     content-Eigenschaft wird Wert des zurück gegebenen Arrays. Dadurch
-     können Sie gewöhnliche Array-Funktionen nutzen, dieses zu
-     durchlaufen oder einzelne Werte anzusprechen. Sonderzeichen
-     innerhalb der name-Eigenschaft werden durch ´_´ ersetzt, der Rest
-     wird in Kleinbuchstaben umgewandelt.
+     (Achten Sie besonders auf die Zeilenende-Zeichen - PHP verwendet eine native
+     Funktion, um die Eingabe zu analysieren, daher können Mac-Dateien nicht auf
+     einem Unix untersucht werden.)
     </para>
     <para>
-     Ist <parameter>use_include_path</parameter> auf 1 gesetzt, wird
-     PHP versuchen, die Datei anhand des Standard-Include-Pfades zu
-     öffnen.
+     Der Wert des name-Attributs wird der Schlüssel, der Wert des
+     content-Attributs der zugeordnete Wert innerhalb des zurückgegebenen
+     Arrays, so dass sie einfach die normalen Array-Funktionen nutzen können,
+     um das Array zu durchlaufen oder auf einzelne Werte zuzugreifen.
+     Sonderzeichen im Wert des name-Attributs werden durch '_' ersetzt, der Rest
+     wird in Kleinbuchstaben umgewandelt. Haben zwei Meta-Tags den gleichen
+     Namen, wird nur der letzte zurückgegeben.
+    </para>
+    <para>
+     <example>
+      <title>Was <function>get_meta_tags</function> zurückgibt</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Angenommen, die o.g. Tags kommen von www.example.com
+$tags = get_meta_tags('http://www.example.com/');
+
+// Beachten Sie, dass alle Keys jetzt klein geschrieben werden
+// und dass . durch _ im Schluesselnamen ersetzt wird
+echo $tags['author'];       // name
+echo $tags['keywords'];     // php documentation
+echo $tags['description'];  // a php manual
+echo $tags['geo_position']; // 49.33;-86.59
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <para>
+      Seit PHP 4.0.5 unterstützt <function>get_meta_tags</function> auch
+      HTML-Attribute, die nicht in Anführungszeichen notiert wurden.
+     </para>
+    </note>
+    <para>
+     Siehe auch
+     <function>htmlentities</function> und
+     <function>urlencode</function>.
     </para>
    </refsect1>
   </refentry>
