@@ -1,74 +1,109 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.3 Maintainer: tom Status: ready -->
-<!-- CREDITS: tschuer -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.18 Maintainer: sammywg Status: ready -->
   <refentry id="function.str-replace">
    <refnamediv>
     <refname>str_replace</refname>
     <refpurpose>
-     Ersetzt alle Vorkommen eines Strings in einem anderen String
+     Ersetzt alle Vorkommen des Suchstrings durch einen anderen String
     </refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
       <type>mixed</type><methodname>str_replace</methodname>
       <methodparam><type>mixed</type><parameter>search</parameter></methodparam>
       <methodparam><type>mixed</type><parameter>replace</parameter></methodparam>
       <methodparam><type>mixed</type><parameter>subject</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter role="reference">count</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Diese Funktion ersetzt alle Vorkommen von
-     <parameter>search</parameter> innerhalb der Zeichenkette
-     <parameter>subject</parameter> durch den String
-     <parameter>replace</parameter>. Falls Sie keine ausgefallenen
-     String-Ersetzungen brauchen, sollten Sie immer dieser Funktion
-     den Vorzug vor <function>ereg_replace</function> oder
-     <function>preg_replace</function> geben.
+     Diese Funktion gibt einen String oder ein Array zurück, in dem alle
+     Vorkommen von <parameter>search</parameter> innerhalb von
+     <parameter>subject</parameter> durch den angegebenen
+     <parameter>replace</parameter>-Wert ersetzt wurden. Wenn Sie keine
+     ausgefallenen Ersetzungsregeln (wie Regular Expressions) benötigen, sollten
+     Sie immer diese Funktion anstelle von <function>ereg_replace</function>
+     oder <function>preg_replace</function> verwenden.
     </para>
     <para>
-     Seit PHP 4.0.5 kann jeder Parameter von
-     <function>str_replace</function> auch ein Array sein.
+     Seit PHP 4.0.5 kann jeder Parameter von <function>str_replace</function>
+     vom Type <type>array</type> sein.
     </para>
+    <warning>
+     <simpara>
+      Die PHP-Versionen vor PHP 4.3.3 enthalten einen Bug, der bei der
+      Verwendung von Arrays für <parameter>search</parameter> und
+      <parameter>replace</parameter> dazu führt, dass leeren
+      <parameter>search</parameter>-Indexe übersprungen werden, ohne dabei den
+      internen Zeiger innerhalb des <parameter>replace</parameter>-Arrays
+      ebenfalls weiter zu bewegen. Dies wurde in PHP 4.3.3 korrigiert. Alle
+      Skripte, die sich auf diesen Bug verlassen, sollten leere Suchwerte
+      entfernen, bevor diese Funktion aufgerufen wird, um die ursprüngliche
+      Verhalten zu imitieren.
+     </simpara>
+    </warning>
     <para>
      Ist <parameter>subject</parameter> ein Array, erfolgt das Suchen
-     und Ersetzen an jedem Wert von <parameter>subject</parameter>,
+     und Ersetzen für jeder Wert von <parameter>subject</parameter>,
      und der Rückgabewert ist ebenfalls ein Array.
     </para>
     <para>
      Sind <parameter>search</parameter> und <parameter>replace</parameter>
-     Arrays, nimmt <function>str_replace</function> einen Wert von jedem
-     Array und verwendet ihn zum Suchen und Ersetzen von
+     Arrays, nimmt <function>str_replace</function> je einen Wert beider Arrays
+     und verwendet diese zum Suchen und Ersetzen in
      <parameter>subject</parameter>. Hat <parameter>replace</parameter>
      weniger Werte als <parameter>search</parameter>, so wird ein leerer
-     String für den Rest der Werte zum Ersetzen verwendet. Ist
-     <parameter>search</parameter> ein Array und
-     <parameter>replace</parameter> ein String, dann wird dieser String
-     für jeden Wert von <parameter>search</parameter> angewandt.
+     String zum Ersetzen für den Rest der Werte verwendet. Ist
+     <parameter>search</parameter> ein Array und <parameter>replace</parameter>
+     ein String, dann wird dieser String für jeden Wert von
+     <parameter>search</parameter> angewandt. Das Gegenteil ist nicht sinnvoll.
     </para>
     <para>
      <example>
-      <title><function>str_replace</function> Beispiel:</title>
+      <title><function>str_replace</function>-Beispiele</title>
       <programlisting role="php">
 <![CDATA[
-$bodytag = str_replace("%body%", "black", "<body text=%body%>");
+<?php
+// Liefert: <body text='schwarz'>
+$bodytag = str_replace("%body%", "schwarz", "<body text='%body%'>");
+
+// Liefert: Hll PHP-Wlt
+$vokale = array("a", "e", "i", "o", "u", "A", "E", "I", "O", "U");
+$onlyconsonants = str_replace($vokale, "", "Hallo PHP-Welt");
+
+// Liefert: Sie sollten taeglich Pizza, Bier und Eiscreme essen.
+$phrase = "Sie sollten taeglich Fruechte, Gemuese und Ballaststoffe essen.";
+$gesund = array("Fruechte", "Gemuese", "Ballaststoffe");
+$lecker = array("Pizza", "Bier", "Eiscreme");
+
+$newphrase = str_replace($gesund, $lecker, $phrase);
+
+// Die Verwendung des count-Parameters ist ab PHP 5.0.0 möglich
+$str = str_replace("ll", "", "good golly miss molly!", $count);
+echo $count; // 2
+?>
 ]]>
       </programlisting>
      </example>
     </para>
-    <para>
-     Diese Funktion beruht auf einem Binär-Vergleich.
-    </para>
+
+    &note.bin-safe;
+
     <note>
-     <para>
-      <function>str_replace</function> ist seit PHP 3.0.6 verfügbar,
-      war aber bis PHP 3.0.8 fehlerhaft.
-     </para>
+     <simpara>
+      Ab PHP 5.0.0 wird die Anzahl der gefundenen und ersetzten Suchbegriffe
+      (<parameter>search</parameter>) mittels <parameter>count</parameter>
+      zurück gegeben, der als Referenz übergeben wird. Vor PHP 5.0.0 ist dieser
+      Parameter nicht verfügbar.
+     </simpara>
     </note>
     <para>
-     Siehe auch <function>str_ireplace</function>,
+     Siehe auch
+     <function>str_ireplace</function>,
+     <function>substr_replace</function>,
      <function>ereg_replace</function>,
-     <function>preg_replace</function> und 
+     <function>preg_replace</function> und
      <function>strtr</function>.
     </para>
    </refsect1>
