@@ -1,224 +1,232 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.13 $ -->
-<!-- EN-Revision: 1.33 Maintainer: tom Status: ready -->
-  <chapter id="language.basic-syntax">
-   <title>Grundlagen der Syntax</title>
-
-   <sect1 id="language.basic-syntax.phpmode">
-    <title>Den HTML-Bereich der Datei verlassen</title>
-
+<!-- $Revision: 1.14 $ -->
+<!-- EN-Revision: 1.49 Maintainer: sammywg Status: ready -->
+ <chapter id="language.basic-syntax">
+  <title>Grundlagen der Syntax</title>
+  <sect1 id="language.basic-syntax.phpmode">
+   <title>Den HTML-Bereich der Datei verlassen</title>
    <para>
-    Während des Parsens einer Datei geht PHP den Text solange einfach
-    durch, bis einer der speziellen Tags gefunden wird, der PHP mitteilt,
-    dass ab nun mit der Interpretation des Textes als PHP Code zu beginnen
-    ist. Der Parser führt nun den Code solange aus, bis er auf einen
-    schließenden PHP Tag stößt, welcher dem Parser mitteilt, den Text ab
-    hier wieder nur einfach durchzugehen. Das ist der Mechanismus der es
-    erlaubt, PHP Code in HTML einzubinden: alles außerhalb der PHP Tags
-    wird einfach alleine gelassen, während alles innerhalb dieser Tags
-    als Code geparsed wird.
-   </para>
-
-   <para>
-    Es gibt vier Arten von Tags, welche die Blöcke mit PHP Code kennzeichnen.
-    Davon sind nur zwei immer verfügbar (&lt;?php. . .?&gt; und &lt;script
-    language="php"&gt;. . .&lt;/script&gt;), die anderen können in der
-    Konfigurationsdatei &php.ini; aktiviert bzw. deaktiviert werden. Die
-    Tags in der Kurzform bzw. im ASP-Stil mögen zwar praktisch erscheinen,
-    sind jedoch nicht so portabel wie die längeren Versionen. Wenn Sie
-    des Weiteren beabsichtigen, PHP Code in XML oder XHTML einzubinden, werden
-    Sie die XML-konformen &lt;?php. . .?&gt; verwenden müssen.
-   </para>
-
-   <para>
-    Die von PHP unterstützten Tags sind:
-   </para>
-
-    <para>
-     <example>
-      <title>Möglichkeiten, den HTML-Bereich zu verlassen</title>
-      <programlisting role="php">
+    Wenn PHP eine Datei parst, sucht es nach öffnenden und schließenden Tags,
+    die PHP anweisen, den dazwischen befindlichen Code zu interpretieren. Das
+    Parsen auf diese Art erlaubt Ihnen, PHP in allen möglichen Arten von
+    unterschiedlichen Dokumenten einzubinden, da alles außerhalb des Paars aus
+    öffnendem und schließendem Tag vom Parser ignoriert wird. In den meisten
+    Fällen werden Sie wie im folgenden Beispiel PHP in HTML-Dokumente
+    eingebettet finden.
+    <informalexample>
+     <programlisting role="php">
 <![CDATA[
-1.  <?php echo("In XHTML- oder XML-konformen Dokumenten benutzen Sie diese Syntax\n"); ?>
-
-2.  <? echo ("Die einfachste Möglichkeit: eine SGML-´processing instruction´\n"); ?>
-    <?= expression ?> Dies ist eine Abkürzung für "<? echo expression ?>"
-
-3.  <script language="php">
-        echo ("manche Editoren(wie FrontPage) mögen
-              keine ´processing instructions´");
-    </script>
-
-4.  <% echo ("Optional können Sie auch Tags im ASP-Stil verwenden"); %>
-    <%= $variable; # Das ist ein Abkürzung fuer "<% echo . . ." %>
+<p>Das hier wird ignoriert werden.</p>
+<?php echo 'Wohingegen das hier geparst werden wird.'; ?>
+<p>Dies wird ebenfalls ignoriert.</p>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-
-   <para>
-    Die erste Methode (&lt;?php. . .?&gt;) wird bevorzugt, da sie auch
-    die Verwendung von PHP in XML-konformen Code, wie XHTML, erlaubt.
+     </programlisting>
+    </informalexample>
    </para>
-
    <para>
-    Die zweite Methode ist nicht immer verfügbar. Die Kurzform der Tags
-    ist nur möglich, wenn diese zuvor aktiviert wurde. Dies kann mittels
-    der Funktion <function>short_tags</function> (nur PHP 3), dem Setzen
-    der Konfigurationsoption <link
-    linkend="ini.short-open-tag">short_open_tag</link> in der PHP
-    Konfigurationsdatei, oder durch das Kompilieren von PHP mit der
-    Option  --enable-short-tags. Auch wenn diese Methode standardmäßig
-    in der php.ini.dist aktiviert ist, wird die Verwendung dieser
-    Kurzform nicht empfohlen.
-   </para>
-
-   <para>
-    Die vierte Methode ist nur verfügbar, wenn die Konfigurationsoption
-    <link linkend="ini.asp-tags">asp_tags</link> aktiviert ist.
-
-    <note>
-     <para>Die Unterstützung der Tags im ASP-Stil wurde in Version 3.0.4.
-      hinzugefügt.
-     </para>
-    </note>
-   </para>
-
-   <note>
-    <para>
-     Die Verwendung der ´short tags´ sollten Sie vermeiden, wenn Sie
-     Applikationen oder Bibliotheken entwickeln, die verteilt oder auf
-     PHP-Servern eingesetzt werden soll, die nicht unter Ihrer Kontrolle
-     stehen, da die ´short tags´ auf dem einzusetzenden Server nicht
-     unterstützt werden könnten. Stellen Sie also sicher, dass für
-     portablen, weiterverteilbaren Code keine ´short tags´ verwendet
-     werden.
-    </para>
-   </note>
-
-    <para>
-     Der schließende Tag für den PHP-Block schließt eine sofort
-     folgende Zeilenschaltung mit ein, falls diese vorhanden
-     ist. Außerdem beinhaltet der schließende Tag ein implizites Semikolon;
-     Sie müssen also die letzte Zeile eines PHP-Blocks nicht mit einem
-     Semikolon beenden.
-    </para>
-
-    <para>
-    PHP ermöglicht auch die Verwendung folgender Strukturen:
-    <example><title>Erweitertes Verlassen</title>
+    Sie können aber auch komplexere Strukturen verwenden:
+    <example>
+     <title>Fortgeschrittenes Erweitern</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-if ($expression) {
+if ($ausdruck) {
     ?>
-    <strong>Das ist richtig.</strong>
+    <strong>Dies ist wahr.</strong>
     <?php
 } else {
     ?>
-    <strong>Das ist falsch.</strong>
+    <strong>Dies ist falsch.</strong>
     <?php
 }
 ?>
 ]]>
      </programlisting>
     </example>
-    Dies funktioniert wie erwartet, da PHP nach dem Auffinden eines ?&gt;
-    schließenden Tags einfach alles ausgibt, bis es wieder auf einen
-    öffnenden Tag stößt. Das obige Beispiel ist natürlich gekünstelt,
-    aber für die Ausgabe von großen Textblöcken ist der Ausstieg aus
+    Dies arbeitet wie erwartet, da PHP, wenn es auf ein schließendes &gt;?-Tag
+    trifft, einfach beginnt, alles folgende auszugeben, bis es wieder auf einen
+    öffnenden Tag stößt. Das hier angegebene Beispiel ist natürlich nur
+    ausgedacht, aber für die Ausgabe von großen Textblöcken ist der Ausstieg aus
     dem Parse-Modus generell effizienter, als den gesamten Text durch
-    <function>echo</function>, <function>print</function>, etc. zu
-    jagen.
+    <function>echo</function> oder <function>print</function> zu jagen.
+   </para>
+   <para>
+    Es gibt vier unterschiedliche Paare öffnender und schließender Tags, die in
+    PHP verwendet werden können. Zwei davon, &lt;?php ?&gt; und &lt;script
+    language="php"&gt; &lt;/script&gt;, sind immer verfügbar. Die anderen beiden
+    sind Short-Tags und <productname>ASP</productname>-Tags, die über das
+    &php.ini;-Konfigurationsfile ein- und ausgeschaltet werden können. Das
+    bedeutet, wenn einige Leute Short-Tags und
+    <productname>ASP</productname>-Tags bequem finden, sind die daraus
+    resultierenden Skripte nicht überall einsetzbar, so dass diese Tags
+    grundsätzlich nicht empfehlenswert sind.
+    <note>
+     <para>
+      Beachten Sie auch, dass Sie, wenn Sie PHP in XML oder XHTML einbinden
+      wollen, die &lt;?php ?&gt;-Tags verwenden müssen, um keine Parserfehler
+      aufgrund vermischter Standards zu provozieren.
+     </para>
+    </note>
+   </para>
+   <para>
+    <example>
+     <title>Die öffnenden und schließenden Tags von PHP</title>
+     <programlisting role="php">
+<![CDATA[
+1.  <?php echo
+      'wenn Sie XHTML- oder XML-Dokumente ausliefern wollen, machen Sie es so'; ?>
+
+2.  <script language="php">
+        echo 'manche Editoren(wie FrontPage) moegen
+              keine Verarbeitungsanweisungen';
+    </script>
+
+3. <? echo 'das ist das Einfachste, eine SGML-Verarbeitungsanweisung'; ?>
+
+4.  <% echo 'Optional koennen Sie auch Tags im ASP-Stil verwenden'; %>
+    <%= $variable; # Das ist ein Abkuerzung fuer "<% echo . . ." %>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Während die Tags in Beispiel eins und zwei jederzeit verfügbar sind, ist
+    Beispiel eins das meist verwendete und grundsätzlich empfohlene von beiden.
+   </para>
+   <para>
+    Short-Tags (Beispiel drei) sind nur verfügbar, wenn sie via <link
+    linkend="ini.short-open-tag">short_open_tag</link>-Direktive im
+    &php.ini-Konfigurationsfile eingeschaltet wurden, oder wenn PHP mit
+    <option>--enable-short-tags</option> konfiguriert wurde.
+    <note>
+     <para>
+      Wenn Sie PHP 3 verwenden, können Sie ebenfalls Short-Tags mittels der
+      Funktion <function>short_tags</function> einschalten. <emphasis>Dieser
+      Weg ist nur in PHP 3 verfügbar!</emphasis>
+     </para>
+    </note>
+   </para>
+   <para>
+    <productname>ASP</productname>-Tags (Beispiel vier) sind nur verfügbar,
+    wenn sie mittels der <link linkend="ini.asp-tags">asp_tags</link>-Direktive
+    im &php.ini; Konfigurationsfile eingeschaltet wurden.
+    <note>
+     <para>
+      Die Unterstützung der Tags im <productname>ASP</productname>-Stil
+      wurde in Version 3.0.4 hinzugefügt.
+     </para>
+    </note>
+   </para>
+   <para>
+    <note>
+     <para>
+      Die Verwendung der Short-Tags sollten Sie vermeiden, wenn Sie
+      Applikationen oder Bibliotheken entwickeln, die für die Weitergabe oder
+      den Einsatz auf nicht Ihrer Kontrolle unterstehenden PHP-Servern bestimmt
+      sind, da es sein kann, dass Short-Tags auf dem Zielsystem nicht
+      unterstützt werden. Um portablen, weiterverteilbaren Code zu haben,
+      verwenden Sie keine Short-Tags.
+     </para>
+    </note>
    </para>
   </sect1>
-
-
-   <sect1 id="language.basic-syntax.instruction-separation">
-    <title>Abgrenzung von Anweisungen</title>
-
-    <simpara>
-     Einzelne Anweisungen werden genauso voneinander abgetrennt wie
-     in C oder Perl - jedes Statement wird mit einem Semikolon beendet.
-    </simpara>
-
-    <para>
-     Auch der schließende Tag (?&gt;) bedeutet das Ende eines Statements,
-     deshalb sind die folgenden Beispiele gleichwertig:
-
-     <informalexample>
+  <sect1 id="language.basic-syntax.instruction-separation">
+   <title>Abgrenzung von Anweisungen</title>
+   <para>
+    Wie in C oder Perl verlangt PHP, dass Anweisungen am Ende jedes Statements
+    mit einem Semikolon beendet werden. Der schließende Tag eines Blocks mit
+    PHP-Code impliziert automatisch ein Semikolon, Sie brauchen daher ein
+    abschließendes Semikolon in der letzten Zeile des PHP-Blocks setzen. Der
+    schließende Tag für den Block fügt das direkt nachfolgenden
+    Zeilenumbruch-Zeichen ein, wenn es vorhanden ist.
+    <informalexample>
      <programlisting role="php">
 <![CDATA[
 <?php
-    echo "Dies ist ein Test";
+    echo 'Dies ist ein Test';
 ?>
 
-<?php echo "Dies ist ein Test" ?>
+<?php echo 'Dies ist ein Test' ?>
+
+<?php echo 'Wir ließen den letzen schließenden Tag weg';
 ]]>
-      </programlisting>
-     </informalexample>
-    </para>
-   </sect1>
-
-   <sect1 id="language.basic-syntax.comments">
-    <title>Kommentare</title>
-
-    <para>
-     PHP unterstützt 'C', 'C++' und Unix-Shell-artige Kommentare. Beispiele:
+     </programlisting>
+    </informalexample>
+    <note>
+     <para>
+      Der schließende Tag eines PHP-Blocks am Ende einer Datei ist optional, und
+      in einigen Fällen ist das Weglassen hilfreich, wenn Sie
+      <function>include</function> oder <function>require</function> verwenden,
+      so dass ungewollte Whitespaces nicht am Ende einer Datei auftreten und Sie
+      noch im Stande sind, später weitere Header an die Response hinzuzufügen.
+      Es ist ebenfalls praktisch, wenn Sie Output Buffering verwenden und keine
+      ungewollten Whitespaces am Ende eines durch die eingebundenen Dateien
+      erzeugten Parts sehen wollen.
+     </para>
+    </note>
+   </para>
+  </sect1>
+  <sect1 id="language.basic-syntax.comments">
+   <title>Kommentare</title>
+   <para>
+    PHP unterstützt 'C', 'C++' und Unix-Shell-artige (Perl-artige) Kommentare.
+    Zum Beispiel:
 
     <informalexample>
      <programlisting role="php">
 <![CDATA[
 <?php
-    echo "Dies ist ein Test"; // Dies ist ein einzeiliger Kommentar im C++-Stil.
+    echo "Dies ist ein Test"; // Dies ist ein einzeiliger Kommentar im C++-Stil
     /* Dies ist ein mehrzeiliger Kommentar
-       und noch eine Kommentar-Zeile */
-    echo "Dies ist noch ein Test";
-    echo "... und ein letzter Test"; # Dies ist ein Shell-artiger Kommentar.
+       noch eine weitere Kommentar-Zeile */
+    echo 'Dies ist noch ein Test';
+    echo '... und ein letzter Test'; # Dies ist ein einzeiliger Shell-Kommentar
 ?>
 ]]>
      </programlisting>
     </informalexample>
    </para>
-
-    <simpara>
-     Die einzeiligen Kommentar-Arten kommentieren sämtlichen Text bis
-     zum Zeilenende oder bis zum Ende des aktuellen PHP-Blocks aus, je
-     nachdem, was zuerst eintritt.
-    </simpara>
+   <simpara>
+    Die "einzeiligen" Kommentar-Arten kommentieren sämtlichen Text bis
+    zum Zeilenende oder bis zum Ende des aktuellen PHP-Blocks aus, je
+    nachdem, was zuerst eintritt. Das bedeutet, das HTML-Code nach
+    <literal>// ..?&gt;</literal> oder <literal># ... ?&gt;</literal>
+    ausgegeben WIRD: ?&gt; beendet den PHP-Modus und kehrt in den HTML-Modus
+    zurück, so dass sich <literal>//</literal> oder <literal>#</literal> nicht
+    nicht darauf auswirkt. Wenn die <link linkend="ini.asp-tags">asp_tags</link>
+    Konfigurations-Direktive eingeschaltet ist, verhält es sich genauso bei
+    <literal>// %&gt;</literal> und <literal># %&gt;</literal>. Jedoch beendet
+    das <literal>&lt;/script&gt;</literal>-Tag den PHP-Modus innerhalb eines
+    einzeiligen Kommentars nicht.
+   </simpara>
+   <para>
     <informalexample>
      <programlisting role="php">
 <![CDATA[
-<h1>Dies ist ein  <?php # echo "einfaches";?> Beispiel.</h1>
+<h1>Dies ist ein  <?php # echo 'einfaches';?> Beispiel.</h1>
 <p>Obige Überschrift wird lauten: 'Dies ist ein Beispiel.'.
 ]]>
      </programlisting>
     </informalexample>
-
-    <simpara>
-     Man sollte darauf achten, nicht mehrere ´C´-artigen Kommentare ineinander
-     zu setzen, was vorkommen kann, wenn man große Blöcke auskommentiert.
-     </simpara>
-
+   </para>
+   <simpara>
+    'C'-artige Kommentare enden am ersten Vorkommen von <literal>*/</literal>.
+    Achten Sie daher darauf, 'C'-artige Kommentare nicht zu verschachteln.
+    Dieser Fehler entsteht leicht, wenn Sie längere Code-Blöcke auskommentieren.
+   </simpara>
+   <para>
     <informalexample>
      <programlisting role="php">
 <![CDATA[
 <?php
 /*
-   echo "Dies ist ein Test"; /* Dieser Kommentar wird ein Problem verursachen. */
+   echo 'Dies ist ein Test'; /* Dieser Kommentar wird ein Problem verursachen. */
 */
 ?>
 ]]>
-    </programlisting>
-   </informalexample>
-
-   <simpara>
-    Die einzeiligen Kommentar-Arten kommentieren den Text tatsächlich
-    nur bis zum Zeilenende oder bis zum Ende des aktuellen PHP-Blocks aus,
-    je nachdem, was zuerst eintritt. Das heißt, dass HTML Code nach // ?>
-    ausgegeben wird: ?> steigt aus dem PHP-Modus aus und kehrt in den HTML
-    Modus zurück, ohne dass // dies beeinflussen könnte.
-   </simpara>
+     </programlisting>
+    </informalexample>
+   </para>
   </sect1>
  </chapter>
 
