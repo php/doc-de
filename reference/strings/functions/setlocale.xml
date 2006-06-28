@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.7 Maintainer: tom Status: ready -->
-<!-- CREDITS: tschuer -->
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.26 Maintainer: sammywg Status: ready -->
   <refentry id="function.setlocale">
    <refnamediv>
     <refname>setlocale</refname>
-    <refpurpose>Setzt lokale Informationen</refpurpose>
+    <refpurpose>Setzt Locale Informationen</refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
       <type>string</type><methodname>setlocale</methodname>
-      <methodparam><type>mixed</type><parameter>category</parameter></methodparam>
+      <methodparam><type>int</type><parameter>category</parameter></methodparam>
       <methodparam><type>string</type><parameter>locale</parameter></methodparam>
-      <methodparam choice='opt'><type>string</type><parameter>...</parameter></methodparam>
+      <methodparam choice="opt"><type>string</type><parameter>...</parameter></methodparam>
      </methodsynopsis>
      <methodsynopsis>
       <type>string</type><methodname>setlocale</methodname>
-      <methodparam><type>mixed</type><parameter>category</parameter></methodparam>
+      <methodparam><type>int</type><parameter>category</parameter></methodparam>
       <methodparam><type>array</type><parameter>locale</parameter></methodparam>
      </methodsynopsis>
     <para>
-     <parameter>Category</parameter> ist eine benannte Konstante (oder
-     Zeichenkette), welche die Kategorie der von den lokalen Einstellungen
-     betroffenen Funktionen spezifiziert:
+     <parameter>category</parameter> ist eine benannte Konstante (oder
+     Zeichenkette), die die Kategorie der von den lokalen Einstellungen (Locales)
+     betroffenen Funktionen angibt:
      <itemizedlist>
       <listitem>
        <simpara>
@@ -38,7 +37,7 @@
       </listitem>
       <listitem>
        <simpara>
-        LC_CTYPE für Klassifizierung und Umwandlung von Zeichen, z.B.
+        LC_CTYPE für Klassifizierung und Umwandlung von Zeichen, zum Beispiel
         <function>strtoupper</function>
        </simpara>
       </listitem>
@@ -54,41 +53,61 @@
       </listitem>
       <listitem>
        <simpara>
-        LC_TIME für Zeit und Datums-Formatierungen mittels
+        LC_TIME für Zeit- und Datums-Formatierungen mittels
         <function>strftime</function>
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        LC_MESSAGES für Systemmeldungen (verfügbar, wenn PHP mit
+        <literal>liblintl</literal> kompiliert wurde)
        </simpara>
       </listitem>
      </itemizedlist>
     </para>
-    <para>
-     Ist <parameter>locale</parameter> als Leer-String definiert, also
-     <literal>""</literal>, werden die Werte an Hand der entsprechenden
-     Umgebungsvariablen gleichen Namens wie die obigen Kategorien, oder
-     von "LANG" bestimmt.
-    </para>
-    <para>
-     Ist <parameter>locale</parameter> &null; oder <literal>"0"</literal>,
-     sind keine Einstellungen betroffen, und es wird die aktuelle
-     Einstellung zurückgegeben.
-    </para>
-    <para>
-     Ist <parameter>locale</parameter> ein Array, oder folgen weitere Parameter,
-     dann wird jedes Array Element bzw. jeder Parameter versucht zu stzen, bis
-     es gelingt. Dies ist dann sinnvoll, wenn eine locale auf verschiedenen
-     Systemen unter verschiedenen Namen bekannt ist, oder auch als Fallback
-     für eine eventuell nicht vorhandene locale.
-    </para>
     <note>
      <simpara>
-      Das Übergeben von mehreren locales wird erst seit PHP 4.3 unterstützt.
+      Seit PHP 4.2.0 ist die Übergabe an <parameter>category</parameter> mittels
+      eines Strings als deprecated gekennzeichnet, verwenden Sie daher immer
+      die obigen Konstanten. Das Übergeben der Konstanten als String (also in
+      Anführungszeichen eingeschlossen) führt zu einer Warnmeldung.
      </simpara>
     </note>
     <para>
-     <function>setlocale</function> gibt die neue Einstellung oder
-     &false; (wenn die locale-Funktionalität auf der System-Plattform
-     nicht unterstützt wird oder der Kategorie-Wert ungültig ist)
-     zurück. Ein ungültiger Kategorie-Name erzeugt auch noch eine
-     Warnmeldung.
+     Ist <parameter>locale</parameter> &null; oder ein leerer String
+     <literal>""</literal>, werden die Namen der Locales anhand der Werte der
+     Umgebungsvariablen als Leer-String definiert, also
+     <literal>""</literal>, werden die Werte an Hand der entsprechenden
+     Umgebungsvariablen gleichen Namens wie die obigen Kategorien oder
+     von "LANG" bestimmt.
+    </para>
+    <para>
+     Ist <parameter>locale</parameter> <literal>"0"</literal>, sind keine
+     lokalen Einstellungen betroffen, und es wird die aktuelle Einstellung
+     zurückgegeben.
+    </para>
+    <para>
+     Ist <parameter>locale</parameter> ein Array oder folgen weitere Parameter,
+     dann wird jedes Arrayelement bzw. jeder Parameter versucht als neuer
+     Locale-Wert zu setzen, bis es gelingt. Dies ist dann sinnvoll, wenn eine
+     Locale-Angabe auf unterschiedlichen Systemen unter verschiedenen Namen
+     bekannt ist oder auch als Fallback für eine eventuell nicht vorhandene
+     Locale-Angabe.
+    </para>
+    <note>
+     <simpara>
+      Das Übergeben von mehreren Locales wird erst seit PHP 4.3.0 unterstützt.
+     </simpara>
+    </note>
+    <para>
+     <function>setlocale</function> gibt die neue Locale-Einstellung oder
+     &false; zurück, wenn die Locale-Funktionalität von Ihrer Plattform nicht
+     unterstützt wird, die angegebene Locale nicht existiert oder der
+     Kategorie-Name ungültig ist. Ein ungültiger Kategorie-Name erzeugt
+     zusätzlich eine Warnmeldung. Kategorien- und Locale-Namen können sie unter
+     <ulink url="&url.rfc;1766">RFC 1766</ulink> und <ulink
+     url="&url.iso-639;">ISO 639</ulink> nachlesen. Unterschiedliche Systeme
+     verwenden differierende Namensräume für die Locales.
     </para>
     <note>
      <para>
@@ -97,6 +116,32 @@
       was die Systemfunktion setlocale zurückgibt.
      </para>
     </note>
+    <warning>
+     <para>
+      Die Locale-Informationen wirken auf den Prozess, nicht auf den Thread.
+      Sofern Sie PHP mit einer Multithreaded Server API wie IIS oder Apache
+      unter Windows einsetzen, rechnen Sie mit unerwarteten Änderungen der
+      Locale-Einstellungen zur Laufzeit des Skripts, auch wenn das Skript selbst
+      keinen <function>setlocale</function>-Aufruf durchführt. Dies passiert,
+      da andere Skripte in verschiedenen Threads des selben Prozesses zur selben
+      Zeit prozessweit die Locale-Einstellungen mittels
+      <function>setlocale</function> ändern.
+     </para>
+    </warning>
+    <tip>
+     <para>
+      Windowsuser finden weitergehende Informationen über
+      <parameter>locale</parameter>-Strings auf Microsofts
+      <acronym>MSDN</acronym>-Webseite. Unterstützte Language-Strings können Sie
+      unter <ulink
+      url="&url.setlocale.lang.win32;">&url.setlocale.lang.win32;</ulink>,
+      Country/Region-Strings unter <ulink url="&url.setlocale.country.win32;">
+      &url.setlocale.country.win32;</ulink> nachschlagen. Windowssysteme
+      unterstützen Drei-Buchstaben-Codes für Länder/Regionen-Angaben entsprechend
+      <literal>ISO 3166-Alpha-3</literal>, die Sie auf der <ulink
+      url="&url.iso-3166-3;">Unicode Website</ulink> finden.
+     </para>
+    </tip>
     <para>
      <example>
       <title><function>setlocale</function> Beispiele</title>
@@ -111,6 +156,26 @@ echo strftime ("%A %e %B %Y", mktime (0, 0, 0, 12, 22, 1978));
 
 /* versuche verschiedene mögliche locale Namen für Deutsch ab PHP 4.3.0 */
 $loc_de = setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
+echo "Preferred locale for german on this system is '$loc_de'";
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     <example>
+      <title><function>setlocale</function>Beispiele for Windows</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+/* locale auf Holland setzen */
+setlocale(LC_ALL, 'nld_nld');
+
+/* Ausgabe: vrijdag 22 december 1978 */
+echo strftime("%A %d %B %Y", mktime(0, 0, 0, 12, 22, 1978));
+
+/* versuche verschiedene mögliche locale Namen für Deutsch ab PHP 4.3.0 */
+$loc_de = setlocale(LC_ALL, 'de_DE@euro', 'de_DE', 'deu_deu');
 echo "Preferred locale for german on this system is '$loc_de'";
 ?>
 ]]>
