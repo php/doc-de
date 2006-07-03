@@ -1,62 +1,91 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.10 Maintainer: sammywg Status: ready -->
 <!-- splitted from ./de/functions/var.xml, last change in rev 1.20 -->
-<!-- last change to 'serialize' in en/ tree in rev 1.28 -->
   <refentry id="function.serialize">
    <refnamediv>
     <refname>serialize</refname>
     <refpurpose>
-     Erzeugt ein speicherbares Datenformat
+     Erzeugt eine speicherbare Repräsentation eines Wertes
     </refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
       <type>string</type><methodname>serialize</methodname>
       <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
      </methodsynopsis>
     <simpara>
-     <function>serialize</function> gibt eine Zeichenkette (String)
-     zurück, die eine Byte-Stream entsprechende Wiedergabe von
-     <parameter>value</parameter> enthält und beliebig abgespeichert
-     werden kann.
+     <function>serialize</function> gibt einen String zurück, der eine
+     Byte-Stream-Repräsentation von <parameter>value</parameter> enthält, die
+     beliebig gespeichert werden kann.
     </simpara>
     <simpara>
-     Diese Funktion dient der Speicherung oder Übergabe von
-     PHP-Werten, ohne dass diese ihren Wert oder ihre Struktur
-     verlieren.
+     Diese Funktion dient der Speicherung oder Übergabe von PHP-Werten, ohne
+     dass diese ihren Typ oder ihre Struktur verlieren.
     </simpara>
     <simpara>
-     Um eine serialisierte Zeichenkette wieder als PHP-Wert verfügbar
-     zu machen steht die <function>unserialize</function>-Funktion zur
-     Verfügung. <function>serialize</function> kann mit den Typen
-     <type>integer</type>, <type>double</type>, <type>string</type>,
-     <type>array</type> (mehrdimensional) und <type>object</type>
-     umgehen. Beim Objekt werden die Eigenschaften serialisiert, die
-     Methoden gehen aber verloren.
+     Um eine serialisierte Zeichenkette wieder als PHP-Wert verfügbar zu machen,
+     verwenden Sie<function>unserialize</function>.
+     <function>serialize</function> kann mit allen Typen umgehen, ausgenommen
+     mit dem <type>resource</type>-Typ. Sie können sogar Arrays serialisieren,
+     die Referenzen auf sich selbst enthalten. Referenzen innerhalb des
+     Arrays/Objekts, das Sie serialisieren, werden ebenfalls gespeichert.
     </simpara>
+    <simpara>
+     Wenn Objekte serialisiert werden, versucht PHP die Methode
+     <function>__sleep</function> vor der Serialisierung aufzurufen. Dies
+     erlaubt einem Objekt letzte "Aufräumaktionen", bevor es serialisiert wird.
+     Ebenso wird die Methode <function>__wakeup</function> aufgerufen, wenn das
+     Objekt mittels <function>unserialize</function> wiederhergestellt wird.
+    </simpara>
+    <note>
+     <simpara>
+      Dies funktioniert nicht korrekt bis PHP 4.0.7.
+     </simpara>
+    </note>
+    <note>
+     <para>
+      In PHP 3 werden Objekteigenschaften serialisiert, aber die Methoden gehen
+      verloren. Diese Beschränkung wurde in PHP 4 aufgehoben, so dass sowohl
+      Eigenschaften als auch Methoden wiederhergestellt werden können. Bitte
+      lesen Sie den Abschnitt <link linkend="language.oop.serialization">Objekte
+      serialisieren</link> des Kapitels <link linkend="language.oop">Klassen
+      und Objekte</link> für weitere Informationen.
+     </para>
+     <para>
+      Es ist nicht möglich PHP-interne Objekte zu serialisieren.
+     </para>
+    </note>
     <para>
      <example>
-      <title><function>serialize</function>-Beispiel:</title>
+      <title><function>serialize</function>-Beispiel</title>
       <programlisting role="php">
-// $session_data enthält ein mehrdimensionales Array mit
-// Session-Informationen des aktuellen Benutzers. Wir benutzen
-// serialize() um diese Infos am Ende der Anfrage in eine
-// Datenbank zu speichern.
+<![CDATA[
+<?php
+// $session_data enthält ein mehrdimensionales Array mit Session-Informationen
+// des aktuellen Benutzers. Wir benutzen serialize() um diese Infos am Ende
+// der Anfrage in eine Datenbank zu speichern.
 
-$conn = odbc_connect ("webdb", "php", "moorhuhn");
-$stmt = odbc_prepare ($conn,
-                      "UPDATE sessions SET data = ? WHERE id = ?");
+$conn = odbc_connect("webdb", "php", "moorhuhn");
+$stmt = odbc_prepare($conn,
+      "UPDATE sessions SET data = ? WHERE id = ?");
 $sqldata = array (serialize($session_data), $PHP_AUTH_USER);
-if (!odbc_execute ($stmt, &amp;$sqldata)) {
-    $stmt = odbc_prepare ($conn,
-                          "INSERT INTO sessions (id, data) VALUES(?, ?)");
-    if (!odbc_execute($stmt, &amp;$sqldata)) {
-        /* Etwas lief schief. Fluche, heule und stöhne. */
+if (!odbc_execute($stmt, &$sqldata)) {
+    $stmt = odbc_prepare($conn,
+     "INSERT INTO sessions (id, data) VALUES(?, ?)");
+    if (!odbc_execute($stmt, &$sqldata)) {
+        /* Irgendwas ging schief ... */
     }
 }
+?>
+]]>
       </programlisting>
      </example>
+    </para>
+    <para>
+     Siehe auch
+     <function>unserialize</function>.
     </para>
    </refsect1>
   </refentry>
