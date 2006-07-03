@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.19 Maintainer: sammywg Status: ready -->
 <!-- splitted from ./de/functions/var.xml, last change in rev 1.20 -->
-<!-- last change to 'unserialize' in en/ tree in rev 1.2 -->
   <refentry id="function.unserialize">
    <refnamediv>
     <refname>unserialize</refname>
@@ -9,47 +9,113 @@
      Erzeugt aus einem gespeicherten Datenformat einen Wert in PHP
     </refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
       <type>mixed</type><methodname>unserialize</methodname>
       <methodparam><type>string</type><parameter>str</parameter></methodparam>
      </methodsynopsis>
     <simpara>
-     <function>unserialize</function> nimmt eine einzelne
-     Variable aus einer serialisierten Datenmenge (siehe unter
-     <function>serialize</function>) und wandelt sie in einen
-     PHP-Wert um. Dieser Wert wird als Funktionsergebnis zurück
-     gegeben. Er kann vom Typ <type>integer</type>,
-     <type>double</type>, <type>string</type>, <type>array</type>
-     oder <type>object</type> sein. Wurde ein Objekt serialisiert,
-     können dessen Methoden nicht zurück gegeben werden.
+     <function>unserialize</function> nimmt eine einzelne Variable aus einer
+     serialisierten Datenmenge (siehe <function>serialize</function>) und
+     wandelt sie in einen PHP-Wert zurück. Der konvertierte Wert wird zurück
+     gegeben und kann vom Typ <type>integer</type>, <type>float</type>,
+     <type>string</type>, <type>array</type> oder <type>object</type> sein.
+     Falls der übergebene Sting nicht deserialisierbar ist, wird &false; zurück
+     gegeben und <literal>E_NOTICE</literal> produziert.
     </simpara>
+    <warning>
+     <para>
+      &false; wird sowohl im Fehlerfall als auch bei einem serialisierten
+      &false;-Wert zurück gegeben. Es ist möglich, diesen speziellen Fall
+      abzufangen, indem man <parameter>str</parameter> mit
+      <literal>serialize(false)</literal> vergleicht oder prüft, ob ein
+      <literal>E_NOTICE</literal> produziert wurde.
+     </para>
+    </warning>
+    <note>
+     <title>unserialize_callback_func-Direktive</title>
+     <para>
+      Es ist möglich, eine Callback-Funktion anzugeben, die aufgerufen wird,
+      wenn eine undefinierte Klasse während des Deserialisierens instanziiert
+      werden soll (um dem Erhalt des unvollständigen <type>object</type>
+      "__PHP_Incomplete_Class" vorzubeugen). Nutzen Sie Ihre &php.ini;,
+      <function>ini_set</function> oder &htaccess;, um
+      'unserialize_callback_func' festzulegen. Jedesmal, wenn eine undefinierte
+      Klasse instanziiert werden soll, wird diese Funktion aufgerufen. Um dieses
+      Feature abzuschalten, muss die Einstellung nur ungefüllt sein. Beachten
+      Sie zudem, dass die Direktive unserialize_callback_func erst ab PHP 4.2.0
+      zur Verfügung steht.
+     </para>
+    </note>
+    <para>
+     Wenn die zu deserialisierende Variable ein Objekt ist, wird PHP nach der
+     erfolgreichen Wiederherstellung des Objekts automatisch versuchen, die
+     <function>__wakeup()</function>-Methode aufzurufen (sofern diese existiert).
+     <example>
+      <title>unserialize_callback_func-Beispiel</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$serialized_object='O:1:"a":1:{s:5:"value";s:3:"100";}';
+
+// unserialize_callback_func Direktive ist ab PHP 4.2.0 verfuegbar
+ini_set('unserialize_callback_func', 'mycallback'); // Festlegen der callback_function
+
+function mycallback($classname)
+{
+    // einfach ein File einbinden, dass die Klassendefinitionen enthaelt
+    // Sie erhalten $classname, womit Sie herausfinden koennen, welche
+    // Klassendefinition benoetigt wird
+}
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <para>
+      In PHP 3 werden Methoden nicht erhalten, wenn ein serialisiertes Objekt
+      deserialisiert wird. Diese Beschränkung wurde in PHP 4 aufgehoben, so dass
+      Eigenschaften und Methoden wiederhergestellt werden können. Bitte lesen
+      Sie den Abschnitt <link linkend="language.oop.serialization">Objekte
+      serialisieren</link> des Kapitels <link linkend="language.oop">Klassen
+      und Objekte</link> für weitere Informationen.
+     </para>
+    </note>
     <para>
      <example>
-      <title><function>unserialize</function>-Beispiel:</title>
+      <title><function>unserialize</function>-Beispiel</title>
       <programlisting role="php">
-// Als Beispiel benutzen wir unserialize() um Daten aus einer
-// Datenbank nach $session_data zu laden. Das Beispiel vervollständigt
-// das unter serialize() beschriebene.
+<![CDATA[
+<?php
+// Als Beispiel benutzen wir unserialize(), um Daten aus einer Datenbank in das
+// $session_data-Array zu laden. Das Beispiel vervollständigt das unter
+// serialize() beschriebene.
 
-$conn = odbc_connect ("webdb", "php", "moorhuhn");
-$stmt = odbc_prepare ($conn, "SELECT data FROM sessions WHERE id = ?");
+$conn = odbc_connect("webdb", "php", "moorhuhn");
+$stmt = odbc_prepare($conn, "SELECT data FROM sessions WHERE id = ?");
 $sqldata = array ($PHP_AUTH_USER);
-if (!odbc_execute ($stmt, &amp;$sqldata) || !odbc_fetch_into ($stmt, &amp;$tmp)) {
+if (!odbc_execute($stmt, &$sqldata) || !odbc_fetch_into($stmt, &$tmp)) {
     // wenn execute oder fetch fehlschlägt, initialisiere ein leeres Array
     $session_data = array();
 } else {
-    // die serialisierten Daten sollten nun in $tmp[0] stehen
-    $session_data = unserialize ($tmp[0]);
-    if (!is_array ($session_data)) {
+    // die serialisierten Daten sollten nun in $tmp[0] stehen.
+    $session_data = unserialize($tmp[0]);
+    if (!is_array($session_data)) {
         // etwas ging schief, also wieder ein leeres Array initialisieren
         $session_data = array();
     }
 }
+?>
+]]>
       </programlisting>
      </example>
     </para>
+   <para>
+    Siehe auch
+    <function>serialize</function>.
+   </para>
    </refsect1>
   </refentry>
 

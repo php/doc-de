@@ -1,49 +1,194 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.14 Maintainer: sammywg Status: ready -->
 <!-- splitted from ./de/functions/var.xml, last change in rev 1.2 -->
-<!-- last change to 'unset' in en/ tree in rev 1.2 -->
   <refentry id="function.unset">
    <refnamediv>
     <refname>unset</refname>
-    <refpurpose>Löschen einer Variablen</refpurpose>
+    <refpurpose>Löschen einer angegebenen Variablen</refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
       <type>void</type><methodname>unset</methodname>
       <methodparam><type>mixed</type><parameter>var</parameter></methodparam>
+      <methodparam choice="opt"><type>mixed</type><parameter>var</parameter></methodparam>
+      <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
      </methodsynopsis>
+
     <para>
-     <function>unset</function> gibt eine Variable oder ein
-     Array-Element vollständig frei. Beachten Sie, dass in PHP 3 
-     <function>unset</function> immer &true; (den Integer-Wert 1)
-     zurückgegeben hat. In PHP 4 ist jedoch <function>unset</function>
-     keine Funktion mehr: Es ist nun ein Sprachkonstrukt. Daher wird kein Wert
-     mehr zurückgegeben und der Versuch, den Rückgabewert zu verwenden
-     resultiert in einem Parse Error.
+     <function>unset</function> löscht die angegebene Variable. Beachten Sie,
+     dass in PHP 3 <function>unset</function> immer &true; zurückgibt
+     (eigentlich den Integer-Wert 1). In PHP 4 ist <function>unset</function>
+     allerdings keine wirkliche Funktion mehr: Es ist nun ein Sprachkonstrukt.
+     Daher wird kein Wert zurückgegeben, und der Versuch, einen Rückgabewert von
+     <function>unset</function> zu erhalten, erzeugt einen Parse Error.
     </para>
     <para>
      <example>
-      <title><function>unset</function> example</title>
+      <title><function>unset</function>-Beispiel</title>
       <programlisting role="php">
 <![CDATA[
 <?php
-
-// Einzelne Variable löschen
+// löscht eine einzelne Variable
 unset($foo);
 
-// Einzelnes Array-Element löschen
+// löscht ein einzelnes Element eines Arrays
 unset($bar['quux']);
 
-// Mehrere Variablen löschen
+// löscht mehr als eine Variable
 unset($foo1, $foo2, $foo3);
+?>
 ]]>
       </programlisting>
      </example>
     </para>
+    <note>
+     <para>
+      Es ist möglich, sogar Objekteigenschaften zu löschen, die im aktuellen
+      Kontext sichtbar sind.
+     </para>
+    </note>
     <para>
-     Siehe auch <function>isset</function> und
-     <function>empty</function>.
+     Das Verhalten von <function>unset</function> innerhalb einer Funktion kann
+     abhängig davon, was für einen Variablentyp Sie zu löschen versuchen,
+     variieren.
+    </para>
+    <para>
+     Wenn eine globalisierte Variable innerhalb einer Funktion mit
+     <function>unset</function> behandelt wird, wird nur die lokale Variable
+     gelöscht. Die Variable innerhalb der aufrufenden Umgebung behält den selben
+     Wert wie vor dem Aufruf von <function>unset</function>.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function destroy_foo()
+{
+    global $foo;
+    unset($foo);
+}
+
+$foo = 'bar';
+destroy_foo();
+echo $foo;
+?>
+]]>
+      </programlisting>
+     </informalexample>
+    </para>
+    &example.outputs;
+    <para>
+     <informalexample>
+      <screen>
+<![CDATA[
+bar
+]]>
+      </screen>
+     </informalexample>
+    </para>
+    <para>
+     Wenn Sie eine globale Variable innerhalb einer Funktion löschen wollen,
+     können Sie das <varname>$GLOBALS</varname>-Array dazu verwenden:
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function foo()
+{
+    unset($GLOBALS['bar']);
+}
+
+$bar = "something";
+foo();
+?>
+]]>
+      </programlisting>
+     </informalexample>
+    </para>
+    <para>
+     Wenn eine Variable, die als Referenz übergeben wird ("Passed by Reference"),
+     innerhalb einer Funktion gelöscht wird, wird nur die lokale Variable
+     gelöscht. Die Variable im aufrufenden Environment enthält den selben Wert
+     wie vor dem Aufruf von <function>unset</function>.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function foo(&$bar)
+{
+    unset($bar);
+    $bar = "blah";
+}
+
+$bar = 'something';
+echo "$bar\n";
+
+foo($bar);
+echo "$bar\n";
+?>
+]]>
+      </programlisting>
+     </informalexample>
+    </para>
+     &example.outputs;
+    <para>
+     <informalexample>
+      <screen>
+<![CDATA[
+something
+something
+]]>
+      </screen>
+     </informalexample>
+    </para>
+    <para>
+     Wenn eine statische Variable innerhalb einer Funktion gelöscht wird, löscht
+     <function>unset</function> die Variable nur im Kontext des verbleibenden
+     Funktionsablaufs. Die folgenden Aufrufe stellen den vorhergehenden Wert der
+     Variablen wieder her.
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function foo()
+{
+    static $bar;
+    $bar++;
+    echo "Vor unset: $bar, ";
+    unset($bar);
+    $bar = 23;
+    echo "nach unset: $bar\n";
+}
+
+foo();
+foo();
+foo();
+?>
+]]>
+      </programlisting>
+     </informalexample>
+    </para>
+     &example.outputs;
+    <para>
+     <informalexample>
+      <screen>
+<![CDATA[
+Vor unset: 1, nach unset: 23
+Vor unset: 2, nach unset: 23
+Vor unset: 3, nach unset: 23
+]]>
+      </screen>
+     </informalexample>
+    </para>
+
+    &note.language-construct;
+
+    <para>
+     Siehe auch
+     <function>isset</function>,
+     <function>empty</function> und
+     <function>array_splice</function>.
     </para>
    </refsect1>
   </refentry>
