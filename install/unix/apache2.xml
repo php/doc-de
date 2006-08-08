@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.6 maintainer: simp Status: ready -->
+   <sect1 id="install.unix.apache2">
+    <title>Apache 2.0 auf Unix Systemen</title>
+    <para>
+     Dieser Abschnitt enthält Hinweise und Tipps die sich auf die Installation
+     von PHP speziell für Apache 2.0 auf Unix Systemen beziehen.
+    </para>
+   
+    &warn.apache2.compat;
+    
+    <para>
+     Es wird empfohlen, einen Blick auf die <ulink url="&url.apache2.docs">
+     Apache Dokumentation</ulink>  zu werfen, um ein grundlegendes
+     Verständnis des Apache 2.0 Servers zu erhalten.
+    </para>
+
+    &install.snippet.apache2.compat;
+
+    <para>
+     Laden Sie die aktuellste Version von <ulink url="&url.apache;">
+     Apache 2.0</ulink>  und eine passende Version von den oben angegebenen
+     Quellen herunter. Dieser Schnelleinstieg behandelt nur die Grundlagen, um
+     mit Apache 2.0 und PHP einzusteigen. Für mehr Informationen lesen
+     Sie bitte die <ulink url="&url.apache2.docs;">Apache Dokumentation</ulink>.
+      Versionsnummern wurden hier
+      ausgelassen, um sicherzustellen, dass die Anweisungen nicht inkorrekt
+      sind. Sie müssen die Zeichenkette 'NN' hier mit den zu Ihren Dateien
+      passenden Werten ersetzen.
+    </para>
+    <example>
+     <title>
+       Installationsanweisungen (Apache 2 Shared Module Version)
+     </title>
+     <screen>
+<![CDATA[
+1.  gzip -d httpd-2_0_NN.tar.gz
+2.  tar xvf httpd-2_0_NN.tar
+3.  gunzip php-NN.tar.gz
+4.  tar -xvf php-NN.tar
+5.  cd httpd-2_0_NN
+6.  ./configure --enable-so
+7.  make
+8.  make install
+
+    Nun steht Ihnen Apache 2.0.NN unter /usr/local/apache2 zur Verfügung,
+    konfiguriert mit Unterstützung für nachladbare Module und dem
+    Standard MPM Prefork.
+    Um diese Installation zu testen, verwenden Sie die übliche Prozedur,
+    den Apache server zu starten, also z.B.:
+    /usr/local/apache2/bin/apachectl start
+    Stoppen Sie nun den Server, um mit der Konfiguration von PHP fortzusetzen:
+    /usr/local/apache2/bin/apachectl stop.
+
+9.  cd ../php-NN
+
+10. Konfigurieren Sie nun Ihr PHP. Dies ist die Stelle, an der Sie Ihr
+    PHP mit verschiedenen Optionen, wie etwa installierten Erweiterungen,
+    anpassen können. Rufen Sie ./configure --help auf, um eine Liste
+    von verfügbaren Optionen zu erhalten. In unserem beispiel werden
+    wir eine einfache Konfiguration mit Unterstützung für Apache 2
+    und MySQL erzeugen. Ihr Pfad zu apxs könnte sich unterscheiden,
+    tatsächlich könnte das Programm auf Ihrem System auch apxs2 heißen.
+    
+      ./configure --with-apxs2=/usr/local/apache2/bin/apxs --with-mysql
+
+11. make
+12. make install
+
+    Wenn Sie sich entscheiden, Ihre Konfigurationsoptionen nach der
+    Installation zu ändern, müssen Sie nur die letzten drei Schritte
+    wiederholen. Sie müssen nur Apache neustarten, damit das neue
+    Modul verwendet wird. Eine erneute Kompilierung von Apache ist
+    nicht notwendig.
+
+    Beachten Sie, dass, wenn nicht anders erwähnt, 'make install' ebenso
+    PEAR und verschiedene PHP Werkzeuge wie phpize, PHP CLI und anderes
+    installieren wird.
+    
+13. Ihre php.ini einrichten
+    
+    cp php.ini-dist /usr/local/lib/php.ini
+          
+    Sie können Ihre .ini Datei ändern, um verschiedene PHP Optionen zu setzen.
+    Wenn Sie die php.ini Datei an einer anderen Stelle bevorzugen, verwenden
+    Sie --with-config-file-path=/some/path in Schritt 10.
+    
+    Wenn Sie sich stattdessen für php.ini-recommended entscheiden, stellen Sie
+    sicher, dass sie die darin enthaltene Liste von Änderungen lesen, da diese
+    das Verhalten von PHP beeinflussen.
+
+14. Bearbeiten Sie Ihre httpd.conf, um das PHP Modul zu laden. Der Pfad
+    auf der rechten Seite de´r LoadModule Anweisung muss auf den Ort des
+    PHP Moduls auf Ihrem System zeigen. Das obige make install könnte dies
+    bereits für Sie hinzugefügt haben, aber prüfen Sie dies.
+
+    Für PHP 4:
+  
+      LoadModule php4_module modules/libphp4.so
+      
+    Für PHP 5:
+    
+      LoadModule php5_module modules/libphp5.so
+ 
+15. Weisen Sie Apache an, bestimmte Dateiendungen als PHP Skripte zu behandeln.
+    Zum Beispiel werden wir den Apache Dateien mit der Endung .php als PHP
+    ausführen lassen. Sie können beliebige Dateiendungen als PHP parsen lassen,
+    indem Sie einfach Weitere hinzufügen, alle durch ein Leerzeichen getrennt.
+    Wir fügen zu Demonstrationszwecken .phtml hinzu.
+            
+      AddType application/x-httpd-php .php .phtml
+                  
+    Es ist weiterhin üblich, die .phps Erweiterung einzurichten, damit diese
+    farblich hervorgehobenen PHP Quellcode ausgibt. Dies kann wie folgt
+    erreicht werden:
+    
+      AddType application/x-httpd-php-source .phps
+ 
+16. Verwenden Sie die übliche Prozedur, um den Apache Server zu starten, z.B.:
+   
+      /usr/local/apache2/bin/apachectl start
+   
+]]>
+
+      </screen>
+     </example>
+    <para>
+     Wenn Sie den obigen Anweisungen folgen, werden Sie einen laufenden
+     Apache 2.0 mit Unterstützung für PHP als <literal>SAPI</literal>-Modul
+     erhalten. Natürlich existieren für Apache wie PHP weitere 
+     Konfigurationseinstellungen. Verwenden Sie 
+     <command>./configure --help</command> im jeweiligen Quellcodeverzeichnis,
+     um weitere Informationen zu erhalten. Falls Sie wünschen, eine 
+     Multithreaded-Version von Apache 2.0 zu bauen, müssen Sie das
+     Standrad MPM-Modul <filename>prefork</filename> entweder durch
+     <filename>worker</filename> oder <filename>perchild</filename>
+     ersetzen. Fügen Sie dazu in obigem Schritt 6 an Ihre Konfigurationszeile
+     entweder die Option <option role="configure">--with-mpm=worker</option>
+     oder <option role="configure">--with-mpm=perchild</option> an. 
+     Denken Sie an die daraus reultierenden Konsequenzen und machen Sie sich
+     klar, was Sie damit tun. Für mehr Informationen werfen Sie einen Blick
+     auf die Apache Dokumantation zum Thema <ulink url="&url.apache2.mpm;">
+     MPM-Module</ulink>.
+    </para>
+    <note>
+     <para>
+      Falls Sie Content Negotiation verwenden wollen, lesen Sie die
+      häufig gestellte Frage zu 
+      <link linkend="faq.installation.apache.multiviews">Apache MultiViews
+      </link>.
+     </para>
+    </note>
+    <note>
+     <para>
+      Um eine Multithreaded Version von Apache zu erzeugen, muss Ihr System Threads
+      unterstützen. Dies impliziert, dass Sie PHP mit der experimentellen
+      Zend Thread Safety (ZTS) bauen. Deshalb könnten nicht alle Erweiterungen
+      verfügbar sein. Die empfohlene Einstellung ist es, Apache mit dem 
+      <filename>prefork</filename> MPM-Modul zu bauen.
+     </para>
+    </note>
+   </sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
