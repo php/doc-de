@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.37 Maintainer: sammywg Status: working -->
+<!-- $Revision: 1.2 $ -->
+<!-- EN-Revision: 1.2 Maintainer: sammywg Status: ready -->
   <refentry id="function.setcookie">
    <refnamediv>
     <refname>setcookie</refname>
@@ -16,6 +16,7 @@
       <methodparam choice="opt"><type>string</type><parameter>path</parameter></methodparam>
       <methodparam choice="opt"><type>string</type><parameter>domain</parameter></methodparam>
       <methodparam choice="opt"><type>bool</type><parameter>secure</parameter></methodparam>
+      <methodparam choice="opt"><type>bool</type><parameter>httponly</parameter></methodparam>
      </methodsynopsis>
     <para>
      <function>setcookie</function> definiert ein mit den HTTP
@@ -23,10 +24,10 @@
      müssen Cookies <emphasis>vor</emphasis> jeglicher Ausgabe Ihres Skriptes
      gesendet werden (dies ist eine Einschränkung des Protokolls). Das bedeutet,
      dass Sie diese Funktione aufrufen müssen, bevor Sie eine Ausgabe, dazu
-     zählen auch <literal>&lt;html></literal>- oder
-     <literal>&lt;head></literal>-Tags sowie jede Art von Whitespaces, übermitteln.
-     Erfolgt eine Ausgabe vor dem Aufruf dieser Funktion, wird
-     <function>setcookie</function> fehlschlagen und gibt &false; zurück. Wenn
+     zählen auch <literal>&lt;html&gt;</literal>- oder
+     <literal>&lt;head&gt;</literal>-Tags sowie jede Art von Whitespaces,
+     übermitteln. Erfolgt eine Ausgabe vor dem Aufruf dieser Funktion, wird
+     <function>setcookie</function> fehlschlagen und &false; zurückgeben. Wenn
      <function>setcookie</function> erfolgreich durchgeführt wird, wird &true;
      zurückgegeben. Dies sagt jedoch nichts darüber aus, ob der Benutzer das
      Cookie auch akzeptiert hat.
@@ -36,11 +37,12 @@
       In PHP 4 können Sie den Ausgabepuffer verwenden, um Ausgaben vor dem
       Aufruf dieser Funktion duchführen zu können. Dies hat allerdings zur Folge,
       dass alle Ihre Ausgaben zum Browser am Server zwischengespeichert werden,
-      bis Sie diese senden. Sie können dies in Ihrem Skript mittels den Funktionen
-      <function>ob_start</function> und <function>ob_end_flush</function>, oder
-      mittels der Konfigurationseinstellung <literal>output_buffering</literal>
-      in Ihrer &php.ini;, oder durch Konfigurationseinstellungen am Server
-      realisieren.
+      bis Sie diese senden. Sie können dies in Ihrem Skript mittels der
+      Funktionen <function>ob_start</function> und
+      <function>ob_end_flush</function> oder mittels der
+      Konfigurationseinstellung <literal>output_buffering</literal>
+      in Ihrer &php.ini; mitteilen, oder Sie ändern entsprechende
+      Konfigurationseinstellungen am Server.
      </para>
     </note>
     <para>
@@ -82,7 +84,7 @@
          <entry><parameter>value</parameter></entry>
          <entry>
           Der Wert des Cookies. Dieser Wert wird auf dem Computer des Benutzers
-          gespeichert, speichern Sie deshalb keine sensiblen Informationen.
+          gespeichert, speichern Sie deshalb darin keine sensiblen Informationen.
          </entry>
          <entry>
           Angenommen der Parameter <parameter>name</parameter> ist 'cookiename',
@@ -126,12 +128,12 @@
           Die Domain, der das Cookie zur Verfügung steht.
          </entry>
          <entry>
-          Um das Cookie für alle Sub-Domains von example.com verfügbar zu
+          Um das Cookie für alle Subdomains von example.com verfügbar zu
           machen, setzen Sie es auf <literal>'.example.com'</literal>. Der
-          <literal>.</literal> ist zwar nicht erforderlich, erhöht aber die
-          Kompatibilität zu mehr Browsern. Eine Setzen auf
+          <literal>.</literal> ist zwar nicht erforderlich, macht die Angabe
+          aber zu mehr Browsern kompatibel. Ein Setzen auf
           <literal>www.example.com</literal> macht das Cookie nur in der
-          Sub-Domain <literal>www</literal> verfügbar. Weitere Details hierzu
+          Subdomain <literal>www</literal> verfügbar. Weitere Details hierzu
           finden Sie in der <ulink url="&spec.cookies;">Spezifikation</ulink>.
          </entry>
         </row>
@@ -144,7 +146,21 @@
           Der Standardwert ist &false;.
          </entry>
          <entry>
-          <literal>0</literal> oder <literal>1</literal>
+          &true; oder &false;
+         </entry>
+        </row>
+        <row>
+         <entry><parameter>httponly</parameter></entry>
+         <entry>
+          Wenn auf &true; gesetzt, ist das Cookie nur via HTTP-Protokoll
+          zugreifbar. Das bedeutet, dass das Cookie nicht mehr für Skriptsprachen
+          wie JavaScript auslesbar/veränderbar ist. Diese Einstellung kann
+          eine effektive Hilfe sein, um Identitaetsdiebstahl per XSS-Angriff
+          zu vermindern (allerdings wird dies nicht von allen Browsern
+          unterstützt). Hinzugefügt in PHP 5.2.0.
+         </entry>
+         <entry>
+          &true; oder &false;
          </entry>
         </row>
        </tbody>
@@ -165,12 +181,12 @@
     </para>
     <note>
      <para>
-      Ist die PHP Direktive <link
+      Ist die PHP-Direktive <link
       linkend="ini.register-globals">register_globals</link> auf
       <literal>on</literal> gesetzt, stehen die Cookies auch als eigene
       Variablen zur Verfügung. In den nachstehenden Beispielen wird
-      <varname>$TextCookie</varname> also existieren. Es ist jedoch empfehlenswert,
-      <varname>$_COOKIE</varname> zu verwenden.
+      <varname>$TextCookie</varname> also existieren. Es ist jedoch dringend
+      empfohlen, <varname>$_COOKIE</varname> zu verwenden.
      </para>
     </note>
     <para>
@@ -184,7 +200,7 @@
         auf der nächsten geladenen Seite, ob das Cookie vorhanden ist. Die
         Ablaufzeit wird mittels des Parameters <parameter>expire</parameter>
         gesetzt. Eine gute Möglichkeit, die Existenz von Cookies zu prüfen, ist
-        ein <literal>print_r($_COOKIE);</literal> Aufruf.
+        einfach <literal>print_r($_COOKIE);</literal> aufzurufen.
        </simpara>
       </listitem>
       <listitem>
@@ -198,9 +214,9 @@
       <listitem>
        <simpara>
         Da beim Setzen eines Cookies mit dem Value &false; versucht wird, das
-        entsprechende Cookie zu löschen, sollten Sie keine boolschen Werte nutzen.
-        Verwenden Sie statt dessen <emphasis>0</emphasis> für &false; und
-        <emphasis>1</emphasis> für &true;.
+        entsprechende Cookie zu löschen, sollten Sie keine boolschen Werte
+        verwenden. Nutzen Sie statt dessen <emphasis>0</emphasis> für &false;
+        und <emphasis>1</emphasis> für &true;.
        </simpara>
       </listitem>
       <listitem>
@@ -219,7 +235,7 @@
     <simpara>
      In PHP 3 werden mehrfache Aufrufe von <function>setcookie</function>
      im selben Skript in umgekehrter Reihenfolge abgearbeitet. Sollten
-     sie also ein Cookie löschen wollen bevor sie ein anderes setzen,
+     Sie also ein Cookie löschen wollen bevor Sie ein anderes setzen,
      sollten sie das Setzen vor dem Löschen vornehmen. Ab PHP 4 werden
      mehrfache Aufrufe von <function>setcookie</function> in der
      Reihenfolge ihres Aufrufs ausgeführt.
@@ -243,7 +259,7 @@ setcookie("TestCookie", $value, time()+3600, "/~rasmus/", ".example.com", 1);
     </para>
     <para>
      Beachten Sie, dass der Wertebereich des Cookies automatisch URL-konform
-     kodiert (urlencoded) wird, sobald sie das Cookie senden, und es beim Erhalt
+     kodiert (urlencoded) wird, sobald Sie das Cookie senden, und es beim Erhalt
      automatisch dekodiert und einer Variablen zugewiesen wird, die den selben
      Namen wie das Cookie trägt. Wenn Sie dies nicht möchten, können Sie
      stattdessen <function>setrawcookie</function> verwenden, wenn sie PHP 5
@@ -267,7 +283,7 @@ print_r($_COOKIE);
      </informalexample>
     </para>
     <para>
-     Beim Löschen eines Cookies sollten sie sicherstellen, dass das
+     Beim Löschen eines Cookies sollten Sie sicherstellen, dass das
      Verfallsdatum in der Vergangenheit liegt, um den Mechanismus zum
      Löschen des Cookies im Browser auszulösen. Die folgenden Beispiele
      zeigen, wie die im vorigen Beispiel gesendeten Cookies wieder gelöscht
@@ -279,7 +295,7 @@ print_r($_COOKIE);
       <programlisting role="php">
 <![CDATA[
 <?php
-// Setzen des Verfalls-Zeitpunktes auf 1 Stunde vorher
+// Setzen des Verfalls-Zeitpunktes auf 1 Stunde in der Vergangenheit
 setcookie ("TestCookie", "", time() - 3600);
 setcookie ("TestCookie", "", time() - 3600, "/~rasmus/", ".example.com", 1);
 ?>
@@ -288,11 +304,11 @@ setcookie ("TestCookie", "", time() - 3600, "/~rasmus/", ".example.com", 1);
      </example>
     </para>
     <para>
-     Sie können auch ein Array an Cookies setzen, in dem sie die
-     Array-Schreibweise im Cookie-Namen verwenden. Dadurch werden so viele
+     Sie können auch ein Array von Cookies setzen, in dem Sie die
+     Array-Schreibweise im Cookienamen verwenden. Dadurch werden so viele
      Cookies gesetzt, wie Ihr Array Elemente hat. Sobald das Cookie aber von
-     ihrem Skript gelesen wird, werden alle Werte in ein einziges
-     Array mit dem Cookie-Namen eingelesen:
+     Ihrem Skript gelesen wird, werden alle Werte in ein einziges
+     Array mit dem Cookienamen eingelesen:
     </para>
     <para>
      <example>
@@ -355,8 +371,10 @@ one : cookieone
      </simpara>
     </note>
     <para>
-     Siehe auch <function>header</function>, <function>setrawcookie</function>
-     und <link linkend="features.cookies">Cookies</link>.
+     Siehe auch
+     <function>header</function>,
+     <function>setrawcookie</function> und
+     <link linkend="features.cookies">Cookies</link>.
     </para>
    </refsect1>
   </refentry>
