@@ -1,43 +1,119 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.14 Maintainer: sammywg Status: ready -->
 <!-- splitted from ./de/functions/network.xml, last change in rev 1.11 -->
-<!-- last change to 'ip2long' in en/ tree in rev 1.18 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.26/EN.1.18 -->
   <refentry id="function.ip2long">
    <refnamediv>
     <refname>ip2long</refname>
     <refpurpose>
-     Verwandelt eine gemäß IP-V4-Protokoll angegebene Internet-Adresse
+     Verwandelt eine gemäß IPv4-Protokoll angegebene Internet-Adresse
      vom Punkt-Format in die ausgeschriebene Adress-Angabe
-    </refpurpose> 
+    </refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
       <type>int</type><methodname>ip2long</methodname>
       <methodparam><type>string</type><parameter>ip_address</parameter></methodparam>
      </methodsynopsis>
     <para>
      Die Funktion <function>ip2long</function> erzeugt aus einer im
-     Punkt-Format angegebenen IP-V4-Adresse eine ausgeschriebene
-     Adress-Angabe.
-     <example>
-      <title><function>ip2long</function>-Beispiel:</title>
-      <programlisting role="php">
+     Punkt-Format angegebenen IPv4-Adresse eine ausgeschriebene
+     Adress-Angabe. Ist <parameter>ip_address</parameter> ungültig, wird
+     <literal>-1</literal> zurückgegeben. Beachten Sie, dass <literal>-1</literal>
+     in PHP nicht als &false; evaluiert wird.
+    </para>
+    <note>
+     <para>
+      Seit PHP 5.0.0 gibt <function>ip2long</function> &false; zurück, wenn
+      <parameter>ip_address</parameter> ungültig ist.
+     </para>
+    </note>
+    <example>
+     <title><function>ip2long</function>-Beispiel:</title>
+     <programlisting role="php">
 <![CDATA[
 <?php
-$ip = gethostbyname("www.example.com");
-$out = "Die folgenden URLs sind gleich:<br>\n";
-$out .= "http://www.example.com/, http://".$ip."/, and http://".ip2long($ip)."/<br>\n";
+$ip = gethostbyname('www.example.com');
+$out = "Die folgenden URLs entsprechen sich:<br />\n";
+$out .= 'http://www.example.com/, http://' . $ip . '/, and http://' . sprintf("%u", ip2long($ip)) . "/<br />\n";
 echo $out;
 ?>
 ]]>
-      </programlisting>
-     </example>
+     </programlisting>
+    </example>
+    <para>
+     <note>
+      <para>
+       Da der Integertyp von PHP vorzeichenbehaftet ist und viele IP-Adressen
+       in einen negativen Integerwert aufgelöst werden, sollten Sie die
+       Formatierungsangabe "%u" für <function>sprintf</function> und
+       <function>printf</function> verwenden, um eine Stringrepräsentation der
+       vorzeichenlosen IP-Adresse zu erhalten.
+      </para>
+     </note>
     </para>
     <para>
-     Siehe auch: <function>long2ip</function>.
+     Das zweite Beispiel zeigt, wie eine konvertierte Adresse mittels
+     <function>printf</function> sowohl in PHP4 als auch in PHP 5 ausgegeben
+     werden kann:
+    </para>
+    <example>
+     <title>Eine IP-Adresse anzeigen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$ip   = gethostbyname('www.example.com');
+$long = ip2long($ip);
+
+if ($long == -1 || $long === FALSE) {
+    echo 'Ungültige IP, versuchen Sie es noch einmal';
+} else {
+    echo $ip   . "\n";           // 192.0.34.166
+    echo $long . "\n";           // -1073732954
+    printf("%u\n", ip2long($ip)); // 3221234342
+}
+?>
+]]>
+     </programlisting>
+    </example>
+    <para>
+     <function>ip2long</function> sollte nicht als einzige Form der
+     IP-Validierung verwendet werden. Kombinieren Sie die Funktion mit
+     <function>long2ip</function>:
+    </para>
+    <example>
+     <title>IP-Validierung</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// stellen Sie sicher, dass die IPs gültig sind. Es werden auch unvollständige
+// IPs entsprechend der untenstehenden Erläuterung in das Punktformat konvertiert.
+$ip = long2ip(ip2long("127.0.0.1")); // "127.0.0.1"
+$ip = long2ip(ip2long("10.0.0")); // "10.0.0.0"
+$ip = long2ip(ip2long("10.0.256")); // "10.0.1.0"
+?>
+]]>
+     </programlisting>
+    </example>
+    <para>
+     <function>ip2long</function> funktioniert auch mit unvollständigen
+     IP-Adressen. Lesen Sie <ulink
+     url="&url.ip2long.tech;">&url.ip2long.tech;</ulink>, um weitere Informationen
+     zu erhalten.
+    </para>
+    <note>
+     <para>
+      <function>ip2long</function> gibt in PHP 5 &lt;= 5.0.2 für die IP-Adresse
+      <literal>255.255.255.255</literal> &false; zurück. Der Fehler wurde in
+      PHP 5.0.3 gefixt, so dass wieder <literal>-1</literal> zurückgegeben
+      wird (ebenso wie in PHP 4).
+     </para>
+    </note>
+    <para>
+     Siehe auch
+     <function>long2ip</function> und
+     <function>sprintf</function>.
     </para>
    </refsect1>
   </refentry>
