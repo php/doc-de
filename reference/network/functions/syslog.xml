@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.9 Maintainer: sammywg Status: ready -->
 <!-- splitted from ./de/functions/network.xml, last change in rev 1.2 -->
-<!-- last change to 'syslog' in en/ tree in rev 1.9 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.26/EN.1.9 -->
   <refentry id="function.syslog">
    <refnamediv>
     <refname>syslog</refname>
-    <refpurpose>Erzeugt eine Meldung im System-Logging</refpurpose> 
+    <refpurpose>Erzeugt eine Meldung im System-Logging</refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
+   <refsect1 role="description">
+    &reftitle.description;
      <methodsynopsis>
-      <type>int</type><methodname>syslog</methodname>
+      <type>bool</type><methodname>syslog</methodname>
       <methodparam><type>int</type><parameter>priority</parameter></methodparam>
       <methodparam><type>string</type><parameter>message</parameter></methodparam>
      </methodsynopsis>
@@ -21,11 +19,10 @@
      Status-Meldung, die an die System-Log-Funktion weitergereicht
      wird. Der Parameter <parameter>priority</parameter> ist eine
      Kombination der System-Möglichkeiten und dem Level. Werte hierzu
-     werden im nächsten Abschnitt genannt.  Es verbleibt die zu
-     sendende Nachricht, in der die beiden Zeichen
-     <literal>%m</literal> durch den Fehlertext (strerror) ersetzt
-     werden, der dem Wert <errortype>errno</errortype>
-     entspricht.
+     werden im nächsten Abschnitt genannt. Das verbleibende Argument ist die zu
+     sendende Nachricht, in der die beiden Zeichen <literal>%m</literal> durch
+     den Fehlertext (strerror) ersetzt werden, der dem Wert
+     <errortype>errno</errortype> entspricht.
     </para>
     <para>
      <table>
@@ -37,7 +34,7 @@
        <thead>
         <row>
          <entry>Konstante</entry>
-         <entry>Beschreibung:</entry>
+         <entry>Beschreibung</entry>
         </row>
        </thead>
        <tbody>
@@ -63,7 +60,7 @@
         </row>
         <row>
          <entry>LOG_NOTICE</entry>
-         <entry>Normale, aber wichtige, Meldung.</entry>
+         <entry>Normale, aber wichtige Meldung.</entry>
         </row>
         <row>
          <entry>LOG_INFO</entry>
@@ -86,7 +83,7 @@
 define_syslog_variables();
 // öffne SysLog, schließe die Prozess-ID (PID) ein, sende
 // die Log-Meldungen an die Standard-Fehler-Ausgabe und benutze
-// einen User-definierten Log-Mechanismus.
+// einen userdefinierten Log-Mechanismus.
 openlog("myScripLog", LOG_PID | LOG_PERROR, LOG_LOCAL0);
 
 // etwas Code
@@ -97,7 +94,8 @@ if (authorized_client()) {
     // unerlaubter Client!
     // logge den Zugriff
     $access = date("Y/m/d H:i:s");
-    syslog(LOG_WARNING,"Unauthorisierter Client: $access $REMOTE_ADDR ($HTTP_USER_AGENT)");
+    syslog(LOG_WARNING,"Unauthorisierter Client: $access "
+        . "{$_SERVER['REMOTE_ADDR']} ({$_SERVER['HTTP_USER_AGENT']})");
 }
 
 closelog();
@@ -105,21 +103,30 @@ closelog();
 ]]>
       </programlisting>
      </example>
-     Weiter Informationen zum Benutzer-definierten Log-Handler finden
+     Weitere Informationen zum benutzerdefinierten Loghandler finden
      Sie unter <citerefentry><refentrytitle>syslog.conf</refentrytitle>
-     <manvolnum>5</manvolnum></citerefentry> der Unix-Manual-Seiten.
-     Zusätzliche Informationen zu den SysLog-Möglichkeiten finden Sie
-     in den Man-Pages zu
-     <citerefentry><refentrytitle>syslog</refentrytitle>
+     <manvolnum>5</manvolnum></citerefentry> der Unix-Manpages.
+     Zusätzliche Informationen zu den SysLog-Möglichkeiten und -Optionen finden
+     Sie in den Manpages zu <citerefentry><refentrytitle>syslog</refentrytitle>
      <manvolnum>3</manvolnum></citerefentry> (auf UNIX-Systemen).
     </para>
     <para>
      Unter Windows-NT wird der Syslog-Dienst emuliert, indem der
-     Ereignis-Protokollierdienst genutzt wird.
+     Ereignis-Protokolldienst genutzt wird.
     </para>
+    <note>
+     <para>
+      Die Verwendung von <literal>LOG_LOCAL0</literal> bis
+      <literal>LOG_LOCAL7</literal> für den Parameter
+      <parameter>facility</parameter> von <function>openlog</function> ist
+      unter Windowssystemen nicht möglich.
+     </para>
+    </note>
     <para>
-     Siehe auch <function>define_syslog_variables</function>,
-     <function>openlog</function> und <function>closelog</function>.
+     Siehe auch
+     <function>define_syslog_variables</function>,
+     <function>openlog</function> und
+     <function>closelog</function>.
     </para>
    </refsect1>
   </refentry>
