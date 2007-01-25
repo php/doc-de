@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.26 Maintainer: sammywg Status: ready -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.27 Maintainer: sammywg Status: ready -->
 <refentry id="function.mysql-real-escape-string">
  <refnamediv>
   <refname>mysql_real_escape_string</refname>
@@ -127,31 +127,47 @@ SELECT * FROM users WHERE user='aidan' AND password='' OR ''=''
     <programlisting role="php">
 <![CDATA[
 <?php
-// Variablen absichern
-function quote_smart($value)
-{
-    // Ueberfluessige Maskierungen entfernen
-    if (get_magic_quotes_gpc()) {
-        $value = stripslashes($value);
+
+if (isset($_POST['product_name'])
+    && isset($_POST['product_description'])
+    && isset($_POST['user_id'])) {
+
+ // Verbinden mit der Datenbank
+    $link = mysql_connect('mysql_host', 'mysql_user', 'mysql_password')
+
+    if(!is_resource($link)) {
+
+        echo "Verbindung zum Server fehlgeschlagen\n";
+     // ... den Fehler loggen
+
+    } else {
+
+     // Die Auswirkungen von magic_quotes_gpc zurücksetzen, sofern die
+     // Option eingeschaltet ist
+
+        if(get_magic_quotes_gpc()) {
+            $product_name        = stripslashes($_POST['product_name']);
+            $product_description = stripslashes($_POST['product_description']);
+        } else {
+            $product_name        = $_POST['product_name'];
+            $product_description = $_POST['product_description'];
+        }
+
+     // einen sicheren Query zusammenstellen
+        $query = sprintf("INSERT INTO products (`name`, `description`, `user_id`) VALUES ('%s', '%s', '%d')",
+                    mysql_real_escape_string($product_name, $link),
+                    mysql_real_escape_string($product_description, $link),
+                    $_POST['user_id']);
+
+        mysql_query($query, $link);
+
+        if (mysql_affected_rows($link) > 0) {
+            echo "Produkt eingefuegt\n";
+        }
     }
-    // In Anfuehrungszeichen setzen, sofern keine Zahl
-    // oder ein numerischer String vorliegt
-    if (!is_numeric($value)) {
-        $value = "'" . mysql_real_escape_string($value) . "'";
-    }
-    return $value;
+} else {
+    echo "Fuellen Sie das Formular korrekt aus.\n";
 }
-
-// Verbinden mit der Datenbank
-$link = mysql_connect('mysql_host', 'mysql_user', 'mysql_password')
-    OR die(mysql_error());
-
-// Erstellen eines sicheren Query
-$query = sprintf("SELECT * FROM users WHERE user=%s AND password=%s",
-            quote_smart($_POST['username']),
-            quote_smart($_POST['password']));
-
-mysql_query($query);
 ?>
 ]]>
     </programlisting>
