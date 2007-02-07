@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- EN-Revision: 1.1 Maintainer: timo Status: ready -->
+<!-- $Revision: 1.1 $ -->
+<sect1 id="install.macosx.bundled">
+ <title>Das enthaltene PHP verwenden</title>
+ <simpara>
+  Seit der Version 10.0.0 ist PHP standardmäßig in MacOS X enthalten. Um
+  PHP mit dem Standard-Webserver zu verwenden, müssen nur ein paar Zeilen
+  in der Apache Konfigurationsdatei <filename>httpd.conf</filename> 
+  auskommentiert werden. <acronym>CGI</acronym> und/oder <acronym>CLI</acronym>
+  sind standardmäßig aktiviert (zugänglich über das Terminal-Programm).
+ </simpara>
+ <simpara>
+  Die folgende Anleitung, um PHP zu aktivieren, ermöglicht ein einfaches und
+  schnelles Aufsetzen einer lokalen Entwicklungsumgebung. Es wird
+  <emphasis>dringend empfohlen</emphasis> PHP immer auf dem neusten Stand 
+  zu halten. Wie für die meisten Anwendungen werden auch für PHP regelmäßig
+  neue Version erstellt, um Fehler zu beseitigen und um den Funktionsumfang
+  zu erweitern. Für weitere Informationen sollten Sie die entsprechende
+  MacOS X Installations-Dokumentation lesen. Die folgende Anleitung richtet
+  sich an Anfänger, um eine Standardkonfiguration aufzusetzen. Alle Benutzer
+  sollten angespornt sein neuere Paket-Versionen zu installieren oder selbst zu
+  kompilieren.
+ </simpara>
+ <simpara>
+  Die normale Installation beinhaltet die Aktivierung des mitgelieferten mod_php's
+  für den Apache-Webserver (Standard-Webserver, der über die Systemeinstellungen
+  von MacOS X zugänglich ist) und umfaßt folgende Schritte:
+ </simpara>
+ <para>
+  <orderedlist>
+   <listitem>
+    <simpara>
+     Öffnen Sie die Apache Konfigurationsdatei. Normalerweise finden Sie diese
+     unter: <filename>/etc/httpd/httpd.conf</filename>
+    </simpara>
+    <simpara>
+     Über den <literal>Finder</literal> oder <literal>Spotlight</literal> wird
+     die Datei nur schwer zu finden sein, da sie privat ist und den Rechten des
+     <literal>root</literal>-Benutzers unterliegt.
+    </simpara>
+    <note>
+     <simpara>
+      Ein Weg, um die Datei zu öffnen, ist einen Unix-basierten Texteditor
+      im Terminal, z.B. <literal>nano</literal>, zu verwenden. Da die Datei
+      dem Benutzer root gehört, sollten Sie den <literal>sudo</literal>-Befehl
+      zum Öffnen (mit Root-Rechten) verwenden. Z.B. können Sie folgendes
+      im <literal>Terminal</literal>-Programm eingeben (danach werden Sie nach
+      dem Passwort gefragt):
+      <literal>sudo nano /etc/httpd/httpd.conf</literal>
+     </simpara>
+     <simpara>
+      Nennenswerte Befehle für nano: <literal>^w</literal> (suchen), 
+      <literal>^o</literal> (speichern), und <literal>^x</literal> (schließen) 
+      wobei <literal>^</literal> für die Strg-Taste steht.
+     </simpara>
+    </note> 
+   </listitem>
+   <listitem>
+    <para>
+     Mit einem Texteditor müssen Sie nur die Zeilen, die ähnlich wie die folgenden
+     aussehen, einkommentieren (durch entfernen von #). Die beiden Zeilen sind 
+     nicht selten von einander getrennt, daher finden Sie beide in der Datei:
+     <screen>
+<![CDATA[
+# LoadModule php4_module libexec/httpd/libphp4.so
+
+# AddModule mod_php4.c
+]]>
+     </screen>
+      Beachten Sie die Dateipfade. Wenn Sie zukünftig PHP selbst kompilieren, sollten die
+      beiden Dateien ersetzt oder wieder auskommentiert werden.
+    </para>
+   </listitem>
+   <listitem>
+    <para>
+     Stellen Sie sicher, dass die gewünschten Dateiendungen durch PHP geparst 
+     werden (z.B.: .php .html und .inc)
+    </para>
+    <para>
+     Durch die bereits in der Datei <filename>httpd.conf</filename> (ab MacOS Panther), 
+     enthaltenen Angaben, werden Dateien mit der Endung <filename>.php</filename>
+     nach dem Aktivieren von PHP automatisch geparst.
+     <screen>
+<![CDATA[
+<IfModule mod_php4.c>
+    # Wenn PHP aktiviert wurde, werden .php und .phps Dateien berücksichtigt.
+    AddType application/x-httpd-php .php
+    AddType application/x-httpd-php-source .phps
+
+    # Da die meisten Benutzer index.php verwenden möchten, aktivieren
+    # wir ebenso automatisch die index.php
+    <IfModule mod_dir.c>
+        DirectoryIndex index.html index.php
+    </IfModule>
+</IfModule>
+]]>
+     </screen>
+    </para>
+   </listitem>
+   <listitem>
+    <simpara>
+     Stellen Sie sicher, dass durch DirectoryIndex die gewünschten richtigen
+     Index-Dateien geladen werden.
+    </simpara>
+    <simpara>
+     Das kann ebenfalls in <filename>httpd.conf</filename> definiert werden. 
+     Normalerweise wird <filename>index.php</filename> und <filename>index.html</filename> 
+     verwendet. Standardmäßig ist <filename>index.php</filename> aktiviert, wie oben
+     bereits gezeigt. Passen Sie es wie gewünscht an.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Pfad zur &php.ini; setzen oder den Standard verwenden
+    </simpara>
+    <simpara>
+     Der Standardpfad unter MacOS X ist <filename>/usr/local/php/php.ini</filename> was durch
+     einen Aufruf von <function>phpinfo</function> belegt werden sollte. Wenn keine &php.ini; 
+     angegeben ist, verwendet PHP die Standardwerte. 
+     Lesen Sie dazu die entsprechenden FAQs:
+     <link linkend="faq.installation.phpini">finding php.ini</link>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Setzen des <literal>DocumentRoot</literal>'s
+    </simpara>
+    <simpara>
+     Das ist das Wurzelverzeichnis für alle Web-Dateien. Dateien in diesem Verzeichnis
+     werden durch den Webserver ausgeliefert. PHP-Dateien werden zuvor geparst bevor
+     sie an einen Browser ausgeliefert werden. Der standardmäßig gesetzte Pfad ist
+     <filename>/Library/WebServer/Documents</filename> und kann in der <filename>httpd.conf</filename>
+     auf einen beliebigen Pfad gesetzt werden. Alternativ ist der standardmäßige Pfad 
+     zum DocumentRoot für die einzelnen Benutzer:
+     <filename>/Users/IHR_BENUTZER_NAME/Sites</filename>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Erstellen Sie eine <function>phpinfo</function> Datei
+    </simpara>
+    <para>
+     Die <function>phpinfo</function>-Funktion zeigt Informationen von PHP an. 
+     Erstellen Sie eine Datei im Verzeichnis DocumentRoot mit dem folgendne Inhalt:
+     <programlisting role="php">
+<![CDATA[
+<?php phpinfo(); ?>
+]]>
+     </programlisting>
+    </para> 
+   </listitem>
+   <listitem>
+    <simpara>
+     Starten Sie den Apache neu und laden Sie die eben erzeugte PHP-Datei
+    </simpara>
+    <simpara>
+     Um neu zu starten, können Sie entweder <literal>sudo apachectl graceful</literal> im
+     Terminal aufrufen oder die Stop/Start Option des "Personal Web Server" in den
+     MacOS X Systemeinstellungen verwenden. Standardmäßig sollte folgende URL zum
+     laden von lokalen Dateien im Webbrowser genügen:
+     <filename>http://localhost/info.php</filename> 
+     Alternativ, um Dateien aus dem DocumentRoot eines lokalen Benutzers zu laden: 
+     <filename>http://localhost/~IHR_BENUTZER_NAME/info.php</filename>
+    </simpara>
+   </listitem>
+  </orderedlist>
+ </para>
+ <simpara>
+  Entsprechend enden <acronym>CLI</acronym> (oder <acronym>CGI</acronym> in älteren 
+  Versionen) mit <filename>php</filename> und verwenden <filename>/usr/bin/php</filename>. 
+  Öffnen Sie das Terminal, lesen Sie das Kapitel
+  <link linkend="features.commandline">PHP auf der Kommandozeile</link> des 
+  PHP-Handbuchs und führen Sie <literal>php -v</literal> aus, um die PHP Version des PHP
+  Binärprogramms zu sehen. Ein Aufruf von <function>phpinfo</function> enthält diese 
+  Informationen ebenfalls.
+ </simpara>
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
