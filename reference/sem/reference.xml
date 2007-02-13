@@ -1,98 +1,88 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.15 Maintainer: hholzgra Status: ready -->
+<!-- Purpose: fileprocess.process -->
+<!-- Membership: bundled -->
+
  <reference id="ref.sem">
-  <title>Semaphor und Shared Memory Funktionen</title>
+  <title>Semaphore, Shared Memory und Interprozesskommunikation Funktion</title>
   <titleabbrev>Semaphore</titleabbrev>
 
   <partintro>
-   <para>
-    Dieses Modul bietet Unterstützung für die Nutzung von Semaphoren
-    und gemeinamen Speichersegmenten mit Hilfe der UNIX System V
-    Mechanismen zur Interprozess-Kommunikation.
-   </para>
-   <para>
-    Mit Hilfe von Semaphoren kann der exklusive Zugriff auf Resourcen
-    eines Systems sichergestellt oder die Anzahl der Prozesse begrenzt
-    werden, die gleichzeitig eine bestimmte Systemresource nutzen.
-   </para>
-   <para>
-    Mit Hilfe gemeinsamer Speichersegmente (shared memory) können 
-    system-globale Variablen angelegt und bereitgestellt werden. 
-    Diese Speicherbereiche stehen allen Prozessen des Systems,
-    insbesondere aber allen parallel laufenden PHP-Instanzen 
-    zum Datenaustausch zur Verfügung. Beachten Sie bitte, dass gemeinsame
-    Speichersegmente keinen Schutze vor konkurrierenden gleichzeitigen
-    Zugriffen bieten. Benutzen Sie Semaphore für die Koordination
-    solcher Zugriffe.
-   </para>
-   <para>
-    <table>
-     <title>Limits of Shared Memory by the Unix OS</title>
-     <tgroup cols="2">
-      <tbody>
-       <row>
-        <entry>SHMMAX</entry> 
-        <entry>
-         Maximalgröße eines gemeinsamen Speicherbereichs, 
-         üblich sind 131072 Byte (128KB)
-        </entry>
-       </row>
-       <row>
-        <entry>SHMMIN</entry>
-        <entry>
-         Minimalgröße eines gemeinsamen Speicherbereichs,
-         normalerweise 1 Byte
-        </entry>
-       </row>
-       <row>
-        <entry>SHMMNI</entry> 
-        <entry>
-         maximale Anzahl unterschiedlicher Speichersegmente,
-         üblich sind 100
-        </entry>
-       </row>
-       <row>
-        <entry>SHMSEG</entry>
-        <entry>
-         Anzahl der Speichersegmente, die ein einzelner Prozess
-         einbinden darf, üblich sind 6
-        </entry>
-       </row>
-      </tbody>
-     </tgroup>
-    </table>
-   </para>
-   <para>
-    <example>
-     <title>Koordinierter Zugriff auf gemeinsamen Speicher</title>
-      <programlisting role="php">
-&lt;?php
-// gemeinsames Speichersegment beschaffen
-if(! ($mkey = shm_attach(0x2328,1024,OctDec("666")))) 
-{ echo "shmem_attach fehlgeschlagen&lt;br>\n"; exit;}
+   <section id="sem.intro">
+    &reftitle.intro;
+    <para>
+     Diese Extension bietet Funktionen zur Nutzung der Unix System V IPC
+     Funktionen. Sie unterstützt Semaphore, Shared Memory und den 
+     Nachrichtenaustausch zwischen Prozessen (Inter Process Communication - ICP).
+    </para>
+    <para>
+     Semaphore können genutzt werden um den exklusiven Zugriff auf
+     eine gemeinsame Resource zu koordinieren oder um die Anzahl
+     der gleichzeitigen Zugriffe auf aine gemeinsame Resource zu
+     limitieren.
+    </para>
+    <para>
+     Die Extension bietet auch Funktionen zur Nutzung von Shared
+     Memory. Im Shared Memory lassen sich prozessübergreifend 
+     globale Variablen anlegen. Verschiedene PHP Prozesse sowie
+     in anderen Sprachen (z.B. Perl, C, ...) geschriebene Anwendungen 
+     können auf diese Daten zugreifen und so einen globalen 
+     Datenaustausch bereitstellen. Beachten Sie das Shared Memory
+     alleine keinen Schutz gegen konkurierende Zugriffe bietet, 
+     dieser kann allerdings mit Hilfe von Semaphoren sichergestellt
+     werden.
+     <table>
+      <title>Durch Unix vorgegebene Shared Memory Maximalwerte</title>
+      <tgroup cols="2">
+       <tbody>
+        <row>
+         <entry>SHMMAX</entry> 
+         <entry>maximale Größe eines Shared Memory Segments, üblich sind 131072 Bytes</entry>
+        </row>
+        <row>
+         <entry>SHMMIN</entry>
+         <entry>minimale Größe eines Shared Memory Segments, üblich ist 1 Byte</entry>
+        </row>
+        <row>
+         <entry>SHMMNI</entry> 
+         <entry>maximale Anzahl von Shared Memory Segmente auf dem System, üblich sind 100</entry>
+        </row>
+        <row>
+         <entry>SHMSEG</entry>
+         <entry>maximale Anzahl von Shared Memory Segmenten je Prozess, üblich sind 6</entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </table>
+    </para>
+    <para>
+     Die Funktionen zum Nachrichtenaustausch können genutzt werden um 
+     Nachrichten an andere Prozesse zu verschicken oder zu empfangen.
+     Sie bieten einen einfachen und effektiven Weg zum Datenaustausch
+     zwischen Prozessen ohne auf Alternativen wie Unix Domain Sockets
+     zurückgreifen zu müssen.
+    </para>
+    &note.no-windows.extension;
+   </section>
 
-// Semaphor für Zugriffskoordination auf 
-// Speichersegment beschaffen
-if(! ($skey = sem_get(0x2328,1,OctDec("666")))) 
-{ echo "sem_get fehlgeschlagen&lt;br>\n"; exit;}
+   <section id="sem.requirements">
+    &reftitle.required;
+    &no.requirement;
+   </section>
 
-// Zugriff anfordern
-if(! sem_acquire($skey))
-{ echo "sem_acquire fehlgeschlagen&lt;br>\n"; exit;}
+   &reference.sem.configure;
+   &reference.sem.ini;
 
-// Wert lesen, aktualisieren und schreiben
-$val = @shm_get_var($mkey,1);
-if($val===false) $val=1; else $val++;
-print "new value is $val&lt;br>\n";
-shm_put_var($mkey,1,$val);
+   <section id="sem.resources">
+    &reftitle.resources;
+    <para>
+     
+    </para>
+   </section>
 
-// Zugriff freigeben
-sem_release($skey);
-?&gt;
-     </programlisting>
-    </example>
-   </para>
+   &reference.sem.constants;
+
   </partintro>
 
 &reference.sem.functions;
@@ -114,5 +104,7 @@ sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
-
