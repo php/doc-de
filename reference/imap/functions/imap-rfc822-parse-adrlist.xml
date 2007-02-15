@@ -1,75 +1,135 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
-<!-- splitted from ./de/functions/imap.xml, last change in rev 1.2 -->
-<!-- last change to 'imap-rfc822-parse-adrlist' in en/ tree in rev 1.2 -->
-  <refentry id="function.imap-rfc822-parse-adrlist">
-   <refnamediv>
-    <refname>imap_rfc822_parse_adrlist</refname>
-    <refpurpose>Parsen eines Adress-Strings</refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>array</type><methodname>imap_rfc822_parse_adrlist</methodname>
-      <methodparam><type>string</type><parameter>address</parameter></methodparam>
-      <methodparam><type>string</type><parameter>default_host</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Diese Funktion zerlegt einen Adress-String gemäß
-     <ulink url="&url.rfc;rfc822.html">RFC822</ulink> und liefert
-     ein Array von Objekten mit einem Eintrag je erkannter Adresse.
-     Die Address-Objekte bestehen dabei jeweils aus den folgenden
-     vier String-Elementen:
-    </para>
-    <para>
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        mailbox - Name des Postfachs (Username)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        host - Hostname
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        personal - Realer Name des Empfängers
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        adl - at domain source route
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <para>
-     <example>
-      <title>
-       <function>imap_rfc822_parse_adrlist</function> Beispiel
-      </title>
-      <programlisting role="php">
-$address_string = "Hartmut Holzgraefe &lt;hartmut@php.net>,
-                   postmaster@somedomain.net, root";
-$address_array  = imap_rfc822_parse_adrlist ($address_string,
-                                             "somedomain.net");
-if (! is_array ($address_array)) die ("somethings wrong\n");
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.1.0 Maintainer: hholzgra Status: ready -->
+<refentry id="function.imap-rfc822-parse-adrlist">
+ <refnamediv>
+  <refname>imap_rfc822_parse_adrlist</refname>
+  <refpurpose>Zerlegt einen Mailadressstring</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>imap_rfc822_parse_adrlist</methodname>
+   <methodparam><type>string</type><parameter>address</parameter></methodparam>
+   <methodparam><type>string</type><parameter>default_host</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Zerlegt den Ã¼bergebenen Mailadressstring in einzelne
+   Mailadressen gemÃ¤ÃŸ <ulink url="&url.rfc;2822">RFC2822</ulink>.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>address</parameter></term>
+     <listitem>
+      <para>
+       Ein String aus Mailadressen
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>default_host</parameter></term>
+     <listitem>
+      <para>
+       Ein Defaulthostname
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Ein Array aus Objekten mit folgenden Properties 
+   wird zurÃ¼ckgegeben:
+  </para>
+  <para>
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      mailbox  - der Postfach- bzw. Benutzername
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      host - der Hostname
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      personal - der tatsÃ¤chliche Name des Benutzers
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      adl - at domain source route
+     </simpara>
+    </listitem>
+   </itemizedlist>
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>imap_rfc822_parse_adrlist</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
 
-reset ($address_array);
-while (list( $key, $val) = each ($address_array)) {
-    print "mailbox : " . $val->mailbox  . "&lt;br>\n";
-    print "host    : " . $val->host     . "&lt;br>\n";
-    print "personal: " . $val->personal . "&lt;br>\n";
-    print "adl     : " . $val->adl      . "&lt;p>\n";
+$address_string = "Joe Doe <doe@example.com>, postmaster@example.com, root";
+$address_array  = imap_rfc822_parse_adrlist($address_string, "example.com");
+if (!is_array($address_array) || count($address_array) < 1) {
+    die("something is wrong\n");
 }
-      </programlisting>
-     </example>
-    </para>
-   </refsect1>
-  </refentry>
+
+foreach ($address_array as $id => $val) {
+    echo "# $id\n";
+    echo "  mailbox : " . $val->mailbox . "\n";
+    echo "  host    : " . $val->host . "\n";
+    echo "  personal: " . $val->personal . "\n";
+    echo "  adl     : " . $val->adl . "\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+# 0
+  mailbox : doe
+  host    : example.com
+  personal: Joe Doe
+  adl     : 
+# 1
+  mailbox : postmaster
+  host    : example.com
+  personal: 
+  adl     : 
+# 2
+  mailbox : root
+  host    : example.com
+  personal: 
+  adl     :
+
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>imap_rfc822_parse_headers</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
