@@ -1,63 +1,102 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
-<!-- splitted from ./de/functions/imap.xml, last change in rev 1.2 -->
-<!-- last change to 'imap-reopen' in en/ tree in rev 1.2 -->
-  <refentry id="function.imap-reopen">
-   <refnamediv>
-    <refname>imap_reopen</refname>
-    <refpurpose>Wechselt das aktuelle Postfach der Verbindung</refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>int</type><methodname>imap_reopen</methodname>
-      <methodparam><type>string</type><parameter>imap_stream</parameter></methodparam>
-      <methodparam><type>string</type><parameter>mailbox</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>flags</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Mit Hilfe dieser Funktion kann auf IMAP- und NNTP-Servern ein
-     anderes Postfach als das bisher aktuelle ausgewählt werden.
-    </para>
-    <para>
-     Der optionale Parameter <parameter>flags</parameter> kann sich
-     aus den folgenden Bitmasken zusammensetzen:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        OP_READONLY - Auf das Postfach soll nur lesend zugegriffen
-        werden
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        OP_ANONYMOUS - Bei NNTP-Verbindungen wird die persönliche
-        .newsrc Datei nicht aktualisiert
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        OP_HALFOPEN - bei IMAP- oder NNTP-Servern wird in den
-        allgemeinen Verbindungsstatus ohne aktuelles Postfach
-        zurückgeschaltet
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        CL_EXPUNGE - beim Schließen der Verbindung werden alle zum
-        Löschen vorgemerkte Nachrichten endgültig gelöscht (siehe auch
-        <function>imap_delete</function> und
-        <function>imap_expunge</function>)
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <para>
-     Liefert &true; bei Erfolg und &false; bei Fehlern.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.11 Maintainer: hholzgra Status: ready -->
+<refentry id="function.imap-reopen">
+ <refnamediv>
+  <refname>imap_reopen</refname>
+  <refpurpose>Wechselt das aktuelle Postfach der Verbindung</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>imap_reopen</methodname>
+   <methodparam><type>resource</type><parameter>imap_stream</parameter></methodparam>
+   <methodparam><type>string</type><parameter>mailbox</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>options</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>imap_reopen</function> wechselt das aktuelle Postfach eines
+   IMAP oder NNTP Servers.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &imap.imap-stream.description;
+    <varlistentry>
+     <term><parameter>mailbox</parameter></term>
+     <listitem>
+      <para>
+       Der Postfachname, siehe <function>imap_open</function>
+       fÃ¼r weitere Informationen. 
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>options</parameter></term>
+     <listitem>
+      <para>
+       Der Parameter <parameter>options</parameter> kann als Bitmaske 
+       einen oder mehrere der folgenden Werte enthalten:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          <constant>OP_READONLY</constant> - Ã¶ffnet das Postfach nur fÃ¼r Lesezugriffe
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>OP_ANONYMOUS</constant> -  
+          die <filename>.newsrc</filename> Datei weder lesen noch aktualisieren (nur NNTP)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>OP_HALFOPEN</constant> - Verbindung aufbauen ohne ein konkretes 
+          Postfach zu Ã¶ffnen (nur IMAP und NNTP)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>CL_EXPUNGE</constant> - zum LÃ¶schen vorgemerkte Nachrichten
+          werden beim SchlieÃŸen der Verbindung endgÃ¼ltig gelÃ¶scht
+          (siehe auch <function>imap_delete</function> und
+          <function>imap_expunge</function>)
+         </simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>imap_reopen</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$mbox = imap_open("{imap.example.org:143}INBOX", "username", "password") or die(implode(", ", imap_errors()));
+// ...
+imap_reopen($mbox, "{imap.example.org:143}INBOX.Sent") or die(implode(", ", imap_errors()));
+// ..
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
