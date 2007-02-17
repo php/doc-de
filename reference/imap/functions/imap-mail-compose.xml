@@ -1,47 +1,103 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
-<!-- splitted from ./de/functions/imap.xml, last change in rev 1.8 -->
-<!-- last change to 'imap-mail-compose' in en/ tree in rev 1.33 -->
-  <refentry id="function.imap-mail-compose">
-   <refnamediv>
-    <refname>imap_mail_compose</refname>
-    <refpurpose>
-     Erzeugt eine MIME-Nachricht aus gegebenen Header- und Body-Teilen
-    </refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>string</type><methodname>imap_mail_compose</methodname>
-      <methodparam><type>array</type><parameter>envelope</parameter></methodparam>
-      <methodparam><type>array</type><parameter>body</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-<!--
-envelope
- remail
- return_path
- date
- from
- reply_to
- to
- cc
- bcc
- message_id
-body
- type
- encoding
- subtype
- id
- contents.data
- lines
- bytes
- md5
--->
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.8 Maintainer: hholzgra Status ready -->
+<refentry id="function.imap-mail-compose">
+ <refnamediv>
+  <refname>imap_mail_compose</refname>
+  <refpurpose>Erzeugt eine MIME-Nachricht aus Kopf- und Nachrichtenelementen</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>imap_mail_compose</methodname>
+   <methodparam><type>array</type><parameter>envelope</parameter></methodparam>
+   <methodparam><type>array</type><parameter>body</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Erzeugt eine MIME-konforme Nachricht aus den in 
+   <parameter>envelope</parameter> gegebenen Kopfelementen
+   und den Nachrichtenteilen aus <parameter>body</parameter>.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>envelope</parameter></term>
+     <listitem>
+      <para>
+       Ein assoziatives Array von Kopfzeilenfeldern und Inhalten
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>body</parameter></term>
+     <listitem>
+      <para>
+       Die Teile des Mailkörpers als indiziertes Array.
+      </para>
+      <para>
+       Jeder Teil des Mailkörpers ist ein assoziatives Array
+       mit folgenden möglichen Elementen: "type", "encoding", 
+       "subtype", "description" und "contents.data"
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Liefert eine MIME-konforme Nachricht
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>imap_mail_compose</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$envelope["from"]= "joe@example.com";
+$envelope["to"]  = "foo@example.com";
+$envelope["cc"]  = "bar@example.com";
+
+$part1["type"] = TYPEMULTIPART;
+$part1["subtype"] = "mixed";
+
+$filename = "/tmp/imap.c.gz";
+$fp = fopen($filename, "r");
+$contents = fread($fp, filesize($filename));
+fclose($fp);
+
+$part2["type"] = TYPEAPPLICATION;
+$part2["encoding"] = ENCBINARY;
+$part2["subtype"] = "octet-stream";
+$part2["description"] = basename($filename);
+$part2["contents.data"] = $contents;
+
+$part3["type"] = TYPETEXT;
+$part3["subtype"] = "plain";
+$part3["description"] = "description3";
+$part3["contents.data"] = "contents.data3\n\n\n\t";
+
+$body[1] = $part1;
+$body[2] = $part2;
+$body[3] = $part3;
+
+echo nl2br(imap_mail_compose($envelope, $body));
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
