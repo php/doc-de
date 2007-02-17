@@ -1,126 +1,140 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
-<!-- splitted from ./de/functions/imap.xml, last change in rev 1.2 -->
-<!-- last change to 'imap-getmailboxes' in en/ tree in rev 1.2 -->
-  <refentry id="function.imap-getmailboxes">
-   <refnamediv>
-    <refname>imap_getmailboxes</refname>
-    <refpurpose>
-     Liefert detailierte Informationen über eine Auswahl von Postfächern
-    </refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>array</type><methodname>imap_getmailboxes</methodname>
-      <methodparam><type>int</type><parameter>imap_stream</parameter></methodparam>
-      <methodparam><type>string</type><parameter>ref</parameter></methodparam>
-      <methodparam><type>string</type><parameter>pat</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>imap_getmailboxes</function> liefert ein Array zurück,
-     das für jedes gefundene Postfach ein Objekt mit de Attributen
-     <parameter>name</parameter>, <parameter>delimiter</parameter>
-     und <parameter>attributes</parameter> enthält.
-     <parameter>name</parameter> enthält dabei den vollständigen
-     Pfadnamen des Postfachs, <parameter>delimiter</parameter> das
-     verwendete Trennzeichen zwischen Postfach-Ebenen,
-     und <parameter>attributes</parameter> besteht aus einer Bitmaske,
-     die einzelne Eigenschaften des Postfachs beschreibt:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        LATT_NOINFERIORS - es existieren keine weiteren Postfächer
-        unterhalb dieses Postfachs
-       </simpara>
-      </listitem>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.10 Maintainer: hholzgra Status: ready -->
+<refentry id="function.imap-getmailboxes">
+ <refnamediv>
+  <refname>imap_getmailboxes</refname>
+  <refpurpose>Liefert detailierte Informationen zu allen verfÃ¼gbaren PostfÃ¤chern</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>imap_getmailboxes</methodname>
+   <methodparam><type>resource</type><parameter>imap_stream</parameter></methodparam>
+   <methodparam><type>string</type><parameter>ref</parameter></methodparam>
+   <methodparam><type>string</type><parameter>pattern</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Liefert Postfachinformationen
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &imap.imap-stream.description;
+    <varlistentry>
+     <term><parameter>ref</parameter></term>
      <listitem>
-       <simpara>
-        LATT_NOSELECT - Dieses "Postfach" ist nur ein Behälter für
-        weitere Postfächer.
-       </simpara>
-       <simpara>
-        Es kann selbst keine Nachrichten enthalten und somit auch
-        nicht geöffnet werden.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LATT_MARKED - Dieses Postfach wurde markiert (nur bei UW-IMAPD).
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LATT_UNMARKED - Dieses Postfach wurde nicht markiert (nur bei UW-IMAPD).
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <para>
-     Namen von Postfächern, die Zeichen außerhalb des druckbaren
-     ASCII-Bereiches enthalten, können mit Hilfe der Funktion
-     <function>imap_utf7_decode</function> dekodiert werden.
-    </para>
-    <para>
-     <parameter>ref</parameter> sollte normalerweise nur die
-     Spezifikation des Servers in der in
-     <function>imap_open</function> beschriebenen Form enthalten.
-     Über <parameter>pat</parameter> kann ein Startpunkt innerhalb der
-     Postfach-Hierachie vorgegeben werden. Wünschen Sie die Ausgabe
-     aller Postfächer, so übergeben Sie als <parameter>pat</parameter>
-     '*'.
-    </para>
-    <para>
-     Die Zeichen '*' und '%' haben innerhalb von
-     <parameter>pattern</parameter> eine besondere Bedeutung:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        '*' - entspricht beliebig vielen Zeichen (incl. des
-        Trennzeichens zw. Postfach-Namen)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        '%' - entspricht beliebig vielen Zeichen innerhalb eines
-        Postfach-Namens
-       </simpara>
-      </listitem>
-     </itemizedlist>
-     So liefert "*" alle verfügbaren Postfächer auf dem Server,
-     "INBOX/*" dementsprechend alle persönlichen Postfächer des
-     aktuellen Benutzers.  "%" dagegen liefert nur die
-     Toplevel-Postfächer des Servers, "INBOX/%" dementsprechend nur
-     die Toplevel-Postfächer des aktuellen Benutzers.  Ein '%' am Ende
-     von <parameter>pattern</parameter> entspricht zusätzlich auch
-     allen Zeichenfolgen, die mit dem Trennzeichen beginnen.
-    </para>
-    <para>
-     <example>
-      <title><function>imap_getmailboxes</function> Beispiel</title>
-      <programlisting role="php">
-$mbox = imap_open ("{your.imap.host}", "username", "password", OP_HALFOPEN)
-    || die ("can't connect: " . imap_last_error());
+      <para>
+       Spezifikation des gewÃ¼nschten Servers wie in 
+       <function>imap_open</function> beschrieben.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>pattern</parameter></term>
+     <listitem>
+      <para>
+       Legt fest ab welchem Punkt der Postfachhierachie gesucht
+       werden soll.
+      </para>
+      <para>
+       Zwei spezielle Zeichen kÃ¶nnen als Teil des Suchmusters
+       <parameter>pattern</parameter> benutzt werden: '*' und '%'.
+       Mit '*' werden alle PostfÃ¤cher angefordert, so kÃ¶nnen Sie
+       z.B. nur '*' als <parameter>pattern</parameter> Ã¼bergeben
+       und erhalten eine Ãœbersicht aller auf dem Server verfÃ¼gbarer
+       PostfÃ¤cher. '%' liefert alle PostfÃ¤cher auf einer Hierachieebene
+       aber nicht die tiefer liegenden PostfÃ¤cher. Ein einfaches '%'
+       als <parameter>pattern</parameter> liefert nur die PostfÃ¤cher
+       der obersten Ebene, '~/mail/%' z.B. liefert auf einem 
+       UW_IMAP Server alle PostfÃ¤cher des ~/mail Verzeichnisses 
+       aber nicht deren UnterpostfÃ¤cher.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Returns an array of objects containing mailbox information. Each
+   object has the attributes <parameter>name</parameter>, specifying
+   the full name of the mailbox; <parameter>delimiter</parameter>,
+   which is the hierarchy delimiter for the part of the hierarchy
+   this mailbox is in; and
+   <parameter>attributes</parameter>. <parameter>Attributes</parameter>
+   is a bitmask that can be tested against:
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      <constant>LATT_NOINFERIORS</constant> - innerhalb dieses Postfachs
+      existieren keine weiteren UnterpostfÃ¤cher 
+     </simpara>
+    </listitem>
+   <listitem>
+     <simpara>
+      <constant>LATT_NOSELECT</constant> - dieses Postfach enthÃ¤lt
+      nur UnterpostfÃ¤cher aber keine Nachrichten, es kann nicht 
+      geÃ¶ffnet werden
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      <constant>LATT_MARKED</constant> - dieses Postfach ist markiert
+      (nur bei UW-IMAPD)
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      <constant>LATT_UNMARKED</constant> - dieses Postfach ist nicht markiert
+      (nur bei UW-IMAPD)
+     </simpara>
+    </listitem>
+   </itemizedlist>
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>imap_getmailboxes</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$mbox = imap_open("{imap.example.org}", "username", "password", OP_HALFOPEN)
+      or die("can't connect: " . imap_last_error());
 
-$list = imap_getmailboxes ($mbox, "{your.imap.host}", "*");
-if (is_array ($list)) {
-    reset ($list);
-    while (list( $key, $val) = each ($list)) {
-        print "($key) ";
-        print imap_utf7_decode ($val->name) . ",";
-        print "'" . $val->delimiter . "',";
-        print $val->attributes . "&lt;br>\n";
+$list = imap_getmailboxes($mbox, "{imap.example.org}", "*");
+if (is_array($list)) {
+    foreach ($list as $key => $val) {
+        echo "($key) ";
+        echo imap_utf7_decode($val->name) . ",";
+        echo "'" . $val->delimiter . "',";
+        echo $val->attributes . "<br />\n";
     }
 } else {
-    print "imap_getmailboxes failed: " . imap_last_error() . "\n";
+    echo "imap_getmailboxes failed: " . imap_last_error() . "\n";
 }
-imap_close ($mbox);
-      </programlisting>
-     </example>
-    </para>
-   </refsect1>
-  </refentry>
+
+imap_close($mbox);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>imap_getsubscribed</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
