@@ -1,35 +1,161 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.9 $ -->
-<!-- splitted from ./de/functions/mssql.xml, last change in rev 1.16 -->
-<!-- last change to 'mssql-bind' in en/ tree in rev 1.24 -->
-<!-- EN-Revision: 1.8 Maintainer: samesch Status: ready -->
-<!-- OLD-Revision: 1.28/EN.1.24 -->
+<!-- $Revision: 1.10 $ -->
+<!-- EN-Revision: 1.11 Maintainer: samesch Status: ready -->
 <refentry id='function.mssql-bind'>
  <refnamediv>
   <refname>mssql_bind</refname>
   <refpurpose>Fügt einer Stored Procedure oder einer Remote Stored Procedure einen Parameter hinzu</refpurpose>
  </refnamediv>
- <refsect1>
-  <title>Beschreibung</title>
+
+ <refsect1 role="description">
+  &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>mssql_bind</methodname>
-   <methodparam><type>resource</type><parameter>stmt</parameter></methodparam>
-   <methodparam><type>string</type><parameter>param_name</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter role="reference">var</parameter></methodparam>
-   <methodparam><type>int</type><parameter>type</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>is_output</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>is_null</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>maxlen</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>Anweisungskennung</parameter></methodparam>
+   <methodparam><type>string</type><parameter>Param_Name</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter role="reference">Var</parameter></methodparam>
+   <methodparam><type>int</type><parameter>Typ</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>ist_output</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>ist_null</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>maxLänge</parameter></methodparam>
   </methodsynopsis>
-
-  &warn.undocumented.func;
-
   <para>
-   Siehe auch <function>mssql_execute</function>,
-   <function>mssql_free_statement</function> und
-   <function>mssql_init</function>.
+   Fügt einer Stored Procedure oder einer Remote Stored Procedure einen
+   Parameter hinzu.
   </para>
  </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>Anweisungskennung</parameter></term>
+     <listitem>
+      <para>
+       Der mittels <function>mssql_init</function> erhaltene
+       Bezeichner der Anweisung
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Param_Name</parameter></term>
+     <listitem>
+      <para>
+       Der Name des Parameters als Zeichenkette
+      </para>
+      <note>
+       <para>
+        Sie müssen Sie das Zeichen <literal>@</literal> der Syntax von T-SQL
+        entsprechend einfügen. Eine Erklärung finden Sie bei
+        <function>mssql_execute</function>.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Var</parameter></term>
+     <listitem>
+      <para>
+       Die PHP-Variable, an die Sie den MS SQL-Parameter binden. Sie können
+       sie als Wert übergeben oder als Referenz, um die OUTPUT- und
+       RETVAL-Werte nach der Ausführung der Prozedur abzurufen.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Typ</parameter></term>
+     <listitem>
+      <para>
+       Mögliche Werte: <constant>SQLTEXT</constant>,
+       <constant>SQLVARCHAR</constant>, <constant>SQLCHAR</constant>,
+       <constant>SQLINT1</constant>, <constant>SQLINT2</constant>,
+       <constant>SQLINT4</constant>, <constant>SQLBIT</constant>,
+       <constant>SQLFLT4</constant>, <constant>SQLFLT8</constant>,
+       <constant>SQLFLTN</constant>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>ist_output</parameter></term>
+     <listitem>
+      <para>
+       Ob der Parameter ein OUTPUT-Parameter ist oder nicht. Falls er ein
+       OUTPUT-Parameter ist uns Sie das nicht angeben, wird er wie ein
+       normaler Eingabeparameter behandelt und es wird keine Fehlermeldung
+       ausgegeben.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>ist_null</parameter></term>
+     <listitem>
+      <para>
+       Ob der Parameter &null; ist oder nicht. Es genügt nicht, den Wert
+       &null; als <parameter>Var</parameter> zu übergeben.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>maxLänge</parameter></term>
+     <listitem>
+      <para>
+       Wird bei char/varchar-Werten verwendet. Sie müssen die Länge der Daten
+       angeben. Falls der Parameter vom Typ varchar(50) ist, muss also der
+       <parameter>Typ</parameter> <constant>SQLVARCHAR</constant> und dieser
+       Wert <literal>50</literal> sein.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_bind</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$verbindung = mssql_connect($DBSERVER, $DBUSER, $DBPASS);
+mssql_select_db($DB, $verbindung);
+
+$sp = mssql_init("WDumpAdd"); // Name der Stored Procedure
+
+mssql_bind($sp, "@produktname", stripslashes($neuesprodukt), SQLVARCHAR, false, false, 150);
+mssql_bind($sp, "@anzahl", stripslashes($neueanzahl), SQLVARCHAR, false, false, 50);
+
+mssql_execute($sp);
+mssql_close($verbindung);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mssql_execute</function></member>
+    <member><function>mssql_free_statement</function></member>
+    <member><function>mssql_init</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
 </refentry>
 
 <!-- Keep this comment at the end of the file
