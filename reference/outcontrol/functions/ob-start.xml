@@ -1,37 +1,163 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.20 Maitainer: hholzgra Status: ready -->
   <refentry id="function.ob-start">
    <refnamediv>
-    <refname>ob_start</refname>
-    <refpurpose>
-                 Einschalten der Pufferung von Ausgaben
-    </refpurpose>
+    <refname>ob_start</refname> 
+    <refpurpose>Ausgabepufferung aktivieren</refpurpose>
    </refnamediv>
    <refsect1>
-    <title>Beschreibung:</title>
+    <title>Description</title>
      <methodsynopsis>
-      <type>void</type><methodname>ob_start</methodname>
-                  <void/>
+      <type>bool</type><methodname>ob_start</methodname>
+      <methodparam choice="opt"><type>callback</type><parameter>output_callback</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>chunk_size</parameter></methodparam>
+      <methodparam choice="opt"><type>bool</type><parameter>erase</parameter></methodparam>
      </methodsynopsis>
     <para>
-     Diese Funktion schaltet die Pufferung von Ausgaben ein. Solange
-     die Ausgabe-Pufferung aktiv ist, erfolgt keine Ausgabe bei der
-     Skript-Ausführung. Statt dessen werden alle Ausgaben in einem
-     internen Puffer gespeichert.
+     Diese Funktion aktiviert die Ausgabepufferung. Während die
+     Ausgabepufferung aktiv ist werden Scriptausgaben (mit
+     Ausnahme von Headerinformationen) nicht direkt an den
+     Client weitergegeben sondern in einem internen Puffer
+     gesammelt.
     </para>
-          <para>
-     Der Inhalt diese internen Puffers kann in eine String-Variable
-     kopiert werden (per <function>ob_get_contents</function>). Die
-     Ausgabe erfolgt erst bei Aufruf von
-     <function>ob_end_flush</function> und sobald der Puffer-Inhalt per
-     <function>ob_end_clean</function> verworfen wird.
-                </para>
+    <para>
+     Der Inhalt dieses internen Puffers kann mit Hilfe der Funktion
+     <function>ob_get_contents</function> in eine Stringvariable
+     kopiert werden. Mit der Funktion <function>ob_end_flush</function>
+     können die Pufferinhalte an den Client ausgegeben werden, 
+     <function>ob_end_clean</function> wird der Puffer ohne Ausgabe
+     gelöscht.
+    </para>
+    <para>
+     <function>ob_start</function> kann über den optionalen Parameter
+     <parameter>output_callback</parameter> ein Funktion zur Nachbearbeitung
+     der Pufferinhalte mitgegeben werden. Die Funktion sollte als einzigen
+     Parameter einen String erwarten und auch einen String als Rückgabewert
+     zurückliefern. Die so spezifizierte Funktion wird aufgerufen wenn
+     der Pufferinhalt mit <function>ob_end_flush</function> oder am 
+     Scriptende ausgegeben wird. Wenn <parameter>output_callback</parameter>
+     aufgerufen wird erhält die Funktion den aktuellen Inhalt des Ausgabepuffers
+     als Parameter, der Rückgabestring wird dann als neuer Pufferinhalt
+     ausgegeben. Ist <parameter>output_callback</parameter> kein gültiger
+     Callback-Parameter so gibt <function>ob_start</function> false zurück. 
+     Hat die Callback-Funktion zwei Parameter so wird der zweite Parameter
+     mit einer Bitmaske befüllt die sich aus den Werten 
+     <constant>PHP_OUTPUT_HANDLER_START</constant>,
+     <constant>PHP_OUTPUT_HANDLER_CONT</constant> und
+     <constant>PHP_OUTPUT_HANDLER_END</constant> zusammensetzen kann.
+     Liefert <parameter>output_callback</parameter> &false; als Ergebnis
+     so wird der ursprüngliche Pufferinhalt unverändert ausgegeben.
+    </para>
+    <note>
+     <para>
+      <function>ob_gzhandler</function> wurde in PHP 4.0.4 eingeführt
+      um die gz-komprimierte Ausgabe an Clients zu ermöglichen die dies 
+      unterstützen. Wird <function>ob_gzhandler</function> als Callback-
+      Funktion spezifiziert so prüft es die vom Client unterstützten
+      Ausgabecodierungen und gibt den Pufferinhalt dementsprechend
+      codiert weiter.
+     </para>
+    </note>
+    <note>
+     <para>
+      Vor PHP 4.3.2 lieferte die Funktion bei ungültigen 
+      <parameter>output_callback</parameter> Werten noch nicht &false;
+      zurück.
+     </para>
+    </note>
+    <warning>
+     <para>
+      Einige Webserver (z.B. Apache) ändern das Arbeitsverzeichnis des
+      Scripts vor dem Aufruf der Callback-Funktion am Scriptende. Sie
+      können falls nötig mit Hilfe von 
+      <literal>chdir(dirname($_SERVER['SCRIPT_FILENAME']))</literal> 
+      wieder in das Scriptverzeichnis zurückwechselni.
+     </para>
+    </warning>
+    <para>
+     Wird ein Wert für den optionalen Parameter <parameter>chunk_size</parameter>
+     angegeben so wird die Callback-Funktion jeweils nach dem ersten Newline-
+     Zeichen nach Überschreiten der so festgelegten Anzahl von Ausgabebytes
+     aufgerufen. Wird &null; als Parameterwert übergeben so wird der Parameter
+     ignoriert.
+    </para>
+    <para>
+     Wird für den Parameter <parameter>erase</parameter> &false; übergeben
+     so wird der Ausgabepuffer nur zum Scriptende geleert (ab PHP 4.3.0).
+    </para>
+    <para>
+     Ausgabepuffer können verschachtelt werden, d.g. Sie können 
+     <function>ob_start</function> erneut aufrufen während bereits
+     ein anderer <function>ob_start</function> Aufruf aktiv ist.
+     Sie müssen nur sicher stellen das Sie später auch <function>ob_end_flush</function>
+     entsprechend oft aufrufen. Sind mehrere Callback-Funktion aktiv
+     so werden die Ausgaben der Reihe nach von Ausgabepuffer zu
+     Ausgabepuffer weitergegeben und die Callback-Funktionen in
+     Verschachtelungsreihenfolge aufgerufen.
+    </para>
+    <para>
+     <function>ob_end_clean</function>,
+     <function>ob_end_flush</function>, <function>ob_clean</function>,
+     <function>ob_flush</function> und <function>ob_start</function>
+     können innerhalb einer Callback-Funktion nicht benutzt werden,
+     das Ergebnis eines solchen Aufrufs ist nicht definiert. Wenn Sie
+     den Inhalt eines Puffers aus einem Callback löschen wollen so
+     gegeben Sie einfach den Leerstring "" zurück. Auch Funktionen
+     wie <literal>print_r($expression, true)</literal> oder
+     <literal>highlight_file($filename, true)</literal> die den Ausgabepuffermechanismus
+     intern nutzen können innerhalb eines Callbacks nicht benutzt werden.
+    </para>
+    <para>
+     <example>
+      <title>Beispiel einer benutzerkonfigurierten Callbackfunktion</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+
+function callback($buffer) 
+{
+  // ersetzt Äpfel mit Birnen
+  return (str_replace("Äpfel", "Birnen", $buffer));
+}
+
+ob_start("callback");
+
+?>
+<html>
+<body>
+<p>Das ist wie Äpfel mit Birnen zu vergleichen.</p>
+</body>
+</html>
+<?php
+
+ob_end_flush();
+
+?>
+]]>
+      </programlisting>
+      <para>
+       Would produce:
+      </para>
+      <screen>
+<![CDATA[
+<html>
+<body>
+<p>Das ist wie Äpfel mit Äpfel zu vergleichen.</p>
+</body>
+</html>
+]]>
+      </screen>
+     </example>
+    </para>
     <para>
      Siehe auch <function>ob_get_contents</function>,
-                 <function>ob_end_flush</function>,
-                 <function>ob_end_clean</function> und
-     <function>ob_implicit_flush</function>.
+     <function>ob_end_flush</function>,
+     <function>ob_end_clean</function>,
+     <function>ob_implicit_flush</function>,
+     <function>ob_gzhandler</function>, <function>ob_iconv_handler</function>
+     <function>mb_output_handler</function>, und
+     <function>ob_tidyhandler</function>.
     </para>
    </refsect1>
   </refentry>
