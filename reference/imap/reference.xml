@@ -1,90 +1,144 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hholzgra Status: working -->
- <reference id="ref.imap">
-  <title>IMAP, POP3 und NNTP Funktionen</title>
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.18 Maintainer: hholzgraefe Status: ready -->
+<!-- Purpose: remote.mail -->
+<!-- Membership: bundled, external -->
+
+ <reference id='ref.imap'>
+  <title>IMAP, POP3 and NNTP Functions</title>
   <titleabbrev>IMAP</titleabbrev>
 
   <partintro>
-   <simpara>
-    Dieses Paket baut auf auf der C-Client Bibliothek auf, die Sie
-    unter der URL <ulink url="&url.imap;">&url.imap;</ulink> erhalten.
-    Kompilieren Sie diese und kopieren Sie
-    <filename>c-client/c-client.a</filename> nach
-    <filename>/usr/local/lib/libc-client.a</filename> sowie
-    <filename>c-client/rfc822.h</filename>, <filename>mail.h</filename>
-    und <filename>linkage.h</filename> nach
-    <filename class="directory">/usr/local/include</filename> oder in ein anderes
-    Verzeichnis in Ihrem Link- bzw. Include-Pfad.
-    Anschließend konfigurieren und kompilieren Sie PHP mit der Option
-    <option role="configure">--with-imap</option>.
-   </simpara>
-   <simpara>
-    Beachten Sie, dass diese Funktionen nicht auf das
-    <acronym>IMAP</acronym> -Protokoll beschränkt sind, auch wenn der
-    Name dies vermuten läßt.
-    Die zugrundeliegende C-Client Bibliothek unterstützt auch
-    <acronym>POP3</acronym>, <acronym>NNTP</acronym> und lokale
-    Mailbox-Zugriffe.
-   </simpara>
-   <para>
-    Diese Dokumentation kann nicht alle Bereiche beschreiben, die von
-    den enthaltenen Funktionen berührt werden. Weitergehende Informationen
-    erhalten Sie in der Dokumentation der C-Client Bibliothek (Datei
-    <filename>docs/internal.txt</filename> im Quellpaket der Bibliothek)
-    sowie in folgenden RFC-Dokumenten:
-    <itemizedlist>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc821.html">RFC821</ulink> :
-       Simple Mail Transfer Protocol (SMTP)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc822.html">RFC822</ulink> :
-       Standard for ARPA internet text messages
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc2060.html">RFC2060</ulink> :
-       Internet Message Access Protocol (IMAP) Version 4rev1
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc1939.html">RFC1939</ulink> :
-       Post Office Protocol Version 3 (POP3)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc977.html">RFC977</ulink> :
-       Network News Transfer Protocol (NNTP)
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc2076.html">RFC2076</ulink> :
-       Common Internet Message Headers
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       <ulink url="&url.rfc;rfc2045.html">RFC2045</ulink> ,
-       <ulink url="&url.rfc;rfc2046.html">RFC2046</ulink> ,
-       <ulink url="&url.rfc;rfc2047.html">RFC2047</ulink> ,
-       <ulink url="&url.rfc;rfc2048.html">RFC2048</ulink> &amp;
-       <ulink url="&url.rfc;rfc2049.html">RFC2049</ulink> :
-       Multipurpose Internet Mail Extensions (MIME)
-      </simpara>
-     </listitem>
-    </itemizedlist>
-    Eine ausführliche Übersicht bietet auch das Buch
-    <ulink url="&url.email.book;">Programming Internet Email</ulink>
-    von David Wood.
-   </para>
+   <section id="imap.intro">
+    &reftitle.intro;
+    <para>
+     Die Funktionen dieser Extension ermöglichen die Kommunikation mit
+     <acronym>IMAP</acronym>, <acronym>NNTP</acronym> und <acronym>POP3</acronym>
+     Servern sowie den Zugriff auf lokale Mailbox-Dateien.
+    </para>
+    <para>
+     Einige Funktionen dieser Extension setzten allerdings das IMAP-Protokoll
+     voraus.
+    </para>
+   </section>
+
+   <section id="imap.requirements">
+    &reftitle.required;
+    <para>
+     Diese Extension benötigt die c-client Bibliothek, die jeweils aktuelle
+     Version des Quellcodes dieser Bibliothek findet sich unter
+     <ulink url="&url.imap;">&url.imap;</ulink>.
+    </para>
+    <para>
+     Wenn Sie die Bibliothek selbst kompilieren ist es wichtig das Sie
+     die Headerdateien nicht direkt im Standard-Includeverzeichnis ablegen
+     da dies zu Namenskonflikten führen kann. Stattdessen sollten sie ein
+     neues Unterverzeichnis, z.B. <filename>/usr/local/imap-2000b/</filename>,
+     mit zwei weiteren Unterverzeichnissen <filename>lib</filename> und 
+     <filename>include</filename> anlegen.
+     Kopieren sie alle <filename>*.h</filename> aus den 
+     <filename>c-client</filename> Quellcodeverzeichnis in das neue
+     <filename>include</filename> Verzeichnis und alle 
+     <filename>*.c</filename> Dateien in das neue <filename>lib</filename>
+     Verzeichnis. Die bei der Kompilation des Bibliotheksquellcodes
+     erzeugte Datei <filename>c-client.a</filename> kopieren als 
+     <filename>libc-client.a</filename> ebenfalls in das neue
+     <filename>lib</filename> Verzeichnis.
+    </para>
+    <note>
+     <para> 
+      Nähere Informationen zur Aktivierung der SSL und Kerberos Unterstützung
+      der Bibliothek finden Sie in der im Sourcepacket enthaltenen Dokumentation.
+     </para>
+    </note>
+    <note>
+     <simpara>
+      Mandrake Linux liefert die IMAP Bibliothek <filename>libc-client.a</filename>)
+      ohne Kerberos-Unterstützung aus. Eine seperate Version mit SSL-Unterstützung
+      wird als <filename>client-PHP4.a</filename> mitgeliefert. Für Kerberos-Unterstützung
+      müssen Sie die Bibliothek selbst kompilieren.
+     </simpara>
+    </note>
+   </section>
+
+   &reference.imap.configure;
+
+   <section id="imap.configuration">
+    &reftitle.runtime;
+    &no.config;
+   </section>
+
+   <section id="imap.resources">
+    &reftitle.resources;
+    <para>
+    </para>
+   </section>
+
+   &reference.imap.constants;
+
+   <section id="imap.seealso">
+   &reftitle.seealso;
+    <para>
+     Dieses Dokument kann nicht alle von den enthaltenen Funktionen
+     berührten Themenbereiche im Detail beschreiben. Weitergehende
+     Informatione finden sie in der Dokumentation zum c-client
+     Sourcecode (<filename>docs/internal.txt</filename>) und in den
+     folgenden RFC Standarddokumenten:
+     <itemizedlist>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;2821">RFC2821</ulink>: Simple Mail
+        Transfer Protocol (SMTP).
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;2822">RFC2822</ulink>: Standard for
+        ARPA internet text messages.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;2060">RFC2060</ulink>: Internet
+        Message Access Protocol (IMAP) Version 4rev1. 
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;1939">RFC1939</ulink>:  Post
+        Office Protocol Version 3 (POP3).
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;977">RFC977</ulink>: Network News
+        Transfer Protocol (NNTP).
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;2076">RFC2076</ulink>: Common
+        Internet Message Headers.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        <ulink url="&url.rfc;2045">RFC2045</ulink> , <ulink
+        url="&url.rfc;2046">RFC2046</ulink> , <ulink
+        url="&url.rfc;2047">RFC2047</ulink> , <ulink
+        url="&url.rfc;2048">RFC2048</ulink> &amp; <ulink
+        url="&url.rfc;2049">RFC2049</ulink>: Multipurpose
+        Internet Mail Extensions (MIME).
+       </simpara>
+      </listitem>
+     </itemizedlist> 
+     Einen detailierten Überblick über die relevanten Themen
+     bieten auch die Bücher
+     <ulink url="&url.email.book;">Programming Internet Email</ulink>
+     von David Wood und <ulink url="&url.imap.book;">Managing
+     IMAP</ulink> von Dianna Mullet &amp; Kevin Mullet.
+    </para>
+   </section>
   </partintro>
 
 &reference.imap.functions;
@@ -106,4 +160,8 @@ sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
+
