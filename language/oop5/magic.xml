@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.13 Maintainer: simp Status: ready -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.14 Maintainer: simp Status: ready -->
  <sect1 id="language.oop5.magic">
   <title>Magische Methoden</title>
   <para>
@@ -40,14 +40,20 @@
     magischen Namen <literal>__sleep</literal> besitzt.  Wenn dem so ist, wird
     die Funktion vor jeder Serialisierung ausgeführt. Sie kann das Objekt
     aufräumen und es wird von Ihr erwartet, dass Sie ein Array mit den Namen 
-    aller Variablen zurückliefert, die serialisiert werden sollen.
+    aller Variablen zurückliefert, die serialisiert werden sollen. Wenn die
+    Methode nichts zurückgibt, so wird &null; serialisiert und eine E_NOTICE
+    ausgegeben.
    </para>
    <para>
     Die beabsichtigte Verwendung von <literal>__sleep</literal> ist es,
-    alle Datenbankverbindungen zu schließen die das Objekt haben könnte, 
     nicht gespeicherte Daten zu sichern oder ähnliche Aufräumarbeiten zu
     erledigen. Die Funktion ist ebenfalls nützlich, wenn Sie sehr große Objekte
     haben, welche nicht komplett gespeichert werden müssen.
+   </para>
+   <para>
+    Die <literal>__sleep</literal>-Methode soll den zu serialisierenden Wert
+    zurückgeben (üblicherweise <literal>$this</literal>), ansonsten wird
+    &null; serialisiert.
    </para>
    <para>
     Umgekehrt überprüft <function>unserialize</function> die Anwesenheit einer
@@ -87,7 +93,7 @@ class Connection {
 
     public function __sleep()
     {
-        mysql_close($this->link);
+        return array('server', 'username', 'password', 'db');
     }
 
     public function __wakeup()
