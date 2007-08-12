@@ -1,78 +1,125 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.eval" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>eval</refname>
-    <refpurpose>
-     Wertet einen String aus, als wäre er PHP-Code
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>mixed</type><methodname>eval</methodname>
-      <methodparam><type>string</type><parameter>code_str</parameter></methodparam>
-     </methodsynopsis>
-    <simpara>
-     <function>eval</function> versucht, den in
-     <parameter>code_str</parameter> enthaltenen String als PHP-Code
-     auszuführen. Abgesehen von anderen Zwecken kann dies nützlich
-     sein, um Code auszuführen, der aus einer Datenbank ausgelesen
-     wird.
-    </simpara>
-    <simpara>
-     Beim Gebrauch von <function>eval</function> gilt es einige
-     Faktoren zu beachten. Die Zeichenkette
-     <parameter>code_str</parameter> muss gültigen PHP-Code enthalten,
-     einschließlich syntaktisch richtiger Begrenzungszeichen (also
-     incl. ";"-Abschluss-Zeichen für einzelne Anweisungen, sonst
-     bricht der PHP-Parser in der folgenden Zeile mit einem Fehler ab.
-     </simpara>
-    <simpara>
-     Beachten sie, dass die innerhalb von <function>eval</function>
-     vorgenommenen Variablen-Zuweisungen nach Abarbeitung auch im
-     Hauptskript ihre Gültigkeit behalten.
-    </simpara>
-    <simpara>
-     Eine <literal>return</literal>-Angabe beendet sofort die
-     Auswertung des Strings. Mit PHP4 können sie ein
-     <literal>return</literal> verwenden, um das Ergebnis der Funktion
-     <function>eval</function> zu erhalten. In PHP3 ist
-     <function>eval</function> nämlich vom Typ <literal>void</literal>
-     und liefert nichts zurück.
-    </simpara>
-    <para>
-     <example>
-      <title>
-       <function>eval</function>-Beispiel (einfache Texteinfügung):
-      </title>
-      <programlisting role="php">
-&lt;?php
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.22 Maintainer: nobody Status: ready -->
+<refentry xml:id="function.eval" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>eval</refname>
+  <refpurpose>Wertet eine Zeichenkette als PHP-Code aus</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>mixed</type><methodname>eval</methodname>
+   <methodparam><type>string</type><parameter>code_str</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Wertet die in <parameter>code_str</parameter> enthaltene Zeichenkette als
+   PHP-Code aus. Abgesehen von anderen Zwecken kann dies nützlich sein, um
+   Code für eine spätere Ausführung im Textfeld einer Datenbank zu speichern.
+  </para>
+  <para>
+   Beim Gebrauch von <function>eval</function> gilt es einige Faktoren zu
+   beachten. Die übergebene Zeichenkette muss gültigen PHP-Code enthalten,
+   einschließlich solcher Dinge wie Anweisungen mit einem Semikolon
+   abzuschließen, damit der Parser nicht in der Zeile nach dem
+   <function>eval</function> abbricht, und des richtigen Setzens des
+   Escape-Zeichens in <parameter>code_str</parameter>. Um HTML-Ausgabe und
+   PHP-Code zu mischen, können Sie zum Verlassen des PHP-Codes das schließende
+   PHP-Tag verwenden.
+  </para>
+  <para>
+   Beachten Sie, dass die innerhalb von <function>eval</function>
+   vorgenommenen Variablen-Zuweisungen nach Abarbeitung auch im Hauptskript
+   ihre Gültigkeit behalten.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>code_str</parameter></term>
+     <listitem>
+      <para>
+       Die Code-Zeichenkette, die ausgewertet werden soll.
+       <parameter>code_str</parameter> muss keine <link
+       linkend="language.basic-syntax.phpmode">öffnenden PHP-Tags</link>
+       enthalten.
+      </para>
+      <para>
+       Eine <literal>return</literal>-Anweisung beendet die Auswertung der
+       Zeichenkette sofort.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Ab PHP 4 gibt <function>eval</function> &null; zurück, außer wenn im
+   ausgewerteten Code <literal>return</literal> aufgerufen wird, dann aber
+   wird der an <literal>return</literal> übergebene Wert zurückgegeben. Falls
+   im ausgewerteten Code ein Parse Error auftritt, gibt
+   <function>eval</function> &false; zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>eval</function> Beispiel (einfache Texteinfügung)</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
 $string = 'Bierglas';
 $name = 'Binding-Lager';
-$str = 'Das ist mein $string, voll mit $name.&lt;br&gt;';
-echo $str;
+$str = 'Das ist mein $string, voll mit $name.';
+echo $str . "\n";
 eval ("\$str = \"$str\";");
-echo $str;
-?&gt;
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     Das obige Beispiel gibt aus:
-     <programlisting>
+echo $str . "\n";
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
 Das ist mein $string, voll mit $name.
 Das ist mein Bierglas, voll mit Binding-Lager.
-     </programlisting>
-    </para>
-    <para>
-     Beachten sie bitte das Setzen des Begrenzungs-Zeichens ";" in
-     <parameter>code_str</parameter> sowie den Gebrauch des
-     "\"-Zeichens.
-    </para>
-   </refsect1>
-  </refentry>
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+
+  &note.language-construct;
+
+  &tip.ob-capture;
+  <note>
+   <para>
+    Im Fall eines schweren Fehlers im augewerteten Code wird das komplette
+    Skript beendet.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>call_user_func</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
