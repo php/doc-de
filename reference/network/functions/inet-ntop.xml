@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
+<!-- $Revision: 1.1 $ -->
 <!-- EN-Revision: 1.7 Maintainer: sammywg Status: ready -->
-<refentry xml:id="function.getprotobyname" xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="function.inet-ntop" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
-  <refname>getprotobyname</refname>
-  <refpurpose>Ermittelt die Protokollnummer anhand des Protokollnamens</refpurpose>
+  <refname>inet_ntop</refname>
+  <refpurpose>Konvertiert eine komprimierte Internetadresse in ein menschenlesbares Format</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>getprotobyname</methodname>
-   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <type>string</type><methodname>inet_ntop</methodname>
+   <methodparam><type>string</type><parameter>in_addr</parameter></methodparam>
   </methodsynopsis>
-  <para>
-   Die Funktion <function>getprotobyname</function> gibt die
-   Protokollnummer passend zu dem Protokoll
-   <parameter>name</parameter> zurück. Der Wert wird anhand der Datei
-   <filename>/etc/protocols</filename> ermittelt.
-  </para>
+  <simpara>
+   Die Funktion konvertiert eine 32-bittige IPv4- oder eine 128-bittige IPv6-Adresse
+   (sofern PHP mit IPv6-Support kompiliert wurde) in ein für die Adressfamilie
+   geeignetes Format.
+  </simpara>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -26,10 +25,10 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>name</parameter></term>
+     <term><parameter>in_addr</parameter></term>
      <listitem>
       <para>
-       Der Protokollname.
+       Eine 32-bittige IPv4- or 128-bittige IPv6-Adresse.
       </para>
      </listitem>
     </varlistentry>
@@ -40,8 +39,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die Protokollnummer oder -1 zurück, wenn das Protokoll nicht gefunden
-   wurde.
+   Gibt eine Stringrepräsentation der Adresse oder im Fehlerfall &false; zurück.
   </para>
  </refsect1>
 
@@ -49,17 +47,21 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>getprotobyname</function>-Beispiel</title>
+    <title><function>inet_ntop</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$protocol = 'tcp';
-$get_prot = getprotobyname($protocol);
-if ($get_prot == -1) {
-    echo 'Ungueltiges Protokoll';
-} else {
-    echo 'Protokoll #' . $get_prot;
-}
+$packed = chr(127) . chr(0) . chr(0) . chr(1);
+$expanded = inet_ntop($packed);
+
+/* Ausgabe: 127.0.0.1 */
+echo $expanded;
+
+$packed = str_repeat(chr(0), 15) . chr(1);
+$expanded = inet_ntop($packed);
+
+/* Ausgabe: ::1 */
+echo $expanded;
 ?>
 ]]>
     </programlisting>
@@ -67,17 +69,23 @@ if ($get_prot == -1) {
   </para>
  </refsect1>
 
+ <refsect1 role="notes">
+  &reftitle.notes;
+  &note.no-windows;
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><function>getprotobynumber</function></member>
+    <member><function>long2ip</function></member>
+    <member><function>ip2long</function></member>
+    <member><function>inet_pton</function></member>
    </simplelist>
   </para>
  </refsect1>
 
 </refentry>
-
 
 <!-- Keep this comment at the end of the file
 Local variables:

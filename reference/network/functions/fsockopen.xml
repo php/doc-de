@@ -1,120 +1,250 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- splitted from ./de/functions/network.xml, last change in rev 1.2 -->
-<!-- last change to 'fsockopen' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: 1.2 Maintainer: tschuer Status: ready -->
-<!-- OLD-Revision: 1.26/EN.1.2 -->
-  <refentry xml:id="function.fsockopen" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>fsockopen</refname>
-    <refpurpose>
-     Stellt eine Internet- oder Unix-Domain-Socket-Verbindung her
-    </refpurpose> 
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>int</type><methodname>fsockopen</methodname>
-      <methodparam><type>string</type><parameter>target</parameter></methodparam>
-      <methodparam><type>int</type><parameter>port</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>errno</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>errstr</parameter></methodparam>
-      <methodparam choice="opt"><type>double</type><parameter>timeout</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Öffnet eine Socket-Verbindung zum Internet (AF_INET, unter
-     Verwendung von TCP oder UDP) oder unter Unix (AF_UNIX). Für eine
-     Internet-Verbindung wird eine TCP-Socket-Verbindung zu 
-     <parameter>hostname</parameter> über den Port
-     <parameter>port</parameter> hergestellt. Für eine UDP-Verbindung
-     müssen Sie das Protokoll <parameter>udp://hostname</parameter>
-     explizit angeben. Bei einer UNIX-Verbindung wird 
-     <parameter>hostname</parameter> als Socket-Pfad interpretiert,
-     <parameter>port</parameter> muss in diesem Fall 0 sein. Der
-     optionale Parameter <parameter>timeout</parameter> kann benutzt
-     werden, um eine Fehlerwartezeit (Timeout-Wert) für den
-     Verbindungsaufbau (in Sekunden) zu setzen.
-    </para>
-    <para>
-     Die Funktion <function>fsockopen</function> gibt einen Zeiger auf
-     eine Datei zurück, der in Verbindung mit anderen Datei-Funktionen
-     (wie z.B.  <function>fgets</function>,
-     <function>fgetss</function>, <function>fputs</function>,
-     <function>fclose</function>, <function>feof</function>) gebraucht
-     werden kann.
-    </para>
-    <para>
-     Wenn der Aufruf der Funktion scheitert, gibt er &false; / falsch
-     zurück und wenn die optionalen <parameter>errno</parameter> und
-     <parameter>errstr</parameter> Argumente vorhanden sind, enthalten
-     sie den aktuellen System-Fehler, der beim Aufruf der
-     System-Funktion <literal>connect()</literal> (Verbindungsaufbau)
-     erscheint bzw. passiert ist. Wenn die erhaltene errno 0 ist und
-     die Funktion &false;/falsch zurück gibt, ist dies ein Hinweis, dass
-     der Fehler vor dem <literal>>connect()</literal>-Aufruf
-     geschah. Das ist ein Problem, dass häufig mit der Initialisierung
-     des Sockets zusammen hängt. Beachten Sie bitte, dass das
-     <parameter>errno</parameter> und
-     <parameter>errstr</parameter>-Argument als Referenz zu übergeben
-     sind.
-    </para>
-    <para>
-     Abhängig von der vorhandenen Umgebung kann die Verbindung zu
-     einer UNIX-Domäne oder der optionale Verbindungsaufbau-Zeitfehler
-     nicht zur Verfügung stehen.
-    </para>
-    <para>
-     Voreingestellt ist der Verbindungsaufbau im Block-Modus. Sie
-     können dies auf Nicht-Block-Modus ändern, indem Sie
-     <function>socket_set_blocking</function> benutzen.
-     <example>
-      <title><function>fsockopen</function>-Beispiel:</title>
-      <programlisting role="php">
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.23 Maintainer: sammywg Status: ready -->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.fsockopen">
+ <refnamediv>
+  <refname>fsockopen</refname>
+  <refpurpose>Stellt eine Internet- oder Unix-Domain-Socket-Verbindung her</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>fsockopen</methodname>
+   <methodparam><type>string</type><parameter>hostname</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>port</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter role="reference">errno</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter role="reference">errstr</parameter></methodparam>
+   <methodparam choice="opt"><type>float</type><parameter>timeout</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Initialisiert eine Socket-Verbindung zu der in <parameter>hostname</parameter>
+   angegebenen Ressource.
+  </para>
+  <para>
+   PHP unterstützt Ziele im Internet und Unixdomänen, wie sie unter <xref linkend="transports"/>
+   beschrieben sind. Eine Liste unterstützter Transportarten können Sie auch
+   mittels <function>stream_get_transports</function> ermitteln.
+  </para>
+  <para>
+   Der Socket wird standardmäßig im Blocking Mode geöffnet. Sie können auf den
+   Non-Blocking-Modus wechseln, indem Sie die Funktion <function>stream_set_blocking</function>
+   nutzen.
+   </para>
+  </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>hostname</parameter></term>
+     <listitem>
+      <para>
+       Wenn Sie OpenSSL-Support mit einkompiliert haben, können Sie dem Parameter
+       <parameter>hostname</parameter> entweder ein <literal>ssl://</literal>
+       oder ein <literal>tls://</literal> voranstellen, um eine SSL- oder TLS-Verbindung
+       aufzubauen, die via TCP/IP mit dem entfernten Server verbunden wird.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>port</parameter></term>
+     <listitem>
+      <para>
+       Die Portnummer.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>errno</parameter></term>
+     <listitem>
+      <para>
+       Sofern unterstützt, enthält der Parameter die Fehlernummer des Systemlevels,
+       die beim Aufruf der <literal>connect()</literal>-Funktion auftrat.
+      </para>
+      <para>
+       Wenn der Rückgabewert von <parameter>errno</parameter> <literal>0</literal>
+       ist und die Funktion &false; zurückgibt, ist dies ein Zeichen, dass der
+       Fehler vor dem <literal>connect()</literal>-Aufruf auftrat. Dies ist meist
+       der Fall, wenn es ein Problem beim Initialisieren des Sockets gibt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>errstr</parameter></term>
+     <listitem>
+      <para>
+       Die Fehlermeldung als String.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>timeout</parameter></term>
+     <listitem>
+      <para>
+       Der Connection-Timeout in Sekunden.
+      </para>
+      <note>
+       <para>
+        Wenn Sie einen Timeout für das Lesen oder Schreiben von Daten über den
+        Socket setzen wollen, verwenden Sie <function>stream_set_timeout</function>,
+        da der <parameter>timeout</parameter>-Parameter von <function>fsockopen</function>
+        nur für das reine Konnektieren des Sockets gedacht ist.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Die Funktion <function>fsockopen</function> gibt einen Zeiger auf eine Datei
+   zurück, der zusammen mit den anderen Dateifunktionen (wie <function>fgets</function>,
+   <function>fgetss</function>, <function>fwrite</function>, <function>fclose</function>
+   und <function>feof</function>) verwendet werden kann. Wenn der Aufruf
+   fehlschlägt, wird &false; zurückgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        Der Parameter <parameter>timeout</parameter> wird nun auch unter
+        win32-Systemen unterstützt.
+       </entry>
+      </row>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        SSL und TLS over TCP/IP-Support wurde hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>4.0.0</entry>
+       <entry>
+        UDP-Support wurde hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>3.0.9</entry>
+       <entry>
+        Der <parameter>timeout</parameter>-Parameter wurde hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+  <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>fsockopen</function>-Beispiel</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-$fp = fsockopen ("www.example.com", 80, $errno, $errstr, 30);
+$fp = fsockopen("www.example.com", 80, $errno, $errstr, 30);
 if (!$fp) {
     echo "$errstr ($errno)<br />\n";
 } else {
-    fputs ($fp, "GET / HTTP/1.0\r\n\r\n");
+    $out = "GET / HTTP/1.1\r\n";
+    $out .= "Host: www.example.com\r\n";
+    $out .= "Connection: Close\r\n\r\n";
+
+    fwrite($fp, $out);
     while (!feof($fp)) {
-        echo fgets($fp,128);
+        echo fgets($fp, 128);
     }
     fclose($fp);
 }
 ?>
 ]]>
-      </programlisting>
-     </example>
-     Das folgende Beispiel zeigt, wie das Datum und die Zeit des
-     UDP-Service "daytime" (Port 13) von ihrer eigenen Maschine
-     empfangen werden kann:
-     <example>
-      <title>Gebrauch einer UDP-Verbindung:</title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Eine UDP-Verbindung nutzen</title>
+    <para>
+     Das folgende Beispiel zeigt, wie Sie den Tag und die Zeit vom UDP-Service
+     "daytime" (Port 13) Ihrer Maschine abfragen können.
+    </para>
+    <programlisting role="php">
 <![CDATA[
 <?php
-$fp = fsockopen("udp://127.0.0.1", 13, $errno; $errstr);
+$fp = fsockopen("udp://127.0.0.1", 13, $errno, $errstr);
 if (!$fp) {
-    echo "Fehler: $errno - $errstr<br>\n";
+    echo "ERROR: $errno - $errstr<br />\n";
 } else {
-    fwrite($fp,"\n");
+    fwrite($fp, "\n");
     echo fread($fp, 26);
     fclose($fp);
 }
 ?>
 ]]>
-      </programlisting>
-     </example>
-     Siehe auch: <function>pfsockopen</function>, 
-     <function>socket_set_blocking</function>,
-     <function>socket_set_timeout</function>,
-     <function>fgets</function>,
-     <function>fgetss</function>, <function>fputs</function>,
-     <function>fclose</function> und <function>feof</function>.
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Abhängig von der Systemumgebung kann es vorkommen, dass die Unix-Domäne
+    oder der optionale Connection-Timeout nicht verfügbar sind.
+   </para>
+  </note>
+  <warning>
+   <para>
+    UDP-Sockets werden manchmal ohne die Rückgabe eines Fehlermeldung geöffnet,
+    obwohl der entfernte Host nicht erreichbar ist. Der Fehler wird nur sichtbar,
+    wenn Sie Daten vom Socket lesen oder zum Socket schreiben wollen. Der Grund
+    dafür ist, dass UDP ein "verbindungsloses" Protokoll ist, das bedeutet,
+    dass das Betriebssystem nicht versucht, eine Verbindung zum Socket herzustellen,
+    solange es nicht wirklich Daten senden oder empfangen muss.
+   </para>
+  </warning>
+  &ipv6.brackets;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pfsockopen</function></member>
+    <member><function>stream_set_blocking</function></member>
+    <member><function>stream_set_timeout</function></member>
+    <member><function>fgets</function></member>
+    <member><function>fgetss</function></member>
+    <member><function>fwrite</function></member>
+    <member><function>fclose</function></member>
+    <member><function>feof</function></member>
+    <member>Die <link linkend="ref.curl">Curl-Erweiterung</link></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
