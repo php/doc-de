@@ -1,155 +1,186 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.27 Maintainer: sammywg Status: ready -->
-  <refentry xml:id="function.setlocale" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
-   <refnamediv>
-    <refname>setlocale</refname>
-    <refpurpose>Setzt Locale Informationen</refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>string</type><methodname>setlocale</methodname>
-      <methodparam><type>int</type><parameter>category</parameter></methodparam>
-      <methodparam><type>string</type><parameter>locale</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>...</parameter></methodparam>
-     </methodsynopsis>
-     <methodsynopsis>
-      <type>string</type><methodname>setlocale</methodname>
-      <methodparam><type>int</type><parameter>category</parameter></methodparam>
-      <methodparam><type>array</type><parameter>locale</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <parameter>category</parameter> ist eine benannte Konstante (oder
-     Zeichenkette), die die Kategorie der von den lokalen Einstellungen (Locales)
-     betroffenen Funktionen angibt:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        LC_ALL für alle folgenden Werte
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LC_COLLATE für String-Vergleiche, siehe
-        <function>strcoll</function>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LC_CTYPE für Klassifizierung und Umwandlung von Zeichen, zum Beispiel
-        <function>strtoupper</function>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LC_MONETARY für <function>localeconv</function>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara> LC_NUMERIC für das Dezimal-Trennzeichen (Siehe auch
-       <function>localeconv</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LC_TIME für Zeit- und Datums-Formatierungen mittels
-        <function>strftime</function>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        LC_MESSAGES für Systemmeldungen (verfügbar, wenn PHP mit
-        <literal>liblintl</literal> kompiliert wurde)
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <note>
-     <simpara>
-      Seit PHP 4.2.0 ist die Übergabe an <parameter>category</parameter> mittels
-      eines Strings als deprecated gekennzeichnet, verwenden Sie daher immer
-      die obigen Konstanten. Das Übergeben der Konstanten als String (also in
-      Anführungszeichen eingeschlossen) führt zu einer Warnmeldung.
-     </simpara>
-    </note>
-    <para>
-     Ist <parameter>locale</parameter> &null; oder ein leerer String
-     <literal>""</literal>, werden die Namen der Locales anhand der Werte der
-     Umgebungsvariablen als Leer-String definiert, also
-     <literal>""</literal>, werden die Werte an Hand der entsprechenden
-     Umgebungsvariablen gleichen Namens wie die obigen Kategorien oder
-     von "LANG" bestimmt.
-    </para>
-    <para>
-     Ist <parameter>locale</parameter> <literal>"0"</literal>, sind keine
-     lokalen Einstellungen betroffen, und es wird die aktuelle Einstellung
-     zurückgegeben.
-    </para>
-    <para>
-     Ist <parameter>locale</parameter> ein Array oder folgen weitere Parameter,
-     dann wird jedes Arrayelement bzw. jeder Parameter versucht als neuer
-     Locale-Wert zu setzen, bis es gelingt. Dies ist dann sinnvoll, wenn eine
-     Locale-Angabe auf unterschiedlichen Systemen unter verschiedenen Namen
-     bekannt ist oder auch als Fallback für eine eventuell nicht vorhandene
-     Locale-Angabe.
-    </para>
-    <note>
-     <simpara>
-      Das Übergeben von mehreren Locales wird erst seit PHP 4.3.0 unterstützt.
-     </simpara>
-    </note>
-    <para>
-     <function>setlocale</function> gibt die neue Locale-Einstellung oder
-     &false; zurück, wenn die Locale-Funktionalität von Ihrer Plattform nicht
-     unterstützt wird, die angegebene Locale nicht existiert oder der
-     Kategorie-Name ungültig ist. Ein ungültiger Kategorie-Name erzeugt
-     zusätzlich eine Warnmeldung. Kategorien- und Locale-Namen können sie unter
-     <link xlink:href="&url.rfc;1766">RFC 1766</link> und <link
-     xlink:href="&url.iso-639;">ISO 639</link> nachlesen. Unterschiedliche Systeme
-     verwenden differierende Namensräume für die Locales.
-    </para>
-    <note>
-     <para>
-      Der Rückgabewert von <function>setlocale</function> ist von dem
-      System abhängig, auf dem PHP läuft. Es wird genau das zurückgegeben,
-      was die Systemfunktion setlocale zurückgibt.
-     </para>
-    </note>
-    <warning>
-     <para>
-      Die Locale-Informationen wirken auf den Prozess, nicht auf den Thread.
-      Sofern Sie PHP mit einer Multithreaded Server API wie IIS oder Apache
-      unter Windows einsetzen, rechnen Sie mit unerwarteten Änderungen der
-      Locale-Einstellungen zur Laufzeit des Skripts, auch wenn das Skript selbst
-      keinen <function>setlocale</function>-Aufruf durchführt. Dies passiert,
-      da andere Skripte in verschiedenen Threads des selben Prozesses zur selben
-      Zeit prozessweit die Locale-Einstellungen mittels
-      <function>setlocale</function> ändern.
-     </para>
-    </warning>
-    <tip>
-     <para>
-      Windowsuser finden weitergehende Informationen über
-      <parameter>locale</parameter>-Strings auf Microsofts
-      <acronym>MSDN</acronym>-Webseite. Unterstützte Language-Strings können Sie
-      unter <link
-      xlink:href="&url.setlocale.lang.win32;">&url.setlocale.lang.win32;</link>,
-      Country/Region-Strings unter <link
-      xlink:href="&url.setlocale.country.win32;">&url.setlocale.country.win32;</link>
-      nachschlagen. Windowssysteme unterstützen Drei-Buchstaben-Codes für
-      Länder/Regionen-Angaben entsprechend
-      <literal>ISO 3166-Alpha-3</literal>, die Sie auf der <link
-      xlink:href="&url.iso-3166-3;">Unicode Website</link> finden.
-     </para>
-    </tip>
-    <para>
-     <example>
-      <title><function>setlocale</function> Beispiele</title>
-      <programlisting role="php">
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.30 Maintainer: sammywg Status: ready -->
+<refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.setlocale">
+ <refnamediv>
+  <refname>setlocale</refname>
+  <refpurpose>Setzt Locale Informationen</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>setlocale</methodname>
+   <methodparam><type>int</type><parameter>category</parameter></methodparam>
+   <methodparam><type>string</type><parameter>locale</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>...</parameter></methodparam>
+  </methodsynopsis>
+  <methodsynopsis>
+   <type>string</type><methodname>setlocale</methodname>
+   <methodparam><type>int</type><parameter>category</parameter></methodparam>
+   <methodparam><type>array</type><parameter>locale</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Setzt Locale-Informationen.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>category</parameter></term>
+     <listitem>
+      <para>
+       <parameter>category</parameter> ist eine benannte Konstante (oder
+       Zeichenkette), die die Kategorie der von den lokalen Einstellungen (Locales)
+       betroffenen Funktionen angibt:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          LC_ALL für alle folgenden Werte
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          LC_COLLATE für String-Vergleiche, siehe
+          <function>strcoll</function>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          LC_CTYPE für Klassifizierung und Umwandlung von Zeichen, zum Beispiel
+          <function>strtoupper</function>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          LC_MONETARY für <function>localeconv</function>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara> LC_NUMERIC für das Dezimal-Trennzeichen (Siehe auch
+         <function>localeconv</function>)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          LC_TIME für Zeit- und Datums-Formatierungen mittels
+          <function>strftime</function>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          LC_MESSAGES für Systemmeldungen (verfügbar, wenn PHP mit
+          <literal>liblintl</literal> kompiliert wurde)
+         </simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>locale</parameter></term>
+     <listitem>
+      <para>
+       Ist <parameter>locale</parameter> &null; oder ein leerer String
+       <literal>""</literal>, werden die Namen der Locales anhand der Werte der
+       Umgebungsvariablen als Leer-String definiert, also
+       <literal>""</literal>, werden die Werte an Hand der entsprechenden
+       Umgebungsvariablen gleichen Namens wie die obigen Kategorien oder
+       von "LANG" bestimmt.
+      </para>
+      <para>
+       Ist <parameter>locale</parameter> <literal>"0"</literal>, sind keine
+       lokalen Einstellungen betroffen, und es wird die aktuelle Einstellung
+       zurückgegeben.
+      </para>
+      <para>
+       Ist <parameter>locale</parameter> ein Array oder folgen weitere Parameter,
+       dann wird jedes Arrayelement bzw. jeder Parameter versucht als neuer
+       Locale-Wert zu setzen, bis es gelingt. Dies ist dann sinnvoll, wenn eine
+       Locale-Angabe auf unterschiedlichen Systemen unter verschiedenen Namen
+       bekannt ist oder auch als Fallback für eine eventuell nicht vorhandene
+       Locale-Angabe.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>...</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt die neue Locale-Einstellung oder &false; zurück, wenn die
+   Locale-Funktionalität von Ihrer Plattform nicht unterstützt wird, die
+   angegebene Locale nicht existiert oder der Kategorie-Name ungültig ist.
+  </para>
+  <para>
+   Ein ungültiger Kategorie-Name erzeugt zusätzlich eine Warnmeldung. Kategorien-
+   und Locale-Namen können sie unter <link xlink:href="&url.rfc;1766">RFC 1766</link>
+   und <link xlink:href="&url.iso-639;">ISO 639</link> nachlesen. Unterschiedliche
+   Systeme verwenden differierende Namensräume für die Locales.
+  </para>
+  <note>
+   <para>
+    Der Rückgabewert von <function>setlocale</function> ist von dem
+    System abhängig, auf dem PHP läuft. Es wird genau das zurückgegeben,
+    was die Systemfunktion setlocale zurückgibt.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        Die Übergabe mehrerer Locales wurde möglich.
+        </entry>
+      </row>
+      <row>
+       <entry>4.2.0</entry>
+       <entry>
+        Die Übergabe von <parameter>category</parameter> als Zeichenkette wird
+        als deprecated gekennzeichnet, verwenden Sie daher immer
+        die obigen Konstanten. Das Übergeben der Konstanten als String (also in
+        Anführungszeichen eingeschlossen) führt zu einer Warnmeldung.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>setlocale</function>-Beispiele</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-/* locale auf Holland setzen */
+/* locale auf Holländisch setzen */
 setlocale (LC_ALL, 'nl_NL');
 
 /* Ausgabe: vrijdag 22 december 1978 */
@@ -160,16 +191,16 @@ $loc_de = setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
 echo "Preferred locale for german on this system is '$loc_de'";
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     <example>
-      <title><function>setlocale</function>Beispiele for Windows</title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>setlocale</function>-Beispiele for Windows</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-/* locale auf Holland setzen */
+/* locale auf Holländisch setzen */
 setlocale(LC_ALL, 'nld_nld');
 
 /* Ausgabe: vrijdag 22 december 1978 */
@@ -180,11 +211,44 @@ $loc_de = setlocale(LC_ALL, 'de_DE@euro', 'de_DE', 'deu_deu');
 echo "Preferred locale for german on this system is '$loc_de'";
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <warning>
+   <para>
+    Die Locale-Informationen wirken auf den Prozess, nicht auf den Thread.
+    Sofern Sie PHP mit einer Multithreaded Server API wie IIS oder Apache
+    unter Windows einsetzen, rechnen Sie mit unerwarteten Änderungen der
+    Locale-Einstellungen zur Laufzeit des Skripts, auch wenn das Skript selbst
+    keinen <function>setlocale</function>-Aufruf durchführt. Dies passiert,
+    da andere Skripte in verschiedenen Threads des selben Prozesses zur selben
+    Zeit prozessweit die Locale-Einstellungen mittels
+    <function>setlocale</function> ändern.
+   </para>
+  </warning>
+  <tip>
+   <para>
+    Windowsuser finden weitergehende Informationen über
+    <parameter>locale</parameter>-Strings auf Microsofts
+    <acronym>MSDN</acronym>-Webseite. Unterstützte Language-Strings können Sie
+    unter <link
+    xlink:href="&url.setlocale.lang.win32;">&url.setlocale.lang.win32;</link>,
+    Country/Region-Strings unter <link
+    xlink:href="&url.setlocale.country.win32;">&url.setlocale.country.win32;</link>
+    nachschlagen. Windowssysteme unterstützen Drei-Buchstaben-Codes für
+    Länder/Regionen-Angaben entsprechend
+    <literal>ISO 3166-Alpha-3</literal>, die Sie auf der <link
+    xlink:href="&url.iso-3166-3;">Unicode Website</link> finden.
+   </para>
+  </tip>
+ </refsect1>
+
+</refentry>
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
