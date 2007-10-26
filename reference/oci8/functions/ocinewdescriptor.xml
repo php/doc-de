@@ -1,92 +1,21 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.ocinewdescriptor" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ocinewdescriptor</refname>
-    <refpurpose>Initialize a new empty descriptor LOB/FILE (LOB is default)</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>string</type><methodname>OCINewDescriptor</methodname>
-      <methodparam><type>int</type><parameter>connection</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>type</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>OCINewDescriptor</function> Allocates storage to hold descriptors or LOB locators.   
-      Valid values for the valid <parameter>type</parameter> are OCI_D_FILE, OCI_D_LOB, OCI_D_ROWID.
-      For LOB desriptors, the methods load, save, and savefile are associated with the descriptor,
-      for BFILE only the load method exists. See the second example usage hints.
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.19 Maintainer: sammywg Status: ready -->
+<refentry xml:id="function.ocinewdescriptor" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ocinewdescriptor</refname>
+  <refpurpose>&Alias; <function>oci_new_descriptor</function></refpurpose>
+ </refnamediv>
 
-    </para>
-     <example>
-      <title>OCINewDescriptor</title>
-      <programlisting>
-&lt;?php   
-    /* This script is designed to be called from a HTML form.
-     * It expects $user, $password, $table, $where, and $commitsize
-     * to be passed in from the form.  The script then deletes
-     * the selected rows using the ROWID and commits after each
-     * set of $commitsize rows. (Use with care, there is no rollback)
-     */
-    $conn = OCILogon($user, $password);
-    $stmt = OCIParse($conn,"select rowid from $table $where");
-    $rowid = OCINewDescriptor($conn,OCI_D_ROWID);
-    OCIDefineByName($stmt,"ROWID",&amp;$rowid);   
-    OCIExecute($stmt);
-    while ( OCIFetch($stmt) ) {      
-       $nrows = OCIRowCount($stmt);
-       $delete = OCIParse($conn,"delete from $table where ROWID = :rid");
-       OCIBindByName($delete,":rid",&amp;$rowid,-1,OCI_B_ROWID);
-       OCIExecute($delete);      
-       print "$nrows\n";
-       if ( ($nrows % $commitsize) == 0 ) {
-           OCICommit($conn);      
-       }   
-    }
-    $nrows = OCIRowCount($stmt);   
-    print "$nrows deleted...\n";
-    OCIFreeStatement($stmt);  
-    OCILogoff($conn);
-?>  
-   </programlisting><programlisting>
-&lt;?php
-    /* This script demonstrates file upload to LOB columns
-     * The formfield used for this example looks like this
-     * &lt;form action="upload.php3" method="post" enctype="multipart/form-data">
-     * &lt;input type="file" name="lob_upload">
-     * ...
-     */
-  if(!isset($lob_upload) || $lob_upload == 'none'){
-?>
-&lt;form action="upload.php3" method="post" enctype="multipart/form-data">
-Upload file: &lt;input type="file" name="lob_upload">&lt;br>
-&lt;input type="submit" value="Upload"> - &lt;input type="reset">
-&lt;/form>
-&lt;?php
-  } else {
-     // $lob_upload contains the temporary filename of the uploaded file
-     $conn = OCILogon($user, $password);
-     $lob = OCINewDescriptor($conn, OCI_D_LOB);
-     $stmt = OCIParse($conn,"insert into $table (id, the_blob) values(my_seq.NEXTVAL, EMPTY_BLOB()) returning the_blob into :the_blob");
-     OCIBindByName($stmt, ':the_blob', &amp;$lob, -1, OCI_B_BLOB);
-     OCIExecute($stmt);
-     if($lob->savefile($lob_upload)){
-        OCICommit($conn);
-        echo "Blob successfully uploaded\n";
-     }else{
-        echo "Couldn't upload Blob\n";
-     }
-     OCIFreeDescriptor($lob);
-     OCIFreeStatement($stmt);
-     OCILogoff($conn);
-  }
-?>
-   </programlisting></example>
+ <refsect1 role="description">
+  &reftitle.description;
+  <simpara>
+   &info.function.alias; <function>oci_new_descriptor</function>.
+  </simpara>
+ </refsect1>
 
-   </refsect1>
-  </refentry>
+</refentry>
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
