@@ -1,85 +1,21 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.ocinewcursor" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ocinewcursor</refname>
-    <refpurpose>return a new cursor (Statement-Handle) - use this to bind ref-cursors!</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>OCINewCursor</methodname>
-      <methodparam><type>int</type><parameter>conn</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>OCINewCursor</function> allocates a new statement handle on the specified
-     connection.
-    </para>
-    <para>
-     <example>
-      <title>Using a REF CURSOR from a stored procedure</title>
-      <programlisting>
-&lt;?php   
-// suppose your stored procedure info.output returns a ref cursor in :data
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.14 Maintainer: sammywg Status: ready -->
+<refentry xml:id="function.ocinewcursor" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ocinewcursor</refname>
+  <refpurpose>&Alias; <function>oci_new_cursor</function></refpurpose>
+ </refnamediv>
 
-$conn = OCILogon("scott","tiger");
-$curs = OCINewCursor($conn);
-$stmt = OCIParse($conn,"begin info.output(:data); end;");
+ <refsect1 role="description">
+  &reftitle.description;
+  <simpara>
+   &info.function.alias; <function>oci_new_cursor</function>.
+  </simpara>
+ </refsect1>
 
-ocibindbyname($stmt,"data",&amp;$curs,-1,OCI_B_CURSOR);
-ociexecute($stmt);
-ociexecute($curs);
+</refentry>
 
-while (OCIFetchInto($curs,&amp;$data)) {
-    var_dump($data);
-}
- 
-OCIFreeCursor($stmt);
-OCIFreeStatement($curs);
-OCILogoff($conn);
-?></programlisting></example></para>
-
-    <para>
-     <example>
-      <title>Using a REF CURSOR in a select statement</title>
-      <programlisting>
-&lt;?php   
-print "&lt;HTML>&lt;BODY>";
-$conn = OCILogon("scott","tiger");
-$count_cursor = "CURSOR(select count(empno) num_emps from emp " .
-                "where emp.deptno = dept.deptno) as EMPCNT from dept";
-$stmt = OCIParse($conn,"select deptno,dname,$count_cursor");
-
-ociexecute($stmt);
-print "&lt;TABLE BORDER=\"1\">";
-print "&lt;TR>";
-print "&lt;TH>DEPT NAME&lt;/TH>";
-print "&lt;TH>DEPT #&lt;/TH>";
-print "&lt;TH># EMPLOYEES&lt;/TH>";
-print "&lt;/TR>";
-
-while (OCIFetchInto($stmt,&amp;$data,OCI_ASSOC)) {
-    print "&lt;TR>";
-    $dname  = $data["DNAME"];
-    $deptno = $data["DEPTNO"];
-    print "&lt;TD>$dname&lt;/TD>";
-    print "&lt;TD>$deptno&lt;/TD>";
-    ociexecute($data[ "EMPCNT" ]);
-    while (OCIFetchInto($data[ "EMPCNT" ],&amp;$subdata,OCI_ASSOC)) {
-        $num_emps = $subdata["NUM_EMPS"];
-        print  "&lt;TD>$num_emps&lt;/TD>";
-    }
-    print "&lt;/TR>";
-}
-print "&lt;/TABLE>";
-print "&lt;/BODY>&lt;/HTML>";
-OCIFreeStatement($stmt);
-OCILogoff($conn);
-?></programlisting></example></para>
-
-   </refsect1>
-  </refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
