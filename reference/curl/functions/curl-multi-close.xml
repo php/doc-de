@@ -1,27 +1,95 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.1 Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: 1.7 Maintainer: jaenecke Status: ready -->
   <refentry xml:id="function.curl-multi-close" xmlns="http://docbook.org/ns/docbook">
    <refnamediv>
     <refname>curl_multi_close</refname>
-    <refpurpose>
-     Eine Gruppe von cURL-Handlern schließen
-    </refpurpose>
+    <refpurpose>Eine Gruppe von cURL-Handlern schließen</refpurpose>
    </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>void</type><methodname>curl_multi_close</methodname>
-      <methodparam><type>resource</type><parameter>mh</parameter></methodparam>
-     </methodsynopsis>
-    
-    &warn.undocumented.func;
-    
-    <simpara>
-     Siehe auch
-     <function>curl_multi_init</function> und <function>curl_close</function>.
-    </simpara>
-   </refsect1>
-  </refentry>
+   
+   <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>void</type><methodname>curl_multi_close</methodname>
+   <methodparam><type>resource</type><parameter>mh</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Schliesst eine Gruppe von cURL-Handlern.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &curl.mh.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.void;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>curl_multi_close</function> example</title>
+    <para>
+     In diesem Beispiel werden zwei cURL-Handles erstellt, einem 
+     Mehrfach-Handle hinzugefügt und anschliessend parallel ausgeführt.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// zwei cURL Resourcen erstellen
+$ch1 = curl_init();
+$ch2 = curl_init();
+
+// URL und weitere Optionen setzen
+curl_setopt($ch1, CURLOPT_URL, "http://www.example.com/");
+curl_setopt($ch1, CURLOPT_HEADER, 0);
+curl_setopt($ch2, CURLOPT_URL, "http://www.php.net/");
+curl_setopt($ch2, CURLOPT_HEADER, 0);
+
+// Mehrfach-Handle erstellen
+$mh = curl_multi_init();
+
+// die zuvor erstellten Handles hinzufügen
+curl_multi_add_handle($mh,$ch1);
+curl_multi_add_handle($mh,$ch2);
+
+$running=null;
+// Handles ausführen
+do {
+    curl_multi_exec($mh,$running);
+} while ($running > 0)
+//close the handles
+curl_multi_remove_handle($ch1);
+curl_multi_remove_handle($ch2);
+curl_multi_close($mh);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>curl_multi_init</function></member>
+    <member><function>curl_close</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
