@@ -1,109 +1,181 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.17 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
-  <chapter xml:id="features.http-auth" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- $Revision: 1.18 $ -->
+<!-- EN-Revision: 1.50 Maintainer: samesch Status: ready -->
+ <chapter xml:id="features.http-auth" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>HTTP-Authentifizierung mit PHP</title>
-    
+
   <simpara>
-   Die HTTP-Authentifizierung durch PHP ist nur verfügbar, wenn PHP als
-   Apache-Modul läuft und funktioniert daher nicht mit der CGI-Version.
-   In einem PHP-Skript für ein Apache-Modul kann man die Funktion
-   <function>header</function> benutzen, um die Nachricht "Authentifizierung 
-   notwendig" an den Client-Browser zu senden, damit dieser
-   ein Fenster zur Eingabe von Benutzername/Passwort öffnet.
-   Hat der Benutzer diese eingegeben, wird die URL des PHP-Scripts
-   mit den Variablen $PHP_AUTH_USER, $PHP_AUTH_PW 
-   und $PHP_AUTH_TYPE, die den jeweiligen Benutzernamen, das 
-   Passwort und den Typ der Identifizierung enthalten, erneut aufgerufen.
-   Momentan wird nur das Authentifizierungsmodell "basic" unterstützt. 
+   Die <acronym>HTTP</acronym>-Authentifizierung durch PHP ist nur verfügbar,
+   wenn PHP als Apache-Modul läuft und funktioniert daher nicht mit der
+   CGI-Version. In einem PHP-Skript für ein Apache-Modul kann man die Funktion
+   <function>header</function> benutzen, um die Nachricht "Authentifizierung
+   notwendig" an den Client-Browser zu senden, damit dieser ein Fenster zur
+   Eingabe von Benutzername/Passwort öffnet. Hat der Benutzer diese
+   eingegeben, wird die URL des PHP-Scripts mit den <link
+   linkend="reserved.variables">vordefinierten Variablen</link>
+   <varname>PHP_AUTH_USER</varname>, <varname>PHP_AUTH_PW</varname> und
+   <varname>AUTH_TYPE</varname>, die den Benutzernamen, das Passwort und den
+   Typ der Authentifizierung enthalten, erneut aufgerufen. Diese
+   vordefinierten Variablen befinden sich in den Arrays <link
+   linkend="reserved.variables.server">$_SERVER</link> und
+   <varname>$HTTP_SERVER_VARS</varname>. Es werden sowohl die "Basic"- als
+   auch (seit PHP 5.1.0) die "Digest"-Authentifizierungsmethode unterstützt.
    Näheres hierzu bei der <function>header</function> Funktion.
   </simpara>
-  
+
   <note>
    <title>Anmerkung zur PHP Version</title>
    <para>
-    <link linkend="language.variables.superglobals">Autoglobals</link>,
+    <link linkend="language.variables.superglobals">Superglobale</link>,
     wie <link linkend="reserved.variables.server">$_SERVER</link>, sind seit
-    der PHP Version <link xlink:href="&url.php.release4.1.0;">4.1.0</link> verfügbar.
-    <varname>$HTTP_SERVER_VARS</varname> seit PHP 3.
+    PHP <link xlink:href="&url.php.release4.1.0;">4.1.0</link> verfügbar.
+    <varname>$HTTP_SERVER_VARS</varname> steht seit PHP 3 zur Verfügung.
    </para>
   </note>
 
   <para>
-   Ein Auszug aus einem Skript, das die Clientauthentifizierung
-   auf einer Seite erzwingt, würde so aussehen:
- 
+   Ein Auszug aus einem Skript, das die Clientauthentifizierung auf einer
+   Seite erzwingt, würde so aussehen:
+  </para>
+  <para>
    <example>
-    <title>HTTP-Authentifizierung</title>
+    <title>Beispiel: Basic-HTTP-Authentifizierung</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-  if (!isset($_SERVER['PHP_AUTH_USER'])) {
-       Header("WWW-Authenticate: Basic realm=\"My Realm\"");
-       Header("HTTP/1.0 401 Unauthorized");
-       echo "Text to send if user hits Cancel button\n";
-       exit;
-		} else {
-    echo "Hello {$_SERVER['PHP_AUTH_USER']}";
-    echo "<p>You entered {$_SERVER['PHP_AUTH_PW']} as your password.</p>";
-  }
+if (!isset($_SERVER['PHP_AUTH_USER'])) {
+    header('WWW-Authenticate: Basic realm="My Realm"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo 'Text, der gesendet wird, falls der Benutzer auf Abbrechen drückt';
+    exit;
+} else {
+    echo "<p>Hallo {$_SERVER['PHP_AUTH_USER']}.</p>";
+    echo "<p>Sie gaben {$_SERVER['PHP_AUTH_PW']} als Passwort ein.</p>";
+}
 ?>
 ]]>
     </programlisting>
    </example>
-   </para>
+  </para>
+
+  <para>
+   <example>
+    <title>Beispiel: Digest-HTTP-Authentifizierung</title>
+    <para>
+     In diesem Beispiel wird gezeigt, wie ein einfaches Skript für die
+     Digest-HTTP-Authentifizierung implementiert wird. Weitere Informationen
+     dazu finden Sie im <link xlink:href="&url.rfc;2617">RFC 2617</link>.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$realm = 'Eingeschränkter Bereich';
+
+// Benutzer => Passwort
+$benutzer = array('admin' => 'mypass', 'gast' => 'gast');
+
+if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
+    header('HTTP/1.1 401 Unauthorized');
+    header('WWW-Authenticate: Digest realm="' . $realm .
+           '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($realm) .
+           '"');
+
+    die('Text, der gesendet wird, falls der Benutzer auf Abbrechen drückt');
+}
+
+// Analysieren der Variable PHP_AUTH_DIGEST
+if (!($daten = http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) ||
+    !isset($benutzer[$daten['username']]))
+    die('Falsche Zugangsdaten!');
+
+// Erzeugen einer gültigen Antwort
+$A1 = md5($daten['username'] . ':' . $realm . ':' .
+          $benutzer[$daten['username']]);
+$A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $daten['uri']);
+$gueltige_antwort = md5($A1 . ':' . $daten['nonce'] . ':' . $daten['nc'] .
+                        ':' . $daten['cnonce'] . ':' . $daten['qop'] . ':' .
+                        $A2);
+
+if ($daten['response'] != $gueltige_antwort)
+    die('Falsche Zugangsdaten!');
+
+// OK, gültige Benutzername & Passwort
+echo 'Sie sind angemeldet als: ' . $daten['username'];
+
+// Funktion zum analysieren der HTTP-Auth-Header
+function http_digest_parse($txt) {
+    // gegen fehlende Daten schützen
+    $noetige_teile = array('nonce'=>1, 'nc'=>1, 'cnonce'=>1, 'qop'=>1,
+                           'username'=>1, 'uri'=>1, 'response'=>1);
+    $daten = array();
+
+    preg_match_all('@(\w+)=(?:([\'"])([^\2]+)\2|([^\s,]+))@', $txt, $treffer,
+                   PREG_SET_ORDER);
+
+    foreach ($treffer as $t) {
+        $daten[$t[1]] = $t[3] ? $t[3] : $t[4];
+        unset($noetige_teile[$t[1]]);
+    }
+
+    return $noetige_teile ? false : $daten;
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
 
   <note>
-   <title>Hinweis</title>
+   <title>Hinweis zur Kompatibilität</title>
    <para>
-    Achten Sie bei den Header-Zeilen für maximale Kompatibilität auf die
-    richtige Schreibweise! Das Schlüsselwort "Basic" sollte genau so geschrieben
-    werden, der Realm-String muss in doppelte (nicht einfache) Anführungszeichen
-    eingeschlossen sein, und in der "HTTP/1.0 401"-Zeile
-    darf nur genau ein Leerzeichen vor dem 401-Code stehen.
+    Achten Sie für die maximale Kompatibilität mit allen Clients bei den
+    Header-Zeilen auf die richtige Schreibweise! Das Schlüsselwort "Basic"
+    sollte genau so geschrieben werden, der Realm-String muss in doppelte
+    (nicht einfache) Anführungszeichen gesetzt werden und in der
+    <emphasis>HTTP/1.0 401</emphasis>-Zeile darf nur genau ein Leerzeichen vor
+    dem <emphasis>401</emphasis>-Code stehen. Wie im Beispiel oben zu sehen,
+    müssen die Authentifizierungsparameter durch Kommata getrennt werden.
    </para>
   </note>
 
   <para>
-   Anstatt $_SERVER['PHP_AUTH_USER'] und $_SERVER['PHP_AUTH_PW'] einfach nur 
-   auszugeben, werden Sie den Benutzernamen und das Passwort 
-   auf Gültigkeit überprüfen wollen. Dies kann durch die Abfrage 
-   einer Datenbank oder das Einlesen einer Textdatei geschehen.
+   Anstatt <varname>PHP_AUTH_USER</varname> und <varname>PHP_AUTH_PW</varname>
+   wie im Beispiel oben einfach nur auszugeben, werden Sie den Benutzernamen
+   und das Passwort auf Gültigkeit überprüfen wollen. Dies kann durch abfragen
+   einer Datenbank oder die Suche des Benutzers in einer Textdatei geschehen.
   </para>
 
   <para>
-   Vorsicht bei einigen Internet Explorer-Versionen - sie scheinen
-   sehr wählerisch zu sein, was die Reihenfolge der Header angeht.
-   Abhilfe schafft hier das Senden des <emphasis>WWW-Authenticate</emphasis>
-   Headers vor dem <errorcode>HTTP/1.0 401</errorcode>.
+   Vorsicht bei einigen Internet Explorer-Versionen - sie scheinen sehr
+   wählerisch zu sein, was die Reihenfolge der Header angeht. Abhilfe schafft
+   hier das Senden des <emphasis>WWW-Authenticate</emphasis>-Headers vor dem
+   <errorcode>HTTP/1.0 401</errorcode>-Header.
   </para>
 
   <simpara>
-   Um zu unterbinden, dass ein Skript das Passwort einer durch 
-   einen traditionellen externen Mechanismus geschützten Seite
-   ausliest, werden die PHP_AUTH Variablen nicht gesetzt, wenn 
-   eine externe Authentifizierung für diese bestimmte Seite aktiviert
-   ist. In diesem Fall kann die $_SERVER['REMOTE_USER'] Variable benutzt
-   werden, um den Benutzer durch die externe Zugriffskontrolle
-   zu identifizieren.
+   Um zu unterbinden, dass ein Skript das Passwort einer durch einen
+   traditionellen externen Mechanismus geschützten Seite ausliest, werden die
+   PHP_AUTH Variablen ab PHP 4.3.0 nicht gesetzt, wenn eine externe
+   Authentifizierung für diese bestimmte Seite und &safemode; aktiviert sind.
+   In diesem Fall kann die Variable <varname>REMOTE_USER</varname> benutzt
+   werden, um den Benutzer durch die externe Zugriffskontrolle zu
+   identifizieren. Es kann also <varname>$_SERVER['REMOTE_USER']</varname>
+   benutzt werden.
   </simpara>
 
   <note>
    <title>Konfigurationshinweis</title>
    <para>
     PHP prüft das Vorhandensein einer <literal>AuthType</literal>
-    Apache-Direktive, um zu entscheiden, ob eine externe
-    Authentifizierung aktiv ist. Vermeiden Sie deshalb diese
-    Konfigurationsdirektive im Kontext der PHP-Authentifizierung
-    (anderenfalls wird jeder Authentifizierungsversuch misslingen).
+    Apache-Direktive, um zu entscheiden, ob eine externe Authentifizierung
+    aktiv ist.
    </para>
   </note>
 
   <simpara>
-   Zu beachten ist, dass obenstehendes keinesfalls jemanden,
-   der die Kontrolle über eine nichtgeschützte URL hat, davon
-   abhalten kann, Passwörter von geschützten URLs auf dem
-   gleichen Rechner auszulesen.
+   Zu beachten ist, dass obenstehendes keinesfalls jemanden, der auf dem
+   selben Server die Kontrolle über eine nicht authentifizierte URL hat, davon
+   abhalten kann, Passwörter von authentifizierten URLs auszulesen.
   </simpara>
   <simpara>
    Sowohl Netscape als auch der Internet Explorer löschen den
@@ -114,48 +186,85 @@
    für das automatische Ausloggen nach Ablauf einer bestimmten Zeitspanne
    oder für einen Logout-Button genutzt.
   </simpara>
-  <example>
-     <title>HTTP-Authentifizierung, mit erneuter Anforderung von Name/Passwort</title>
-     <programlisting role="php">
+  <para>
+   <example>
+    <title>
+     HTTP-Authentifizierung, mit erneuter Anforderung von Name/Passwort
+    </title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-  function authenticate()
-  {
-     Header("WWW-Authenticate: Basic realm=\"Test Authentication System\"");
-     Header("HTTP/1.0 401 Unauthorized");
-     echo "You must enter a valid login ID and password to access this resource\n";
-     exit;
-  }
+function authentifizieren() {
+    header('WWW-Authenticate: Basic realm="Test Authentication System"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo "Bitte geben Sie eine gültige Login-ID und das Passwort für den
+        Zugang ein\n";
+    exit;
+}
 
-  if (!isset($_SERVER['PHP_AUTH_USER']) || ($SeenBefore == 1 && ! strcmp( $OldAuth, $_SERVER['PHP_AUTH_USER']))) {
-    authenticate();
-  } else {
-      echo "Welcome: {$_SERVER['PHP_AUTH_USER']}<br>";
-      echo "Old: $OldAuth";
-      echo "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">\n";
-      echo "<input type=\"hidden\" name=\"SeenBefore\" value=\"1\">\n";
-      echo "<input type=\"hidden\" name=\"OldAuth\" value=\"{$_SERVER['PHP_AUTH_USER']}\">\n";
-      echo "<input type=\"submit\" value=\"Re Authenticate\">\n";
-      echo "</form>\n";
-  }
+if (!isset($_SERVER['PHP_AUTH_USER']) ||
+    ($_POST['Gesehen'] == 1 &&
+    $_POST['AlteAuth'] == $_SERVER['PHP_AUTH_USER'])) {
+    authentifizieren();
+} else {
+    echo "<p>Willkommen: {$_SERVER['PHP_AUTH_USER']}<br />";
+    echo "Alt: {$_REQUEST['AlteAuth']}";
+    echo "<form action='{$_SERVER['PHP_SELF']}' METHOD='post'>\n";
+    echo "<input type='hidden' name='Gesehen' value='1' />\n";
+    echo "<input type='hidden' name='AlteAuth'
+        value='{$_SERVER['PHP_AUTH_USER']}' />\n";
+    echo "<input type='submit' value='Erneut Anmelden' />\n";
+    echo "</form></p>\n";
+}
 ?>
 ]]>
-   </programlisting>
-  </example>
+    </programlisting>
+   </example>
+  </para>
   <simpara>
-   Dieses Verhalten wird vom Authentifizierungsstandard HTTP Basic 
-   nicht gefordert, daher sollte man sich nie darauf verlassen. Tests
-   mit Lynx haben gezeigt, dass Lynx die Authentifizierungsinformationen
-   bei Erhalt einer 401-Meldung nicht löscht. Ein Klick auf den Zurück-
-   Button und danach auf Vorwärts wird die angeforderte Adresse
-   öffnen (und zwar so lange, bis die Identifizierung der Benutzer
-   geändert wird).
+   Dieses Verhalten wird vom Authentifizierungsstandard HTTP Basic nicht
+   gefordert, daher sollte man sich nie darauf verlassen. Tests mit Lynx haben
+   gezeigt, dass Lynx die Authentifizierungsinformationen bei Erhalt einer
+   401-Meldung nicht löscht. Solange der benötigte Berechtigungsnachweis nicht
+   geändert wird, kann der Benutzer auf die vorhergehende Seite zurück und
+   danach vorwärts und die angeforderte Adresse wieder öffnen. Der Benutzer
+   kann die Authentifizierungsinformationen aber durch Drücken von '_'
+   löschen.
   </simpara>
   <simpara>
-   Weiterhin muss beachtet werden, dass dies unter dem Microsoft
-   IIS mit der CGI-Version von PHP aufgrund einer
-   Einschränkung des IIS nicht funktioniert.
+   Weiterhin muss beachtet werden, dass die HTTP-Authentifizierung vor PHP
+   4.3.3 unter dem Microsoft IIS mit der CGI-Version von PHP aufgrund einer
+   Einschränkung des IIS nicht funktioniert. Damit sie mit PHP 4.3.3+
+   funktioniert, müssen Sie die "<literal>Directory Security</literal>" Ihrer
+   IIS-Konfiguration ändern. Klicken Sie auf "<literal>Edit</literal>" und
+   aktivieren Sie nur "<literal>Anonymous Access</literal>". Alle anderen
+   Felder sollten deaktiviert bleiben.
   </simpara>
+  <simpara>
+   Eine andere Einschränkung gibt es, falls Sie das IIS-Modul (ISAPI) und PHP
+   4 verwenden: Sie können nicht die <literal>PHP_AUTH_*</literal>-Variablen
+   benutzen, aber stattdessen steht die Variable
+   <literal>HTTP_AUTHORIZATION</literal> zur Verfügung. Schauen Sie sich dazu
+   z.B. folgenden Code an: <literal>list($user, $pw) = explode(':',
+   base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));</literal>
+  </simpara>
+  <note>
+   <title>IIS-Anmerkung:</title>
+   <simpara>
+    Damit die HTTP-Authentifizierung mit dem IIS funktioniert, muss die
+    PHP-Konfigurationsanweisung <link
+    linkend="ini.cgi.rfc2616-headers">cgi.rfc2616_headers</link> auf
+    <literal>0</literal> (die Voreinstellung) gesetzt sein.
+   </simpara>
+  </note>
+  <note>
+   <para>
+    Falls <link linkend="ini.safe-mode">safe mode</link> aktiviert ist, wird
+    die uid des Skripts dem <literal>realm</literal>-Teil des
+    <literal>WWW-Authenticate</literal>-Headers hinzugefügt.
+   </para>
+  </note>
+
  </chapter>
 
 <!-- Keep this comment at the end of the file
