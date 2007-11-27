@@ -1,31 +1,42 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.13 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
+<!-- $Revision: 1.14 $ -->
+<!-- EN-Revision: 1.27 Maintainer: samesch Status: ready -->
  <chapter xml:id="features.remote-files" xmlns="http://docbook.org/ns/docbook">
   <title>Zugriff auf entfernte Dateien</title>
 
   <para>
-   Wenn die Unterstützung für den &quot;URL fopen wrapper&quot; bei der
-   Konfiguration von PHP vorhanden ist (welche standardmäßig eingestellt ist, es sei denn,
-   die Option <option>--disable-url-fopen-wrapper</option> wurde bei der Installation verwendet (Versionen 
-   bis 4.0.3) oder der Parameter <parameter>allow_url_fopen</parameter> in der php.ini 
-   deaktiviert wurde (neuere Versionen),
-   können HTTP und FTP URLs bei den meisten Funktionen verwendet werden, die einen
-   Dateinamen als Parameter benötigen, inklusive <function>require</function>
-   und <function>include</function> Anweisungen.
+   Wenn <parameter>allow_url_fopen</parameter> in der &php.ini; aktiviert ist,
+   können <acronym>HTTP</acronym>- und <acronym>FTP</acronym>-URLs bei den
+   meisten Funktionen verwendet werden, die einen Dateinamen als Parameter
+   benötigen. Darüber hinaus können URLs in <function>include</function>-,
+   <function>include_once</function>-, <function>require</function>- und
+   <function>require_once</function>-Anweisungen verwendet werden. Weitere
+   Informationen zu den Protokollen, die von PHP unterstützt werden, finden
+   Sie im Abschnitt <xref linkend="wrappers"/>.
   </para>
+  <note>
+   <para>
+    Bis einschließlich PHP 4.0.3 muss PHP mit der Option
+    <option>--enable-url-fopen-wrapper</option> konfiguriert worden sein,
+    damit die URL-Wrapper verwendet werden können.
+   </para>
+  </note>
   <para>
    <note>
     <para>
-     remote files funktionieren nicht mit <function>include</function> und
-     <function>require</function> Anweisungen unter Windows.
+     Vor PHP 4.3 war mit folgenden Funktionen der Windows-Versionen von PHP
+     kein Zugriff auf entfernte Dateien möglich: <function>include</function>,
+     <function>include_once</function>, <function>require</function>,
+     <function>require_once</function> und die imagecreatefromXXX-Funktionen
+     der <xref linkend="ref.image"/>-Erweiterung.
     </para>
    </note>
   </para>
   <para>
-   Beispielsweise kann eine Datei auf einem anderen Webserver geöffnet und verarbeitet werden. 
-   Diese Daten können zur Abfrage einer Datenbank benutzt werden oder passend zum Rest der eigenen 
-   Website ausgegeben werden.
+   Beispielsweise kann damit eine Datei auf einem anderen Webserver geöffnet
+   und nach benötigten Daten analysiert werden. Diese Daten können zur Abfrage
+   einer Datenbank benutzt werden oder passend zum Rest der eigenen Website
+   ausgegeben werden.
   </para>
   <para>
    <example>
@@ -33,33 +44,38 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$file = fopen ("http://www.example.com/", "r");
-if (!$file) {
+$datei = fopen ("http://www.example.com/", "r");
+if (!$datei) {
     echo "<p>Datei konnte nicht geöffnet werden.\n";
     exit;
 }
-while (!feof ($file)) {
-    $line = fgets ($file, 1024);
+while (!feof ($datei)) {
+    $zeile = fgets ($datei, 1024);
     /* Funktioniert nur, wenn Titel und title-Tags in einer Zeile stehen */
-    if (eregi ("<title>(.*)</title>", $line, $out)) {
-        $title = $out[1];
+    if (eregi ("<title>(.*)</title>", $zeile, $treffer)) {
+        $title = $treffer[1];
         break;
     }
 }
-fclose($file);
+fclose($datei);
 ?>
 ]]>
     </programlisting>
    </example>
   </para>
   <para>
-   Auch eine Datei auf einem FTP-Server kann geschrieben werden, solange man sich über 
-   einen Benutzer mit entsprechenden Zugriffsrechten verbindet und die Datei noch nicht existiert.
-   Um sich mit einem anderen Benutzer als 'anonymous' zu verbinden muß ein
-   username (und möglichst ein Passwort) innerhalb der URL angegeben werden, wie z.B.
-   'ftp://user:password@ftp.example.com/pfad/zur/datei'. (Die selbe Syntax 
-   kann verwendet werden, um auf Daten via HTTP zuzugreifen, wenn diese eine Basic
-   Authentication benötigen.)
+   Auch eine Datei auf einem FTP-Server kann geschrieben werden, vorausgesetzt
+   man ist als Benutzer mit entsprechenden Zugriffsrechten angemeldet. Auf
+   diesem Weg können nur neue Dateien angelegt werden. Falls Sie versuchen
+   eine schon existierende Datei zu überschreiben, wird der
+   <function>fopen</function>-Aufruf fehlschlagen.
+  </para>
+  <para>
+   Um sich statt als 'anonymous' als anderer Benutzer anzumelden, muss ein
+   Benutzername (und möglicherweise ein Passwort) innerhalb der URL angegeben
+   werden, wie z.B. 'ftp://benutzer:passwort@ftp.example.com/pfad/zur/datei'.
+   Die selbe Syntax kann verwendet werden, um auf Dateien via HTTP
+   zuzugreifen, wenn diese eine Basic-Authentifizierung benötigen.
   </para>
   <para>
    <example>
@@ -67,27 +83,29 @@ fclose($file);
     <programlisting role="php">
 <![CDATA[
 <?php
-$file = fopen ("ftp://ftp.example.com/incoming/outputfile", "w");
-if (!$file) {
-    echo "<p>Datei konnte zum schreiben nicht geöffnet werden.\n";
+$datei = fopen ("ftp://ftp.example.com/incoming/outputfile", "w");
+if (!$datei) {
+    echo "<p>Datei konnte nicht zum schreiben geöffnet werden.\n";
     exit;
 }
 /* Schreibe die Daten hier hin. */
-fputs ($file, "$HTTP_USER_AGENT\n");
-fclose ($file);
+fputs ($datei, $_SERVER['HTTP_USER_AGENT'] . "\n");
+fclose ($datei);
 ?>
-]]>  
+]]>
     </programlisting>
    </example>
   </para>
   <para>
    <note>
     <para>
-     Obiges Beispiel könnte dazu verleiten, dieses Verfahren zu benutzen, um in ein 'remote log-file' 
-     zu schreiben. Wie oben erwähnt kann man jedoch ausschließlich neue Dateien anlegen, 
-     wenn man URL fopen() wrapper benutzt. Für 'distributed logging' sollte man sich die Funktion 
+     Obiges Beispiel könnte dazu verleiten, dieses Verfahren zu benutzen, um
+     in eine entfernte Log-Datei zu schreiben. Das würde aber leider nicht
+     funktionieren, weil der <function>fopen</function>-Aufruf fehlschlagen
+     würde, wenn die entfernte Datei bereits existiert. Für eine
+     dezentralisierte Protokollierung sollten Sie sich die Funktion
      <function>syslog</function> anschauen.
-    </para> 
+    </para>
    </note>
   </para>
 
