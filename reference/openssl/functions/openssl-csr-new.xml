@@ -1,136 +1,168 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.12 Maintainer: jaenecke Status: ready -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.18 Maintainer: jaenecke Status: ready -->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-csr-new">
+ <refnamediv>
+  <refname>openssl_csr_new</refname>
+  <refpurpose>Erzeugt einen CSR </refpurpose>
+ </refnamediv>
+ 
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>mixed</type><methodname>openssl_csr_new</methodname>
+   <methodparam><type>array</type><parameter>dn</parameter></methodparam>
+   <methodparam><type>resource</type><parameter role="reference">privkey</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>configargs</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>extraattribs</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>openssl_csr_new</function> erzeugt einen neuen CSR
+   (Zertifikatssignierungsanfrage) basierend auf den Informationen, die mit
+   dem Parameter <parameter>dn</parameter> angegeben werden. Dieser
+   bestimmt den Distinguished Name, der im Zertifikat benutzt werden soll.
+  </para>
+  &reference.openssl.note-openssl-cnf;
+ </refsect1>
+ 
+  <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>dn</parameter></term>
+     <listitem>
+      <para>
+       Der Distinguished Name der im Zertifikat genutzt werden soll
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>privkey</parameter></term>
+     <listitem>
+      <para>
+       <parameter>privkey</parameter> sollte auf einen privaten Schlüssel
+       zeigen, der vorher mit <function>openssl_pkey_new</function> erzeugt
+       wurde (oder den Sie auf andere Weise von der Familie der openssl_pkey
+       Funktionen erhalten haben). Der entsprechende öffentliche Teil des
+       Schlüssels wird benutzt um den CSR zu signieren.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>configargs</parameter></term>
+     <listitem>
+      <para>
+       <parameter>configargs</parameter>können Sie benutzen um zusätzliche
+       Konfigurationsoptionen für den CSR anzugeben. Sowohl
+       <parameter>dn</parameter> als auch <parameter>extraattribs</parameter>
+       sind assoziative Arrays, deren Schlüssel zu OIDs konvertiert und auf den
+       relevanten Teil der Anfrage angewendet werden.
+      </para>
+      &reference.openssl.note-openssl-cnf;
+      <para>
+       Im Standard werden die Informationen für die Anfrage aus der
+       <literal>openssl.conf</literal> ihres Systems benutzt. Sie können einen
+       Konfigurationsabsschnitt mit dem Schlüssel
+       <literal>config_section_section</literal> des Arrays
+       <parameter>configargs</parameter>setzen. Außerdem haben Sie die
+       Möglichkeit eine alternative openssl Konfigurationsdatei anzugeben, indem
+       Sie den Wert des Schlüssels <literal>config</literal> auf den Pfad zu der
+       Datei setzen, die Sie benutzen möchten. Die unten in der Tabelle
+       aufgeführten Schlüssel in <parameter>configargs</parameter>, falls Sie
+       diese definiert haben, verhalten sich genau gleich wie die entsprechenden
+       Werte in der <literal>openssl.conf</literal>
+       <table>
+        <title>Überschreiben der Konfiguration</title>
+        <tgroup cols="3">
+         <thead>
+          <row>
+           <entry><parameter>configargs</parameter> Schlüssel</entry>
+           <entry>Typ</entry>
+           <entry><literal>openssl.conf</literal> Entsprechung</entry>
+           <entry>Beschreibung</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>digest_alg</entry>
+           <entry><type>string</type></entry>
+           <entry>default_md</entry>
+           <entry>Bestimmt welche digest Methode benutzt wird</entry>
+          </row>
+          <row>
+           <entry>x509_extensions</entry>
+           <entry><type>string</type></entry>
+           <entry>x509_extensions</entry>
+           <entry>
+            Bestimmt welche Erweiterung benutzt werden soll, wenn ein x509
+            Zertifikat erzeugt werden soll.
+           </entry>
+          </row>
+          <row>
+           <entry>req_extensions</entry>
+           <entry><type>string</type></entry>
+           <entry>req_extensions</entry>
+           <entry>
+            Bestimmt welche Erweiterung benutzt werden soll, wenn eine
+            Zertifikatssignierungsanfrage (CSR) erzeugt werden soll.
+           </entry>
+          </row>
+          <row>
+           <entry>private_key_bits</entry>
+           <entry><type>string</type></entry>
+           <entry>default_bits</entry>
+           <entry>
+            Bestimmt wieviele Bits verwendet werden, um einen privaten Schlüssel
+            zu erzeugen.
+           </entry>
+          </row>
+          <row>
+           <entry>private_key_type</entry>
+           <entry><type>integer</type></entry>
+           <entry>none</entry>
+           <entry>
+            Bestimmt den Typ des privaten Schlüssels der erzeugt werden soll.
+            Der Typ kann einer der folgenden sein:
+            <constant>OPENSSL_KEYTYPE_DSA</constant>,
+            <constant>OPENSSL_KEYTYPE_DH</constant> oder
+            <constant>OPENSSL_KEYTYPE_RSA</constant>. Der Standardwert ist
+            <constant>OPENSSL_KEYTYPE_RSA</constant>, momentan ist das der
+            einzige Schlüsseltyp, der unterstützt wird.
+           </entry>
+          </row>
+          <row>
+           <entry>encrypt_key</entry>
+           <entry><type>boolean</type></entry>
+           <entry>encrypt_key</entry>
+           <entry>
+            Soll ein exportiertet Schlüssel (mit Passphrase) verschlüsselt
+            werden?
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
 
-  <refentry xml:id="function.openssl-csr-new" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>openssl_csr_new</refname>
-    <refpurpose>Erzeugt einen CSR </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>openssl_csr_new</methodname>
-      <methodparam><type>array</type><parameter>dn</parameter></methodparam>
-      <methodparam><type>resource</type><parameter>&amp;privkey</parameter></methodparam>
-      <methodparam choice="opt"><type>array</type><parameter>configargs</parameter></methodparam>
-      <methodparam choice="opt"><type>array</type><parameter>extraattribs</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>openssl_csr_new</function> erzeugt einen neuen CSR
-     (Zertifikatssignierungsanfrage) basierend auf den Informationen, die mit
-     dem Parameter <parameter>dn</parameter> angegeben werden. Dieser
-     bestimmt den Distinguished Name, der im Zertifikat benutzt werden soll.
-    </para>
-    <para>
-     <parameter>privkey</parameter> sollte auf einen privaten Schlüssel
-     zeigen, der vorher mit <function>openssl_pkey_new</function> erzeugt
-     wurde (oder den Sie auf andere Weise von der Familie der openssl_pkey
-     Funktionen erhalten haben). Der entsprechende öffentliche Teil des
-     Schlüssels wird benutzt um den CSR zu signieren.
-    </para>
-    <para>
-     <parameter>extraattribs</parameter> können Sie benutzen um zusätzliche
-     Konfigurationsoptionen für den CSR anzugeben. Sowohl
-     <parameter>dn</parameter> als auch <parameter>extraattribs</parameter>
-     sind assoziative Arrays, deren Schlüssel zu OIDs konvertiert und auf den
-     relevanten Teil der Anfrage angewendet werden.
-    </para>
-    &reference.openssl.note-openssl-cnf;
-    <para>
-     Im Standard werden die Informationen für die Anfrage aus der
-     <literal>openssl.conf</literal> ihres Systems benutzt. Sie können einen
-     Konfigurationsabsschnitt mit dem Schlüssel
-     <literal>config_section_section</literal> des Arrays
-     <parameter>configargs</parameter>setzen. Außerdem haben Sie die
-     Möglichkeit eine alternative openssl Konfigurationsdatei anzugeben, indem
-     Sie den Wert des Schlüssels <literal>config</literal> auf den Pfad zu der
-     Datei setzen, die Sie benutzen möchten. Die unten in der Tabelle
-     aufgeführten Schlüssel in <parameter>configargs</parameter>, falls Sie
-     diese definiert haben, verhalten sich genau gleich wie die entsprechenden
-     Werte in der <literal>openssl.conf</literal>
-     <table>
-      <title>Überschreiben der Konfiguration</title>
-      <tgroup cols="3">
-       <thead>
-        <row>
-         <entry><parameter>configargs</parameter> Schlüssel</entry>
-         <entry>Typ</entry>
-         <entry><literal>openssl.conf</literal> Entsprechung</entry>
-         <entry>Beschreibung</entry>
-        </row>
-       </thead>
-       <tbody>
-        <row>
-         <entry>digest_alg</entry>
-         <entry><type>string</type></entry>
-         <entry>default_md</entry>
-         <entry>Bestimmt welche digest Methode benutzt wird</entry>
-        </row>
-        <row>
-         <entry>x509_extensions</entry>
-         <entry><type>string</type></entry>
-         <entry>x509_extensions</entry>
-         <entry>
-          Bestimmt welche Erweiterung benutzt werden soll, wenn ein x509
-          Zertifikat erzeugt werden soll.
-         </entry>
-        </row>
-        <row>
-         <entry>req_extensions</entry>
-         <entry><type>string</type></entry>
-         <entry>req_extensions</entry>
-         <entry>
-          Bestimmt welche Erweiterung benutzt werden soll, wenn eine
-          Zertifikatssignierungsanfrage (CSR) erzeugt werden soll.
-         </entry>
-        </row>
-        <row>
-         <entry>private_key_bits</entry>
-         <entry><type>string</type></entry>
-         <entry>default_bits</entry>
-         <entry>
-          Bestimmt wieviele Bits verwendet werden, um einen privaten Schlüssel
-          zu erzeugen.
-         </entry>
-        </row>
-        <row>
-         <entry>private_key_type</entry>
-         <entry><type>integer</type></entry>
-         <entry>none</entry>
-         <entry>
-          Bestimmt den Typ des privaten Schlüssels der erzeugt werden soll.
-          Der Typ kann einer der folgenden sein:
-          <constant>OPENSSL_KEYTYPE_DSA</constant>,
-          <constant>OPENSSL_KEYTYPE_DH</constant> oder
-          <constant>OPENSSL_KEYTYPE_RSA</constant>. Der Standardwert ist
-          <constant>OPENSSL_KEYTYPE_RSA</constant>, momentan ist das der
-          einzige Schlüsseltyp, der unterstützt wird.
-         </entry>
-        </row>
-        <row>
-         <entry>encrypt_key</entry>
-         <entry><type>boolean</type></entry>
-         <entry>encrypt_key</entry>
-         <entry>
-          Soll ein exportiertet Schlüssel (mit Passphrase) verschlüsselt
-          werden?
-         </entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </table>
-    </para>
-    <simpara>
-     &return.success;
-    </simpara>
-    <para>
-     <example>
-      <title>
-       <function>openssl_csr_new</function> Beispiel - erzeugen eines
-       selbstsignierten Zertifikats
-      </title>
-      <programlisting role="php">
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt den CSR zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Erzeugen eines selbstsignierten Zertifikats</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 // Angabe der Daten für den distinguished name, der in dem Zertifikat benutzt
