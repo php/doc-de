@@ -1,195 +1,14 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.9 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
- <reference xml:id="ref.dba" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <title>dba Datenbank (dbm-style) Abstraktions-Funktionen</title>
-  <titleabbrev>dba</titleabbrev>
+<!-- $Revision: 1.10 $ -->
+<!-- EN-Revision: 1.28 Maintainer: nobody Status: ready -->
+<reference xml:id="ref.dba" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Datenbank (dbm-style) Abstraktionsschicht-&Functions;</title>
+ <titleabbrev>dba</titleabbrev>
 
-  <partintro>
-   <para>
-    Diese Funktionen bilden die Basis für den Zugriff auf
-    Datenbanken vom Typ "Berkeley DB".
-   </para>
-   <para>
-    "dba" implementiert eine generelle Abstraktionsschicht für
-    verschiedene dateibasierte Datenbanken.
-    Der Funktionsumfang ist daher beschränkt auf eine
-    gemeinsame Teilmenge des Funktionsumfangs aktueller Datenbanken
-    (zum Beispiel
-    <link xlink:href="&url.sleepycat;">Sleepycat Software's DB2</link>,
-    nicht zu verwechseln mit IBM's DB2 Software, 
-    die über die <link linkend="ref.uodbc">ODBC Funktionen</link>
-    unterstützt wird).
-   </para>
-   <para>
-    Das Verhalten der dba-Funktionen ist teilweise abhängig von
-    der Implementation des zugrundeliegenden Datenbanksystems.
-    Funktionen wie zum Beispiel <function>dba_optimize</function>
-    und <function>dba_sync</function> funktionieren vielleicht bei
-    einer Datenbank, und tun gar nichts bei einer Anderen.
-   </para>
-   <para>
-    Beim Aufruf von <function>dba_open</function> oder
-    <function>dba_popen</function> muss einer der verfügbaren
-    Handler-Namen aus der nachfolgenden Handler-Tabelle angegeben
-    werden.  Die tatsächlich verfügbaren Handler in
-    Ihrer PHP-Installation können Sie mit der Funktion
-    <function>phpinfo</function> anzeigen lassen.  (Um zum
-    Zeitpunkt der PHP-Generierung die Unterstützung für
-    einen der folgenden Handler verfügbar zu machen,
-    fügen Sie bitte den jeweils angegebenen
-    <literal>--with-XXXX</literal> Compilerschalter in ihren
-    PHP-Konfigurations-Aufruf ein.)
-    <table>
-     <title>Liste der DBA-Handler</title>
-     <tgroup cols="2">
-      <thead>
-       <row>
-	<entry>Handler</entry>
-	<entry>Hinweise</entry>
-       </row>
-      </thead>
-      <tbody>
-       <row>
-	 <entry><literal>dbm</literal></entry>
-        <entry>
-         Dbm ist der ursprüngliche und älteste Typ der
-         "Berkeley DB" Datenbanken. Sie sollten diesen Typ
-         wenn möglich vermeiden. 
-         Die in DB2 und gdbm enthaltenen dbm-Kompatibilitätsfunktionen
-         werden ebenfalls nicht unterstützt, da sie nur auf
-         Quellcode-Basis kompatibel sind, aber Dateien im originalen
-         dbm-Format nicht bearbeiten können.
-         (<literal>--with-dbm</literal>)
-        </entry>
-       </row>
+ &reference.dba.entities.functions;
 
-       <row>
-	 <entry><literal>ndbm</literal></entry>
-        <entry>
-         Ndbm ist neuer und flexibler als Dbm. Es hat jedoch 
-         die meisten Einschränkungen von Dbm übernommen
-         und ist daher ebenfalls nicht empfehlenswert.
-         (<literal>--with-ndbm</literal>)
-        </entry>
-       </row>
+</reference>
 
-       <row>
-	 <entry><literal>gdbm</literal></entry>
-        <entry>
-         Gdbm ist der <link xlink:href="&url.gdbm;">GNU Datenbank Manager</link>.
-         (<literal>--with-gdbm</literal>)
-        </entry>
-       </row>
-
-       <row>
-	 <entry><literal>db2</literal></entry>
-        <entry>
-         DB2 ist <link xlink:href="&url.sleepycat;">Sleepycat Software's
-         DB2</link>. Es wird beschrieben als "Werkzeugsatz für
-         eingebaute Unterstützung von Hochleistungs-Datenbanken
-         für Standalone- und Client/Server- Applikationen".
-         (<literal>--with-db2</literal>)
-        </entry>
-       </row>
-
-       <row>
-	 <entry><literal>db3</literal></entry>
-        <entry>
-         DB3 ist <link xlink:href="&url.sleepycat;">Sleepycat Software's
-         DB3</link>.  (<literal>--with-db3</literal>) 
-        </entry>
-       </row>
-
-       <row>
-	 <entry><literal>cdb</literal></entry>
-        <entry>
-         Cdb ist "ein schnelles, zuverlässiges und kompaktes
-         Paket zum Erstellen und Auslesen konstanter Datenbanken."
-         Es stammt vom Autor von qmail und kann <link xlink:href="&url.cdb;">
-         hier</link> heruntergeladen werden. Da es für konstante
-         Daten ausgelegt ist, werden nur Lese-Operationen unterstützt.
-         (<literal>--with-cdb</literal>)
-        </entry>
-       </row>
-
-      </tbody>
-     </tgroup>
-    </table>
-   </para>
-   <para>
-    <example>
-     <title>DBA Beispiel</title>
-     <programlisting role="php">
-&lt;?php
-
-$id = dba_open ("/tmp/test.db", "n", "db2");
-
-if (!$id) {
-    echo "dba_open schlug fehl\n";
-    exit;
-}
-
-dba_replace ("key", "Dies ist ein Beispiel!", $id);
-
-if (dba_exists ("key", $id)) {
-    echo dba_fetch ("key", $id);
-    dba_delete ("key", $id);
-}
-
-dba_close ($id);
-?&gt;
-     </programlisting>
-    </example>
-   </para>
-   <para>
-    DBA arbeitet binärsicher und besitzt keine willkürlichen Limits.
-    Es erbt allerdings alle Einschränkungen von der
-    zugrundeliegenden Datenbank-Implementation.
-   </para>
-   <para>
-    Alle dateibasierten Datenbanken müssen einen Weg zur
-    Verfügung stellen, um den Dateimodus einer neu erstellten
-    Datenbank zu bestimmen, soweit dies überhaupt möglich ist.
-    Der Dateimodus wird gewöhnlich als viertes Argument
-    an die Funktionen <function>dba_open</function> oder
-    <function>dba_popen</function> übergeben.
-   </para>
-   <para>
-    Sie können auf alle Einträge in einer Datenbank 
-    sequentiell durch die Verwendung von <function>dba_firstkey</function>
-    und <function>dba_nextkey</function> zugreifen. Während die
-    Datenbank so durchlaufen wird, darf sie nicht verändert werden.
-   </para> 
-   <para>
-    <example>
-     <title>Durchlaufen einer Datenbank</title>
-     <programlisting role="php">
-&lt;?php
-
-# ...Oeffnen der Datenbank...
-
-$key = dba_firstkey ($id);
-
-while ($key != false) {
-    if (...) { # den Schluessel fuer spaetere Aktionen merken
-        $handle_later[] = $key;
-    }
-    $key = dba_nextkey ($id);
-}
-
-for ($i = 0; $i &lt; count($handle_later); $i++)
-    dba_delete ($handle_later[$i], $id);
-
-?&gt;
-     </programlisting>
-    </example>
-   </para>
-  </partintro>
-
-&reference.dba.entities.functions;
-
- </reference>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
@@ -206,5 +25,8 @@ sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
 
