@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.2 $ -->
-<!-- EN-Revision: 1.5 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.9 Maintainer: sammywg Status: ready -->
   <chapter xml:id="security.errors" xmlns="http://docbook.org/ns/docbook">
    <title>Fehlerbehandlung</title>
    <para>
@@ -11,12 +11,14 @@
     Eine Standard-Angriffstaktik beinhaltet die Erstellung eines Profils
     des anzugreifenden Systems, indem die aufgrund der Einspeisung von
     unzulässigen Daten zurückgegebenen Fehlermeldungen anhand deren
-    Art und des Kontextes ausgewertet werden. Wenn z.B. ein Angreifer
+    Art und des Kontextes ausgewertet werden. Dies erlaubt es einem Angreifer,
+    nach Informationen über den Server zu suchen, um seine potentielle
+    Verwundbarkeit herauszufinden. Wenn z.B. ein Angreifer
     Informationen über eine auf einem eingesendeten Formular basierte
     Seite zusammengetragen hat, kann er versuchen, Variablen zu
     überschreiben bzw. zu modifizieren:
     <example>
-     <title>Variablen mit einer eigenen HTML Seite angreifen</title>
+     <title>Variablen mit einer eigenen HTML-Seite angreifen</title>
      <programlisting role="html">
 <![CDATA[
 <form method="post" action="attacktarget?username=badfoo&password=badfoo">
@@ -28,45 +30,45 @@
     </example>
    </para>
    <para>
-    Die normalerweise zurückgegebenen PHP Fehler können für den Entwickler
-    hilfreich sein, wenn dieser ein Skript debuggen möchte, Hinweise auf
-    eine nicht korrekt arbeitende Funktion oder Datei, oder die PHP Datei
-    und die Zeilennummer des aufgetretenen Fehlers anzeigen lassen möchte.
-    Das sind alles Informationen, die ausgenutzt werden können. Es ist für
-    einen PHP Entwickler nicht unüblich, <function>show_source</function>,
-    <function>highlight_string</function>, oder
+    Die normalerweise zurückgegebenen PHP-Fehler können für den Entwickler
+    hilfreich sein, wenn dieser ein Skript debuggen möchte, da sie z.B. Hinweise
+    auf eine nicht vorhandene Funktion oder Datei, die PHP-Datei und die
+    Zeilennummer des auftretenden Fehlers ausgeben. Dies alles sind
+    Informationen, die ausgenutzt werden können. Es ist für
+    einen PHP-Entwickler nicht unüblich, <function>show_source</function>,
+    <function>highlight_string</function> oder
     <function>highlight_file</function> zur Fehlersuche zu verwenden,
-    jedoch kann dies in einem lebenden System auch versteckte Variablen,
+    jedoch kann dies in einem produktiven System auch versteckte Variablen,
     ungeprüfte Syntax und andere gefährliche Informationen aufdecken.
-    Speziell gefährlich ist es, Code von bekannten Quellen mit integrierten
-    Debugging Handlern auszuführen, oder weit verbreitete Debuggingtechniken
+    Besonders gefährlich ist es, Code aus bekannten Quellen mit integrierten
+    Debugging-Handlern auszuführen, oder weit verbreitete Debuggingtechniken
     zu verwenden. Wenn ein Angreifer die von Ihnen benutzte generelle
-    Technik herausfindet, kann er versuchen, mit Brute-Force Ihre Seite zu
-    knacken, indem er verschiedene allgemein gebräuchliche Debug Strings
+    Technik herausfindet, kann er versuchen, Ihre Seite mittels Bruteforce zu
+    knacken, indem er verschiedene allgemein gebräuchliche Debugstrings
     sendet:
     <example>
-     <title>Ausnutzen von gebräuchlichen Debugging Variablen</title>
+     <title>Ausnutzen von gebräuchlichen Debugging-Variablen</title>
      <programlisting role="html">
 <![CDATA[
-<form method="post" action="attacktarget?errors=Y&amp;showerrors=1"&debug=1">
-<input type="hidden" name="errors" value="Y">
-<input type="hidden" name="showerrors" value="1">
-<input type="hidden" name="debug" value="1">
+<form method="post" action="attacktarget?errors=Y&amp;showerrors=1&amp;debug=1">
+<input type="hidden" name="errors" value="Y" />
+<input type="hidden" name="showerrors" value="1" />
+<input type="hidden" name="debug" value="1" />
 </form>
 ]]>
      </programlisting>
     </example>
    </para>
    <para>
-    Ungeachtet der Fehlerbehandlungsmethode führt die Möglichkeit ein
-    System nach Fehlermeldungen zu sondieren dazu, dass einem Angreifer mehr
+    Ungeachtet der Fehlerbehandlungsmethode führt die Möglichkeit, ein
+    System nach Fehlermeldungen zu sondieren, dazu, dass einem Angreifer mehr
     Informationen geboten werden.
    </para>
    <para>
-    Zum Beispiel weist schon alleine der Stil einer Fehlermeldung darauf
+    Zum Beispiel weist schon alleine der Stil einer Standardfehlermeldung darauf
     hin, dass auf einem System PHP läuft. Wenn der Angreifer auf eine
-    .html Seite kommt und untersuchen möchte welches System im Hintergrund
-    läuft (um nach bekannten Systemschwächen zu suchen), könnte dieser
+    .html Seite kommt und untersuchen möchte, welches System im Hintergrund
+    läuft (um nach bekannten Systemschwächen Ausschau zu halten), könnte dieser
     mittels der Einspeisung von falschen Daten herausfinden, dass ein
     System mit PHP aufgebaut ist.
    </para>
@@ -74,38 +76,44 @@
     Ein Fehler einer Funktion gibt Aufschluss darüber, ob ein System eine
     bestimmte Datenbankapplikation benutzt, oder gibt Hinweise darauf,
     wie eine Webseite programmiert bzw. entworfen wurde. Dies erlaubt
-    eine tiefere Überprüfung von offenen Datenbank-Ports, oder die Suche
+    eine tiefere Überprüfung von offenen Datenbankports oder die Suche
     nach spezifischen Bugs bzw. Schwächen einer Webseite. Mit der
     Einspeisung von falschen Daten kann ein Angreifer z.B. die Reihenfolge
     der Authentifizierung in einem Skript bestimmen (anhand der
-    Zeilennummern in den Fehlermeldungen), wie auch durch "Herumstochern"
-    Missbrauchsmöglichkeiten an verschiedenen Stellen im Script herausfinden.
+    Zeilennummern in den Fehlermeldungen). Ebenso lassen sich auch durch
+    "Herumstochern" Missbrauchsmöglichkeiten an verschiedenen Stellen im Skript
+    herausfinden.
    </para>
    <para>
-    Eine Fehlermeldung des Dateisystems oder eines generellen PHP-Errors
-    welche Rechte der Server hat, wie auch die Struktur und Organisation
-    der Dateien auf dem Webserver. Vom Entwickler geschriebene
-    Fehlermeldungen können das Problem verschlimmern, bis hin zum Preisgeben
-    von zuvor "versteckten" Informationen.
+    Eine Fehlermeldung des Dateisystems oder eines generellen PHP-Errors kann
+    darüber Auskunft geben, welche Rechte der Webserver hat, ebenso darüber, wie
+    die Dateien auf dem Webserver strukturiert und organisiert sind. Vom
+    Entwickler geschriebene Fehlermeldungen können das Problem verschlimmern,
+    bis hin zum Preisgeben von zuvor "versteckten" Informationen.
    </para>
    <para>
     Es gibt drei bedeutende Lösungen zu diesem Thema. Die erste ist, alle
-    Funktionen zu überprüfen und zu versuchen, die Menge an Fehlermeldungen
-    zu ersetzen. Die zweite ist, die Ausgabe von Fehlermeldungen am laufenden
-    Code generell zu deaktivieren. Die dritte ist, sich unter Verwendung der
-    PHP Funktionen zur Fehlerbehandlung seinen eigenen Error-handler zu
-    schreiben. Abhängig von Ihrer Sicherheitspolitik könnte jede der drei
-    Lösungen für Sie geeignet sein.
+    Funktionen zu überprüfen und zu versuchen, einen Großteil der
+    Fehlermeldungen zu ersetzen. Die zweite ist, die Ausgabe von Fehlermeldungen
+    bei produktivem Code generell zu deaktivieren. Die dritte ist, sich unter
+    Verwendung der PHP-Funktionen zur Fehlerbehandlung einen eigenen
+    Errorhandler zu schreiben. Abhängig von Ihrer Sicherheitspolitik könnte jede
+    der drei Lösungen für Sie geeignet sein.
    </para>
    <para>
-    Ein Weg, diesen Punkt vorzeitig zu behandeln ist, das PHP eigene
+    Ein Weg, diesen Punkt zügig abzuarbeiten, ist, das PHP-eigene
     <function>error_reporting</function> zu benutzen, um Ihren Code
     sicherer zu gestalten und möglicherweise gefährliche Nutzungen von
     Variablen zu entdecken. Wenn Sie Ihren Code noch vor dem Einsatz
-    mit E_ALL testen, können Sie Bereiche entdecken, in denen Ihre Variablen
-    eventuell für Verseuchung oder andere Modifikationen offen sind.
-    Sind Sie bereit zum Einsatz, können Sie Ihren Code mit E_NONE vor
-    Sondierungen schützen.
+    mit E_ALL testen, können Sie schnell Bereiche entdecken, in denen Ihre
+    Variablen eventuell für Verseuchung oder andere Modifikationen offen sind.
+    Ist Ihr Code einsatzbereit, können Sie entweder das Errorreporting komplett
+    ausschalten, indem Sie <function>error_reporting</function> auf 0 setzen,
+    oder Sie schalten die Fehleranzeige mittels der &php.ini;-Option
+    <literal>display_errors</literal> aus, um Ihren Code vor dem Ausspähen zu
+    schützen. Wenn Sie letztere Möglichkeit wählen, sollten Sie mittels der
+    Ini-Direktive <literal>error_log</literal> einen Pfad definieren, in dem
+    sich das Logfile befindet, und <literal>log_errors</literal> anschalten.
     <example>
      <title>Gefährliche Variablen mit E_ALL finden</title>
      <programlisting role="php">
@@ -116,7 +124,7 @@ if ($username) {  // Vor Verwendung nicht initialisiert oder geprüft
 }
 if ($good_login == 1) { // Wenn der obige Test fehlschlägt, ist vor der
                         // Verwendung nicht initialisiert oder geprüft
-    fpassthru ("/highly/sensitive/data/index.html");
+    readfile ("/highly/sensitive/data/index.html");
 }
 ?>
 ]]>
