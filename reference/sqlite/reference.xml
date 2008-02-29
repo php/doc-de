@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: hartmann Status: working -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.26 Maintainer: hholzgra Status: working -->
+<!-- Purpose: database.vendors -->
+<!-- Membership: bundled -->
  <reference xml:id="ref.sqlite" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <title>SQLite</title>
+  <title>SQLite Functions</title>
   <titleabbrev>SQLite</titleabbrev>
 
   <partintro>
-   &warn.experimental;
    <section xml:id="sqlite.intro">
     &reftitle.intro;
     <para>
@@ -33,31 +34,88 @@
    <section xml:id="sqlite.install">
     <title>Installation</title>
     <para>
-     Lesen Sie die Datei INSTALL, die im SQLite-Verzeichnis enthalten ist. 
+     Lesen Sie die Datei INSTALL, die im SQLite-Verzeichnis enthalten ist, 
+     oder nutzen sie den PEAR Installer mit <command>pecl install sqlite</command>.
      SQLite selbst ist automatisch enthalten, es ist nicht notwendig, 
      weitere Software zu installieren. 
     </para>
     <para>
      Windows-Nutzer können die DLL-Version der SQLite-Extension hier 
-     downloaden: 
+     herunterladen: 
      (<link xlink:href="&url.pecl.get.win;php_sqlite.dll">php_sqlite.dll</link>).
     </para>
-   </section>
-
-   <section xml:id="sqlite.contact">
-    <title>Kontaktinformationen</title>
     <para>
-     Mögliche Fragen über die Extension sollten auf den 
-     <link xlink:href="&url.php.support;">PHP Mailinglisten</link>
-     gestellt werden.
+     Im PHP 5 Quellcode ist die SQLite Extension bereits enthalten und
+     wird auch automatisch mit kompiliert. Beginnend mit PHP 5.1.0 ist
+     es allerdings notwendig die Extension in &php.ini; zu aktivieren
+     (da sie nun als Shard Library erstellt wird). Außerdem ist SQLite
+     nun von PDO abhängig so das vorab auch diese Extension in &php.ini;
+     geladen werden muss:
+     <informalexample>
+      <programlisting role="ini">
+<![CDATA[
+extension=php_pdo.dll
+extension=php_sqlite.dll
+]]>
+      </programlisting>
+     </informalexample>
+     Wenn unter Linux oder anderen Unix Systemen PDO als shared Extension
+     erstellt wurde so muss auch SQLite mit Hilfe der 
+     <command>--with-sqlite=shared</command> Konfigurationsoption als shared 
+     Extension erstellt werden.
     </para>
+    <para>
+     SQLite 3 wird durch <link linkend="ref.pdo-sqlite">PDO SQLite</link>
+     unterstützt.
+    </para> 	     
+
+    <note>
+     <title>Windows Installation für nicht privilegierte Benutzer</title>
+     <para>
+      Unter Windows wird für privilegierte Benutzer die <varname>TMP</varname>
+      Umgebungsvariable nicht automatisch gesetzt. Dies führt dazu das
+      SQLite temporäre Dateien im Windows Verzeichnis anlegt. Da dies nicht
+      empfehlenswert ist sollten Sie die <varname>TMP</varname>
+      Umgebungsvariable für den Webserver oder den Benutzer der den 
+      Webserver ausführt selbst setzen.
+      Wenn Sie den Apache Webserver benutzen können Sie dies durch
+      einen <command>SetEnv</command> Eintrag in Ihrer &httpd.conf;
+      Datei erreichen:
+      <informalexample>
+       <programlisting role="apache-conf">
+<![CDATA[
+SetEnv TMP c:/temp
+]]>
+       </programlisting>
+      </informalexample>
+      Wenn es Ihnen nicht möglich ist diese Einstellung auf
+      der Serverebene vorzunehmen können sie diese auch innerhalb
+      Ihrer Skripte vornehmen:
+      <informalexample>
+       <programlisting role="php">
+<![CDATA[
+putenv('TMP=C:/temp');
+]]>
+       </programlisting>
+      </informalexample>
+      Die Einstellung mus auf ein Verzeichnis verweisen für
+      das der Webserver über die nötigen Rechte verfügt um
+      Dateien anzulegen, in diese zu Schreiben und sie schließlich
+      auch wieder zu Löschen. Anderenfalls können Sie folgende
+      Fehlermeldung erhalten:
+      <computeroutput>
+       malformed database schema -
+       unable to open a temporary database file for storing temporary tables
+      </computeroutput>
+     </para>
+    </note>
    </section>
 
    <section xml:id="sqlite.requirements">
     &reftitle.required;
     <para>
      Um die SQLite-Funktionen nutzen zu können, muss PHP mit SQLite-Support
-     kompiliert werden, oder die SQLite-Extension dynamisch in der php.ini
+     kompiliert werden, oder die SQLite-Extension dynamisch in der &php.ini;
      geladen werden.
     </para>
    </section>
@@ -70,6 +128,173 @@
     </para>
    </section>
   	&reference.sqlite.constants;
+
+   <section id="sqlite.classes">
+    &reftitle.classes;
+
+    <section id="sqlite.class.sqlitedatabase">
+     <title><classname>SQLiteDatabase</classname></title>
+     <para>
+      Repräsentiert eine geöffnete SQLite Datenbank
+     </para>
+     <section id='sqlite.class.sqlitedatabase.constructor'>
+      &reftitle.constructor;
+      <itemizedlist>
+       <listitem>
+        <para><link linkend='function.sqlite-open'>__construct</link> - erzeugt ein neues SQLiteDatabase Objekt</para>
+       </listitem>
+      </itemizedlist>
+     </section>
+     <section id='sqlite.class.sqlitedatabase.methods'>
+      &reftitle.methods;
+      <itemizedlist>
+       <listitem>
+        <para><link linkend='function.sqlite-query'>query</link> - Führt eine Abfrage aus</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-exec'>queryExec</link> - Führt eine Abfrage ohne Ergebnis aus</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-array-query'>arrayQuery</link> - Führt eine Abfrage aus und gibt das Ergebnis als Array zurück</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-single-query'>singleQuery</link> - Führt eine Abfrage aus und gibt entweder ein Array für eine einzelne Spalte oder die erste Ergebnisspalte zurück</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-unbuffered-query'>unbufferedQuery</link> - Führt eine ungepufferte Abfrage aus</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-last-insert-rowid'>lastInsertRowid</link> - Liefert die <literal>rowid</literal> der zuletzt eingefügten Zeile</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-changes'>changes</link> - Liefert die Anzahl der Veränderten Zeilen für die zuletzt ausgeführte Abfrage</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-create-aggregate'>createAggregate</link> - Registriert eine benutzerdefinierte Agregatfunktion zur Verwendung in SQL Abfragen</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-create-function'>createFunction</link> - Registriert eine benutzerdefinierte Funktion zur Verwendung in SQL Abfragen</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-busy-timeout'>busyTimeout</link> - Setzt oder deaktiviert das "busy timeout"</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-last-error'>lastError</link> - Liefert den Fehlercode des letzten aufgetretenen Fehlers</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-column-types'>fetchColumnTypes</link> - Liefert ein Array mit den Spaltentypen einer bestimmten Tabelle</para>
+       </listitem>
+      </itemizedlist>
+     </section>
+    </section>
+
+    <section id="sqlite.class.sqliteresult">
+     <title><classname>SQLiteResult</classname></title>
+     <para>
+      Repräsentiert ein gepuferte SQLite Ergebnismenge.
+     </para>
+     <section id='sqlite.class.sqliteresult.methods'>
+      &reftitle.methods;
+      <itemizedlist>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-array'>fetch</link> - Liefert die nächste Ergebniszeile der Ergebnismenge als Array.</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-object'>fetchObject</link> - Liefert die nächste Ergebniszeile der Ergebnismenge als Objekt</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-single'>fetchSingle</link> - Liefert den Wert der ersten Spalte der Ergebnismenge als String</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-all'>fetchAll</link> - Liefert alle Ergebniszeilen als ein Array von Arrays</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-column'>column</link> - Liefert eine Spalte der aktuellen Zeile der Ergebnismenge</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-num-fields'>numFields</link> - Liefert die Anzahl der Spalten der Ergebnismenge</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-field-name'>fieldName</link> - Liefert den Namen einer bestimmten Spalte der Ergebnismenge</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-current'>current</link> - Liefert die aktuelle Ergebniszeile als Array</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-key'>key</link> - Liefert den aktuellen Zeilenindex</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-next'>next</link> - Positioniert auf die nächste Ergebniszeile</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-valid'>valid</link> - Prüft ob weitere Ergebniszeilen verfügbar sind</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-rewind'>rewind</link> - Positioniert auf die erste Zeile der Ergebnismenge zurück</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-prev'>prev</link> - Positioniert auf die vorhergehnde Ergebniszeile</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-has-prev'>hasPrev</link> - Prüft ob eine vorhergehende Ergebniszeile verfügbar ist</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-num-rows'>numRows</link> - Liefert die Anzahl der Ergebniszeilen</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-seek'>seek</link> - Positioniert auf eine bestimmte Ergebniszeile</para>
+       </listitem>
+      </itemizedlist>
+     </section>
+    </section>
+
+    <section id="sqlite.class.sqliteunbuffered">
+     <title><classname>SQLiteUnbuffered</classname></title>
+     <para>
+      Repräsentiert eine nicht gepufferte Ergebnismenge. In einer ungepufferten Menge
+      knn nur vorwärts gesucht werden.
+     </para>
+     <section id='sqlite.class.sqliteunbuffered.methods'>
+      &reftitle.methods;
+      <itemizedlist>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-array'>fetch</link> - Liefert die nächste Ergebniszeile der Ergebnismenge als Array.</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-object'>fetchObject</link> - Liefert die nächste Ergebniszeile der Ergebnismenge als Objekt</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-single'>fetchSingle</link> - Liefert den Wert der ersten Spalte der Ergebnismenge als String</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-fetch-all'>fetchAll</link> - Liefert alle Ergebniszeilen als ein Array von Arrays</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-column'>column</link> - Liefert eine Spalte der aktuellen Zeile der Ergebnismenge</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-num-fields'>numFields</link> - Liefert die Anzahl der Spalten der Ergebnismenge</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-field-name'>fieldName</link> - Liefert den Namen einer bestimmten Spalte der Ergebnismenge</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-current'>current</link> - Liefert die aktuelle Ergebniszeile als Array</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-next'>next</link> - Positioniert auf die nächste Ergebniszeile</para>
+       </listitem>
+       <listitem>
+        <para><link linkend='function.sqlite-valid'>valid</link> - Prüft ob weitere Ergebniszeilen verfügbar sind</para>
+       </listitem>
+     </section>
+    </section>
+
+   </section>
+
+    &reference.sqlite.ini;
+   </partintro>
+ 
   	&reference.sqlite.ini;
   </partintro>
   &reference.sqlite.entities.functions;  
