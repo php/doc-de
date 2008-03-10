@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.16 $ -->
-<!-- EN-Revision: 1.49 Maintainer: samesch Status: ready -->
+<!-- $Revision: 1.17 $ -->
+<!-- EN-Revision: 1.51 Maintainer: samesch Status: ready -->
  <chapter xml:id="faq.installation" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Installation</title>
   <titleabbrev>Installation</titleabbrev>
 
   <para>
    In diesem Abschnitt geht es um übliche Fragen zur Installation von PHP. PHP
-   gibt es für fast jedes Betriebssystem (außer vielleicht für MacOS vor OSX)
+   gibt es für fast jedes Betriebssystem (außer vielleicht für Mac OS vor OS X)
    und fast jeden Webserver.
   </para>
   <para>
@@ -20,7 +20,7 @@
     <question>
      <para>
       Warum sollte ich Apache2 mit threaded MPM nicht in einer
-      Produktions-Umgebung verwenden?
+      Produktionsumgebung verwenden?
      </para>
     </question>
     <answer>
@@ -41,7 +41,7 @@
       auf tönerne Füße.
      </para>
      <para>
-      Falls Sie das Gefühl haben, theaded MPM benutzen zu müssen, sollten Sie
+      Falls Sie das Gefühl haben, threaded MPM benutzen zu müssen, sollten Sie
       nach einer FastCGI-Konfiguration schauen, in der PHP in seinem eigenen
       Speicherbereich läuft.
      </para>
@@ -188,130 +188,23 @@
 <![CDATA[
 # Extra Modules
 AddModule mod_php.c
-AddModule mod_php3.c
+AddModule mod_php.c
 AddModule mod_perl.c
 
 # Extra Modules
 LoadModule php_module         modules/mod_php.so
-LoadModule php3_module        modules/libphp3.so     # fuer PHP 3
-LoadModule php4_module        modules/libphp4.so     # fuer PHP 4
+LoadModule php5_module        modules/libphp5.so     # fuer PHP 5
 LoadModule perl_module        modules/libperl.so
 ]]>
       </programlisting>
       Und fügen Sie
       <programlisting role="apache-conf">
 <![CDATA[
-AddType application/x-httpd-php3 .php3    # fuer PHP 3
-AddType application/x-httpd-php .php      # fuer PHP 4
+AddType application/x-httpd-php .php
 ]]>
       </programlisting>
       ... in die globalen Eigenschaften oder in die Eigenschaften der
       VirtualDomain, für die Sie PHP-Unterstützung benötigen, ein.
-     </para>
-    </answer>
-   </qandaentry>
-
-   <qandaentry xml:id="faq.installation.compile">
-    <question>
-     <para>
-      Unix: Ich habe PHP 3 mit RPM-Paketen installiert, aber es läßt sich
-      nicht mit der benötigten Datenbank-Unterstützung übersetzen. Was ist da
-      los?
-     </para>
-    </question>
-    <answer>
-     <para>
-      Aufgrund des Aufbaus von PHP 3 ist es nicht einfach, ein vollständig
-      flexibles PHP-RPM zu bauen. Dieses Problem wurde in PHP 4 angegangen.
-      Für PHP 3 empfehlen wir Ihnen, dass Sie nach der Methode vorgehen, die
-      in der Datei INSTALL.REDHAT der PHP-Distribution beschrieben wird. Falls
-      Sie darauf bestehen, eine RPM-Version von PHP 3 zu verwenden, lesen Sie
-      weiter...
-     </para>
-     <para>
-      Um die Installation zu vereinfachen <emphasis>und</emphasis> weil RPMs
-      statt des Standardverzeichnisses /usr/local/ das Verzeichnis /usr/
-      benutzen, konfigurieren die RPM-Paketbauer die RPMs so, dass sie ohne
-      Datenbank-Unterstützung installiert werden. Sie müssen in der RPM spec
-      Datei also angeben, welche Datenbanken unterstützt werden sollen und wo
-      sich die höchste Verzeichnisebene Ihres Datenbank-Servers befindet.
-     </para>
-     <para>
-      Dieses Beispiel erklärt die Vorgehensweise, mit der die Unterstützung
-      für den beliebten MySQL Datenbank-Server bei gleichzeitiger Verwendung
-      der Apache-Modul-Installation hinzugefügt wird.
-     </para>
-     <para>
-      Selbstverständlich kann die gesamte Information für jeden
-      Datenbank-Server angepasst werden, den PHP unterstützt. Es wird bei
-      diesem Beispiel davon ausgegangen, dass Sie MySQL und Apache komplett
-      mit RPMs installiert haben.
-      <itemizedlist>
-       <listitem>
-        <para>
-         Entfernen Sie zuerst mod_php3:
-         <programlisting role="shell">
-rpm -e mod_php3
-         </programlisting>
-        </para>
-       </listitem>
-       <listitem>
-        <para>
-         Holen Sie sich dann das Source-RPM und INSTALLIEREN Sie es, NICHT
-         --rebuild
-         <programlisting role="shell">
-rpm -Uvh mod_php3-3.0.5-2.src.rpm
-         </programlisting>
-        </para>
-       </listitem>
-       <listitem>
-        <para>
-         Editieren Sie als Nächstes die Datei
-         <filename>/usr/src/redhat/SPECS/mod_php3.spec</filename>
-        </para>
-        <para>
-         Fügen Sie im %build Abschnitt die gewünschte Datenbank-Unterstützung
-         und den Pfad hinzu.
-        </para>
-        <para>
-         Für MySQL wäre das <option
-         role="configure">--with-mysql=/usr</option> Der %build Abschnitt
-         sieht in etwa so aus:
-         <programlisting role="shell">
-./configure --prefix=/usr \
---with-apxs=/usr/sbin/apxs \
---with-config-file-path=/usr/lib \
---enable-debug=no \
---enable-safe-mode \
---with-exec-dir=/usr/bin \
---with-mysql=/usr \
---with-system-regex
-         </programlisting>
-        </para>
-       </listitem>
-       <listitem>
-        <para>
-         Nachdem Sie die Änderung vorgenommen haben, bauen Sie das Binary-RPM
-         folgendermaßen:
-         <programlisting role="shell">
-rpm -bb /usr/src/redhat/SPECS/mod_php3.spec
-         </programlisting>
-        </para>
-       </listitem>
-       <listitem>
-        <para>
-         Dann installieren Sie das RPM
-         <programlisting role="shell">
-rpm -ivh /usr/src/redhat/RPMS/i386/mod_php3-3.0.5-2.i386.rpm
-         </programlisting>
-        </para>
-       </listitem>
-      </itemizedlist>
-      Wenn Sie nun den Apache neu starten, haben Sie PHP 3 mit
-      MySQL-Unterstützung unter Verwendung von RPMs. Beachten Sie, dass es mit
-      dem Tarball der PHP 3 Distribution unter Befolgen der Anweisungen in
-      <filename>INSTALL.REDHAT</filename>, das sich in dieser Distribution
-      befindet, wahrscheinlich wesentlich einfacher zu bauen ist.
      </para>
     </answer>
    </qandaentry>
@@ -531,6 +424,9 @@ cgi error:
       Wenn Ihre &php.ini; gelesen wird und Sie PHP als Modul benutzen, müssen
       Sie Ihren Webserver neu starten, nachdem Sie Änderungen an der &php.ini;
       vorgenommen haben.
+     </para>
+     <para>
+      Siehe auch <function>php_ini_loaded_file</function>.
      </para>
     </answer>
    </qandaentry>
