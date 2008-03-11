@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.3 Maintainer: fa Status: ready -->
+
+<chapter xml:id="pdo.transactions" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Transaktionen und auto-commit</title>
+    <para>
+     Jetzt, wo Sie via PDO verbunden sind, müssen Sie sich bewusst machen, wie PDO
+     Transaktionen verwaltet, bevor Sie anfangen, Abfragen auszuführen. Falls Sie noch 
+     niemit Transaktionen zu tun hatten, diese bieten 4 wichtige Features: Atomizität, 
+     Konsistenz (Consistency), Isolation und Dauerhaftigkeit (Durability) (ACID).
+     Einfach gesagt wird alles in einer Transaktion, auch wenn es in Einzelschritten
+     ausgeführt wird, garantiert in sicherer Weise in die Datenbank eingetragen, ohne
+     Beeinträchtigung durch andere Verbindungen, wenn es abgeschickt wird. Aktivitäten in
+     Transaktionen können auch automatisch annulliert werden (wenn Sie es noch nicht 
+     abgeschickt haben), was Fehlerbehandlung in Ihren Scripts einfacher macht.
+    </para>
+    <para>
+     Transaktionen werden typischerweise implementiert, indem Ihre Menge an Änderungen
+     "aufgespart" wird und dann in einem Rutsch abgearbeitet werden. Das hat den netten
+     Nebeneffekt, dass die Effizienz der Aktualisierungen drastisch erhöht wird. In 
+     anderen Worten können Transaktionen Ihre Scripts schneller und möglicherweise auch
+     robuster machen. Aber Sie müssen sie korrekt verwenden, um davon zu profitieren.
+    </para>
+    <para>
+     Unglücklicherweise unterstützt nicht jede Datenbank Transaktionen, deswegen muss PDO
+     in einem "auto-commit" genannten Modus laufen, wenn Sie die Verbindung zum ersten 
+     Mal öffnen. "Auto-commit" bedeutet, dass jede Abfrage, die Sie ausführen ihre eigene
+     implizite Transaktion besitzt, wenn die Datenbank das unterstützt, oder keine
+     Transaktion, wenn die Datenbank keine Transaktionen unterstützt. Wenn Sie eine
+     Transaktion benötigen, müssen Sie eine mit der Methode 
+     <function>PDO::beginTransaction</function> initiieren. Wenn der zu Grunde liegende
+     Treiber keine Transaktionen unterstützt, wird eine <literal>PDOException</literal>
+     geworfen (unbeachtet Ihrer Einstellungen zur Fehlerbehandlung: dies ist immer eine
+     ernste Fehlerbedingung). Wenn Sie dann in einer Transaktion sind, können Sie
+     <function>PDO::commit</function> oder <function>PDO::rollBack</function> benutzen,
+     um die Transaktion abzuschließen, abhängig vom Erfolg des Codes, den Sie während der
+     Transaktion ausgeführt haben.
+    </para>
+    <para>
+     Wenn das Script endet oder die Verbindung im Begriff ist, geschlossen zu werden und
+     Sie eine Transaktion ausstehen haben, wird PDO automatisch einen Rollback 
+     durchführen. Dies ist eine Sicherheitsmaßnahme, um Inkonsistenzen in dem Fall, wo
+     das Script unerwartet beendet wird, zu vermeiden - wenn Sie die Transaktion nicht
+     explizit ausgeführt haben, wird angenommen, dass etwas schiefgegangen ist, deswegen
+     wird zur Sicherheit ein Rollback durchgeführt.
+    </para>
+    <warning>
+     <para>
+      Der automatische Rollback wird nur durchgeführt, wenn Sie die Transaktion per
+      <function>PDO::beginTransaction</function> starten. Wenn Sie manuell eine Abfrage
+      ausführen, die eine Transaktion startet, kann PDO nichts davon wissen und kann
+      deswegen auch keinen Rollback durchführen, wenn etwas schiefgeht.
+     </para>
+    </warning>
+    <para>
+     <example><title>Mehrere Abfragen in einer Transaktion</title>
+      <para>
+       Im folgenden Beispiel nehmen wir an, dass wir einen Satz von Einträgen für einen
+       neuen Angestellten eintragen wollen, dem die ID-Nummer 23 zugeordnet wurde.
+       Zusätzlich zur Angabe der Basisdaten für diese Person müssen wir auch ihr Gehalt
+       festhalten. Es ist ziemlich einfach, zwei getrennte Aktualisierungen 
+       durchzuführen, aber indem wir sie in <function>PDO::beginTransaction</function>
+       und <function>PDO::commit</function> einschließen, garantieren wir, dass niemand
+       anderes diese Änderungen sieht, bis sie komplett sind. Wenn etwas schiefgeht, wird
+       der <literal>catch</literal>-Block alle seit Beginn der Transaktion durchgeführten
+       Änderungen rückgängig machen und dann eine Fehlermeldung ausgeben.
+      </para>
+      <programlisting role='php'>
+<![CDATA[
+<?php
+try {
+  $dbh = new PDO('odbc:SAMPLE', 'db2inst1', 'ibmdb2', 
+      array(PDO::ATTR_PERSISTENT => true));
+  echo "Connected\n";
+  $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+  $dbh->beginTransaction();
+  $dbh->exec("insert into staff (id, first, last) values (23, 'Joe', 'Bloggs')");
+  $dbh->exec("insert into salarychange (id, amount, changedate) 
+      values (23, 50000, NOW())");
+  $dbh->commit();
+  
+} catch (Exception $e) {
+  $dbh->rollBack();
+  echo "Failed: " . $e->getMessage();
+}
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Sie sind nicht darauf beschränkt, Änderungen in einer Transaktion durchzuführen. Sie
+     können auch komplexe Abfragen ausführen um Daten zu erhalten, und diese
+     Informationen etwa dazu benutzen, mehr Änderungen und Abfragen zu erzeugen. Während
+     die Transaktion aktiv ist, kann garantiert niemand anderes Änderungen durchführen,
+     während Sie bei der Arbeit sind. Um ehrlich zu sein, stimmt das nicht 100%, aber es
+     ist für den Anfang ausreichend, falls Sie noch nie von Transaktionen gehört haben.
+    </para>
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
+
