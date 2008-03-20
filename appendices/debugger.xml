@@ -1,244 +1,21 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.13 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
- <appendix xml:id="debugger" xmlns="http://docbook.org/ns/docbook">
-  <title>Der PHP-Debugger</title>
+<!-- $Revision: 1.14 $ -->
+<!-- EN-Revision: 1.29  Maintainer: hholzgra  Status: ready -->
+ <appendix xml:id="debugger" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>PHP Debugging</title>
 
-  <sect1 xml:id="debugger-using">
-   <title>Verwendung des Debuggers</title>
- 
-   <para>
-    Der integrierte Debugger von PHP ist nützlich, um schwer zu findende
-    Fehler aufzuspüren. Jedesmal, wenn PHP startet,
-    stellt der Debugger eine Verbindung zu einem <acronym>TCP</acronym>-Port 
-    her. Jede Fehlermeldung wird nun an diese TCP-Verbindung ausgegeben.
-    Damit lässt sich ein "debugging server" einrichten, der innerhalb
-    einer <acronym>IDE</acronym> oder eines programmierbaren Editors (z. B.
-    Emacs) läuft.
-   </para>
-   <para>
-    Den Debugger einrichten:
-    <orderedlist>
-     <listitem>
-      <simpara> 
-       Geben Sie in der <link linkend="configuration.file">Konfigurationsdatei</link>
-        (<link linkend="ini.debugger.port">debugger.port</link>) 
-       einen TCP-Port für den Debugger ein und aktivieren Sie ihn (<link 
-       linkend="ini.debugger.enabled">debugger.enabled</link>).
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara> 
-       Dann richten Sie einen <acronym>TCP</acronym>-Listener ein,
-       der auf dem Port horcht (zum Beispiel <command>socket -l -s 
-       1400</command> unter UNIX).
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara> 
-       Schreiben Sie in Ihren Code die Anweisung
-       "debugger_on(<replaceable>host</replaceable>)", wobei
-       <replaceable>host</replaceable> die IP-Adresse oder der Hostname 
-       ist, wo der <acronym>TCP</acronym>-Listener läuft.
-      </simpara>
-     </listitem>
-    </orderedlist>
-    Nun werden alle Warnungen, Hinweise, etc. auf diese Schnittstelle
-    ausgegeben, <emphasis>sogar wenn sie mit <function>error_reporting
-    </function> abgeschaltet wurden.</emphasis>.  
-   </para>
-  </sect1>
-
-  <sect1 xml:id="debugger-protocol">
-   <title>Debugger-Protokoll</title>
-   <para>
-    Das Protokoll des Debuggers ist zeilenorientiert. Jede Zeile
-    hat einen <emphasis>Typ</emphasis>, und mehrere
-    Zeilen bilden eine <emphasis>Meldung</emphasis>.
-    Jede Meldung beginnt mit der Zeile <literal>start</literal>
-    und endet mit <literal>end</literal>. Es ist möglich, dass PHP
-    Zeilen mehrerer Meldungen gleichzeitig ausgibt.
-   </para>
-   <para>
-    Eine Zeile hat folgendes Format:
-    <informalexample>
-     <literallayout>
-<replaceable>date</replaceable> <replaceable>time</replaceable>
-<replaceable>host</replaceable>(<replaceable>pid</replaceable>)
-<replaceable>type</replaceable>:
-<replaceable>message-data</replaceable>
-     </literallayout>
-    </informalexample>
-    <variablelist>
-     <varlistentry>
-      <term><replaceable>date</replaceable></term>
-      <listitem>
-       <simpara>
-        Datum im ISO 8601-Format:
-       (<replaceable>jjjj</replaceable>-<replaceable>mm</replaceable>-<replaceable>tt</replaceable>)
-       </simpara>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term><replaceable>time</replaceable></term>
-      <listitem>
-       <simpara>Zeit inklusive Mikrosekunden:
-        <replaceable>ss</replaceable>:<replaceable>mm</replaceable>:<replaceable>uuuuuu</replaceable>
-       </simpara>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term><replaceable>host</replaceable></term>
-      <listitem>
-       <simpara>
-        DNS-Name oder IP-Adresse des Hosts, auf dem der Fehler auftrat.
-       </simpara>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term><replaceable>pid</replaceable></term>
-      <listitem>
-       <simpara>
-        PID (process id) auf dem <replaceable>host</replaceable> 
-        des Prozesses mit dem PHP-Script, das den Fehler erzeugt hat.
-       </simpara>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term><replaceable>type</replaceable></term>
-      <listitem>
-       <para>
-        Typ der Zeile. Er zeigt dem empfangenden Programm, wie es die 
-        folgenden Daten behandeln soll:
-        <table>
-         <title>Typen der Debugger-Zeilen</title>
-         <tgroup cols="2">
-          <thead>
-           <row>
-            <entry>Name</entry>
-            <entry>Bedeutung</entry>
-           </row>
-          </thead>
-          <tbody>
-           <row>
-            <entry><literal>start</literal></entry> 
-            <entry>
-             Teilt dem empfangenden Programm mit, dass hier eine
-             Debuggermeldung beginnt. Der Inhalt von <replaceable>data
-             </replaceable> ist der Typ der Fehlermeldung, der unten
-             aufgelistet ist.
-            </entry>
-           </row>
-           <row>
-            <entry><literal>message</literal></entry>
-            <entry>Die PHP-Fehlermeldung.</entry>
-           </row>
-           <row>
-            <entry><literal>location</literal></entry>
-            <entry>
-             Dateiname und Zeilennummer, wo der Fehler aufgetreten ist. Die
-             erste <literal>Location-</literal>Zeile beinhaltet immer die
-             Top-Level-Location. <replaceable>data</replaceable> enthält
-             <literal><replaceable>file</replaceable>:<replaceable>line
-             </replaceable></literal>. Nach jeder <literal>message</literal>
-             und nach jeder <literal>function</literal> steht eine
-             <literal>location</literal>-Zeile.
-            </entry>
-           </row>
-           <row>
-            <entry><literal>frames</literal></entry>
-            <entry>
-             Anzahl der Frames in der folgenden Ebenenanzeige. Bei vier Frames
-             werden Informationen zu vier Ebenen von Funktionsaufrufen
-             angezeigt. Wenn keine "frames"-Zeile angezeigt wird, ist die
-             Funktionstiefe 0 (der Fehler ist auf der höchsten Ebene
-             aufgetreten).
-            </entry>
-           </row>
-           <row>
-            <entry><literal>function</literal></entry>
-            <entry>
-             Name der Funktion, in der der Fehler aufgetreten ist. Wird jeweils 
-             für jede Funktionsebene innerhalb des Funktionsaufrufs wiederholt
-             angezeigt.
-            </entry>
-           </row>
-           <row>
-            <entry><literal>end</literal></entry>
-            <entry>
-             Teilt dem empfangenden Programm mit, dass die Meldung hier endet.
-            </entry>
-           </row>
-          </tbody>
-         </tgroup>
-        </table>
-       </para>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term><replaceable>data</replaceable></term>
-      <listitem>
-       <simpara>Daten in der jeweiligen Zeile.</simpara>
-      </listitem>
-     </varlistentry>
-    </variablelist>
-
-    <table>
-     <title>Debugger-Fehlertypen</title>
-     <tgroup cols="2">
-      <thead>
-       <row>
-        <entry>Debugger</entry>
-        <entry>PHP-intern</entry>
-       </row>
-      </thead>
-      <tbody>
-       <row>
-        <entry><errortype>warning</errortype></entry>
-        <entry><errortype>E_WARNING</errortype></entry>
-       </row>
-       <row>
-        <entry><errortype>error</errortype></entry>
-        <entry><errortype>E_ERROR</errortype></entry>
-       </row>
-       <row>
-        <entry><errortype>parse</errortype></entry>
-        <entry><errortype>E_PARSE</errortype></entry>
-       </row>
-       <row>
-        <entry><errortype>notice</errortype></entry>
-        <entry><errortype>E_NOTICE</errortype></entry>
-       </row>
-       <row>
-        <entry><errortype>core-error</errortype></entry>
-        <entry><errortype>E_CORE_ERROR</errortype></entry>
-       </row>
-       <row>
-        <entry><errortype>core-warning</errortype></entry>
-        <entry><errortype>E_CORE_WARNING</errortype></entry>
-       </row>
-       <row>
-        <entry><errortype>unknown</errortype></entry>
-        <entry>(any other)</entry>
-       </row>
-      </tbody>
-     </tgroup>
-    </table>
-   </para>
-   <para>
-    <example>
-     <title>Beispielhafte Debuggermeldung</title>
-     <literallayout>
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) start: notice
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) message: Uninitialized variable
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) location: (&null;):7
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) frames: 1
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) function: display
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) location: /home/ssb/public_html/test.php3:10
-1998-04-05 23:27:400966 lucifer.guardian.no(20481) end: notice
-     </literallayout>
-    </example>
-   </para>
+  <sect1 xml:id="debugger-about">
+   <title>Über Debugging in PHP</title>
+   <simpara>
+    PHP hat keine integrierten Debugging Werkzeuge.
+    Sie können aber einen der externen Debugger verwenden.
+    Die <link xlink:href="&url.zend.ide;">Zend IDE</link> 
+    enthält einen Debugger und es sind auch einige freie
+    Debugger Extensions wie DBG (<link
+    xlink:href="&url.dbg;">&url.dbg;</link>i),  
+    <link xlink:href="&url.apd;">Advanced PHP Debugger</link> (APD) oder
+    <link xlink:href="&url.xdebug;">Xdebug</link> verfügbar.
+   </simpara>
   </sect1>
 
  </appendix>
@@ -259,4 +36,7 @@ sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
