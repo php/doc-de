@@ -1,85 +1,167 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- splitted from ./de/functions/dio.xml, last change in rev 1.1 -->
-<!-- last change to 'dio-fcntl' in en/ tree in rev 1.1 -->
-<!-- EN-Revision: 1.2 Maintainer: georg Status: n/a -->
-<!-- OLD-Revision: 1.6/EN.1.1 -->
-  <refentry xml:id="function.dio-fcntl" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>dio_fcntl</refname>
-    <refpurpose>Ändert den Dateideskriptor</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>mixed</type><methodname>dio_fcntl</methodname>
-      <methodparam><type>resource</type><parameter>fd</parameter></methodparam>
-      <methodparam><type>int</type><parameter>cmd</parameter></methodparam>
-      <methodparam choice="opt"><type>mixed</type><parameter>arg</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Die Funktion <function>dio_fcntl</function> führt eine Aktion
-     <parameter>cmd</parameter> an der Datei <parameter>fd</parameter>
-     aus.  Einige Aktionen <parameter>cmd</parameter> benötigen das
-     zusätzliche Argument <parameter>args</parameter>.
-    </para>
-    <para>
-     <parameter>arg</parameter> ist ein assoziatives Array, wenn
-     <parameter>cmd</parameter> F_SETLK oder F_SETLLW ist. Es hat
-     folgende Einträge:
-     <itemizedlist>
-      <listitem>
-       <para>
-        "start" - offset an dem der Lock beginnt
-       </para>
-      </listitem> 
-      <listitem>
-       <para>
-        "length" - Länge des gelockten Bereichs
-       </para>
-      </listitem>
-      <listitem>
-       <para>
-        "wenth" - Relative Position von start. Kann folgende Werte
-        annehmen: SEEK_SET, SEEK_END and SEEK_CUR
-       </para>
-      </listitem> 
-      <listitem>
-       <para>
-        "type" - Locktyp: F_RDLCK (read lock), F_WRLCK (write lock)
-        oder F_UNLCK (unlock)
-       </para>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <para>
-     <parameter>cmd</parameter> ist einer der folgenden Konstanten:
-     <itemizedlist>
-      <listitem>
-       <para>
-        F_SETLK - Setzt oder löscht einen Lock. Ist der Bereich
-        bereits von einem anderen Prozess gelockt, so liefert die
-        Funktion <function>dio_fcntl</function> -1 zurück.
-       </para>
-      </listitem>
-      <listitem>
-       <para>
-        F_SETLKW - wie F_SETLK, jedoch im Falle, dass der Bereich von
-        einem anderen Prozess gelockt wird, wartet
-        <function>dio_fcntl</function> auf die Freigabe des Locks.
-       </para>
-      </listitem> 
-      <listitem>
-       <para>
-        F_GETLK - <function>dio_fcntl</function> liefert ein
-        assioziatives Array zurück (Beschreibung siehe oben), falls
-        ein anderer Prozess den Bereich gelockt hat.
-       </para>
-      </listitem>
-     </itemizedlist>
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.11  Maitainer: hholzgra  Status: ready -->
+<refentry xml:id="function.dio-fcntl" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>dio_fcntl</refname>
+  <refpurpose>Modifiziert einen Dateideskriptor</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>mixed</type><methodname>dio_fcntl</methodname>
+   <methodparam><type>resource</type><parameter>fd</parameter></methodparam>
+   <methodparam><type>int</type><parameter>cmd</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>args</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Die Funktion <function>dio_fcntl</function> führt die mit
+   <parameter>cmd</parameter> festgelegte Operation auf dem
+   Dateideskriptor <parameter>fd</parameter> aus. Für einige
+   dieser Operationen müssen zusätzliche Argumente im 
+   Parameter <parameter>args</parameter> übergeben werden.
+  </para>
+  &note.no-windows;
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>fd</parameter></term>
+     <listitem>
+      <para>
+       Ein von <function>dio_open</function> zurückgegebener 
+       Dateideskriptor.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>cmd</parameter></term>
+     <listitem>
+      <para>
+       Eine der folgenden Operationen:
+       <itemizedlist>
+        <listitem>
+         <para>
+          <constant>F_SETLK</constant> - Setzt oder Löscht eine
+          Dateisperre. Wenn diese Sperre bereits von jemand anderem
+          gehalten wird gibt <function>dio_fcntl</function> -1
+          zurück.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>F_SETLKW</constant> - ähnlich <constant>F_SETLK</constant>,
+          hier wird aber in dem Fall das bereits jemand anderes die Sperre
+          hält gewartet bis diese wieder freigegeben wird.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>F_GETLK</constant> - <function>dio_fcntl</function> 
+          gibt ein assoziatives Array mit Informationen (wie weiter unten
+          beschrieben) zurüc wenn jemand anders bereits eine Sperre hält.
+          Existiert keine andere Sperre wird das Element "type" auf
+          <constant>F_UNLCK</constant> gesetzt.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>F_DUPFD</constant> - 
+          Findet den kleinsten verfügbaren Dateideskriptor &gt;= 
+          <parameter>args</parameter> und gibt diesen zurück.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>F_SETFL</constant> - 
+          Setzt die Flags des Dateideskriptors auf den in
+          <parameter>args</parameter> angegebenen Wert. Die verfügbaren Flags
+          sind <constant>O_APPEND</constant>, <constant>O_NONBLOCK</constant>
+          und <constant>O_ASYNC</constant>. Um <constant>O_ASYNC</constant> 
+          setzen zu können benötigen sie die <link linkend="ref.pcntl">PCNTL</link> 
+          Extension.
+         </para>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>args</parameter></term>
+     <listitem>
+      <para>
+       Die <parameter>cmd</parameter> Operationen <constant>F_SETLK</constant>
+       und <constant>F_SETLLW</constant> erwarten ein Array mit den folgenden
+       Elementen: 
+       <itemizedlist>
+        <listitem>
+         <para>
+          "start" - Offset an dem die Sperre beginnt
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          "length" - Länge des gesperrten Bereichs, 0 bedeutet dabei "bis zum
+          Dateiende"
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          "wenth" - Die Position auf die sich <parameter>start</parameter>
+          bezieht, dabei steht <constant>SEEK_SET</constant> für den
+          Dateianfang, <constant>SEEK_END</constant> für das Dateiende und 
+          <constant>SEEK_CUR</constant> für die aktuelle
+          Schreib-/Leseposition.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          "type" - Art der Sperre: <constant>F_RDLCK</constant> (Lesesperre),
+          <constant>F_WRLCK</constant> (Schreibsperre) oder 
+          <constant>F_UNLCK</constant> (Sperre aufheben)
+         </para>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt das Ergebnis des entsprechenden C Aufrufs zurück.
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Setzen und Löschen einer Sperre</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$fd = dio_open('/dev/ttyS0', O_RDWR);
+
+if (dio_fcntl($fd, F_SETLK, Array("type"=>F_WRLCK)) == -1) {
+   // Die Datei ist anscheinend schon anderweitig gesperrt 
+   echo "Sperrung fehlgeschlagen, die Datei wird schon von jemand anderem gesperrt.";
+} else {
+   echo "Sperrung erfolgreich durchgeführt";
+}
+
+dio_close($fd);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
