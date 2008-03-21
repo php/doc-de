@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.29 $ -->
-<!-- EN-Revision: 1.76 Maintainer: betz Status: ready -->
+<!-- $Revision: 1.30 $ -->
+<!-- EN-Revision: 1.99 Maintainer: hholzgra Status: ready -->
+<!-- Credits: betz -->
  <chapter xml:id="language.variables" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Variablen</title>
 
@@ -28,6 +29,21 @@
     </simpara>
    </note>
 
+   <note>
+    <simpara>
+     <literal>$this</literal> ist eine spezielle Variable der
+     kein Wert zugewiesen werden kann.
+    </simpara>
+   </note>
+ 	 
+   &tip.userlandnaming;
+
+   <para>
+    Information zu Funktionen im Zusammenhang mit Variablen
+    finden Sie im Abschnitt 
+    <link linkend="ref.var">Funktionen zur Behandlung von Variablen</link>.
+   </para>
+ 	  	 
    <para>
     <informalexample>
      <programlisting role="php">
@@ -49,7 +65,7 @@ $täbyte = 'irgendwas';       // gültig, da 'ä' dem (Erweiterten) ASCII-Wert 228 
    </para>
 
    <para>
-    Variablen werden in PHP 3 durch ihren Wert bestimmt. Das heisst,
+    Variablen werden durch ihren Wert bestimmt. Das heisst,
     wenn Sie einer Variablen einen Ausdruck zuweisen, wird der gesamte
     Inhalt des Originalausdrucks in die Zielvariable kopiert. Die
     Folge ist, dass eine Variable, die ihren Inhalt von einer anderen
@@ -61,19 +77,14 @@ $täbyte = 'irgendwas';       // gültig, da 'ä' dem (Erweiterten) ASCII-Wert 228 
     linkend="language.expressions">Expressions / Ausdrücke</link>.
    </para>
    <para>
-    PHP 4 bietet eine andere Möglichkeit der Wertzuweisung bei
-    Variablen: <link linkend="language.references">Zuweisung durch
+    PHP bietet eine andere Möglichkeit der Wertzuweisung 
+    bei Variablen: <link linkend="language.references">Zuweisung durch
     Referenzierung</link>. Das bedeutet, dass der Wert der neuen
     Variablen eine Referenz zur Ursprungs-Variablen darstellt (mit
     anderen Worten: Der Wert ist ein Alias bzw. Zeiger auf den Inhalt
     der Ursprungsvariablen). Beide Variablen zeigen also auf die
     selbe(n) Speicherstelle(n). Änderungen der neuen Variablen ändern
-    auch deren Ursprungs-Variable und umgekehrt. Der Wert / Inhalt
-    wird also nicht kopiert. Die Übertragung geschieht dadurch auch
-    schneller als in PHP 3. Dies wird sich aber nur bei umfangreichen
-    Schleifen oder bei der Übertragung von grossen <link
-    linkend="language.types.array">Arrays</link> oder <link
-    linkend="language.types.object">Objekten</link> bemerkbar machen.
+    auch deren Ursprungs-Variable und umgekehrt.
    </para>
 
    <para>
@@ -116,6 +127,42 @@ $bar = &test();   // Ungültig.
 ]]>
      </programlisting>
     </informalexample>
+   </para>
+ 
+   <para>
+    Es ist in PHP nicht zwingend notwendig Variablen zu initialisieren, es
+    wird aber trotzdem empfohlen. Nicht initialisierte Variablen haben einen
+    Vorgabewert der vom Typ abhängt - &false; Null, leerer String oder leeres
+    Array.
+   </para>
+   <para>
+    <example>
+     <title>Vorabewerte uninitialisierter Variablen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+echo ($unset_bool ? "true" : "false"); // false
+$unset_int += 25; // 0 + 25 => 25
+echo $unset_string . "abc"; // "" . "abc" => "abc"
+$unset_array[3] = "def"; // array() + array(3 => "def") => array(3 => "def")
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Es ist problematisch sich auf den Vorgabewert einer nicht 
+    initialisierten Variable zu verlassen wenn Sie Dateien inkludieren
+    die die gleichen Variablennamen benutzen.
+    Wenn <link linkend="ini.register-globals">register_globals</link>
+    aktiviert ist führt dies zu einem extremen <link
+    linkend="security.globals">Sicherheitsproblem</link>.
+    Bei Zugriffen auf nicht initialisierte Variablen wird ein 
+    Fehler der Stufe <link linkend="errorfunc.constants.errorlevels.e-notice">E_NOTICE</link>
+    ausgegeben, dies trifft allerdings nicht auf das Anfügen
+    von Elementen an nicht initialisierte Arrays zu. 
+    Das <function>isset</function> Sprachkonstrukt kann genutzt werden
+    um zu prüfen ob eine Variable bereits initialisiert wurde.
    </para>
   </sect1>
 
@@ -174,7 +221,7 @@ $bar = &test();   // Ungültig.
     enthalten. Diese neuen Arrays sind insofern etwas sehr Spezielles,
     als sie automatisch global sind -- d.h., sie stehen automatisch in
     jedem Bereich zur Verfügung. Deshalb sind sie auch bekannt als
-    'Autoglobale' oder 'Superglobale'. (Es gibt in PHP keinen
+    'Superglobale'. (Es gibt in PHP keinen
     Mechanismus für benutzerdefinierte Superglobale.) Die Superglobale
     werden nachfolgend aufgelistet, aber für eine Liste ihres Inhalts
     und die weitere Diskussion vordefinierter Variablen und ihres
@@ -189,11 +236,20 @@ $bar = &test();   // Ungültig.
    <note>
     <title>Variable Variablen</title>
     <para>
-     Superglobale können nicht als <link
-     linkend="language.variables.variable">Variable Variablen</link>
+     Superglobale können innerhalb von Funktionen und Methoden nicht als 
+     <link linkend="language.variables.variable">Variable Variablen</link>
      verwendet werden.
     </para>
    </note>
+  	 
+   <note>
+    <para>
+     Obwohl Superglobale und die HTTP_*_VARS zur gleichen Zeit existieren
+     können sind sie nicht identisch. Änderungen dieser Variablen haben
+     keinen Einfluss auf die jeweils anderen.
+    </para>
+   </note>
+
    <para>
     Falls bestimmte Variablen nicht unter <link
     linkend="ini.variables-order">variables_order</link> angegeben
@@ -212,7 +268,7 @@ $bar = &test();   // Ungültig.
        Diese Variable enthält eine Referenz zu jeder Variable, die
        im globalen Bereich des laufenden Skripts zur Verfügung
        steht. Die Schlüssel dieses Arrays sind die Namen der globalen
-       Variablen. <varname>$GLOBALS</varname> gibt es seit PHP 3.
+       Variablen.
       </simpara>
      </listitem>
     </varlistentry>
@@ -234,7 +290,7 @@ $bar = &test();   // Ungültig.
      <term><link linkend="reserved.variables.get">$_GET</link></term>
      <listitem>
       <simpara>
-       Variablen, die dem Skript über HTTP GET geliefert werden.
+       Variablen, die dem Skript über den URL Query-String  geliefert werden.
        Entspricht dem alten <varname>$HTTP_GET_VARS</varname>-Array,
        das zwar noch zur Verfügung steht, aber abzulehnen ist.
       </simpara>
@@ -492,7 +548,7 @@ function test_global()
 
     // Superglobale stehen in jedem Bereich zur Verfügung und
     // benötigen kein 'global'. Superglobale stehen seit PHP 4.1.0
-    // zur Verfügung.
+    // zur Verfügung und HTTP_POST_VARS gilt nun als veraltet
     echo $_POST['name'];
 }
 ?>
@@ -624,7 +680,7 @@ function foo(){
   <sect2 xml:id="language.variables.scope.references">
    <title>Referenzen bei globalen und statischen Variablen</title>
    <simpara>
-    Die Zend Engine 1, die <literal>PHP 4</literal> zugrunde liegt,
+    Die Zend Engine 1, die PHP 4 zugrunde liegt,
     führt die <link
     linkend="language.variables.scope.static">static</link>- und
     <link
@@ -809,12 +865,10 @@ echo "$a $Hallo";
     <simpara>
      Bitte beachten Sie, dass variable Variablen nicht bei <link
      linkend="language.variables.superglobals">Superglobalen
-     Arrays</link> verwendet werden können. Das bedeutet, etwas wie
-     <varname>${$_GET}</varname> ist nicht möglich. Wenn Sie nach
-     einer Möglichkeit suchen, die Verfügbarkeit von Superglobalen und
-     den alten <varname>HTTP_*_VARS</varname> zu handhaben, können Sie
-     das mit <link linkend="language.references">referenzieren</link>
-     versuchen.
+     Arrays</link> verwendet werden können.
+     Die Variable <literal>$this</literal> ist also eine 
+     spezielle Variabele die nicht dynamisch referenziert
+     werden kann.
     </simpara>
    </warning>
 
@@ -869,7 +923,7 @@ echo "$a $Hallo";
    import_request_variables('p', 'p_');
    echo $p_benutzername;
 
-// Seit PHP 3 verfügbar. Ab PHP 5.0.0 können diese langen
+// Ab PHP 6.0.0 nicht mehr verfügbar. Ab PHP 5.0.0 können diese langen
 // vordefinierten Variablen mit der Anweisung register_long_arrays
 // deaktiviert werden.
 
@@ -909,8 +963,8 @@ echo "$a $Hallo";
    <para>
     Wie gezeigt, war <link
     linkend="ini.register-globals">register_globals</link> vor PHP
-    4.2.0 standardmäßig <emphasis>on</emphasis>. In PHP 3 war es immer
-    aktiviert. Die PHP-Gemeinschaft ermuntert alle, sich nicht auf
+    4.2.0 standardmäßig <emphasis>on</emphasis>. 
+    Die PHP-Gemeinschaft ermuntert alle, sich nicht auf
     diese Anweisung zu stützen, weil es vorzuziehen ist, davon
     auszugehen, dass sie <emphasis>off</emphasis> ist und entsprechend
     zu programmieren.
@@ -943,15 +997,13 @@ echo "$a $Hallo";
       <programlisting role="php">
 <![CDATA[
 <?php
-if (isset($_POST['action']) && $_POST['action'] == 'abgeschickt') {
+if ($_POST) {
     echo '<pre>';
-    print_r($_POST);
-    echo '<a href="'. $_SERVER['PHP_SELF'] .'">Bitte versuchen Sie es nochmal</a>';
-
+    echo htmlspecialchars(print_r($_POST, true));
     echo '</pre>';
-} else {
+}
 ?>
-<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+<form action="" method="post">
     Name:  <input type="text" name="personal[name]" /><br />
     Email: <input type="text" name="personal[email]" /><br />
     Bier: <br />
@@ -960,20 +1012,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'abgeschickt') {
         <option value="guinness">Guinness</option>
         <option value="stuttgarter">Stuttgarter Schwabenbräu</option>
     </select><br />
-    <input type="hidden" name="action" value="abgeschickt" />
     <input type="submit" name="submit" value="Und ab!" />
 </form>
-<?php
-}
-?>
 ]]>
       </programlisting>
      </example>
-    </para>
-    <para>
-     In PHP 3 ist die Verwendung von Arrays in Formularvariablen auf
-     eindimensionale Arrays beschränkt. In PHP 4 besteht diese Einschränkung
-     nicht mehr.
     </para>
 
     <sect3 xml:id="language.variables.external.form.submit">
