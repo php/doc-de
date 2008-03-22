@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.18 $ -->
-<!-- EN-Revision: 1.43 Maintainer: hholzgra Status: ready -->
+<!-- $Revision: 1.19 $ -->
+<!-- EN-Revision: 1.69 Maintainer: hholzgra Status: ready -->
 <!-- Credits: tom -->
  <chapter xml:id="language.functions" xmlns="http://docbook.org/ns/docbook">
   <title>Funktionen</title>
@@ -34,9 +34,18 @@ function foo ($arg_1, $arg_2, ..., $arg_n)
     vorkommen, sogar andere Funktionen und <link
     linkend="keyword.class">Klassen-</link> Definitionen.
    </simpara>
+   <para>
+    Für Funktionsnamen gelten in PHP die gleichen Regeln wie für
+    andere Bezeichner. Ein gültiger Funktionsname beginnt mit 
+    einem Buchstaben oder Unterstrich gefolgt von einer beliebigen
+    Anzahl von Buchstaben, Ziffern und Unterstrichen. Als 
+    regulärer Ausdruck wird dies so ausgedrückt:
+    <literal>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*</literal>.
+   </para>
+   &tip.userlandnaming;
    <simpara>
-    In PHP 3 müssen Funktionen definiert sein, bevor man auf sie
-    verweist. In PHP4 ist das nicht mehr erforderlich,
+    Es ist nicht erforderlich das Funktionen bereits definiert sein
+    müssen wenn auf sie verviesen wird,
     <emphasis>außer</emphasis> wenn eine Funktion nur bedingt definiert
     wird, wie in den beiden untenstehenden Beispielen gezeigt.
    </simpara>
@@ -108,6 +117,11 @@ bar();
      </programlisting>
     </example>
    </para>
+   <para>
+    Alle Funktionen und Klassen in PHP existieren im globalen Namensraum - 
+    sie können außerhalb von Funktionen aufgerufen werden selbst wenn sie
+    innerhalb einer Funktion definiert wurden und umgekehrt.
+   </para>
    <simpara>
     PHP unterstützt weder das Überladen von Funktionen, noch ist es
     möglich, zuvor deklarierte Funktionen neu zu definieren oder die
@@ -125,13 +139,41 @@ bar();
     obwohl Vorgabewerte für Parameter unterstützt werden
     (weitere Informationen finden Sie unter
     <link linkend="functions.arguments.default">Vorgabewerte
-    für Parameter</link>). PHP 4 unterstützt beides: siehe
-    <link linkend="functions.variable-arg-list">Variable
-    Parameteranzahl</link> und die Funktionsreferenzen für
+    für Parameter</link>). Beginnend mit PHP 4 wird beides
+    unterstützt, 
+
+    Sowohl <link linkend="functions.variable-arg-list">eine 
+    variable Anzahl Parameter</link> als auch 
+    <link linkend="functions.arguments.default">Vorgabewerte
+    für Parameter</link> werden in Funktionen unterstützt.
+    Siehe auch die Funktionsreferenzen für
     <function>func_num_args</function>,
     <function>func_get_arg</function> und
     <function>func_get_args</function> für weitere Informationen.
    </simpara>
+
+   <para>
+    Es ist in PHP möglich Funktionen rekursiv aufzurufen.
+    Sie sollten aber rekursive Aufrufe mit einer Rekursionstiefe
+    von mehr als 100-200 vermeiden da diese zu einem Stacküberlauf
+    und damit zum Programmabbruch führen können.
+    <example>
+     <title>Recursive Functionen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function recursion($a)
+{
+    if ($a < 20) {
+        echo "$a\n";
+        recursion($a + 1);
+    }
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
   </sect1>
  
   <sect1 xml:id="functions.arguments">
@@ -140,22 +182,19 @@ bar();
    <simpara>
     Mit einer Parameterliste kann man Informationen an eine Funktion 
     übergeben. Die Parameterliste ist eine durch Kommas getrennte
-    Liste von Variablen und/oder Konstanten.
+    Liste von Ausdrücken.
    </simpara>
    <para>
     PHP unterstützt die Weitergabe von Parametern als Werte (das ist
     der Standard), als <link
     linkend="functions.arguments.by-reference">Verweise</link>, und
     als <link linkend="functions.arguments.default">Vorgabewerte</link>.
-    Die Übergabe einer variablen Anzahl von Parametern wird nur von
-    PHP 4 und höher unterstützt, siehe <link
-    linkend="functions.variable-arg-list">Variable
-    Parameteranzahl</link> und die Funktionsreferenzen für
+    <link linkend="functions.variable-arg-list">Eine variable Anzahl
+    von Parametern</link> wird ebenfalls unterstützt, siehe auch die
+    Funktionsreferenzen für
     <function>func_num_args</function>,
     <function>func_get_arg</function> und
     <function>func_get_args</function> für weitere Informationen. 
-    Durch die Übergabe eines Arrays mit Parametern kann man auch
-    in PHP 3 einen ähnlichen Effekt erreichen:
    </para>
 
    <para>
@@ -231,6 +270,7 @@ function machkaffee ($typ = "Cappucino")
     return "Ich mache eine Tasse $typ.\n";
 }
 echo machkaffee ();
+echo machkaffee (null);
 echo machkaffee ("Espresso");
 ?>
 ]]>
@@ -243,10 +283,33 @@ echo machkaffee ("Espresso");
  
      <screen>
 Ich mache eine Tasse Cappucino.
+Ich mache eine Tasse.
 Ich mache eine Tasse Espresso.
      </screen>
     </para>
- 
+    <para>
+     PHP gestattet es Arrays und den speziellen Typ &null; als
+     Vorgabewert zu nutzen, zum Beispiel:
+    </para>
+    <para>
+     <example>
+      <title>Nichtskalare Typen als Vorgabewert</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function makecoffee ($types = array("cappuccino"), $coffeeMaker = NULL)
+{
+    $device = is_null($coffeeMaker) ? "hands" : $coffeeMaker;
+    return "Ich mache eine Tasse ".join(", ", $types)." mit $device.\n";
+}
+echo makecoffee ();
+echo makecoffee (array("cappuccino", "lavazza"), "teapot");
+?>
+]]>
+      </programlisting>
+     </example> 	 
+    </para>
+
     <simpara>
      Der Vorgabewert muss ein konstanter Ausdruck sein, darf also (zum
      Beispiel) keine Variable, Eigenschaft einer Klasse oder
@@ -283,7 +346,7 @@ echo mach_joghurt ("Brombeer");   // arbeitet nicht wie erwartet
     <para>
      <screen>
 Warning: Missing argument 2 in call to makeyogurt() in 
-/usr/local/etc/httpd/htdocs/php3test/functest.html on line 41
+/usr/local/etc/httpd/htdocs/phptest/functest.html on line 41
 Mache einen Becher Brombeer-joghurt.
      </screen>
     </para>
@@ -318,14 +381,18 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
      </screen>
     </para>
 
+    <para>
+     Default value for arguments passed by reference is supported since PHP 5.
+    </para> 	 
+
    </sect2>
 
    <sect2 xml:id="functions.variable-arg-list">
     <title>Variable Anzahl von Parametern</title>
     
     <simpara>
-     PHP 4 unterstützt eine variable Anzahl von Parametern in
-     benutzerdefinierten Funktionen. Das Handling dieser Parameter
+     Beginnend mit PHP 4 wird eine variable Anzahl von Parametern in
+     benutzerdefinierten Funktionen unterstützt. Das Handling dieser Parameter
      fällt mittels der Funktionen <function>func_num_args</function>,
      <function>func_get_arg</function> und
      <function>func_get_args</function> sehr leicht.
@@ -448,12 +515,12 @@ $neuereferenz =& returniere_referenz();
 <?php
 function foo()
 {
-    echo "In foo()<br>\n";
+    echo "In foo()<br />\n";
 }
 
 function bar($arg = '')
 {
-    echo "In bar(); der Parameter ist '$arg'.<br>\n";
+    echo "In bar(); der Parameter ist '$arg'.<br />\n";
 }
 
 // Dies ist eine Wrapperfunkiton für echo
@@ -524,7 +591,8 @@ $foo->$funcname();   // Dies ruft $foo->Variable() auf
     Aufruf "undefined function" Fehlermeldungen.
     Um z.B. <link linkend="ref.image">Grafik-Funktionen</link> wie
     <function>imagecreatetruecolor</function> müssen Sie PHP mit
-    GD Unterstützung kompilieren, oder um <function>mysql_connect</function>
+    <productname>GD</productname> Unterstützung kompilieren, oder um 
+    <function>mysql_connect</function>
     zu Nutzen muss Ihr PHP mit <link linkend="ref.mysql">MySQL</link>
     UNterstützung compiliert sein.
     Viele Kernfunktionen wie z.B. die <link linkend="ref.strings"
@@ -537,7 +605,7 @@ $foo->$funcname();   // Dies ruft $foo->Variable() auf
     aktiviert sind und das PHP Manual nach Extensions unterteilt ist.
     Weitere Informationen zur Einrichtung von PHP finden Sie in den
     Kapiteln <link linkend="configuration">konfiguration</link>,
-    <link linkend="Installation">installation</link> und den Kapiteln
+    <link linkend="install">Installation</link> und den Kapiteln
     zu den einzelnen Extensions.
    </para>
    <para>
@@ -556,6 +624,16 @@ $foo->$funcname();   // Dies ruft $foo->Variable() auf
     Kenntniss dieser wichtigen (und oft subtilen) Unterschiede ist
     von entscheidender Bedeutung für das Schreiben korekten PHP Kodes.
    </para>
+   <note>
+    <simpara>
+     Wenn Funktionen andere Parameter erhalten als erwartet, d.h. wenn z.B.
+     ein <type>array</type> übergeben wird obwohl ein <type>string</type>
+     erwartet wird, so ist der Rückgabewert undefiniert. In solchen Fällen
+     ist es üblich das &null; zurückgegeben wird, dies ist aber nur eine
+     Konvention auf die Sie sich nicht unbedingt verlassen können.
+     upon.
+    </simpara>
+   </note>
    <para>
     Siehe auch <function>function_exists</function>,
     <link linkend="funcref">the function reference</link>,
