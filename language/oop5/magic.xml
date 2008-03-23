@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.15 Maintainer: simp Status: ready -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.15 Maintainer: hholzgra Status: ready -->
+<!-- Credits: simp -->
  <sect1 xml:id="language.oop5.magic" xmlns="http://docbook.org/ns/docbook">
   <title>Magische Methoden</title>
   <para>
@@ -49,11 +50,6 @@
     nicht gespeicherte Daten zu sichern oder ähnliche Aufräumarbeiten zu
     erledigen. Die Funktion ist ebenfalls nützlich, wenn Sie sehr große Objekte
     haben, welche nicht komplett gespeichert werden müssen.
-   </para>
-   <para>
-    Die <literal>__sleep</literal>-Methode soll den zu serialisierenden Wert
-    zurückgeben (üblicherweise <literal>$this</literal>), ansonsten wird
-    &null; serialisiert.
    </para>
    <para>
     Umgekehrt überprüft <function>unserialize</function> die Anwesenheit einer
@@ -149,6 +145,12 @@ Hallo
     in Versionen vor PHP 5.2.0 nur in direkter Kombination mit 
     <function>echo</function> oder <function>print</function> aufgerufen
     wurde.
+    Beginnend mit PHP 5.2.0 erfolgt dieser Aufruf in jedem Stringkontext (z.B. in
+    <function>printf</function> mit <literal>%s</literal> Platzhalter) aber in keinem
+    der anderen Typenkontexte (z.B. mit dem <literal>%d</literal> Platzhalter).
+    Ebenfalls beginnend mit PHP 5.2.0 bewirkt die Umwandlung eines Objekts ohne 
+    <literal>__toString</literal> Metohde in einen String einen Fehler der Klasse
+    <constant>E_RECOVERABLE_ERROR</constant>.
    </para>
   </sect2>
 
@@ -164,6 +166,51 @@ Hallo
     Eigenschaften der Form <literal>array('Eigenschaft' => Wert, ...)</literal>
     besteht.
    </para>
+    <example>
+    <title>Using <literal>__set_state</literal> (since PHP 5.1.0)</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class A
+{
+    public $var1;
+    public $var2;
+
+    public static function __set_state($an_array) // As of PHP 5.1.0
+    {
+        $obj = new A;
+        $obj->var1 = $an_array['var1'];
+        $obj->var2 = $an_array['var2'];
+        return $obj;
+    }
+}
+
+$a = new A;
+$a->var1 = 5;
+$a->var2 = 'foo';
+
+eval('$b = ' . var_export($a, true) . ';'); // $b = A::__set_state(array(
+                                            //    'var1' => 5,
+                                            //    'var2' => 'foo',
+                                            // ));
+var_dump($b);
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+object(A)#2 (2) {
+  ["var1"]=>
+  int(5)
+  ["var2"]=>
+  string(3) "foo"
+}
+]]>
+    </screen>
+   </example>
   </sect2>
  </sect1>
  
