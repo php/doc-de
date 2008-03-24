@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.44 $ -->
-<!-- EN-Revision: 1.94 Maintainer: hholzgra Status: ready -->
+<!-- $Revision: 1.45 $ -->
+<!-- EN-Revision: 1.114 Maintainer: hholzgra Status: ready -->
 <!-- CREDITS: tzwenny, betz -->
 
  <chapter xml:id="language.control-structures" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -296,13 +296,13 @@ endwhile;
    </para>
   </sect1>
   <sect1 xml:id="control-structures.do.while">
-   <title><literal>do..while</literal></title>
+   <title><literal>do-while</literal></title>
    <simpara>
-    <literal>do..while</literal>-Schleifen sind den <literal>while</literal>
+    <literal>do-while</literal>-Schleifen sind den <literal>while</literal>
     -Schleifen sehr ähnlich, außer dass der Wahrheitsgehalt des Ausdrucks erst
     am Ende jedes Durchlaufs geprüft wird, statt am Anfang. Der Hauptunterschied
     zu gewöhnlichen <literal>while</literal>-Schleifen ist der, dass die Schleife
-    bei <literal>do..while</literal> in jeden Fall einmal durchlaufen wird
+    bei <literal>do-while</literal> in jeden Fall einmal durchlaufen wird
     (die Bedingung wird erst am Ende eines Durchlaufs geprüft).Bei
     <literal>while</literal>-Schleifen hingegen kann es durchaus passieren,
     dass die Schleife nie durchlaufen wird (die Bedingung wird immer am Anfang
@@ -310,7 +310,7 @@ endwhile;
     ausgewertet endet die Ausführung der Schleife sofort).
    </simpara>
    <para>
-    Es gibt nur eine Syntax für <literal>do..while</literal>-Schleifen:
+    Es gibt nur eine Syntax für <literal>do-while</literal>-Schleifen:
     <informalexample>
      <programlisting role="php">
 <![CDATA[
@@ -332,7 +332,7 @@ do {
    </simpara>
    <para>
     Erfahrene C-Anwender kennen auch die Möglichkeit, Programm-Blöcke
-    mit <literal>do..while</literal> (0) einzuschliessen und dann die
+    mit <literal>do-while</literal> (0) einzuschliessen und dann die
     <link linkend="control-structures.break"><literal>break</literal></link>
     Anweisung zu benutzen. Der folgende Programm-Ausschnitt zeigt diese
     Möglichkeit:
@@ -459,23 +459,12 @@ for (ausdr1; ausdr2; ausdr3): Anweisung; ...; endfor;
      </programlisting>
      </informalexample>
    </para>
-   <para>
-    Andere Sprachen haben für das Durchlaufen eines Hashs oder Arrays eine
-    <literal>foreach</literal>-Anweisung. PHP 3 hat dies nicht; im Gegensatz
-    zu PHP 4 (vgl.
-    <link linkend="control-structures.foreach">foreach</link>).
-    In PHP 3 können Sie für diesen Zweck
-    <link linkend="control-structures.while">while</link> mit der
-    <function>list</function>- und <function>each</function>-Funktion
-    kombinieren. Beispiele finden Sie in der Dokumentation zu diesen
-    Funktionen.
-   </para>
   </sect1>
 
   <sect1 xml:id="control-structures.foreach">
    <title><literal>foreach</literal></title>
    <para>
-    PHP 4 (nicht PHP 3) enthält ein <literal>foreach</literal> Konstrukt,
+    Mit PHP 4 wurde ein <literal>foreach</literal> Konstrukt eingeführt,
     genau wie Perl und einige andere Sprachen. Diese ermöglicht es, auf
     einfache Weise ein Array zu durchlaufen. <literal>foreach</literal>
     funktioniert nur in Verbindung mit Arrays. Wenn Sie versuchen
@@ -527,6 +516,27 @@ foreach (array_expression as $key => $value) Anweisung
       des originalen Arrays bei der Verarbeitung bewegt. Angenommen, die
       foreach-Schleife ist komplett abgearbeitet, wird der interne
       Arrayzeiger (des originalen Arrays) auf das letzte Element zeigen.
+     </para>
+     <para>
+      Beginnend mit PHP 5 können Sie die Arrayelemente einfach ändern
+      wenn Sie der <literal>$value</literal> Variable ein &amp; voranstellen. 
+      Hierdurch werden die Elemente per <link linkend="language.references">reference</link> 
+      zugewiesen und nicht als Kopie des Wertes.
+      <informalexample>
+       <programlisting role="php">
+<![CDATA[
+<?php
+$arr = array(1, 2, 3, 4);
+foreach ($arr as &$value) {
+    $value = $value * 2;
+}
+// $arr ist nun array(2, 4, 6, 8)
+?>
+]]>
+       </programlisting>
+      </informalexample>
+      Dies ist nur möglich wenn das Array referenziert werden kann 
+      (d.h. veränderbar ist).
      </para>
     </note>
    </para>
@@ -615,7 +625,7 @@ foreach($a as $k => $v) {
 }
 
 /* foreach Beispiel 4: multidimensionale Arrays */
-
+$a = array();
 $a[0][0] = "a";
 $a[0][1] = "b";
 $a[1][0] = "y";
@@ -644,7 +654,7 @@ foreach (array(1, 2, 3, 4, 5) as $v) {
    <simpara>
     <literal>break</literal> bricht die Ausführung der aktuellen
     <literal>for</literal>, <literal>foreach</literal>
-    <literal>while</literal>, <literal>do..while</literal> Schleife oder einer
+    <literal>while</literal>, <literal>do-while</literal> Schleife oder einer
     <literal>switch</literal> Anweisungssequenz ab.
    </simpara>
    <simpara>
@@ -807,7 +817,8 @@ while ($i++ < 5) {
     das Gleiche zu erreichen. Einmal werden <literal>if</literal> und
     <literal>elseif</literal> Anweisungen benutzt, das andere Mal eine
     <literal>switch</literal>-Anweisung:
-    <informalexample>
+    <example>
+     <title><literal>switch</literal> Struktur</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -833,7 +844,27 @@ case 2:
 ?>
 ]]>
      </programlisting>
-    </informalexample>
+    </example>
+    <example>
+     <title><literal>switch</literal> erlaubt die Nutzung von Strings</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+switch ($i) {
+case "apple":
+	echo "i is apple";
+    break;
+case "bar":
+    echo "i is bar";
+    break;
+case "cake":
+    echo "i is cake";
+    break;
+}
+?>
+]]>
+     </programlisting>
+    </example>
    </para>
    <para>
     Es ist wichtig, die Ausführung einer <literal>switch</literal>-Anweisung
@@ -1227,7 +1258,8 @@ require ('somefile.txt');
     weiterhin ausgeführt. Stellen Sie außerdem sicher, dass Sie einen gültigen
     <link linkend="ini.include-path">include_path</link> gesetzt
     haben. Beachten Sie, dass eine Parse Error in einer Datei, die mit require
-    eingebunden wurde, die Ausführung ihre Skripts nicht unterbricht.
+    eingebunden wurde, die Ausführung ihre Skripts vor PHP 4.3.5 nicht unterbricht.
+    Beginnend mit PHP 4.3.5 wird das Skript in diesem Fall abgebrochen.
    </simpara>
    <simpara>
     Dateien die mit include eingebunden werden, werden zuerst im include_path
@@ -1241,6 +1273,8 @@ require ('somefile.txt');
     <filename>b.php</filename> zuerst im Verzeichnis
     <filename class="directory">/www/</filename> gesucht und danach im
     Verzeichnis <filename class="directory">/www/include/</filename>.
+    Beginnt der Pfad mit <literal>../</literal> so wird der include_path
+    nur relativ zum aktuellen Verzeichnis durchsucht.
    </simpara>
    <simpara>
     Wenn eine Datei eingebunden wird, erbt der enthaltene Code den
@@ -1418,6 +1452,30 @@ if ($bedingung) {
     diese werden dann an dem Punkt Ihres Skripts eingeführt, von wo aus der
     Aufruf mit include erfolgt ist.
    </simpara>
+   <para>
+    Da <function>include</function> ein spezielles Sprachkonstrukt ist 
+    kann das Argument auch ohne Klammern übergeben werden. Sie sollten
+    dies beachten falls Sie den Rückgabewert vergleichen wollen.
+    <example>
+     <title>Prüfung des Rückgabewerts von include</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// das folgende funktioniert nicht, es wird als
+// include(('vars.php') == 'OK'), d.h. include(''), ausgewertet
+if (include('vars.php') == 'OK') {
+    echo 'OK';
+}
+
+// das folgende funktioniert
+if ((include 'vars.php') == 'OK') {
+    echo 'OK';
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
    <note>
     <simpara>
      In PHP 3 darf eine return-Anweisung nicht innerhalb eines Blocks
@@ -1467,7 +1525,24 @@ echo $bar; // gibt 1 aus
     <literal>$bar</literal> hat den Wert <literal>1</literal>, weil include
     erfolgreich war. Beachten Sie die Unterschiede in den obigen Beispielen.
     Das erste nutzt <function>return</function> innerhalb der eingebundenen
-    Datei im Gegensatz zum zweiten Beispiel. Weitere Möglichkeiten Dateien in
+    Datei im Gegensatz zum zweiten Beispiel. 
+    Kann die Datei nicht eingebunden werden wird &false; zurückgegeben
+    und eine <literal>E_WARNING</literal> Warnung ausgegeben.
+   </simpara>
+   <para>
+    Funktionen die innerhalb einer Include-Datei definiert werden können 
+    unabhängig davon ob sie vor oder nach der <function>return</function>
+    Anweisung stehen in der Hauptdatei benutzt werden.
+    PHP 5 bricht mit einem fatalen Fehler ab wenn die Datei zweimal eingebunden
+    wird da die enthaltenen Funktionen bereits definiert sind, PHP 4 dagegen 
+    ignoriert funktionen die nach der <function>return</function> Anweisung
+    definiert werden.
+    Es wird empfohlen <function>include_once</function> zu benutzen und nicht
+    selbst innerhalb der eingebundenen Datei zu prüfen ob die Datei bereits
+    eingebunden wurde und mit einer bedingten return Anweisung abzubrechen.
+   </para>
+   <simpara> 
+    Weitere Möglichkeiten Dateien in
     Variablen "einzubinden" bieten ihnen die Funktionen
     <function>fopen</function> und <function>file</function> oder
     <function>include</function> im Zusammenspiel mit den
@@ -1509,11 +1584,15 @@ echo $bar; // gibt 1 aus
     <link xlink:href="&url.php.pear;">PEAR</link>-Code entnehmen, welcher
     im aktuellsten PHP-Sourcecode enthalten ist.
    </para>
-   <note>
    <para>
-    <function>require_once</function> steht ab PHP 4.01pl2 zur
-    Verfügung.
+    Der Rückgabewert entspricht dem von <function>include</function>.
+    Wurde die Datei bereits eingebunden wird &true; zurückgegeben.
    </para>
+   <note>
+    <para>
+     <function>require_once</function> steht ab PHP 4.01pl2 zur
+     Verfügung.
+    </para>
    </note>
    <note>
     <para>
@@ -1531,11 +1610,15 @@ echo $bar; // gibt 1 aus
 <![CDATA[
 <?php
 require_once("a.php"); // bindet a.php ein
-require_once("A.php"); // bindet a.php auf Windows nochmal ein!
+require_once("A.php"); // bindet a.php auf Windows nochmal ein! (nur PHP 4)
 ?>
 ]]>
        </programlisting>
      </example>
+     Dieses Verhalten hat sich in PHP 5 geändert - der Pfad wird zuerst
+     normalisiert so dass <filename>C:\PROGRA~1\A.php</filename> und 
+     <filename>C:\Program Files\a.php</filename> als gleich erkannt 
+     werden und so die Datei nur einmal eingebunden wird.
     </para>
    </note>
    &warn.no-win32-fopen-wrapper;
@@ -1573,6 +1656,10 @@ require_once("A.php"); // bindet a.php auf Windows nochmal ein!
     <link xlink:href="&url.php.pear;">PEAR</link>-Code entnehmen, welcher
     im aktuellsten PHP-Source-Code enthalten ist.
    </para>
+   <para>
+    Der Rückgabewert entspricht dem von <function>include</function>.
+    Wurde die Datei bereits eingebunden wird &true; zurückgegeben. 
+   </para>
    <note>
    <para>
     <function>include_once</function> steht ab PHP 4.01pl2 zur
@@ -1595,11 +1682,15 @@ require_once("A.php"); // bindet a.php auf Windows nochmal ein!
 <![CDATA[
 <?php
 include_once("a.php"); // bindet a.php ein
-include_once("A.php"); // bindet a.php auf Windows nochmal ein!
+include_once("A.php"); // bindet a.php auf Windows nochmal ein! (nur PHP 4)
 ?>
 ]]>
        </programlisting>
      </example>
+     Dieses Verhalten hat sich in PHP 5 geändert - der Pfad wird zuerst
+     normalisiert so dass <filename>C:\PROGRA~1\A.php</filename> und 
+     <filename>C:\Program Files\a.php</filename> als gleich erkannt 
+     werden und so die Datei nur einmal eingebunden wird.
     </para>
    </note>
    &warn.no-win32-fopen-wrapper;

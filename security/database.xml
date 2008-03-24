@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.5 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.13 Maintainer: hholzgra Status: ready -->
+<!-- Credits: tom -->
   <chapter xml:id="security.database" xmlns="http://docbook.org/ns/docbook">
    <title>Datenbank - Sicherheit</title>
 
@@ -125,18 +126,17 @@
 <![CDATA[
 // Speichern des Passwort hash
 $query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
-            addslashes($username), md5($password));
-$result = pg_exec($connection, $query);
+            pg_escape_string($username), md5($password));
+$result = pg_query($connection, $query);
 
 // Afragen, ob der User das richtige Passwort übermittelt hat
 $query = sprintf("SELECT 1 FROM users WHERE name='%s' AND pwd='%s';",
-            addslashes($username), md5($password));
-$result = pg_exec($connection, $query);
+            pg_escape_string($username), md5($password));
+$result = pg_query($connection, $query);
 
-if (pg_numrows($result) > 0) {
+if (pg_num_rows($result) > 0) {
     echo "Welcome, $username!";
-}
-else {
+} else {
     echo "Authentication failed for $username.";
 }
 ]]>
@@ -175,10 +175,10 @@ else {
       </title>
       <programlisting role="php">
 <![CDATA[
-$offset = argv[0]; // Vorsicht, keine Validierung des Input !
+$offset = $argv[0]; // Vorsicht, keine Validierung des Input !
 $query  = "SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET $offset;";
 // mit PostgreSQL
-$result = pg_exec($conn, $query);
+$result = pg_query($conn, $query);
 // mit MySQL
 $result = mysql_query($query);
 ]]>
@@ -403,9 +403,13 @@ $query = sprintf("SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET %d
       </listitem>
       <listitem>
        <simpara>
-        Escapen Sie jeden nicht numerischen Input, welcher zur Datenbank
-        weitergereicht werden soll mit <function>addslashes</function>
-        oder <function>addcslashes</function>. Siehe auch <link
+        Escapen Sie jede nicht numerische Benutzereingabe, welcher zur Datenbank
+        weitergereicht werden soll mit der jeweiligen datenbankspezifischen
+        Escape-Funktion (z.B. <function>mysql_escape_string</function>,
+        <function>sql_escape_string</function> usw.). Wenn keine
+        datenbankspezifischen Escapemechanismen existieren können in der
+        Regel (je nach Datenbanktyp) auch die Funktion <function>addslashes</function>
+        und <function>addcslashes</function> von Nutzen sein. Siehe auch <link
         linkend="security.database.storage">das erste Beispiel</link>. Wie
         dieses Beispiel zeigt, sind in den statischen Teil der Abfrage
         eingebrachten Escapes nicht genug, und können leicht gehacked werden.
