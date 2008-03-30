@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.18 $ -->
-<!-- EN-Revision: 1.55 Maintainer: tom Status: ready -->
+<!-- $Revision: 1.19 $ -->
+<!-- EN-Revision: 1.69 Maintainer: hholzgra Status: ready -->
+<!-- Credits: tom -->
  <chapter xml:id="features.file-upload" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Steuerung von Dateiuploads</title>
 
@@ -37,11 +38,13 @@
    <para>
     Eine Maske für den Dateiupload kann erstellt werden, indem man
     ein Formular entwirft, das ungefähr so aussieht:
+   </para>
+   <para>
     <example>
      <title>Formular für den Dateiupload</title>
      <programlisting role="html">
 <![CDATA[
-<form enctype="multipart/form-data" action="_URL_" method="post">
+<form enctype="multipart/form-data" action="_URL_" method="POST">
 <input type="hidden" name="MAX_FILE_SIZE" value="30000">
 Send this file: <input name="userfile" type="file">
 <input type="submit" value="Send File">
@@ -49,9 +52,14 @@ Send this file: <input name="userfile" type="file">
 ]]>
      </programlisting>
     </example>
-    Die _URL_ sollte auf eine PHP-Datei verweisen. Das versteckte Feld
-    MAX_FILE_SIZE muss dem Dateieingabefeld vorangestellt werden und den
-    Wert der maximal akzeptierten Dateigröße in Bytes enthalten.
+   </para>
+   <para>
+    "_URL_" im obigen Beispiel sollte durch den URL eines PHP Skripts
+    ersetzt werden. Das "hidden" Feld MAX_FILE_SIZE muss dem "file" 
+    Eingabefeld vorangestellt werden, der angegebene Wert bestimmt
+    die maximale akzeptierte Dateigröße in Bytes. Es ist auch wichtig
+    dass in ihrem Formular <literal>enctype="multipart/form-data"</literal>
+    angegeben ist da die Dateiübertragung nur so funktioniert.
 	<warning>
 	 <para>
 	  Die maximale Dateigröße MAX_FILE_SIZE ist für den Browser nur
@@ -59,6 +67,9 @@ Send this file: <input name="userfile" type="file">
 	  verlassen Sie sich nicht darauf, dass der Browser Ihrem Wunsch
 	  auch nachkommt! Wie auch immer, die PHP-Einstellungen für die
 	  maximale Dateigröße können nicht getäuscht werden.
+      Sie sollten aber MAX_FILE_SIZE trotzdem nutzen da es Nutzer
+      davor bewahrt zunächst auf die Übertragung der Daten zu warten
+      um dann erst herauszufinden das diese zu groß waren.
 	 </para>
 	</warning>
    </para>
@@ -82,7 +93,8 @@ Send this file: <input name="userfile" type="file">
     <link linkend="reserved.variables.files">$_FILES</link> aus unserem
     Beispielskript aufgelistet. Beachten Sie, dass dies auf der Annahme
     basiert, dass der Name des Dateiuploads wie in dem obigen
-    Beispielskript <emphasis>userfile</emphasis> ist.
+    Beispielskript <emphasis>userfile</emphasis> ist. Es kann aber auch
+    jeder andere Name genutzt werden.
     <variablelist>
      <varlistentry>
       <term><varname>$_FILES['userfile']['name']</varname></term>
@@ -173,20 +185,23 @@ Send this file: <input name="userfile" type="file">
      <programlisting role="php">
 <![CDATA[
 <?php 
-// In PHP kleiner als 4.1.0 sollten Sie $HTTP_POST_FILES anstatt $_FILES verwenden.
-// In PHP kleiner als 4.0.3 verwenden Sie copy() und is_uploaded_file() anstatt von
-// move_uploaded_file()
+// In PHP kleiner als 4.1.0 sollten Sie $HTTP_POST_FILES anstatt 
+// $_FILES verwenden. In PHP kleiner als 4.0.3 verwenden Sie copy() 
+// und is_uploaded_file() anstatt von move_uploaded_file()
 
 $uploaddir = '/var/www/uploads/';
+$uploadfile = $uploaddir. $_FILES['userfile']['name'];
 
 print "<pre>";
-if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaddir . $_FILES['userfile']['name'])) {
-    print "File is valid, and was successfully uploaded.  Here's some more debugging info:\n";
+if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
+    print "File is valid, and was successfully uploaded.";
+    print "Here's some more debugging info:\n";
     print_r($_FILES);
 } else {
     print "Possible file upload attack!  Here's some debugging info:\n";
     print_r($_FILES);
 }
+print "</pre>";
 
 ?>
 ]]>
@@ -206,6 +221,11 @@ if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaddir . $_FILES['us
     planen. Egal welche Logik Sie verwenden, Sie sollten die Datei in dem
     temporären Verzeichnis entweder löschen, oder an einen anderen Ort
     verschieben.
+   </simpara>
+   <simpara>
+    Wenn im Formular keine Datei ausgewählt wurde so wird 
+    $_FILES['userfile']['size'] von PHP auf 0 gesetzt und 
+    $_FILES['userfile']['tmp_name'] ist leer.
    </simpara>
    <simpara>
     Wurde die Datei in dem temporären Verzeichnis nicht verschoben oder
@@ -291,13 +311,23 @@ if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaddir . $_FILES['us
     Stellen Sie sicher, dass der Wert von <link
     linkend="ini.memory-limit">memory_limit</link> groß genug ist.
    </simpara>
-<!-- FIXME: max_execution_time INI -->
    <simpara>
     Wenn <link linkend="ini.max-execution-time">max_execution_time</link>
     zu kurz konfiguriert ist, könnte das Skript den Wert überschritten
     haben. Stellen Sie sicher, dass der Wert von
     <literal>max_execution_time</literal> groß genug ist.
    </simpara>
+   <note>
+    <simpara>
+     <link linkend="ini.max-execution-time">max_execution_time</link> 
+     beschränkt nur die Ausführungszeit des Skripts selbst. Jegliche
+     Zeit die auf Dinge entfällt die außerhalb des Skripts selbst
+     stattfinden, wie z.B. Systemaufrufe über die <function>system</function>
+     Funktion, <function>sleep</function>, Datenbankabfragen und die
+     für das Hochladen von Dateien benötigte Zeit werden
+     bei der Bestimmung der Ausführungszeit nicht mit einbezogen.
+    </simpara>
+   </note>
    <simpara>
     Ist <link linkend="ini.post-max-size">post_max_size</link> zu klein
     konfiguriert, können große Dateien nicht hochgeladen werden. Stellen
@@ -319,6 +349,10 @@ if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaddir . $_FILES['us
     Aufgrund der vielen möglichen Arten der Darstellung von Verzeichnissen
     können wir nicht garantieren, dass Dateien mit exotischen Namen (wie z.B.
     mit enthaltenen Leerzeichen) auch wirklich richtig verarbeitet werden.
+   </simpara>
+   <simpara>
+    Es ist nicht möglich für normale Formularfelder und Dateifelder die
+    gleiche Formularvariable (wie z.B. foo[]) zu nutzen.
    </simpara>
   </sect1>
 
@@ -345,7 +379,7 @@ if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploaddir . $_FILES['us
      <title>Upload mehrerer Dateien</title>
      <programlisting role="html">
 <![CDATA[
-<form action="file-upload.php" method="post" enctype="multipart/form-data">
+<form action="file-upload.php" method="POST" enctype="multipart/form-data">
   Send these files:<br>
   <input name="userfile[]" type="file"><br>
   <input name="userfile[]" type="file"><br>
