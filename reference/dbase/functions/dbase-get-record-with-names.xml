@@ -1,34 +1,118 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: samesch Status: working -->
-  <refentry xml:id="function.dbase-get-record-with-names" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>dbase_get_record_with_names</refname>
-    <refpurpose>
-     Gibt einen Datensatz einer dBase-Datenbank als assoziatives
-     Array zurück
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>array</type><methodname>dbase_get_record_with_names</methodname>
-      <methodparam><type>int</type><parameter>dbase_identifier</parameter></methodparam>
-      <methodparam><type>int</type><parameter>record</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Gibt die Daten von <parameter>record</parameter> in einem
-     assoziativen Array zurück. Das Array enthält auch einen
-     assoziativen Bereich, der 'deleted' heisst und auf 1 steht, wenn
-     der Datensatz als gelöscht markiert ist (siehe
-     <function>dbase_delete_record</function>).
-    </para>
-    <para>
-     Jedes Feld wird in den entsprechenden PHP-Typ konvertiert
-     (Datumsangaben werden zu Zeichenketten / Strings).
-    </para>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.10 Maintainer: samesch Status: ready -->
+<refentry xml:id="function.dbase-get-record-with-names" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>dbase_get_record_with_names</refname>
+  <refpurpose>Liefert einen Datensatz aus einer Datenbank als assoziatives Array</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>dbase_get_record_with_names</methodname>
+   <methodparam><type>int</type><parameter>dBase_Kennung</parameter></methodparam>
+   <methodparam><type>int</type><parameter>Datensatz_Nummer</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Gibt einen Datensatz aus einer dBase-Datenbank als assoziatives Array
+   zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>dBase_Kennung</parameter></term>
+     <listitem>
+      <para>
+       Die Datenbank-Verbindungskennung, die von
+       <function>dbase_open</function> oder <function>dbase_create</function>
+       zurückgegeben wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Datensatz_Nummer</parameter></term>
+     <listitem>
+      <para>
+       Der Index des Datensatzes
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Ein assoziatives Array mit dem Datensatz. Dieses Array enthält einen
+   zusätzlichen Schlüssel namens <literal>deleted</literal>, der auf 1
+   gesetzt ist, wenn der Datensatz zum Löschen markiert wurde (siehe
+   <function>dbase_delete_record</function>).
+  </para>
+  <para>
+   Jedes Feld wird in den entsprechenden PHP-Typ umgewandelt, ausgenommen:
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      Datumsfelder werden als Zeichenkette zurückgegeben.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Ganzzahlen, die zu einem Überlauf geführt hätten (&gt; 32 Bit), werden
+      als Zeichenkette zurückgegeben.
+     </simpara>
+    </listitem>
+   </itemizedlist>
+  </para>
+  <para>
+   Falls ein Fehler auftritt, gibt
+   <function>dbase_get_record_with_names</function> &false; zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Liste aller in der Datenbank eingetragener Mitglieder</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// im nur-lesen-Modus öffnen
+$db = dbase_open('/tmp/test.dbf', 0);
+
+if ($db) {
+  $anzahl_datensaetze = dbase_numrecords($db);
+  for ($i = 1; $i <= $anzahl_datensaetze; $i++) {
+      $datensatz = dbase_get_record_with_names($db, $i);
+      if ($datensatz['IstMitglied'] == 1) {
+          echo "Mitglied #$i: " . trim($datensatz['Name']) . "\n";
+      }
+  }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>dbase_get_record</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
