@@ -1,37 +1,123 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: samesch Status: working -->
-  <refentry xml:id="function.dbase-replace-record" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>dbase_replace_record</refname>
-    <refpurpose>
-     Ersetzt einen Datensatz in einer dBase-Datenbank
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>dbase_replace_record</methodname>
-      <methodparam><type>int</type><parameter>dbase_identifier</parameter></methodparam>
-      <methodparam><type>array</type><parameter>record</parameter></methodparam>
-      <methodparam><type>int</type><parameter>dbase_record_number</parameter></methodparam>
-     </methodsynopsis>
-    <simpara>
-     Überschreibt die Daten des Datensatzes
-     <parameter>record_number</parameter> mit den Daten aus
-     <parameter>record</parameter> in der Datenbank. Falls die Anzahl
-     der definierten Einträge ungleich der Anzahl der Datenfelder in
-     dem angesprochenen Datensatz ist, wird die Ausführung dieses
-     Befehls abgewiesen und &false; / falsch zurück gegeben.
-    </simpara>
-    <simpara>
-     <parameter>dbase_record_number</parameter> ist ein Integer-Wert,
-     der von 1 bis zur Anzahl der Datensatz-Anzahl der Datenbank
-     reicht (wie er bei Aufruf der Funktion
-     <function>dbase_numrecords</function> zurück gegeben wird).
-    </simpara>
-   </refsect1>
-  </refentry>
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.9 Maintainer: samesch Status: ready -->
+<refentry xml:id="function.dbase-replace-record" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>dbase_replace_record</refname>
+  <refpurpose>Ersetzt einen Datensatz in einer Datenbank</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>dbase_replace_record</methodname>
+   <methodparam><type>int</type><parameter>dBase_Kennung</parameter></methodparam>
+   <methodparam><type>array</type><parameter>Datensatz</parameter></methodparam>
+   <methodparam><type>int</type><parameter>Datensatz_Nummer</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Ersetzt in der Datenbank den angegebenen Datensatz
+   <parameter>Datensatz_Nummer</parameter> mit den Daten aus
+   <parameter>Datensatz</parameter>.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>dBase_Kennung</parameter></term>
+     <listitem>
+      <para>
+       Die Datenbank-Verbindungskennung, die von
+       <function>dbase_open</function> oder <function>dbase_create</function>
+       zurückgegeben wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Datensatz</parameter></term>
+     <listitem>
+      <para>
+       Ein indiziertes Datenarray. Falls die Anzahl der Elemente nicht mit der
+       Anzahl der Datenbankfelder übereinstimmt, schlägt
+       <function>dbase_replace_record</function> fehl.
+      </para>
+      <note>
+       <para>
+        Vergessen Sie nicht, den <literal>deleted</literal>-Schlüssel
+        zu löschen, wenn Sie für diesen Parameter den Rückgabewert von
+        <function>dbase_get_record</function> verwenden.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Datensatz_Nummer</parameter></term>
+     <listitem>
+      <para>
+       Eine Ganzzahl, die von 1 bis zur Anzahl der Datensätze in der Datenbank
+       (wie von <function>dbase_numrecords</function> zurückgegeben) geht.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Aktualisieren eines Datensatzes in der Datenbank</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+// im lesen-schreiben-Modus öffnen
+$db = dbase_open('/tmp/test.dbf', 2);
+
+if ($db) {
+  // den alten Datensatz holen
+  $datensatz = dbase_get_record_with_names($db, 1);
+
+  // den Eintrag 'deleted' entfernen
+  unset($datensatz['deleted']);
+
+  // das Datumsfeld mit dem aktuellen Zeitstempel aktualisieren
+  $datensatz['Datum'] = date('Ymd');
+
+  // den Datensatz ersetzen
+  dbase_replace_record($db, $datensatz, 1);
+  dbase_close($db);
+}
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>dbase_add_record</function></member>
+    <member><function>dbase_delete_record</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

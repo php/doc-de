@@ -1,101 +1,107 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.1 Maintainer: samesch Status: working -->
-  <refentry xml:id="function.dbase-create" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>dbase_create</refname>
-    <refpurpose>Erzeugt eine dBase-Datenbank</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>int</type><methodname>dbase_create</methodname>
-      <methodparam><type>string</type><parameter>filename</parameter></methodparam>
-      <methodparam><type>array</type><parameter>fields</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Der <parameter>fields</parameter>-Parameter ist ein Array,
-     das aus weiteren Arrays besteht. Jedes Array beschreibt das
-     Format eines Feldes der Datenbank. Jedes Feld-Array besteht
-     aus einem Namen, einem Zeichen zur Festlegung des Feldtyps,
-     der Länge und dem Wert für die Anzahl der Nachkommastellen.
-    </para>
-    <para>
-     Die verfügbaren Feldtypen sind:
-     <variablelist>
-      <varlistentry>
-       <term>L</term> 
-       <listitem>
-	<simpara> 
-	 Boolean. Diese haben keine Länge oder Nachkommstellen.
-	</simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>M</term>
-       <listitem>
-	<simpara>
-	 Memo. (Beachten sie, dass diese von PHP nicht unterstützt
-	 werden.)  Auch diese haben keine Länge oder Nachkommastellen.
-	</simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>D</term>
-       <listitem>
-	<simpara>
-	 Datum (gespeichert als JJJJMMTT). Ebenfalls keine Länge und
-	 Nachkommastellen.
-	</simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>N</term>
-       <listitem>
-	<simpara>
-	 Zahl. Diese haben sowohl eine Angabe der Länge als auch der
-	 Nachkommastellen.
-	</simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>C</term>
-       <listitem>
-	<simpara>
-	 Zeichenkette / String / Charakter. Hier ist eine Längenangabe
-	 erforderlich.
-	</simpara>
-       </listitem>
-      </varlistentry>
-     </variablelist>
-    </para>
-    <para>
-     Konnte die Datenbank erfolgreich erzeugt werden, wird ein
-     dbase_identifier zurück gegeben, anderenfalls &false; / falsch.
-     <example>
-      <title>Erzeugen einer dBase-Datenbank-Datei</title>
-      <programlisting role="php">
-       // "Datenbank"-Name
-       $dbname = "/tmp/test.dbf";
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.13 Maintainer: samesch Status: ready -->
+<refentry xml:id="function.dbase-create" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>dbase_create</refname>
+  <refpurpose>Erzeugt eine Datenbank</refpurpose>
+ </refnamediv>
 
-       // Datenbank-"Definitionen"
-       $def =
-           array(
-             array("Datum",       "D"),
-             array("Name",        "C",  50),
-             array("Alter",       "N",   3, 0),
-             array("Email",       "C", 128),
-             array("IstMitglied", "L")
-           );
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>dbase_create</methodname>
+   <methodparam><type>string</type><parameter>Dateiname</parameter></methodparam>
+   <methodparam><type>array</type><parameter>Felder</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Erzeugt eine der angegebenen Definition entsprechende dBase-Datenbank.
+  </para>
+  &note.sm.uidcheck;
+  &note.open-basedir.func;
+ </refsect1>
 
-       // Erzeugung
-       if (!dbase_create($dbname, $def))
-         print "&lt;strong>Error!&lt;/strong>";
-      </programlisting>
-     </example>
-    </para>
-   </refsect1>
-  </refentry>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>Dateiname</parameter></term>
+     <listitem>
+      <para>
+       Der Name der Datenbank. Das kann ein relativer oder absoluter Pfad zu
+       der Datei sein, in der dBase die Daten speichert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Felder</parameter></term>
+     <listitem>
+      <para>
+       Ein Array aus Arrays, von denen jedes das Format eines Datenbankfeldes
+       beschreibt. Jedes Feld besteht aus einem Namen, einem Zeichen für den
+       Feldtyp und gegebenenfalls einer Länge und einer Genauigkeit.
+      </para>
+      <note>
+       <para>
+        Feldnamen dürfen nicht mehr als zehn Zeichen haben.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt eine Datenbank-Verbindungskennung zurück, falls die Datenbank
+   erfolgreich erzeugt werden konnte oder &false;, falls ein Fehler auftrat.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Erzeugen einer dBase-Datenbankdatei</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+// Datenbank-"Definition"
+$def = array(
+  array("Datum",       "D"),
+  array("Name",        "C",  50),
+  array("Alter",       "N",   3, 0),
+  array("Email",       "C", 128),
+  array("IstMitglied", "L")
+);
+
+// Erzeugung
+if (!dbase_create('/tmp/test.dbf', $def)) {
+  echo "Fehler, konnte die Datenbank nicht erzeugen\n";
+}
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>dbase_open</function></member>
+    <member><function>dbase_close</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
