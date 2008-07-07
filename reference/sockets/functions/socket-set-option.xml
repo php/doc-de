@@ -1,48 +1,143 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.3 $ -->
-<!-- EN-Revision: 1.8 Maintainer: conni Status: ready -->
+<!-- $Revision: 1.4 $ -->
+<!-- EN-Revision: 1.14 Maintainer: conni Status: ready -->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.socket-set-option">
+ <refnamediv>
+  <refname>socket_set_option</refname>
+  <refpurpose>Setzt die Optionen für einen Socket</refpurpose>
+ </refnamediv>
 
-  <refentry xml:id="function.socket-set-option" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>socket_set_option</refname>
-    <refpurpose>Setzt die Socket-Optionen für einen Socket</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>socket_set_option</methodname>
-      <methodparam><type>resource</type><parameter>socket</parameter></methodparam>
-      <methodparam><type>int</type><parameter>level</parameter></methodparam>      <methodparam><type>int</type><parameter>optname</parameter></methodparam>      <methodparam><type>mixed</type><parameter>optval</parameter></methodparam>
-     </methodsynopsis>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>socket_set_option</methodname>
+   <methodparam><type>resource</type><parameter>socket</parameter></methodparam>
+   <methodparam><type>int</type><parameter>level</parameter></methodparam>
+   <methodparam><type>int</type><parameter>optname</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>optval</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Mit <function>socket_set_option</function> wird die Option, die mit
+   <parameter>optname</parameter> angegeben wurde, auf der Protokollebene
+   <parameter>level</parameter> für den Socket <parameter>socket</parameter>
+   auf den Wert gesetzt, der in <parameter>optval</parameter> übergeben wurde.
+  </para>
+ </refsect1>
 
-    <para>
-     Mit <function>socket_set_option</function> wird die Option, die mit
-     <parameter>optname</parameter> angegeben wurde, auf der Protokollebene
-     <parameter>level</parameter> für den Socket
-     <parameter>socket</parameter> auf den Wert gesetzt, der in
-     <parameter>optval</parameter> übergeben wurde. 
-     <function>socket_set_option</function> gibt bei einem Fehler &false; zurück. 
-    </para>
-    <para>
-     Der Parameter <parameter>level</parameter> gibt die Protokollebene an,
-     auf der diese Option gilt. Um beispielsweise Optionen auf dem
-     Socket-Level abzufragen würde man den Parameter <parameter>level</parameter>
-     auf den Wert SOL_SOCKET setzen. Andere Ebenen, wie etwa TCP können
-     benutzt werden, indem man die Protokollnummer dieser Ebene benutzt.
-     Protokollnummern erhält man mit der Funktion <function>getprotobyname</function>.
-    </para>
-    <para>
-     Es sind dieselben Socket-Optionen verfügbar, wie bei der Funktion
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>socket</parameter></term>
+     <listitem>
+      <para>
+       Ein gültiger Socket-Deskriptor, der von <function>socket_create</function>
+       oder <function>socket_accept</function> erzeugt wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>level</parameter></term>
+     <listitem>
+      <para>
+       Der Parameter <parameter>level</parameter> gibt die Protokollebene an,
+       auf der diese Option gilt. Um beispielsweise Optionen auf dem
+       Socket-Level abzufragen würde man den Parameter <parameter>level</parameter>
+       auf den Wert SOL_SOCKET setzen. Andere Ebenen, wie etwa TCP können
+       benutzt werden, indem man die Protokollnummer dieser Ebene benutzt.
+       Protokollnummern erhält man mit der Funktion <function>getprotobyname</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>optname</parameter></term>
+     <listitem>
+      <para>
+       Es sind dieselben Socket-Optionen verfügbar, wie bei der Funktion
      <function>socket_get_option</function> beschrieben.
-    </para>
-    <note>
-     <para>
-      Vor PHP 4.3.0 hieß diese Funktion <function>socket_setopt</function>.
-     </para>
-    </note>
-   </refsect1>
-  </refentry>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>optval</parameter></term>
+     <listitem>
+      <para>
+       Der Wert der Option.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
 
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>socket_set_option</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+
+if (!is_resource($socket)) {
+    echo 'Kann keinen Socket erzeugen: '. socket_strerror(socket_last_error()) . PHP_EOL;
+}
+
+if (!socket_set_option($socket, SOL_SOCKET, SO_REUSEADDR, 1)) {
+    echo 'Kann keine Option setzen für Socket: '. socket_strerror(socket_last_error()) . PHP_EOL;
+}
+
+if (!socket_bind($socket, '127.0.0.1', 1223)) {
+    echo 'Kann den Socket nicht benennen: '. socket_strerror(socket_last_error()) . PHP_EOL;
+}
+
+$rval = socket_get_option($socket, SOL_SOCKET, SO_REUSEADDR);
+
+if ($rval === false) {
+    echo 'Kann keine Socket-Optionen ermitteln: '. socket_strerror(socket_last_error()) . PHP_EOL;
+} else if ($rval !== 0) {
+    echo 'SO_REUSEADDR ist für den Socket gesetzt!' . PHP_EOL;
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        Diese Funktion wurde umbenannt. Ihr bisheriger Name war    <function>socket_setopt</function>.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
