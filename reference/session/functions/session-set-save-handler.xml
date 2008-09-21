@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.19 $ -->
-<!-- EN-Revision: 1.21 Maintainer: samesch Status: ready -->
+<!-- $Revision: 1.20 $ -->
+<!-- EN-Revision: 1.22 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.session-set-save-handler" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>session_set_save_handler</refname>
@@ -36,6 +36,10 @@
      <term><parameter>öffnen</parameter></term>
      <listitem>
       <para>
+       Die öffnen-Routine funktionert wie ein Konstruktor in einer Klasse und
+       wird ausgeführt, wenn die Session geöffnet wird. Sie erwartet zwei
+       Parameter: als Ersten den Speicherpfad und als Zweiten den Namen der
+       Session.
       </para>
      </listitem>
     </varlistentry>
@@ -43,6 +47,8 @@
      <term><parameter>schließen</parameter></term>
      <listitem>
       <para>
+       Die schließen-Routine funktionert wie ein Destruktor in einer Klasse
+       und wird am Ende der Session ausgeführt.
       </para>
      </listitem>
     </varlistentry>
@@ -51,7 +57,7 @@
      <listitem>
       <para>
        Damit die Speicherroutine funktioniert wie erwartet, muss die
-       read-Funktion immer eine Zeichenkette zurückgeben. Wenn es keine Daten
+       lesen-Routine immer eine Zeichenkette zurückgeben. Wenn es keine Daten
        zu lesen gibt, geben Sie eine leere Zeichenkette zurück. Rückgabewerte
        anderer Routinen werden in boolesche Ausdrücke umgewandelt. &true; für
        einen Erfolg, &false; für einen Fehler.
@@ -64,9 +70,9 @@
       <para>
        <note>
         <para>
-         Die "schreiben"-Routine wird nicht ausgeführt, bevor die Ausgabe
+         Die schreiben-Routine wird nicht ausgeführt, bevor die Ausgabe
          abgeschlossen ist. Deshalb werden auch niemals Fehlermeldungen der
-         "schreiben"-Routine im Browser erscheinen. Wenn die Ausgabe von
+         schreiben-Routine im Browser erscheinen. Wenn die Ausgabe von
          Fehlermeldungen nötig ist, sollte diese stattdessen in eine Datei
          geschrieben werden.
         </para>
@@ -78,6 +84,9 @@
      <term><parameter>löschen</parameter></term>
      <listitem>
       <para>
+       Die löschen-Routine wird ausgeführt, wenn eine Session mittels
+       <function>session_destroy</function> gelöscht wird. Sie erwartet die
+       Session-ID als einzigen Parameter.
       </para>
      </listitem>
     </varlistentry>
@@ -85,6 +94,9 @@
      <term><parameter>gc</parameter></term>
      <listitem>
       <para>
+       Der Speicherbereiniger (garbage collector) wird ausgeführt, wenn der
+       Session-Speicherbereiniger ausgeführt wird. Er erwartet die maximale
+       Session-Verfallszeit als einzigen Parameter.
       </para>
      </listitem>
     </varlistentry>
@@ -114,34 +126,34 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-function open($save_path, $session_name)
+function oeffne($speicherpfad, $session_name)
 {
-  global $sess_save_path;
+  global $sess_speicherpfad;
 
-  $sess_save_path = $save_path;
+  $sess_speicherpfad = $speicherpfad;
   return(true);
 }
 
-function close()
+function schliesse()
 {
   return(true);
 }
 
-function read($id)
+function lese($id)
 {
-  global $sess_save_path;
+  global $sess_speicherpfad;
 
-  $sess_file = "$sess_save_path/sess_$id";
-  return (string) @file_get_contents($sess_file);
+  $sess_datei = "$sess_speicherpfad/sess_$id";
+  return (string) @file_get_contents($sess_datei);
 }
 
-function write($id, $sess_data)
+function schreibe($id, $sess_daten)
 {
-  global $sess_save_path;
+  global $sess_speicherpfad;
 
-  $sess_file = "$sess_save_path/sess_$id";
-  if ($fp = @fopen($sess_file, "w")) {
-    $return = fwrite($fp, $sess_data);
+  $sess_datei = "$sess_speicherpfad/sess_$id";
+  if ($fp = @fopen($sess_datei, "w")) {
+    $return = fwrite($fp, $sess_daten);
     fclose($fp);
     return $return;
   } else {
@@ -149,27 +161,27 @@ function write($id, $sess_data)
   }
 }
 
-function destroy($id)
+function loesche($id)
 {
-  global $sess_save_path;
+  global $sess_speicherpfad;
 
-  $sess_file = "$sess_save_path/sess_$id";
-  return(@unlink($sess_file));
+  $sess_datei = "$sess_speicherpfad/sess_$id";
+  return(@unlink($sess_datei));
 }
 
 function gc($maxlifetime)
 {
-  global $sess_save_path;
+  global $sess_speicherpfad;
 
-  foreach (glob("$sess_save_path/sess_*") as $filename) {
-    if (filemtime($filename) + $maxlifetime < time()) {
-      @unlink($filename);
+  foreach (glob("$sess_speicherpfad/sess_*") as $dateiname) {
+    if (filemtime($dateiname) + $maxlifetime < time()) {
+      @unlink($dateiname);
     }
   }
   return true;
 }
 
-session_set_save_handler("open", "close", "read", "write", "destroy", "gc");
+session_set_save_handler("oeffne", "schliesse", "lese", "schreibe", "loesche", "gc");
 
 session_start();
 
