@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 1.12 $ -->
-<!-- EN-Revision: 1.36 Maintainer: hholzgra Status: ready -->
+<!-- $Revision: 1.13 $ -->
+<!-- EN-Revision: 1.38 Maintainer: hholzgra Status: ready -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.reflection" xmlns="http://docbook.org/ns/docbook">
   <title>Reflection</title>
@@ -180,6 +180,7 @@ class ReflectionFunction extends ReflectionFunctionAbstract implements Reflector
     public string getName()
     public bool isInternal()
     public bool isDisabled()
+    public mixed getClosure() /* Ab PHP 5.3.0 */
     public bool isUserDefined()
     public string getFileName()
     public int getStartLine()
@@ -403,6 +404,7 @@ class ReflectionClass implements Reflector
     public bool isAbstract()
     public bool isFinal()
     public int getModifiers()
+    public mixed getClosure() /* Ab PHP 5.3.0 */
     public bool isInstance(stdclass object)
     public stdclass newInstance(mixed args)
     public stdclass newInstanceArgs(array args)
@@ -673,6 +675,27 @@ var_dump($method->invoke(NULL));
 ]]>
     </programlisting>
    </example>
+   <example>
+    <title>Closure mit Hilfe der <classname>ReflectionMethod</classname> Klasse abfragen</title>
+    <programlisting role='php'>
+<![CDATA[
+<?php
+
+class Example {
+  static function printer () {
+    echo "Hello World!\n";
+  }
+}
+
+$class = new ReflectionClass('Example');
+$method = $class->getMethod('printer');
+$closure = $method->getClosure(); /* Ab PHP 5.3.0 */
+$closure(); // Hello World!
+
+?>
+]]>
+    </programlisting>
+   </example>
    <note>
     <simpara>
      Der Versuch, eine private, protected oder abstract Methode aufzurufen,
@@ -774,6 +797,32 @@ var_dump($prop->getValue($obj));
 
 // Objekt ausgeben
 var_dump($obj);
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Getting value from private and protected properties using <classname>ReflectionProperty</classname> class</title>
+    <programlisting role='php'>
+<![CDATA[
+<?php
+
+class Foo {
+public $x = 1;
+protected $y = 2;
+private $z = 3;
+}
+
+$obj = new Foo;
+
+$prop = new ReflectionProperty('Foo', 'y');
+$prop->setAccessible(true); /* As of PHP 5.3.0 */
+var_dump($prop->getValue($obj)); // int(2)
+
+$prop = new ReflectionProperty('Foo', 'z');
+$prop->setAccessible(true); /* As of PHP 5.3.0 */
+var_dump($prop->getValue($obj)); // int(2)
+
 ?>
 ]]>
     </programlisting>
