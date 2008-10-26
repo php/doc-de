@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.4  Maintainer: hholzgra  Status: ready -->
+<chapter xml:id="language.namespaces" xmlns="http://docbook.org/ns/docbook"
+ version="1.1">
+ <title>Namensräume</title>
+
+ <sect1 xml:id="language.namespaces.rationale">
+  <title>Überblick über Namensräume</title>
+  <simpara>
+   PHP Namensräume wurden entworfen um das Problem der Sichtbarkeit in
+   großen PHP Bibliotheken zu lösen. In PHP sind alle Klassendefinitionen
+   zunächst einmal global. Der Autor einer Bibliothek muss sich daher beim
+   Anlegen von Hilfklassen oder Bibliotheksklassen die Teil des öffentlichen
+   API der Klasse sind bewust sein das andere Bibliotheken mit ähnlicher
+   Funktionalität existieren können und muss daher eindeutige Namen wählen
+   so das beide Bibliotheken koexistieren können. Dies wird typischerweise
+   gelöst indem jedem Klassennamen ein eindeutiger Vorspann vorangestellt 
+   wird. Datenbankklassen würden so z.B. mit <classname>Meine_DB_Bibliothek</classname>
+   beginnen usw. Wenn die Bibliothek wächst addieren sich die verschiedenen
+   Vorspanntexte auf und können so zu sehr langen Namen führen.
+  </simpara>
+  <simpara>
+   Namensräume erlauben dem Entwickler die Sichtbarkeit von Namen zu 
+   beeinfluseen ohne bei jedem Einsatz einer Klasse auf den langen Namen
+   zurückzugreifen und lösen so das Problem des gemeinsamen globalen
+   Namensraums ohne den Programmtext dabei unlesbar zu machen.
+  </simpara>
+  <simpara>
+   Namensräume sind in PHP ab PHP 5.3.0 verfügbar. Die Umsetzung ist
+   noch experimentel und daher kann sich diese Dokumentation noch
+   ändern. 
+  </simpara>
+ </sect1>
+
+ <sect1 xml:id="language.namespaces.definition">
+  <title>Deklaration von Namensräumen</title>
+  <para>
+   Ein Namensraum wird mit Hilfe des Schlüsselwortes <literal>namespace</literal> 
+   deklariert welches direkt an den Dateianfang gesetzt werden sollte.
+   <example>
+    <title>Beispiel zur Deklaration von Namensräumen</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+    namespace MyProject::DB;
+    
+    const CONNECT_OK = 1;
+
+    class Connection { /* ... */ }
+    
+    function connect() { /* ... */  }
+    
+?>
+]]>
+    </programlisting>
+   </example>
+   Der gleiche Namensraum kann in mehreren Dateien benutzt werden.
+  </para>
+  
+  <para>
+   Namensräume können Definitionen von Klassen, Konstanten und Funktionen 
+   enthalten aber keinen freien Programmtext.
+  </para>
+
+  <para>
+   Eine Namensraumdefinition bewirkt folgendes:
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      Innerhalb eines Namensraumes wird allen Klassen, Funktionen und
+      Konstanten automatisch der Name des Namensraumes vorangestellt.
+      Der Klassenname ist immer der vollständige Name, d.h. in obigem
+      Beispiel ist der eigentliche Klassenname
+      <classname>MyProject::DB::Connection</classname>.
+     </simpara>
+    </listitem>
+    <listitem>
+    <simpara>
+     Eine Konstantendefinition erzeugt eine Konstante deren vollstämdiger
+     Name aus den Namen des Namensraum und der Konstantendefinition 
+     zusammengesetzt ist. Konstanten in Namensräumen können wie 
+     Klassenkonstanten nur statische Werte erhalten.
+    </simpara>
+    </listitem>
+    <listitem>
+     <para>
+      Ein nicht qualifizierter Klassenname (d.h. ein Name der nicht
+      <literal>::</literal> enthält) wird zur Laufzeit folgendermaßen
+      aufgelöst:
+      <orderedlist>
+       <listitem>
+        <simpara>
+         Die Klasse wird im aktuellen Namensraum gesucht (d.h. ihr
+         wird der Name des aktuellen Namensraums vorangestellt)
+         ohne dabei aber ein 
+         <link linkend="language.oop5.autoload">automatisches Laden</link>.
+         zu versuchen.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Die Klasse wird im globalen Namensraum gesucht, wieder ohne
+         automatisches Laden zu versuchen.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Es wird versucht die Klasse innerhalb des aktuellen Namensraumes
+         automatisch zu laden.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Wenn keiner der bisherigen Schritte erfolgreich war so schlägt
+         die Auflösung des Klassennamens fehl.
+        </simpara>
+       </listitem>
+      </orderedlist>
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+      Ein nicht qualifizierter Funktionsname (d.h. ohne <literal>::</literal>)
+      wird zur Laufzeit zunäcst im aktuellen und dann im globalen Namensraum
+      gesucht.
+     </para>
+    </listitem>
+    <listitem>
+    <para>
+     Nicht qualifizierte Konstantennamen werden zunächst im aktuellen Namensraum
+     und dann in der Liste der global definierten Konstanten gesucht.
+    </para>
+    </listitem>
+   </itemizedlist>
+   Siehe auch die vollständigen <link 
+   linkend="language.namespaces.rules">Regeln zur Namensauflösung</link>.
+  </para>
+ 
+ </sect1>
+
+ <sect1 xml:id="language.namespaces.using">
+  <title>Nutzung von Namensräumen</title>
+  <para>
+   Jede Klasse und Funktion in einem Namensraum kann jederzeit über ihren 
+   vollständigen Namen angesprochen werden, z.B. 
+   <classname>MyProject::DB::Connection</classname> oder
+   <classname>MyProject::DB::connect</classname>.
+   <example>
+    <title>Nutzung vollständiger Namen incl. Namensraum</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+    require 'MyProject/Db/Connection.php';
+    $x = new MyProject::DB::Connection;
+    MyProject::DB::connect();
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+
+  <para>
+   Namensräume können mit Hilfe des <literal>use</literal> Schlüsselwortes
+   in den aktuellen Kontext (entweder den aktuellen oder globalen Namensraum)
+   importiert werden. Die Syntax hierfür ist:
+   <informalexample>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+/* ... */
+use Some::Name as Othername;
+
+// Die vereinfachte Form:
+use Foo::Bar;
+// Diese entpricht:
+use Foo::Bar as Bar;
+?>
+]]>
+    </programlisting>
+   </informalexample>
+   Der importierter Name funktioniert folgendermaßen: jedesmal wenn der
+   Compiler auf den Namen <literal>Othername</literal> trifft (entweder
+   alleine oder als mit <literal>::</literal> abgetrennter Vorspann eines
+   längeren Namens so wird statt dessen der importierte Name 
+   <literal>Some::Name</literal> eingesetzt.
+  </para>
+
+  <para>
+   <literal>use</literal> kann nur im globalen Kontext und nicht innerhalb
+   einer Funktion oder Klasse benutzt werden. Importierte Namen sind von
+   der Stelle des Imports bis zum Ende der Datei aktiv. Um Verwirrungen
+   zu vermeiden wird empfohlen Imports an den Dateianfang zu setzen.
+  </para>
+
+  <para>
+   <example>
+    <title>Import und Nutzung von Namensräumen</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+    require 'MyProject/Db/Connection.php';
+    use MyProject::DB;
+    use MyProject::DB::Connection as DbConnection;
+    
+    $x = new MyProject::DB::Connection();
+    $y = new DB::connection();
+    $z = new DbConnection();
+    DB::connect();
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <note>
+    <simpara>
+     Die Importoperation wird nur während des Kompilierens ausgeführt,
+     alle lokalen Namen werden dabei vom Kompiler in ihre vollständigen
+     Entsprechungen umgewandelt. Beachten Sie das Namen innerhalb von
+     Strings nicht umgewandelt werden, Callback-Aufrufe können sich daher
+     nicht auf Importregeln verlassen.
+    </simpara>
+   </note>
+  </para>
+ </sect1>
+
+ <sect1 xml:id="language.namespaces.global">
+  <title>Der globale Namensraum</title>
+  <para>
+   In Abwesenheit jeglicher Namensraumdefinition werden alle Klassen- und
+   Funktonsdefinitionen in den globalen Raum plaziert - ganz genau so wie
+   in PHP bevor Namensraumunterstützung eingeführt wurde.
+   Wird einem Namen <literal>::</literal> vorangestellt so gibt dies an
+   das der Name sich selbst innerhalb eines aktuellen Namensraumes nicht
+   auf diesen sondern auf den globalen Namensraum bezieht.
+   <example>
+    <title>Nutzung globaler Spezifikationen</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+    namespace A::B::C;
+ 
+ /* Diese Funktion ist A::B::C::fopen */
+    function fopen() { 
+         /* ... */
+         $f = ::fopen(...); // Aufruf der globalen fopen Funktion 
+         return $f;
+    } 
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </sect1>
+
+ <sect1 xml:id="language.namespaces.constant">
+  <title>__NAMESPACE__</title>
+  <para>
+   Die zur Kompilationszeit gültige Konstante <constant>__NAMESPACE__</constant>
+   wird mit dem Namen des aktuellen Namensraumes ersetzt.
+   Außerhalb eines Namensraumes ist der Wert dieser Konstante
+   der leere String <literal>''</literal>. Diese Konstante ist
+   hilfreich um innerhalb eines Namensraumes den vollständigen
+   Namen aus einem lokalen Namen zu konstruieren.
+   <example>
+    <title>Nutzung von __NAMESPACE__</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+namespace A::B::C;
+         
+function foo() {
+}
+
+set_error_handler(__NAMESPACE__ . "::foo");
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </sect1>
+
+ <sect1 xml:id="language.namespaces.rules">
+  <title>Regeln der Namensauflösung</title>
+  <para>
+   Namen werden entsprechend der folgenden 
+   Regeln aufgelöst.
+   <orderedlist>
+    <listitem>
+     <simpara>
+      Alle qualifizierten Namen werden zur Kompilezeit gemäß der Importregeln
+      umgeschrieben. Wird z.B. A::B::C importiert so wird ein Aufruf von
+      <code>C::D::e()</code> zu <code>A::B::C::D::e</code> umgeschrieben.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Unqualifizierte Namen werden zur Kompilezeit gemäß der aktuell gültigen
+      Importregeln umgesetzt (der vollständige Name ersetzt den kurzen
+      Importnamen). Wird z.B. der Namensraum <literal>A::B::C</literal> 
+      importiert so wird <code>new C()</code> in <code>new A::B::C</code>
+      umgeschrieben.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Innerhalb eines Namensraums werden unqualifizierte Funktionen, die im
+      aktuellen Namensraum definiert (und zum Zeitpunkt des Aufrufs bereits
+      bekannt) sind, zur Komiplezeit als Aufrufe dieser Namensraumfunktionen
+      interpretiert
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Innerhalb eines Namensraumes (z.B. <literal>A::B</literal>) werden
+      Aufrufe unqualifizierter Funktion, die nicht im aktuellen Namensraum
+      definiert sind, zur Laufzeit aufgelöst. Ein Aufruf einer Funktion
+      <literal>foo()</literal> wird folgendermaßen aufgelöst:
+     </simpara>
+     <orderedlist>
+      <listitem>
+       <simpara>
+        Es wird nach einer Funktion im aktuellen Namensraum gesucht:
+        <literal>A::B::foo()</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Es sird versucht eine <emphasis>interne</emphasis> Funktion
+        <literal>foo()</literal> zu finden und aufzurufen.
+       </simpara>
+      </listitem>
+     </orderedlist>
+     <simpara>
+      Soll eine benutzerdefinierte Funktion im globalen Namensraum
+      aufgerufen werden so muß <literal>::foo()</literal> benutzt werden.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Innerhalb eines Namensraumes (z.B. <literal>A::B</literal) werden
+      Aufrufe unqualifizierter Klassen zur Laufzeit aufgelöst. Ein Aufruf
+      von <code>new C()</code> wird dabei folgendermaßen aufgelöst:
+     </simpara>
+     <orderedlist>
+      <listitem>
+       <simpara>
+        Es wird nach einer Klasse im aktuellen Namensraum gesucht:
+        <literal>A::B::C</literal>.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Es wird versucht eine <emphasis>interne</emphasis> Klasse
+        <literal>C</literal> zu finden.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
+        Es wird versucht <literal>A::B::C</literal> automatisch zu
+        laden.
+       </simpara>
+      </listitem>
+     </orderedlist>
+     <simpara>
+      Um eine benutzerdefinierte Klasse im globalen Namensraum zu
+      nutzen muß <code>new ::C()</code> verwendet werden.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Aufrufe qualifizierter Funktionen werden zur Laufzeit aufgelöst.
+      Ein Aufruf von <literal>A::B::foo()</literal> wird folgendermaßen
+      aufgelöst:
+     </simpara>
+      <orderedlist>
+       <listitem>
+        <simpara>
+         Es wird nach einer Funktion <literal>foo</literal> im Namensraum
+         <literal>A::B</literal> gesucht.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Es wird nach einer Klasse <literal>A::B</literal> mit einer
+         statischen Methode <literal>foo()</literal> gesucht. Die Klasse
+         wird wenn nötig automatisch geladen.
+        </simpara>
+       </listitem>
+      </orderedlist>
+    </listitem>
+    <listitem>
+     <simpara>
+      Qualifizierte Klassennamen werden zur Kompilezeit als Klassen des
+      korrespondierenden Namensraumes aufgelöst. So referenziert z.B. 
+      <code>new A::B::C()</code> auf die Klasse <classname>C</classname>
+      aus dem Namensraum <literal>A::B</literal>.
+     </simpara>
+    </listitem>
+   </orderedlist>
+  </para>
+  <example>
+   <title>Illustration der Namensauflösung</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+namespace A;
+
+// Funktionsaufrufe
+
+foo();      // zunächst wird versucht "foo" aus Namensraum "A" aufzurufen
+            // danach die interne Funktion "foo"
+
+::foo();    // ruft die im globalen Namensraum definierte Funktion "foo" auf
+
+// Klassenreferenzen
+
+new B();    // zunächst wird versucht ein Objekt der Klasse "B" im Namensraum "A" zu erzeugen
+            // danach ein Objekt der internen Klasse "B"
+
+new ::B();  // erzeugt ein Objekt der Klasse "B" im globalen Namensraum "A"
+
+// statische Methode oder Namensraumfunktion aus einem anderen Namensraum
+
+B::foo();   // versucht zunächst die Funktion "foo" aus Namensraum "A::B" aufzurufen
+            // danach die Methode "foo" einer internen Klasse "B"
+
+::B::foo(); // versucht zunächst die Funktion "foo" aus Namensraum "B" aufzurufen
+            // danach die Methode "foo" aus Klasse "B" im globalen Namensraum
+
+// statische Methoden oder Namensraumfunktionen im aktuellen Namensraum
+
+A::foo();   // versucht zunächst die Funktion "foo" im Namensraum "A::A" aufzurufen
+            // danach die Methode "foo" der Klasse "A" im Namensraum "A"
+            // dann die Funktion "foo" aus Namensraum "A"
+            // und schließlich die Methode "foo" der internen Klasse "A"
+
+::A::foo(); // versucht zunächst die Funktion "foo" aus Namensraum "A" aufzurufen
+            // danach die Methode "foo" der Klasse "A" aus dem globalen Namensraum
+?>
+]]>
+   </programlisting>
+  </example>
+ </sect1>
+</chapter>
+
+<!-- Keep this comment at the end of the file
+ Local variables:
+ mode: sgml
+ sgml-omittag:t
+ sgml-shorttag:t
+ sgml-minimize-attributes:nil
+ sgml-always-quote-attributes:t
+ sgml-indent-step:1
+ sgml-indent-data:t
+ indent-tabs-mode:nil
+ sgml-parent-document:nil
+ sgml-default-dtd-file:"../../manual.ced"
+ sgml-exposed-tags:nil
+ sgml-local-catalogs:nil
+ sgml-local-ecat-files:nil
+ End:
+ vim600: syn=xml fen fdm=syntax fdl=2 si
+ vim: et tw=78 syn=sgml
+ vi: ts=1 sw=1
+-->
