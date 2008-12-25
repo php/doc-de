@@ -1,31 +1,135 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.2 Maintainer: nobody Status: ready -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.7 Maintainer: sammywg Status: ready -->
 
-  <refentry xml:id="function.apache-note" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>apache_note</refname>
-    <refpurpose>Setzt und liest Apache Notes</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>string</type><methodname>apache_note</methodname>
-      <methodparam><type>string</type><parameter>note_name</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>note_value</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>apache_note</function> ist eine Apache-spezifische
-     Funktion, die Eintr�ge in Apaches
-     <literal>notes</literal>-Tabelle setzt und ausliest. Wenn sie mit
-     einem einzelnen Parameter aufgerufen wird, gibt sie den aktuellen
-     Wert der Note <parameter>note_name</parameter> zur�ck. Bei zwei
-     Parametern wird der Eintrag <parameter>note_name</parameter> auf
-     den zweiten Parameter <parameter>note_value</parameter> gesetzt
-     und liefert den bisherigen Wert zur�ck.
-    </para>
-   </refsect1>
-  </refentry>
+<refentry xml:id="function.apache-note" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>apache_note</refname>
+  <refpurpose>Setzt und liest Apache Request Notes</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>apache_note</methodname>
+   <methodparam><type>string</type><parameter>note_name</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>note_value</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Diese Funktion ist ein Wrapper für das <literal>table_get</literal> und
+   <literal>table_set</literal> von Apache. Sie editiert die Notestabelle, die
+   während eines Requests existiert. Der Sinn dieser Tabelle ist es, die
+   Kommunikation zwischen Apachemodulen zu ermöglichen.
+  </para>
+  <para>
+   Der primäre Anwendungsfall für <function>apache_note</function> ist die
+   Übergabe von Informationen von einem Modul an ein anderes während der
+   Abarbeitung eines bestimmten Requests.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>note_name</parameter></term>
+     <listitem>
+      <para>
+       Der Name der Note.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>note_value</parameter></term>
+     <listitem>
+      <para>
+       Der Wert der Note.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Wenn die Funktion mit einem Argument aufgerufen wird, gibt sie den aktuellen
+   Wert der Note <literal>note_name</literal> zurück. Wird sie mit zwei
+   Argumenten aufgerufen, setzt sie den Wert der Note <literal>note_name</literal>
+   auf <literal>note_value</literal> und gibt den vorigen Wert der Note
+   <literal>note_name</literal> zurück. Wenn die Note nicht angesprochen werden
+   kann, wird &false; zurückgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Übergeben von Informationen zwischen PHP und Perl</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+apache_note('name', 'Fredrik Ekengren');
+
+// Perl-Skript aufrufen
+virtual("/perl/some_script.pl");
+
+$result = apache_note("resultdata");
+?>
+]]>
+    </programlisting>
+    <programlisting role="perl">
+<![CDATA[
+# Hole das Apache Request Objekt
+my $r = Apache->request()->main();
+
+# Hole die übergebenen Daten
+my $name = $r->notes('name');
+
+# beliebige Verarbeitung
+
+# Reiche das Ergebnis an PHP zurück
+$r->notes('resultdata', $result);
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Werte in access.log loggen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+apache_note('sessionID', session_id());
+
+?>
+]]>
+    </programlisting>
+    <programlisting role="apache">
+<![CDATA[
+# "%{sessionID}n" kann in der LogFormat-Direktive verwendet werden
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>virtual</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
