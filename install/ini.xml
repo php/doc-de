@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 1.9 $ -->
-<!-- EN-Revision: 1.22 Maintainer: wiesemann Status: ready -->
+<!-- $Revision: 1.10 $ -->
+<!-- EN-Revision: 1.23 Maintainer: wiesemann Status: ready -->
  <chapter xml:id="configuration" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Laufzeiteinstellungen</title>
 
@@ -14,14 +14,14 @@
     und <acronym>CLI</acronym>-Versionen geschieht dies bei jedem Aufruf.
    </simpara>
    <para>
-    Nach der &php.ini; wird an folgenden Orten in der angegebenen 
+    Nach der &php.ini; wird an folgenden Orten in der angegebenen
     Reihenfolge gesucht:
     <itemizedlist>
      <listitem>
       <para>
-       Spezielle Orte für SAPI Module (<literal>PHPIniDir</literal>-Direktive
+       Spezielle Orte für SAPI-Module (<literal>PHPIniDir</literal>-Direktive
        im Apache2, <literal>-c</literal> Kommandozeilenparameter in CGI
-       in CLI, <literal>php_ini</literal>-Parameter in NSAPI, 
+       in CLI, <literal>php_ini</literal>-Parameter in NSAPI,
        <literal>PHP_INI_PATH</literal>-Umgebungsvariable im THTTPD)
       </para>
      </listitem>
@@ -62,15 +62,15 @@
       <para>
        Windows-Verzeichnis (<filename class="directory">C:\windows</filename>
        oder <filename class="directory">C:\winnt</filename>) (unter Windows)
-       oder die <literal>--with-config-file-path</literal> 
+       oder die <literal>--with-config-file-path</literal>
        Kompilierungsoption
       </para>
      </listitem>
-    </itemizedlist> 
+    </itemizedlist>
    </para>
    <para>
     Falls die Datei <filename>php-SAPI.ini</filename> existiert (wobei SAPI
-    die verwendete SAPI ist, was als Dateinamen z.B. 
+    die verwendete SAPI ist, was als Dateinamen z.B.
     <filename>php-cli.ini</filename> ergibt), wird diese anstelle der &php.ini;
     verwendet. Der Name der SAPI kann durch <function>php_sapi_name</function>
     ermittelt werden.
@@ -79,12 +79,12 @@
     <para>
      Der Apache-Webserver wechselt beim Start das Arbeitsverzeichnis
      in das Wurzelverzeichnis, weshalb PHP versucht, die &php.ini; aus
-     dem Wurzelverzeichnis zu lesen, wenn diese existiert. 
+     dem Wurzelverzeichnis zu lesen, wenn diese existiert.
     </para>
    </note>
    <para>
     Die Optionen der &php.ini; für Extensions werden auf den Handbuchseiten
-    der jeweiligen Extensions behandelt. Die <link linkend="ini">Beschreibung 
+    der jeweiligen Extensions behandelt. Die <link linkend="ini">Beschreibung
     der Core-&php.ini;-Einstellungen</link> ist im Anhang verfügbar. Es werden
     jedoch wahrscheinlich nicht alle PHP-Direktiven im Handbuch erläutert.
     Für eine komplette Liste der in Ihrer PHP-Version verfügbaren Einstellungen
@@ -118,8 +118,74 @@ include_path = ".;c:\php\lib"
    </para>
    <para>
     Seit PHP 5.1.0 ist es möglich, sich auf bereits definierte .ini-Variablen
-    innerhalb der .ini-Dateien zu beziehen. Zum Beispiel: 
+    innerhalb der .ini-Dateien zu beziehen. Zum Beispiel:
     <literal>open_basedir = ${open_basedir}":/new/dir"</literal>.
+   </para>
+  </sect1>
+
+  <sect1 xml:id="configuration.changes.modes">
+   <title>Wo Konfigurationseinstellungen gesetzt werden können</title>
+
+   <para>
+    Diese Modi bestimmen wann und wo eine PHP-Direktive gesetzt oder
+    nicht gesetzt werden kann. Jede Direktive im Handbuch verweist auf
+    einen dieser Modi. Zum Beispiel können einige Einstellungen in
+    einem PHP-Skript mittels <function>ini_set</function> gesetzt
+    werden, während andere nur über die &php.ini; oder &httpd.conf;
+    gesetzt werden können.
+   </para>
+
+   <para>
+    Ein Beispiel ist die <link
+    linkend="ini.output-buffering">output_buffering</link>-Einstellung.
+    Wegen <literal>PHP_INI_PERDIR</literal> kann sie nicht mittels
+    <function>ini_set</function> gesetzt werden. Die <link
+    linkend="ini.display-errors">display_errors</link>-Einstellung
+    hingegegen kann wegen <literal>PHP_INI_ALL</literal> überall
+    gesetzt werden, also auch mittels <function>ini_set</function>.
+   </para>
+
+   <para>
+    <table>
+     <title>Definition der PHP_INI_*-Modi</title>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>Modus</entry>
+        <entry>Bedeutung</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry><literal>PHP_INI_USER</literal></entry>
+        <entry>
+         Eintrag kann in Benutzerskripten (z.B. mittels
+         <function>ini_set</function>) oder in der <link
+         linkend="configuration.changes.windows">Windows-Registry</link>
+         gesetzt werden
+        </entry>
+       </row>
+       <row>
+        <entry><literal>PHP_INI_PERDIR</literal></entry>
+        <entry>
+         Eintrag kann in der &php.ini;, &htaccess; oder
+         &httpd.conf; gesetzt werden
+        </entry>
+       </row>
+       <row>
+        <entry><literal>PHP_INI_SYSTEM</literal></entry>
+        <entry>
+         Eintrag kann in der &php.ini; oder &httpd.conf;
+         gesetzt werden
+        </entry>
+       </row>
+       <row>
+        <entry><literal>PHP_INI_ALL</literal></entry>
+        <entry>Eintrag kann überall gesetzt werden</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </table>
    </para>
   </sect1>
 
@@ -129,10 +195,10 @@ include_path = ".;c:\php\lib"
    <sect2 xml:id="configuration.changes.apache">
     <title>PHP läuft als Apachemodul</title>
     <simpara>
-     Wenn man PHP als Apachemodul verwendet, kann man die 
+     Wenn man PHP als Apachemodul verwendet, kann man die
      Konfigurationseinstellungen mittels Direktiven in den Apache-Konfigurationsdateien
      (z.B. &httpd.conf;) und &htaccess;-Dateien
-     ändern. Dafür benötigt man "AllowOverride Options"- oder 
+     ändern. Dafür benötigt man "AllowOverride Options"- oder
      "AllowOverride All"-Privilegien.
     </simpara>
 
@@ -140,12 +206,12 @@ include_path = ".;c:\php\lib"
      Es gibt verschiedene Apachedirektiven, die es erlauben,
      die PHP-Konfiguration aus den Apache-Konfigurationsdateien heraus zu
      ändern. Für eine Liste von Direktiven, die als
-     <constant>PHP_INI_ALL</constant>, <constant>PHP_INI_PERDIR</constant>, 
+     <constant>PHP_INI_ALL</constant>, <constant>PHP_INI_PERDIR</constant>,
      oder <constant>PHP_INI_SYSTEM</constant> definiert sind, werfen Sie einen
-     Blick auf den Anhang 
+     Blick auf den Anhang
      <link linkend="ini.list">Liste von php.ini Einstellungen</link>.
     </para>
-    
+
     <para>
      <variablelist>
       <varlistentry>
@@ -159,14 +225,14 @@ include_path = ".;c:\php\lib"
          Setzt den Wert der angegebenen Direktive.
          Kann nur für Direktiven mit den Typen <constant>PHP_INI_ALL</constant>
          und <constant>PHP_INI_PERDIR</constant> verwendet werden. Um einen
-         vorher gesetzten Wert zu löschen, verwenden Sie 
+         vorher gesetzten Wert zu löschen, verwenden Sie
          <literal>none</literal> als Wert.
         </para>
         <note>
          <simpara>
           Verwenden Sie <systemitem role="directive">php_value</systemitem>
-          nicht, um boolesche Werte zu setzen. 
-          <systemitem role="directive">php_flag</systemitem> (siehe unten) 
+          nicht, um boolesche Werte zu setzen.
+          <systemitem role="directive">php_flag</systemitem> (siehe unten)
           sollte stattdessen verwendet werden.
          </simpara>
         </note>
@@ -201,7 +267,7 @@ include_path = ".;c:\php\lib"
          php_admin_value</systemitem> gesetzt wird, kann nicht durch
          &htaccess;-Direktiven oder mit <function>ini_set</function>
          überschrieben werden.
-         Um einen vorher gesetzten Wert zu löschen, verwenden Sie 
+         Um einen vorher gesetzten Wert zu löschen, verwenden Sie
          <literal>none</literal> als Wert.
         </para>
        </listitem>
@@ -247,7 +313,7 @@ include_path = ".;c:\php\lib"
      <para>
       PHP-Konstanten existieren nicht außerhalb von PHP. So kann man z.B. in
       der &httpd.conf; nicht PHP-Konstanten wie <constant>E_ALL</constant>
-      oder <constant>E_NOTICE</constant> verwenden, um den Wert der 
+      oder <constant>E_NOTICE</constant> verwenden, um den Wert der
       <link linkend="ini.error-reporting">error_reporting</link>-Direktive
       zu ändern, da diese keine Bedeutung haben und als <emphasis>0</emphasis>
       ausgewertet werden. Verwenden Sie stattdessen die zugehörigen
@@ -260,10 +326,10 @@ include_path = ".;c:\php\lib"
    <sect2 xml:id="configuration.changes.windows">
     <title>Die PHP-Konfiguration mit der Windows Registry ändern</title>
      <simpara>
-      Wenn Sie PHP unter Windows einsetzen, können Sie die 
+      Wenn Sie PHP unter Windows einsetzen, können Sie die
       Konfigurationseinstellungen für jedes einzelne Verzeichnis mit der
       Windows-Registry anpassen. Die Werte der Konfiguration werden unterhalb
-      des Registrierungsschlüssels 
+      des Registrierungsschlüssels
       <literal>HKLM\SOFTWARE\PHP\Per Directory Values</literal> in den zum
       Verzeichnisnamen passenden Unterschlüssel gespeichert.Zum Beispiel
       würden Werte für das Verzeichnis <literal>c:\inetpub\wwwroot</literal>
@@ -272,14 +338,14 @@ include_path = ".;c:\php\lib"
       Einstellungen für dieses Verzeichnis wären für alle Skripte aktiv,
       die in diesem Verzeichnis oder einem seiner Unterverzeichnisse laufen.
       Die Werte in diesem Schlüssel sollten den Namen eine PHP-
-      Konfigurationsdirektive und einen Zeichenkettenwert haben. 
+      Konfigurationsdirektive und einen Zeichenkettenwert haben.
       Konstenten in den Werten werden nicht ausgewertet. Es können jedoch
       nur Werte, die in <constant>PHP_INI_USER</constant> änderbar sind,
-      auf diese Weise gesetzt werden, nicht als 
+      auf diese Weise gesetzt werden, nicht als
       <constant>PHP_INI_PERDIR</constant> deklarierte Werte.
      </simpara>
    </sect2>
-   
+
    <sect2 xml:id="configuration.changes.other">
     <title>Andere Zugänge zu PHP</title>
     <para>
