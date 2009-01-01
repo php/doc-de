@@ -1,42 +1,136 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.7 Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.ftp-nb-fput" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ftp_nb_fput</refname>
-    <refpurpose>Speichert eine geöffnete Datei auf den FTP-Server (nicht blockierend)</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>ftp_nb_fput</methodname>
-      <methodparam><type>resource</type><parameter>ftp_stream</parameter></methodparam>
-      <methodparam><type>string</type><parameter>remote_file</parameter></methodparam>
-      <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
-      <methodparam><type>int</type><parameter>mode</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>startpos</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>ftp_nb_fput</function> speichert Daten vom Dateizeiger
-     <parameter>handle</parameter> bis das Ende der Datei erreicht ist.
-     Das Ergebnis wird in <parameter>remote_file</parameter> auf dem FTP-Server gespeichert.
-     Der gesetzte Übertragungsmodus <parameter>mode</parameter> muss entweder
-     <constant>FTP_ASCII</constant> oder
-     <constant>FTP_BINARY</constant> sein.
-     Der Unterscheid zwischen dieser Funktion und <function>ftp_fput</function> ist, dass
-     diese Funktion die Datei asynchron hochlädt, so dass das Programm noch andere Operationen
-     ausführen kann, während die Datei hochgeladen wird.
-    </para>
-    <para>  
-     Gibt <constant>FTP_FAILED</constant>, <constant>FTP_FINISHED</constant>, oder
-     <constant>FTP_MOREDATA</constant> zurück.
-    </para>
-    <para>
-     Siehe auch <function>ftp_nb_put</function>,
-     <function>ftp_nb_continue</function>, <function>ftp_put</function>
-     und <function>ftp_fput</function>.
-    </para>
-   </refsect1>
-  </refentry>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 1.10 Maintainer: wiesemann Status: ready -->
+<refentry xml:id="function.ftp-nb-fput" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ftp_nb_fput</refname>
+  <refpurpose>Speichert eine geÃ¶ffnete Datei auf den FTP-Server (nicht blockierend)</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>ftp_nb_fput</methodname>
+   <methodparam><type>resource</type><parameter>ftp_stream</parameter></methodparam>
+   <methodparam><type>string</type><parameter>remote_file</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
+   <methodparam><type>int</type><parameter>mode</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>startpos</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>ftp_nb_fput</function> lÃ¤dt Datei von einem Dateizeiger
+   in eine entfernte Datei auf einem FTP-Server.
+  </para>
+  <para>
+   Der Unterscheid zwischen dieser Funktion und <function>ftp_fput</function>
+   ist, dass diese Funktion die Datei asynchron hochlÃ¤dt, so dass Ihr
+   Programm noch andere Operationen ausfÃ¼hren kann wÃ¤hrend die Datei
+   hochgeladen wird.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>ftp_stream</parameter></term>
+     <listitem>
+      <para>
+       Der Verbindungshandler der FTP-Verbindung.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>remote_file</parameter></term>
+     <listitem>
+      <para>
+       Der Pfad zur Datei auf dem Server.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>handle</parameter></term>
+     <listitem>
+      <para>
+       Ein geÃ¶ffneter Dateizeiger zu einer lokalen Datei. Das Lesen
+       wird am Dateiende beendet.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
+     <listitem>
+      <para>
+       Der Transfer-Modus. Muss entweder <constant>FTP_ASCII</constant>
+       oder <constant>FTP_BINARY</constant> sein.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>startpos</parameter></term>
+     <listitem>
+      <para></para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt <constant>FTP_FAILED</constant> oder <constant>FTP_FINISHED</constant>
+   oder <constant>FTP_MOREDATA</constant> zurÃ¼ck.
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>ftp_nb_fput</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$file = 'index.php';
+
+$fp = fopen($file, 'r');
+
+$conn_id = ftp_connect($ftp_server);
+
+$login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+
+// Upload initialisieren
+$ret = ftp_nb_fput($conn_id, $file, $fp, FTP_BINARY);
+while ($ret == FTP_MOREDATA) {
+
+   // Irgendwas machen
+   echo ".";
+
+   // Upload fortsetzen
+   $ret = ftp_nb_continue($conn_id);
+}
+if ($ret != FTP_FINISHED) {
+   echo "Beim Transfer trat ein Fehler auf";
+   exit(1);
+}
+
+fclose($fp);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ftp_nb_put</function></member>
+    <member><function>ftp_nb_continue</function></member>
+    <member><function>ftp_put</function></member>
+    <member><function>ftp_fput</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
