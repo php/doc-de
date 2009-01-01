@@ -1,120 +1,187 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.8 Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.ftp-nb-get" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ftp_nb_get</refname>
-    <refpurpose>Überträgt eine Datei von dem FTP-Server und speichert sie lokal (nicht blockierend)</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>ftp_nb_get</methodname>
-      <methodparam><type>resource</type><parameter>ftp_stream</parameter></methodparam>
-      <methodparam><type>string</type><parameter>local_file</parameter></methodparam>
-      <methodparam><type>string</type><parameter>remote_file</parameter></methodparam>
-      <methodparam><type>int</type><parameter>mode</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>resumepos</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>ftp_nb_get</function> überträgt <parameter>remote_file</parameter>
-     von dem FTP-Server, und speichert sie lokal in<parameter>local_file</parameter>.
-     Der Transfermodus <parameter>mode</parameter> muss entweder
-     <constant>FTP_ASCII</constant> oder
-     <constant>FTP_BINARY</constant> sein.
-     Der Unterscheid zwischen dieser Funktion und <function>ftp_get</function> ist, dass
-     diese Funktion die Datei asynchron überträgt, so dass das Programm noch andere Operationen
-     ausführen kann, während die Datei heruntergeladen wird.
-    </para>
-    <para>  
-     Gibt <constant>FTP_FAILED</constant>, <constant>FTP_FINISHED</constant>, oder
-     <constant>FTP_MOREDATA</constant> zurück.
-    </para> 
-    <para>
-     <example>
-      <title><function>ftp_nb_get</function> Beispiel</title>
-      <programlisting role="php">
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.11 Maintainer: wiesemann Status: ready -->
+<refentry xml:id="function.ftp-nb-get" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ftp_nb_get</refname>
+  <refpurpose>ÃœbertrÃ¤gt eine Datei von dem FTP-Server und speichert sie lokal (nicht blockierend)</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>ftp_nb_get</methodname>
+   <methodparam><type>resource</type><parameter>ftp_stream</parameter></methodparam>
+   <methodparam><type>string</type><parameter>local_file</parameter></methodparam>
+   <methodparam><type>string</type><parameter>remote_file</parameter></methodparam>
+   <methodparam><type>int</type><parameter>mode</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>resumepos</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>ftp_nb_get</function> retrieves a remote file from the FTP server,
+   and saves it into a local file.
+  </para>
+  <para>
+   Der Unterscheid zwischen dieser Funktion und <function>ftp_get</function>
+   ist, dass diese Funktion die Datei asynchron Ã¼bertrÃ¤gt, so dass Ihr
+   Programm noch andere Operationen ausfÃ¼hren kann wÃ¤hrend die Datei
+   heruntergeladen wird.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>ftp_stream</parameter></term>
+     <listitem>
+      <para>
+       Der Verbindungshandler der FTP-Verbindung.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>local_file</parameter></term>
+     <listitem>
+      <para>
+       Der Pfad zur lokalen Datei (wird Ã¼berschrieben falls die Datei
+       schon existiert).
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>remote_file</parameter></term>
+     <listitem>
+      <para>
+       Der Pfad zur Datei auf dem Server.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
+     <listitem>
+      <para>
+       Der Transfer-Modus. Muss entweder <constant>FTP_ASCII</constant>
+       oder <constant>FTP_BINARY</constant> sein.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>resumepos</parameter></term>
+     <listitem>
+      <para></para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt <constant>FTP_FAILED</constant> oder <constant>FTP_FINISHED</constant>
+   oder <constant>FTP_MOREDATA</constant> zurÃ¼ck.
+  </para>
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>ftp_nb_get</function>-Beispiel</title>
+    <programlisting role="php">
 <![CDATA[
+<?php
+
 // Download initialisieren
 $ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY);
 while ($ret == FTP_MOREDATA) {
-   /* ... */
-   
-   // Download fortsetzen
-   $ret = ftp_nb_continue($my_connection);
-}
-if ($ret != FTP_FINISHED) {
-   echo "Es gab einen Fehler bei der Übertragung.";
-   exit(1);
-}
-]]>
-      </programlisting>
-     </example>
-     <example>
-      <title>Ein Download mit <function>ftp_nb_get</function> fortsetzen</title>
-      <programlisting role="php">
-<![CDATA[
-// Initialisieren
-$ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY, 
-                      filesize("test"));
 
-// ODER: $ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY, 
-// FTP_AUTORESUME);
-
-while ($ret == FTP_MOREDATA) {
-   
-   // Irgendwas machen ...
+   // Irgendwas machen
    echo ".";
 
    // Download fortsetzen
    $ret = ftp_nb_continue($my_connection);
 }
 if ($ret != FTP_FINISHED) {
-   echo "Es gab einen Fehler bei der Übertragung.";
+   echo "Es gab einen Fehler bei der Ãœbertragung.";
    exit(1);
 }
+?>
 ]]>
-      </programlisting>
-     </example>
-     <example>
-      <title>
-       Ein Download mit Hilfe von <function>ftp_nb_get</function>
-       an Position 100 fortsetzen und in eine neue Datei schreiben
-      </title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+   <example>
+    <title>Einen Download mit <function>ftp_nb_get</function> fortsetzen</title>
+    <programlisting role="php">
 <![CDATA[
+<?php
+
+// Initialisieren
+$ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY,
+                      filesize("test"));
+// ODER: $ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY,
+// FTP_AUTORESUME);
+while ($ret == FTP_MOREDATA) {
+
+   // Irgendwas machen
+   echo ".";
+
+   // Download fortsetzen
+   $ret = ftp_nb_continue($my_connection);
+}
+if ($ret != FTP_FINISHED) {
+   echo "Es gab einen Fehler bei der Ãœbertragung.";
+   exit(1);
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>
+     Einen Download mit Hilfe von <function>ftp_nb_get</function>
+     an Position 100 fortsetzen und in eine neue Datei schreiben
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
 // Autoseek deaktivieren
-ftp_set_option($my_connection, FTP_AUTOSEEK, FALSE);
+ftp_set_option($my_connection, FTP_AUTOSEEK, false);
 
 // Initialisieren
 $ret = ftp_nb_get($my_connection, "newfile", "README", FTP_BINARY, 100);
 while ($ret == FTP_MOREDATA) {
 
-   // Irgendwas machen ...
-   echo ".";
+   /* ... */
 
    // Download fortsetzen
    $ret = ftp_nb_continue($my_connection);
 }
+?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     In dem oberen Beispiel ist <filename>newfile</filename> 100 Bytes kleiner
-     als <filename>README</filename> auf dem FTP-Server,
-     weil wir erst beim Offset 100 angefangen haben zu lesen.
-
-     Hätten wir <constant>FTP_AUTOSEEK</constant> nicht deaktiviert
-     so bestünden die ersten 100 Bytes von <filename>newfile</filename>
-     aus<literal>'\0'</literal>.
-    </para>
-    <para>
-     Siehe auch <function>ftp_nb_fget</function>,
-     <function>ftp_nb_continue</function>,
-     <function>ftp_get</function> und <function>ftp_fget</function>.
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   In dem obigen Beispiel ist <filename>newfile</filename> 100 Bytes
+   kleiner als <filename>README</filename> auf dem FTP-Server, weil
+   wir erst beim Offset 100 angefangen haben zu lesen. HÃ¤tten wir
+   <constant>FTP_AUTOSEEK</constant> nicht deaktiviert, so bestÃ¼nden
+   die ersten 100 Bytes von <filename>newfile</filename> aus
+   <literal>'\0'</literal>.
+  </para>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ftp_nb_fget</function></member>
+    <member><function>ftp_nb_continue</function></member>
+    <member><function>ftp_fget</function></member>
+    <member><function>ftp_get</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
