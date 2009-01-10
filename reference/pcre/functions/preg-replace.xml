@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 1.12 $ -->
-<!-- EN-Revision: 1.27 Maintainer: samesch Status: ready -->
+<!-- $Revision: 1.13 $ -->
+<!-- EN-Revision: 1.29 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.preg-replace" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>preg_replace</refname>
@@ -11,16 +11,16 @@
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>preg_replace</methodname>
-   <methodparam><type>mixed</type><parameter>Suchmuster</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>Ersatz</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>Zeichenkette</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>Limit</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter role="reference">Anzahl</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>pattern</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>replacement</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>subject</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>limit</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter role="reference">count</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Durchsucht <parameter>Zeichenkette</parameter> nach Übereinstimmungen mit
-   <parameter>Suchmuster</parameter> und ersetzt sie mit
-   <parameter>Ersatz</parameter>.
+   Durchsucht <parameter>subject</parameter> nach Übereinstimmungen mit
+   <parameter>pattern</parameter> und ersetzt sie mit
+   <parameter>replacement</parameter>.
   </para>
  </refsect1>
 
@@ -29,7 +29,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Suchmuster</parameter></term>
+     <term><parameter>pattern</parameter></term>
      <listitem>
       <para>
        Der Ausdruck, nach dem gesucht wird. Es kann entweder eine Zeichenkette
@@ -37,42 +37,43 @@
       </para>
       <para>
        Mit dem Modifikator <literal>e</literal> wird der Parameter
-       <parameter>Ersatz</parameter> nach den entsprechenden Ersetzungen der
-       Referenzen von <function>preg_replace</function> wie PHP-Code
-       behandelt. Tipp: Stellen Sie sicher, dass <parameter>Ersatz</parameter>
-       gültigen PHP-Code erzeugt, weil sich PHP sonst über einen Syntaxfehler
-       (parse error) in der Zeile beschwert, die den Aufruf von
-       <function>preg_replace</function> enthält.
+       <parameter>replacement</parameter> nach den entsprechenden Ersetzungen
+       der Referenzen von <function>preg_replace</function> wie PHP-Code
+       behandelt. Tipp: Stellen Sie sicher, dass
+       <parameter>replacement</parameter> gültigen PHP-Code erzeugt, weil sich
+       PHP sonst über einen Syntaxfehler (parse error) in der Zeile beschwert,
+       die den Aufruf von <function>preg_replace</function> enthält.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Ersatz</parameter></term>
+     <term><parameter>replacement</parameter></term>
      <listitem>
       <para>
        Die Zeichenkette oder das Array mit Zeichenketten zum Ersetzen. Falls
        dieser Parameter eine Zeichenkette ist und der Parameter
-       <parameter>Suchmuster</parameter> ein Array, werden alle Suchmuster
-       durch diese Zeichenkette ersetzt. Falls sowohl
-       <parameter>Suchmuster</parameter> als auch
-       <parameter>Ersatz</parameter> Arrays sind, wird jedes
-       <parameter>Suchmuster</parameter> durch das Gegenstück aus
-       <parameter>Ersatz</parameter> ersetzt. Wenn das
-       <parameter>Ersatz</parameter>-Array weniger Elemente hat als das
-       <parameter>Suchmuster</parameter>-Array, wird jedes überzählige
-       <parameter>Suchmuster</parameter> durch die leere Zeichenkette ersetzt.
+       <parameter>pattern</parameter> ein Array, werden alle Suchmuster durch
+       diese Zeichenkette ersetzt. Falls sowohl <parameter>pattern</parameter>
+       als auch <parameter>replacement</parameter> Arrays sind, wird jedes
+       <parameter>pattern</parameter> durch das Gegenstück aus
+       <parameter>replacement</parameter> ersetzt. Wenn das
+       <parameter>replacement</parameter>-Array weniger Elemente hat als das
+       <parameter>pattern</parameter>-Array, wird jedes überzählige
+       <parameter>pattern</parameter> durch die leere Zeichenkette ersetzt.
       </para>
       <para>
-       <parameter>Ersatz</parameter> darf Referenzen in der Form
+       <parameter>replacement</parameter> darf Referenzen in der Form
        <literal>\\<replaceable>n</replaceable></literal> oder (ab PHP 4.0.4)
-       <literal><replaceable>$n</replaceable></literal> enthalten, wobei
+       <literal>$<replaceable>n</replaceable></literal> enthalten, wobei
        Letztere vorzuziehen ist. Jede dieser Referenzen wird mit dem Text
        ersetzt, der vom <replaceable>n</replaceable>-ten eingeklammerten
        Suchmuster erfasst wurde. <replaceable>n</replaceable> kann einen Wert
        von 0 bis 99 haben. <literal>\\0</literal> oder <literal>$0</literal>
        beziehen sich auf den Text, der auf das komplette Suchmuster passt. Um
        die Nummer des erfassenden Teil-Suchmusters zu erhalten, werden
-       öffnende Klammern mit 1 beginnend von links nach rechts gezählt.
+       öffnende Klammern mit 1 beginnend von links nach rechts gezählt. Um
+       einen Backslash im Ersatz zu verwenden, muss er verdoppelt werden
+       (<literal>"\\\\"</literal> PHP-Zeichenkette).
       </para>
       <para>
        Wenn Sie mit einer Ersetzung arbeiten wollen, in der auf eine
@@ -104,31 +105,30 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Zeichenkette</parameter></term>
+     <term><parameter>subject</parameter></term>
      <listitem>
       <para>
        Die Zeichenkette oder ein Array mit Zeichenketten zum Durchsuchen.
       </para>
       <para>
-       Falls <parameter>Zeichenkette</parameter> ein Array ist, wird das
-       Suchen und Ersetzen auf jedes Element von
-       <parameter>Zeichenkette</parameter> angewandt und der Rückgabewert ist
-       ebenfalls ein Array.
+       Falls <parameter>subject</parameter> ein Array ist, wird das Suchen und
+       Ersetzen auf jedes Element von <parameter>subject</parameter> angewandt
+       und der Rückgabewert ist ebenfalls ein Array.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Limit</parameter></term>
+     <term><parameter>limit</parameter></term>
      <listitem>
       <para>
        Die maximal mögliche Anzahl von Ersetzungen für jedes Suchmuster in
-       jeder <parameter>Zeichenkette</parameter>. Standardmäßiger Wert:
+       jeder <parameter>subject</parameter>. Standardmäßiger Wert:
        <literal>-1</literal> (kein Limit).
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Anzahl</parameter></term>
+     <term><parameter>count</parameter></term>
      <listitem>
       <para>
        Falls angegeben, wird dieser Variable die Anzahl vorgenommener
@@ -144,14 +144,14 @@
   &reftitle.returnvalues;
   <para>
    <function>preg_replace</function> gibt ein Array zurück, falls
-   <parameter>Zeichenkette</parameter> ein Array ist, andernfalls eine
+   <parameter>subject</parameter> ein Array ist, andernfalls eine
    Zeichenkette.
   </para>
   <para>
    Falls Übereinstimmungen gefunden wurden, wird die neue
-   <parameter>Zeichenkette</parameter> zurückgegeben, andernfalls wird
-   <parameter>Zeichenkette</parameter> unverändert zurückgegeben oder &null;,
-   falls ein Fehler auftrat.
+   <parameter>subject</parameter> zurückgegeben, andernfalls wird
+   <parameter>subject</parameter> unverändert zurückgegeben oder &null;, falls
+   ein Fehler auftrat.
   </para>
  </refsect1>
 
@@ -169,18 +169,18 @@
      <tbody>
       <row>
        <entry>5.1.0</entry>
-       <entry>Den Parameter <parameter>Anzahl</parameter> hinzugefügt</entry>
+       <entry>Den Parameter <parameter>count</parameter> hinzugefügt</entry>
       </row>
       <row>
        <entry>4.0.4</entry>
        <entry>
-        Die '$n'-Form für den Parameter <parameter>Ersatz</parameter>
+        Die '$n'-Form für den Parameter <parameter>replacement</parameter>
         hinzugefügt
        </entry>
       </row>
       <row>
        <entry>4.0.2</entry>
-       <entry>Den Parameter <parameter>Limit</parameter> hinzugefügt</entry>
+       <entry>Den Parameter <parameter>limit</parameter> hinzugefügt</entry>
       </row>
      </tbody>
     </tgroup>
@@ -323,7 +323,7 @@ echo $str;
   </para>
   <para>
    <example>
-    <title>Die Verwendung des Parameters <parameter>Anzahl</parameter></title>
+    <title>Die Verwendung des Parameters <parameter>count</parameter></title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -349,15 +349,15 @@ xp***to
   &reftitle.notes;
   <note>
    <para>
-    Bei Verwendung von Arrays für <parameter>Suchmuster</parameter> und
-    <parameter>Ersatz</parameter> werden die Schlüssel in der Reihenfolge
+    Bei Verwendung von Arrays für <parameter>pattern</parameter> und
+    <parameter>replacement</parameter> werden die Schlüssel in der Reihenfolge
     bearbeitet, in der sie im Array vorliegen. Das ist <emphasis>nicht
     notwendigerweise</emphasis> dieselbe, wie die numerische Reihenfolge der
     Indizes. Wenn Sie Indizes verwenden, um festzulegen welches
-    <parameter>Suchmuster</parameter> durch welchen
-    <parameter>Ersatz</parameter> ersetzt werden soll, sollten Sie vor dem
-    Aufruf von <function>preg_replace</function> <function>ksort</function>
-    auf jedes Array anwenden.
+    <parameter>pattern</parameter> durch welchen
+    <parameter>replacement</parameter> ersetzt werden soll, sollten Sie vor
+    dem Aufruf von <function>preg_replace</function>
+    <function>ksort</function> auf jedes Array anwenden.
    </para>
   </note>
  </refsect1>
