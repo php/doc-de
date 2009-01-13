@@ -1,89 +1,164 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: working -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.1 Maintainer: lapistano Status: ready -->
 <refentry xml:id="function.sqlite-create-function" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>sqlite_create_function</refname>
-  <refpurpose>Erzeugt eine "reguläre" nutzerdefinierte Funktion für den Gebrauch in SQL-Befehlen.</refpurpose>
+  <refname>SQLiteDatabase->createFunction</refname>
+  <refpurpose>
+   Registriert eine "regulÃ¤re" nutzerdefinierte Funktion fÃ¼r den Gebrauch in SQL-Befehlen.
+  </refpurpose>
  </refnamediv>
- <refsect1>
-  <title>Beschreibung</title>
+
+ <refsect1 role="description">
+  &reftitle.description;
   <methodsynopsis>
-   <type>bool</type><methodname>sqlite_create_function</methodname>
-   <methodparam><type>resource</type><parameter>db</parameter></methodparam>
-   <methodparam><type>string</type><parameter>SQL-Funktionsname</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>callback</parameter></methodparam>
+   <type>void</type><methodname>sqlite_create_function</methodname>
+   <methodparam><type>resource</type><parameter>dbhandle</parameter></methodparam>
+   <methodparam><type>string</type><parameter>function_name</parameter></methodparam>
+   <methodparam><type>callback</type><parameter>callback</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>num_args</parameter></methodparam>
   </methodsynopsis>
-  <para>   
-   <function>sqlite_create_function</function> erlaubt Ihnen, eine 
-   PHP-Funktion in SQLite als <acronym>UDF</acronym> (User Defined 
-   Function = Nutzerdefinierte Funktion> zu erzeugen, so dass diese 
-   direkt in SQL-Befehlen genutzt werden kann. 
-  </para>
+  <para>Objektorientierter Stil (Methode):</para>
+  <classsynopsis>
+   <ooclass><classname>SQLiteDatabase</classname></ooclass>
+   <methodsynopsis>
+    <type>void</type><methodname>createFunction</methodname>
+    <methodparam><type>string</type><parameter>function_name</parameter></methodparam>
+    <methodparam><type>callback</type><parameter>callback</parameter></methodparam>
+    <methodparam choice="opt"><type>int</type><parameter>num_args</parameter></methodparam>
+   </methodsynopsis>
+  </classsynopsis>
   <para>
-   <parameter>db</parameter> spezifiziert die Datenbank, die um die Funktion
-   erweitert werden soll, <parameter>SQL-Funktionsname</parameter> den Namen
-   der Funktion, wie er in den SQL-Befehlen genutzt werden soll. 
-   <parameter>callback</parameter> ist eine beliebige gültige PHP-Funktion oder 
-   Methode, die aufgerufen werden soll, um die SQL-Funktion abzuarbeiten.
-   Der optionale Parameter <parameter>num_args</parameter> wird vom 
-   SQLite-Parser als Hinweis auf die Parameterzahl genutzt.
-   Es wird empfohlen, diesen Wert zu definieren, wenn Ihre Funktion immer
-   mit der gleichen Parameterzahl arbeitet. 
+   <function>sqlite_create_function</function> erlaubt Ihnen, eine 
+   PHP-Funktion in SQLite als <acronym>UDF</acronym> 
+   (User Defined Function = Nutzerdefinierte Funktion> zu erzeugen, 
+   so dass diese direkt in SQL-Befehlen genutzt werden kann.
   </para>
   <para>
    Die UDF kann in jedem SQL-Befehl, der Funktionsaufrufe beinhalten
    kann, genutzt werden, wie z.B. SELECT, UPDATE oder auch Trigger.
   </para>
+ </refsect1>
 
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>dbhandle</parameter></term>
+     <listitem>
+      <para>
+       Die Ressource des SQLite-Ergebnisses, erzeugt von
+       <function>sqlite_open</function> wenn in prozeduralem Kontext genutzt.
+       Dieser Parameter wird nicht benÃ¶tigt, wenn die objektorientierte
+       Methodik genutzt wird.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>function_name</parameter></term>
+     <listitem>
+      <para>
+       Name der Funktion, wie er in den SQL-Befehlen genutzt werden soll.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>callback</parameter></term>
+     <listitem>
+      <para>
+       Eine beliebige gÃ¼ltige PHP-Funktion oder Methode, die aufgerufen
+       werden soll, um die SQL-Funktion abzuarbeiten.
+      </para>
+      <note>
+       <simpara>
+        "Callback"-Funktionen sollten einen Variablentyp zurÃ¼ckgeben, der von 
+        SQLite erkannt wird (z.B. <link linkend="language.types.intro">Skalare</link>).
+       </simpara>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>num_args</parameter></term>
+     <listitem>
+      <para>
+       Hinweis fÃ¼r den SQLite-Parser auf die Parameterzahl der "Callback"-Funktion.
+       Es wird empfohlen, diesen Wert zu definieren, wenn Ihre Funktion immer
+       mit der gleichen Parameterzahl arbeitet.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+  &sqlite.param-compat;
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.void;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
   <para>
    <example>
     <title><function>sqlite_create_function</function> Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-function md5_rueckwaerts($string) {
+function md5_and_reverse($string) 
+{
     return strrev(md5($string));
 }
 
-sqlite_create_function($db, 'md5rw', 'md5_rueckwaerts', 1);
-
-$rows = sqlite_array_query($db, 'SELECT md5rw(filename) from files');
-?>]]>
+if ($dbhandle = sqlite_open('mysqlitedb', 0666, $sqliteerror)) {
+    
+    sqlite_create_function($dbhandle, 'md5rev', 'md5_and_reverse', 1);
+    
+    $sql  = 'SELECT md5rev(filename) FROM files';
+    $rows = sqlite_array_query($dbhandle, $sql);
+} else {
+    echo 'Error opening sqlite db: ' . $sqliteerror;
+    exit;
+}
+?>
+]]>
     </programlisting>
    </example>
   </para>
   <para>
    In diesem Beispiel haben wir eine Funktion, die die md5-Summe eines
    Strings berechnet und dann rueckwaerts ausliefert. Wenn der SQL-Befehl 
-   durchgeführt wird, liefert er den Wert der Spalte filename durch unsere 
-   Funktion transformiert zurück. Die Daten, die in <parameter>$rows</parameter>
-   stehen, enhalten also die bereits gewandelten Daten. 
+   durchgefÃ¼hrt wird, liefert er den Wert der Spalte filename durch unsere 
+   Funktion transformiert zurÃ¼ck. Die Daten, die in <parameter>$rows</parameter>
+   stehen, enhalten also die bereits gewandelten Daten.
   </para>
   <para>
    Die Eleganz dieser Technik ist das Vermeiden des Durchfahrens des kompletten
    Abfrageergebnisses mit einer foreach()-Schleife.
   </para>
-
   <para>
-   PHP registriert ausserdem automatisch eine spezielle Funktion 
-   mit dem Namen <literal>php</literal>
-   wenn die Datenbank <parameter>db</parameter> zum ersten Mal geöffnet wird. 
-   Diese Funktion kann genutzt werden, um eine beliebige PHP-Funktion 
-   aufzurufen, ohne dass sie zunächst für SQLite erzeugt werden muss. 
+   PHP registriert ausserdem automatisch eine spezielle Funktion
+   mit dem Namen <literal>php</literal> wenn die Datenbank
+   <parameter>dbhandle</parameter> zum ersten Mal geÃ¶ffnet wird.
+   Diese Funktion kann genutzt werden, um eine beliebige PHP-Funktion
+   aufzurufen, ohne dass sie zunÃ¤chst fÃ¼r SQLite erzeugt werden muss.
   </para>
   <para>
    <example>
-    <title>Beispiel der Nutzung einer PHP-Funktion</title>
+    <title>Beispiel zur Nutzung einer beliebigen PHP-Funktion</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$rows = sqlite_array_query($db, "SELECT php('md5', filename) from files");
-?>]]>
+$rows = sqlite_array_query($dbhandle, "SELECT php('md5', filename) from files");
+?>
+]]>
     </programlisting>
     <para>
-     In diesem Beispiel wird die Funktion <function>md5</function> für
+     In diesem Beispiel wird die Funktion <function>md5</function> fÃ¼r
      jeden Eintrag der Spalte <literal>filename</literal> in der Datenbank
      aufgerufen und das Ergebnis in <parameter>$rows</parameter> geschrieben.
     </para>
@@ -91,23 +166,38 @@ $rows = sqlite_array_query($db, "SELECT php('md5', filename) from files");
   </para>
   <note>
    <para>
-    Aus Performancegründen kodiert/dekodiert PHP nicht automatisch die 
-    Binärdaten der Spalten, die in die UDF/aus der UDF geliefert werden. 
-    Daher müssen Sie die Parameter und Rückgabewerte der Funktion jeweils selbst 
-    wandeln.
+    Aus PerformanzgrÃ¼nden kodiert/dekodiert PHP nicht automatisch die 
+    BinÃ¤rdaten der Spalten, die in die UDF/aus der UDF geliefert werden. 
+    Daher mÃ¼ssen Sie die Parameter und RÃ¼ckgabewerte der Funktion jeweils selbst 
+    wandeln. Die Funktionen <function>sqlite_udf_encode_binary</function>
+    und <function>sqlite_udf_decode_binary</function> sind dabei behilflich.
    </para>
   </note>
   <tip>
    <para>
-    Es wird empfohlen, die UDFs nicht für Binärdaten zu nutzen, wenn 
+    Es wird empfohlen, die UDFs nicht fÃ¼r BinÃ¤rdaten zu nutzen, wenn 
     Ihre Anwendung eine hohe Geschwindigkeit aufweisen soll.
    </para>
   </tip>
+  <tip>
+   <para>
+    <function>sqlite_create_function</function> und
+    <function>sqlite_create_aggregate</function> kÃ¶nnen dazu genutzt werden,
+    native SQlite-Funktionen zu Ã¼berschreiben.
+   </para>
+  </tip>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
   <para>
-   Siehe auch <function>sqlite_register_aggregate</function>. 
+   <simplelist>
+    <member><function>sqlite_create_aggregate</function></member>
+   </simplelist>
   </para>
  </refsect1>
 </refentry>
+
 <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml
