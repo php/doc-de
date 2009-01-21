@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- EN-Revision: 1.16 Maintainer: nobody Status: ready -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.17 Maintainer: lapistano Status: ready -->
 <refentry xml:id="function.sqlite-create-aggregate" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>sqlite_create_aggregate</refname>
   <refname>SQLiteDatabase->createAggregate</refname>
   <refpurpose>
-   Registriert eine benutzerdefinierte Funktion, um SQL-Abfragen zu aggregieren.
+   Registriert eine benutzerdefinierte Funktion, um SQL-Abfragen zu aggregieren
   </refpurpose>
  </refnamediv>
 
@@ -18,7 +18,11 @@
    <methodparam><type>string</type><parameter>function_name</parameter></methodparam>
    <methodparam><type>callback</type><parameter>step_func</parameter></methodparam>
    <methodparam><type>callback</type><parameter>finalize_func</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>num_args</parameter></methodparam>
+   <methodparam choice="opt">
+    <type>int</type>
+    <parameter>num_args</parameter>
+    <initializer>-1</initializer>
+   </methodparam>
   </methodsynopsis>
   <para>Objektorientierter Stil (Methode):</para>
   <classsynopsis>
@@ -28,24 +32,29 @@
     <methodparam><type>string</type><parameter>function_name</parameter></methodparam>
     <methodparam><type>callback</type><parameter>step_func</parameter></methodparam>
     <methodparam><type>callback</type><parameter>finalize_func</parameter></methodparam>
-    <methodparam choice="opt"><type>int</type><parameter>num_args</parameter></methodparam>
+    <methodparam choice="opt">
+     <type>int</type>
+     <parameter>num_args</parameter>
+     <initializer>-1</initializer>
+    </methodparam>
    </methodsynopsis>
   </classsynopsis>
   <para>
    <function>sqlite_create_aggregate</function> funktioniert wie
-   <function>sqlite_create_aggregate</function>, ausser das es Funktionen
-   registriert, die benutzt werden, um ein Ergebnis aggregiert über alle Zeilen
+   <function>sqlite_create_function</function>, ausser dass es Funktionen
+   registriert, die benutzt werden, um ein Ergebnis aggregiert Ã¼ber alle Zeilen
    der Abfrage zu berechnen.
   </para>
   <para>
-   Der größte Unterschied in dieser Funktion und
+   Der grÃ¶ÃŸte Unterschied in dieser Funktion und
    <function>sqlite_create_function</function> liegt darin, das man zwei
    Funktionen registrieren muss, um zu aggregieren;
-   <parameter>step_func</parameter> wird für jede Zeile des Abfrageergebnisses
-   aufgerufen. Deine PHP-Funktion sollte das Ergebnis akkumulieren und dieses im
-   Aggregatkontext speichern. Sobald alle Zeilen verarbeitet wurden, wird
+   <parameter>step_func</parameter> wird fÃ¼r jede Zeile des Abfrageergebnisses
+   aufgerufen. Ihre PHP-Funktion (<parameter>function_name</parameter>)
+   sollte das Ergebnis akkumulieren und dieses im Aggregatkontext speichern. 
+   Sobald alle Zeilen verarbeitet wurden, wird
    <parameter>finalize_func</parameter> aufgerufen. Diese Funktion sollte die
-   Daten aus dem Aggregatkontext nehmen und als Ergebnis zurückgeben.
+   Daten aus dem Aggregatkontext nehmen und als Ergebnis zurÃ¼ckgeben.
    Callback-Funktionen sollten einen Typ liefern, der von SQLite verstanden wird
    (z.B. <link linkend="language.types.intro">Skalartypen</link>).
   </para>
@@ -60,8 +69,8 @@
      <listitem>
       <para>
        Die Ressource der SQLite-Datenbank, die bei prozeduraler Benutzung von
-       <function>sqlite_open</function> zurückgegeben wurden. Der Parameter
-       wird bei der objektorientierten Methode nicht benötigt.
+       <function>sqlite_open</function> zurÃ¼ckgegeben wurden. Der Parameter
+       wird bei der objektorientierten Methode nicht benÃ¶tigt.
       </para>
      </listitem>
     </varlistentry>
@@ -86,7 +95,7 @@
      <term><parameter>finalize_func</parameter></term>
      <listitem>
       <para>
-       Callback-Funktion die die durchlaufenen Daten aggregiert.
+       Callback-Funktion, die die durchlaufenen Daten aggregiert.
       </para>
      </listitem>
     </varlistentry>
@@ -94,7 +103,7 @@
      <term><parameter>num_args</parameter></term>
      <listitem>
       <para>
-       Hinweis für den SQLite-Parser, ob die Callback-Funktion eine
+       Hinweis fÃ¼r den SQLite-Parser, ob die Callback-Funktion eine
        vordefinierte Anzahl von Argumenten annimmt.
       </para>
      </listitem>
@@ -159,46 +168,46 @@ var_dump(sqlite_array_query($dbhandle, 'SELECT max_len(a) from strings'));
    </example>
   </para>
   <para>
-   In diesem Beispiel haben wir eine Aggregatfunktion erstellt, die die Länge
-   des längsten Strings einer Tabellenspalte berechnet. Jede Zeile wird mit
+   In diesem Beispiel haben wir eine Aggregatfunktion erstellt, die die LÃ¤nge
+   des lÃ¤ngsten Strings einer Tabellenspalte berechnet. Jede Zeile wird mit
    der Funktion <literal>max_len_step</literal> mit dem Parameter
    <parameter>context</parameter> aufgerufen. Der Parameter context ist wie jede
    andere PHP-Variable und sollte ein Array oder auch ein Objekt speichern
-   können. In diesem Beispiel benutzen wird ihn lediglich dazu, die bisherige
-   maximale Länge zu speichern; sollte <parameter>string</parameter> größer
+   kÃ¶nnen. In diesem Beispiel benutzen wird ihn lediglich dazu, die bisherige
+   maximale LÃ¤nge zu speichern; sollte <parameter>string</parameter> grÃ¶ÃŸer
    sein, als das aktuelle Maximum, aktuallisieren wir den Wert mit der neuen
-   maximalen Länge.
+   maximalen LÃ¤nge.
   </para>
   <para>
    Wenn alle Zeilen durchlaufen sind, ruft SQLite die Funktion
    <literal>max_len_finalize</literal> auf, um das aggregierte Ergebnis
-   auszuwerten. Hier könnten wir einige Berechnungen anstellen, basierend auf
+   auszuwerten. Hier kÃ¶nnten wir einige Berechnungen anstellen, basierend auf
    den Daten, die in <parameter>context</parameter> stehen. In unserem einfachen
-   Beispiel haben wir das Ergebnis bereits während der Abfrage berechnet, sodass
-   wir einfach nur den Wert in context zurückgeben können.
+   Beispiel haben wir das Ergebnis bereits wÃ¤hrend der Abfrage berechnet, sodass
+   wir einfach nur den Wert in context zurÃ¼ckgeben kÃ¶nnen.
   </para>
   <note>
    <para>
-    Das oben aufgeführte Beispiel funktioniert nicht akkurat, wenn die Spalte
-    Binärdaten enthalten würde. Eine Erklärung dafür liefert die Dokumentation
+    Das oben aufgefÃ¼hrte Beispiel funktioniert nicht akkurat, wenn die Spalte
+    BinÃ¤rdaten enthalten wÃ¼rde. Eine ErklÃ¤rung dafÃ¼r liefert die Dokumentation
     unter <function>sqlite_udf_decode_binary</function>, genauso wie ein
-    Beispiel dafür, wie man die Binärkodierung berücksichtigt.
+    Beispiel dafÃ¼r, wie man die BinÃ¤rkodierung berÃ¼cksichtigt.
    </para>
   </note>
   <tip>
    <para>
     Es wird NICHT empfohlen eine Kopie der Werte in context zu speichern und
-    diese erst am Schluss zu verarbeiten. Dadurch würde SQLite viel Speicher
-    verbrauchen, um die Abfrage zu bearbeiten. Man muß sich nur vorstellen,
-    wieviel Speicher man brauchen würde, um eine Million Zeilen, jede mit
-    einer Länge von 32 Byte, im Speicher zu halten.
+    diese erst am Schluss zu verarbeiten. Dadurch wÃ¼rde SQLite viel Speicher
+    verbrauchen, um die Abfrage zu bearbeiten. Man muÃŸ sich nur vorstellen,
+    wieviel Speicher man brauchen wÃ¼rde, um eine Million Zeilen, jede mit
+    einer LÃ¤nge von 32 Byte, im Speicher zu halten.
    </para>
   </tip>
   <tip>
    <para>
     Man kann <function>sqlite_create_function</function> und
     <function>sqlite_create_aggregate</function> nutzen, um native
-    SQL-Funktionen im SQLite zu überschreiben.
+    SQL-Funktionen im SQLite zu Ã¼berschreiben.
    </para>
   </tip>
  </refsect1>
