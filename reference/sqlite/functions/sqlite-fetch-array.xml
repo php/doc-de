@@ -1,50 +1,179 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: working -->
-<refentry xml:id="function.sqlite-fetch-array" xmlns="http://docbook.org/ns/docbook">
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.11 Maintainer: lapistano Status: ready -->
+<refentry
+ xml:id="function.sqlite-fetch-array"
+ xmlns="http://docbook.org/ns/docbook"
+>
  <refnamediv>
   <refname>sqlite_fetch_array</refname>
-  <refpurpose>Holt die nächste Zeile aus einem Datenbankergebnis und gibt sie als Array zurück.</refpurpose>
+  <refname>SQLiteResult->fetch</refname>
+  <refname>SQLiteUnbuffered->fetch</refname>
+  <refpurpose>
+   Liest die nÃ¤chste Zeile aus dem Datenbankergebnis und gibt sie als Array
+   zurÃ¼ck
+  </refpurpose>
  </refnamediv>
- <refsect1>
-  <title>Beschreibung</title>
+ <refsect1 role="description">
+  &reftitle.description;
   <methodsynopsis>
-   <type>array</type><methodname>sqlite_fetch_array</methodname>
-   <methodparam><type>resource</type><parameter>Ergebnis</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>Ergebnis_Typ</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>decode_binary</parameter></methodparam>
+   <type>array</type>
+   <methodname>sqlite_fetch_array</methodname>
+   <methodparam>
+    <type>resource</type>
+    <parameter>result</parameter>
+   </methodparam>
+   <methodparam choice="opt">
+    <type>int</type>
+    <parameter>result_type</parameter>
+    <initializer>SQLITE_BOTH</initializer>
+   </methodparam>
+   <methodparam choice="opt">
+    <type>bool</type>
+    <parameter>decode_binary</parameter>
+    <initializer>true
+    </initializer>
+   </methodparam>
   </methodsynopsis>
+  <para>Objektorientierter Stil (Methode):</para>
+  <classsynopsis>
+   <ooclass>
+    <classname>SQLiteResult</classname>
+   </ooclass>
+   <methodsynopsis>
+    <type>array</type>
+    <methodname>fetch</methodname>
+    <methodparam choice="opt">
+     <type>int</type>
+     <parameter>result_type</parameter>
+     <initializer>SQLITE_BOTH</initializer>
+    </methodparam>
+    <methodparam choice="opt">
+     <type>bool</type>
+     <parameter>decode_binary</parameter>
+     <initializer>true
+     </initializer>
+    </methodparam>
+   </methodsynopsis>
+  </classsynopsis>
+  <classsynopsis>
+   <ooclass>
+    <classname>SQLiteUnbuffered</classname>
+   </ooclass>
+   <methodsynopsis>
+    <type>array</type>
+    <methodname>fetch</methodname>
+    <methodparam choice="opt">
+     <type>int</type>
+     <parameter>result_type</parameter>
+     <initializer>SQLITE_BOTH</initializer>
+    </methodparam>
+    <methodparam choice="opt">
+     <type>bool</type>
+     <parameter>decode_binary</parameter>
+     <initializer>true
+     </initializer>
+    </methodparam>
+   </methodsynopsis>
+  </classsynopsis>
   <para>
-   Holt die nächste Zeile aus einem gegebenen <parameter>Ergebnis</parameter>-Handle.
-   Wenn in diesem keine weiteren Zeilen enthalten sind, wird &false; zurückgeliefert, 
-   ansonsten ein assoziatives Array, das die Zeilendaten enthält.
-  </para>    
+   Liest die nÃ¤chste Zeile von dem Datenbankergebnis-Handle (
+   <parameter>result</parameter>). Sind alle Zielen ausgelesen, wird &false;,
+   anderenfalls ein assioziatives Array zurÃ¼ckgegeben.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
   <para>
-   <parameter>Ergebnis_Typ</parameter> spezifiziert, wie Sie das Ergebnis erhalten 
-   möchten. Der Standard-Wert ist <literal>SQLITE_BOTH</literal>. Damit werden die 
-   Spalten sowohl mit Ihrer Nummer als auch mit Ihrem Namen als Hashindex genutzt.
-   <literal>SQLITE_ASSOC</literal> erzeugt ein Array, dass nur mit den Spaltennamen
-   indiziert ist, <literal>SQLITE_NUM</literal> eine reine Indizierung mit den
-   Spaltennummern.
+   <variablelist>
+    <varlistentry>
+     <term>
+      <parameter>result</parameter>
+     </term>
+     <listitem>
+      <para>
+       The SQLite result resource. This parameter is not required when using
+       the object-oriented method.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <parameter>result_type</parameter>
+     </term>
+     <listitem>
+      &sqlite.result-type;
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <parameter>decode_binary</parameter>
+     </term>
+     <listitem>
+      &sqlite.decode-bin;
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Returns an array of the next row from a result set;
+   &false;
+   if the next position is beyond the final row.
+  </para>
+  &sqlite.case-fold;
+ </refsect1>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Procedural example</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+$dbhandle = sqlite_open('sqlitedb');
+$query = sqlite_query($dbhandle, 'SELECT name, email FROM users LIMIT 25');
+while ($entry = sqlite_fetch_array($query, SQLITE_ASSOC)) {
+    echo 'Name: ' . $entry['name'] . '  E-mail: ' . $entry['email'];
+}
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
   <para>
-   Die Spaltennamen, die von <literal>SQLITE_ASSOC</literal> und 
-   <literal>SQLITE_BOTH</literal> genutzt werden, werden je nach 
-   Inhalt der Konfigurationsdirektive <link linkend="ini.sqlite.assoc-case">
-    sqlite.assoc_case</link> in Gross- oder Kleinbuchstaben gewandelt.
+   <example>
+    <title>Object-oriented example</title>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+$dbhandle = new SQLiteDatabase('sqlitedb');
+
+$query = $dbhandle->query('SELECT name, email FROM users LIMIT 25'); // buffered result set
+$query = $dbhandle->unbufferedQuery('SELECT name, email FROM users LIMIT 25'); // unbuffered result set
+
+while ($entry = $query->fetch(SQLITE_ASSOC)) {
+    echo 'Name: ' . $entry['name'] . '  E-mail: ' . $entry['email'];
+}
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
   <para>
-   Wenn <parameter>decode_binary</parameter> auf &true; gesetzt ist 
-   (das ist die Standardeinstellung), dekodiert PHP automatisch die
-   Binärkodierung, in die die Daten gewandelt werden, wenn sie 
-   mittels <function>sqlite_escape_string</function> bearbeitet wurden. 
-   In den meisten Fällen werden Sie diesen Wert in der Standardeinstellung
-   lassen, solange Sie die Daten nicht auch mit anderen SQLite-Fähigen 
-   Applikationen teilen.
-  </para>
-  <para>
-   Siehe auch <function>sqlite_array_query</function> und 
-   <function>sqlite_fetch_string</function>.
+   <simplelist>
+    <member>
+     <function>sqlite_array_query</function>
+    </member>
+    <member>
+     <function>sqlite_fetch_string</function>
+    </member>
+   </simplelist>
   </para>
  </refsect1>
 </refentry>
@@ -66,4 +195,4 @@
  vim600: syn=xml fen fdm=syntax fdl=2 si
  vim: et tw=78 syn=sgml
  vi: ts=1 sw=1
- -->
+-->
