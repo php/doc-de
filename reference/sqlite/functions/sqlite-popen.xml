@@ -1,57 +1,122 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: working -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.12 Maintainer: lapistano Status: working -->
 <refentry xml:id="function.sqlite-popen" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>sqlite_popen</refname>
-  <refpurpose>Opens a persistent handle to an SQLite database.  Will create the database if it does not exist</refpurpose>
+  <refpurpose>
+   Öffnet eine persistente Verbindung zu einer SQLite-Datenbank und erzeugt diese im Bedarfsfall
+  </refpurpose>
  </refnamediv>
- <refsect1>
-  <title>Description</title>
+
+ <refsect1 role="description">
+  &reftitle.description;
   <methodsynopsis>
    <type>resource</type><methodname>sqlite_popen</methodname>
    <methodparam><type>string</type><parameter>filename</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>mode</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>&amp;errmessage</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer>0666</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter role="reference">error_message</parameter></methodparam>
   </methodsynopsis>
   <simpara>
-   This function behaves identically to <function>sqlite_open</function>
-   except that is uses the persistent resource mechanism of PHP.
-   For information about the meaning of the parameters, read the
-   <function>sqlite_open</function> manual page.
+   Diese Funktion verhält sich identisch zu <function>sqlite_open</function>
+   mit dem Unterschied, dass sie den persistenten Mechanismus von PHP nutzt.
+   Detailliertere Informationen, was die Parameter bedeuten finden Sie in der
+   Dokumentation zu <function>sqlite_open</function>.
   </simpara>
   <para>
-   <function>sqlite_popen</function> will first check to see if a persistent
-   handle has already been opened for the given
-   <parameter>filename</parameter>.  If it finds one, it returns that handle
-   to your script, otherwise it opens a fresh handle to the database.
+   <function>sqlite_open</function> testet als erstes, ob schon eine persistent
+   Verbindung für den übergebenen <parameter>filename</parameter> existiert. 
+   Wenn eine Verbindung gefunden wird, wird diese zurückgegebe, 
+   ansonsten wird eine neue aufgebaut.
   </para>
   <para>
-   The benefit of this approach is that you don't incurr the performance
+   The benefit of this approach is that you don't incur the performance
    cost of re-reading the database and index schema on each page hit served
    by persistent web server SAPI's (any SAPI except for regular CGI or CLI).
+   
+   Der Vorteil dieser Methode ist, dass Sie nicht die Leistungsreduktion in
+   kauf nehmen müssen, die widerholtes Lesen der Datenbank und des Index-Schemas
+   bei jedem Aufruf der Seite mit sich bringt.
   </para>
   <note>
    <simpara>
-    If you use persistent handles and have the database updated by a
-    background process (perhaps via a crontab), and that process re-creates
-    the database by overwriting it (either by unlinking and rebuilding, or
-    moving the updated version to replace the current version),
-    you may experience undefined behaviour when a persistent handle on the
-    old version of the database is recycled.
+    Wenn Sie persistente Verbindungen nutzen, Sie die Datenbank mittels einem 
+    Hintergrund-Prozess (vielleicht mittels der crontab) aktualisieren und 
+    dieser Prozess die Datenbank wiederherstellt in dem er diese überschreibt 
+    (entweder durch Löschen und Wiederherstellen oder durch Verschieben der 
+    aktualisierten Version an die Stelle der aktuellen Version, 
+    um diese dadurch zu ersetzen), kann es zu einem undefinierten Verhalten kommen,
+    wenn die persistente Verbindung, welches noch auf die 'alte' Version der Datenbank
+    zeigt, wiederverwendet wird.
    </simpara>
    <simpara>
-    To avoid this situation, have your background processes open the same
-    database file and perform their updates in a transaction.
+    Um diese Situation zu verhindern, sollten die Hintergrund-Prozess die selbe
+    Datenbank nutzen und ihre Änderungen innerhab einer 'transaction' verrichten. 
    </simpara>
   </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
   <para>
-   See also <function>sqlite_popen</function>,
-   <function>sqlite_close</function> and
-   <function>sqlite_query</function>.
+   <variablelist>
+    <varlistentry>
+     <term><parameter>filename</parameter></term>
+     <listitem>
+      <para>
+       Der Dateiname der SQLite-Datenbank. Wenn die Datei nicht existiert, wird
+       SQLite versuchen diese zu erzeugen. PHP muss dem zur Folge Schreibzugriff
+       auf die Datei haben, in die Daten eingefügt oder das Datenbank-Schema geändert
+        werden soll oder die angelegt wird, wenn sie nicht existiert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
+     <listitem>
+      <para>
+       Der Modus der Datei. Vorgesehen für den Fall, dass die Datenbank im
+       Nur-Lesen-Modus geöffnet werden soll. Dieser Parameter wird im Moment
+       von der SQLite-Biblothek ignoriert. Der Standardwert für den Modus ist
+       der oktale Wert <literal>0666</literal>. Dies ist auch der empfohlene
+       Wert des Parameters.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>error_message</parameter></term>
+     <listitem>
+      <para>
+       Wir als referenz übergeben und wird genutzt, um eine aussagekräftige 
+       Fehlermeldung zu beinhalten, die erklärt, warum im Fehlerfall die 
+       Datenbank nicht geöffnet werden konnte.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Liefert eine Ressource (Datenbank-Vebindung), wenn die Zuteilung einer
+   Verbindung erfolgreeich war, ansonsten &false;.
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>sqlite_open</function></member>
+    <member><function>sqlite_close</function></member>
+    <member><function>sqlite_factory</function></member>
+   </simplelist>
   </para>
  </refsect1>
 </refentry>
+
 <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml
