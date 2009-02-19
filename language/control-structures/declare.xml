@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.1 $ -->
+<!-- EN-Revision: 1.1 Maintainer: sammywg Status: ready -->
+
+<sect1 xml:id="control-structures.declare" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title><literal>declare</literal></title>
+ <para>
+  Das <literal>declare</literal>-Konstrukt wird verwendet, um
+  Ausführungsdirektiven für einen Codeblock festzulegen. Die Syntax von
+  <literal>declare</literal> ist ähnliche wie die Syntax anderer
+  Ablauf-Kontrollstrukturen:
+  <informalexample>
+   <programlisting>
+<![CDATA[
+declare (directive)
+    statement
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  Die <literal>directive</literal>-Sektion erlaubt es, das Verhalten des
+  <literal>declare</literal>-Blocks anzugeben.
+  Aktuell werden zwei Direktiven unterstützt: die
+  <literal>ticks</literal>-Direktive (siehe unten für weitere Informationen über
+  die <link linkend="control-structures.declare.ticks">ticks</link>-Direktive)
+  und die <literal>encoding</literal>-Direktive (siehe unten für weitere
+  Informationen über die <link
+  linkend="control-structures.declare.encoding">encoding</link>-Direktive).
+ </para>
+ <note>
+  <simpara>
+   Die Encoding-Direktive wurde in PHP 5.3.0 hinzugefügt.
+  </simpara>
+ </note>
+ <para>
+  Der <literal>statement</literal>-Teil des <literal>declare</literal>-Blocks
+  wird ausgeführt - wie genau die Ausführung aussieht und welche Seiteneffekte
+  während der Ausführung auftreten können, ist abhängig von der im
+  <literal>directive</literal>-Block gesetzten Direktive.
+ </para>
+ <para>
+  Das <literal>declare</literal>-Konstrukt kann außerdem im globalen
+  Sichtbarkeitsbereich verwendet werden, es hat dann Auswirkungen auf den
+  gesamten folgenden Code (wird die Datei mit der
+  <literal>declare</literal>-Anweisung inkludiert, hat die Anweisung jedoch
+  keine Auswirkung auf das einbindende File).
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+// dies sind gleichwertige Schreibweisen:
+
+// Sie können diese Schreibweise verwenden:
+declare(ticks=1) {
+    // hier das vollständige Skript einfügen
+}
+
+// oder diese:
+declare(ticks=1);
+// hier das vollständige Skript einfügen
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+
+ <sect2 xml:id="control-structures.declare.ticks">
+  <title>Ticks</title>
+  <caution>
+   <simpara>
+    Mit PHP 5.3.0 gilt Ticks als veraltet und wird mit PHP 6.0.0 entfernt.
+   </simpara>
+  </caution>
+  <para>
+   Ein Tick ist ein Event, das alle <varname>N</varname> Low-Level-Statements
+   auftritt, die vom Parser innerhalb des <literal>declare</literal>-Blocks
+   ausgeführt werden.
+   Der Wert für <varname>N</varname> wird durch die Verwendung von
+   <code>ticks=<varname>N</varname></code> innerhalb der
+   <literal>directive</literal>-Sektion des <literal>declare</literal>-Blocks
+   angegeben.
+  </para>
+  <para>
+   Das/die bei jedem Tick auftretenden Event(s) werden durch die Verwendung
+   der Funktion <function>register_tick_function</function> angegeben.
+   Betrachten Sie das folgende Beispiel für mehr Details. Beachten Sie, dass
+   mehr als ein Event bei jedem Tick auftreten kann.
+  </para>
+  <para>
+   <example>
+    <title>Eine PHP-Codesektion profilen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Eine Funktion, die die Zeit aufzeichnet, zu der sie aufgerufen wurde
+function profile($dump = FALSE)
+{
+    static $profile;
+
+    // Gibt die im Profil gespeicherten Zeiten zurück und löscht sie danach
+    if ($dump) {
+        $temp = $profile;
+        unset($profile);
+        return $temp;
+    }
+
+    $profile[] = microtime();
+}
+
+// Einen Tick-Handler angeben
+register_tick_function("profile");
+
+// Die Funktion vor dem declare-Block initialisieren
+profile();
+
+// Einen Codeblock ausführen, bei jedem zweiten Statement einen Tick auslösen
+declare(ticks=2) {
+    for ($x = 1; $x < 50; ++$x) {
+        echo similar_text(md5($x), md5($x*$x)), "<br />;";
+    }
+}
+
+// Die im Profiler gespeicherten Daten anzeigen
+print_r(profile(TRUE));
+?>
+]]>
+    </programlisting>
+   </example>
+   Das Beispiel analysiert den PHP-Code im 'declare'-Block und erfasst die
+   Zeiten, an denen jedes zweite Low-Level-Statement innerhalb des Blocks
+   ausgeführt wurde. Diese Information kann danach verwendet werden, um die
+   langsamen Bereiche eines bestimmten Codesegments ausfindig zu machen.
+   Dieser Prozess kann auch mit anderen Methoden ausgeführt werden - die
+   Verwendung von Ticks ist einfacher und leichter zu implementieren.
+  </para>
+  <simpara>
+   Ticks sind sehr geeignet für das Debugging, die Implementierung einfachen
+   Multitaskings, I/O-Verarbeitung im Hintergrund und viele weitere Anwendungen.
+  </simpara>
+  <simpara>
+   Siehe auch <function>register_tick_function</function> und
+   <function>unregister_tick_function</function>.
+  </simpara>
+ </sect2>
+
+ <sect2 xml:id="control-structures.declare.encoding">
+  <title>Encoding</title>
+  <para>
+   Das Encoding eines Skripts kann pro Skript mittels der Encoding-Direktive
+   festgelegt werden.
+   <example>
+    <title>Das Encoding eines Skripts deklarieren.</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+declare(encoding='ISO-8859-1');
+// hier folgt der Code
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+
+  <caution>
+   <simpara>
+    Die einzig zulässige Syntax für ein declare, das mit Namespaces kombiniert
+    wird, ist <literal>declare(encoding='...');</literal>, wobei
+    <literal>...</literal> der encodete Wert ist.
+    <literal>declare(encoding='...') {}</literal> bewirkt einen Parse-Error,
+    wenn es mit Namespaces kombiniert wird.
+   </simpara>
+  </caution>
+  <para>
+   Der encodete declare-Wert wird in PHP 5.3 ignoriert, sofern PHP nicht mit
+   <literal>--enable-zend-multibyte</literal> kompiliert wurde. In PHP 6.0.0
+   wird die <literal>encoding</literal>-Direktive verwendet, um den Scanner
+   darüber zu informieren, mit welchem Encoding die Datei erstellt wurde.
+   Zulässige Werte sind Encodingbezeichnungen wie <literal>UTF-8</literal>.
+  </para>
+ </sect2>
+
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"../../manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
