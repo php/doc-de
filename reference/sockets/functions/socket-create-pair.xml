@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 1.6 $ -->
-<!-- EN-Revision: 1.19 Maintainer: conni Status: ready -->
+<!-- $Revision: 1.7 $ -->
+<!-- EN-Revision: 1.20 Maintainer: conni Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.socket-create-pair">
  <refnamediv>
   <refname>socket_create_pair</refname>
@@ -43,7 +43,7 @@
      <listitem>
       <para>
        Der Parameter <parameter>type</parameter> bestimmt den
-       Kommuunikationstyp, den die Sockets verwenden sollen. Eine komplette
+       Kommunikationstyp, den die Sockets verwenden sollen. Eine komplette
        Liste finden Sie bei der Funktion <function>socket_create</function>.
       </para>
      </listitem>
@@ -87,20 +87,54 @@
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Diese Funktion wurde für Windows-Plattformen wieder reaktiviert.
+       </entry>
+      </row>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        Diese Funktion wurde aufgrund eines Fehlers für Windows deaktiviert.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>socket_create_pair</function>-Beispiel</title>
+    <title><function>socket_create_pair</function> Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 $sockets = array();
-/* Setup socket pair */
+
+/* Unter Windows muss man AF_INET benutzen */
+$domain = (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? AF_INET : AF_UNIX);
+
+/* Socket-Paar erzeugen */
 if (socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $sockets) === false) {
     echo "socket_create_pair fehlgeschlagen. Grund: ".socket_strerror(socket_last_error());
 }
-/* Send and Recieve Data */
+/* Daten senden und empfangen */
 if (socket_write($sockets[0], "ABCdef123\n", strlen("ABCdef123\n")) === false) {
     echo "socket_write() fehlgeschlagen. Grund: ".socket_strerror(socket_last_error($sockets[0]));
 }
@@ -115,17 +149,18 @@ socket_close($sockets[1]);
 ?>
 ]]>
     </programlisting>
-    </example>
-    </para>
-    <para>
-    <example>
-    <title><function>socket_create_pair</function>-IPC-Beispiel</title>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>socket_create_pair</function> IPC-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 $ary = array();
 $strone = 'Nachricht vom Elternprozess.';
 $strtwo = 'Nachricht vom Kindprozess.';
+
 if (socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $ary) === false) {
     echo "socket_create_pair() fehlgeschlagen. Grund: ".socket_strerror(socket_last_error());
 }
@@ -143,7 +178,7 @@ if ($pid == -1) {
     }
     socket_close($ary[1]);
 } else {
-    /*child*/
+    /* Kindprozess */
     socket_close($ary[1]);
     if (socket_write($ary[0], $strtwo, strlen($strtwo)) === false) {
         echo "socket_write() fehlgeschlagen. Grund: ".socket_strerror(socket_last_error($ary[0]));
