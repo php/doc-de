@@ -1,61 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision: 1.8 $ -->
-<!-- EN-Revision: 1.13 Maintainer: sammywg Status: ready -->
+<!-- $Revision: 1.9 $ -->
+<!-- EN-Revision: 1.14 Maintainer: sammywg Status: ready -->
 
 <section xml:id="mysqli.installation" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+
  &reftitle.install;
+
  <para xml:id="mysqli.configure">
-  Um die <literal>mysqli</literal>-Erweiterung für PHP zu installieren,
-  benutzen Sie den Schalter <option
-  role="configure">--with-mysqli=mysql_config_path/mysql_config</option>,
-  wobei <literal>mysql_config_path</literal> auf das Verzeichnis des
-  <literal>mysql_config</literal>-Programms verweist, das bei MySQL-Versionen
-  größer als 4.1 vorhanden ist.
+  Beginnend mit PHP 5.0 ist die Unterstützung für MySQL in den
+  Standarddistributionen nicht mehr automatisch aktiviert. Das bedeutet,
+  dass PHP explizit so konfiguriert werden muss, dass es die
+  MySQL-Erweiterungen nutzen kann.
  </para>
 
  <para>
-  Bei PHP-Versionen ab 5.3 oder neuer können Sie alternativ
-  <option role="configure">--with-mysqli=mysqlnd</option> verwenden. Dies ist
-  die empfohlene Option , um MySQL Native Treiber-Ergebnisse in verbesserter
-  Geschwindigkeit zu verwenden und um Zugriff auf Features zu erhalten, die
-  nicht verfügbar sind, wenn die MySQL-Client-Bibliothek verwendet wird. Lesen
-  Sie auch <link linkend="mysqli.overview.mysqlnd">Was versteht man unter
-  dem MySQL Native Treiber von PHP?</link>, um einen kurzen Überblick über die
-  Vorteile des MySQL Native Treibers zu erhalten.
+  Die meisten Unixdistributionen enthalten Binärversionen von PHP, die
+  installiert werden können. Obwohl diese Binärversionen typischerweise mit
+  aktivierter Unterstützung für die MySQL-Erweiterungen gebaut sind, müssen die
+  Bibliotheken selbst als zusätzliches Paket installiert werden. Prüfen Sie mit
+  dem Paketmanager Ihrer gewählten Distribution, ob entsprechende Pakete
+  verfügbar sind.
  </para>
 
  <para>
-  Wenn Sie die Standard-MySQL-Erweiterung zusammen mit der mysqli-Erweiterung
-  installieren möchten, müssen Sie für beide die gleiche Client-Bibliothek
-  verwenden, um Konflikten vorzubeugen.
+  Falls Ihre Unixdistribution kein Binärpaket von PHP mit einer verfügbaren
+  <literal>mysqli</literal>-Erweiterung enthält, müssen Sie PHP aus dem
+  Sourcecode neu bauen. Dies erlaubt es Ihnen anzugeben, welche
+  MySQL-Erweiterungen Sie verwenden wollen, und auch, welche Client-Bibliothek
+  Sie für die jeweilige Erweiterung nutzen möchten.
  </para>
+
+ <para>
+  Um die <literal>mysqli</literal>-Erweiterung für PHP zu aktivieren, müssen
+  Sie den PHP-Sourcecode so konfigurieren, dass er <literal>mysqli</literal>
+  verwendet. Dies erreichen Sie, indem Sie das
+  <command>configure</command>-Skript mit der Option <option
+  role="configure">--with-mysqli=mysql_config_path/mysql_config</option>
+  aufrufen, bevor Sie den Build von PHP starten. Dadurch aktivieren Sie
+  <literal>mysqli</literal> und verwenden die MySQL-Client-Bibliothek (libmysql),
+  um mit dem MySQL-Server zu kommunizieren.
+ </para>
+
+ <note>
+  <para>
+   Der <literal>mysql_config_path</literal> repräsentiert den Ort, an dem die
+   <literal>mysql_config</literal> liegt, die mit MySQL-Servern der Version
+   4.1 oder höher ausgeliefert werden.
+  </para>
+ </note>
+
+ <para>
+  Seit PHP-Version 5.3 können Sie alternativ den neuen MySQL-Native-Treiber
+  zusammen mit <literal>mysqli</literal> verwenden. Sie erhalten dadurch eine
+  Reihe von Vorteilen gegenüber der Verwendung der libmysql.
+ </para>
+
+ <para>
+  Um den MySQL-Native-Treiber mit <literal>mysqli</literal> zu verwenden, müssen
+  Sie den PHP-Sourcecode mit <option
+  role="configure">--with-mysqli=mysqlnd</option> konfigurieren, bevor Sie den
+  PHP-Build starten.
+ </para>
+
+ <para>
+  Dies ist die empfohlene Option, da die Verwendung des MySQL-Native-Treibers
+  zu einer verbesserten Performance führt und Zugriff auf Funktionen gewährt,
+  die bei der Verwendung der MySQL-Client-Bibliothek nicht zur Verfügung stehen.
+  Lesen Sie <link linkend="mysqli.overview.mysqlnd">Was versteht man unter
+  dem MySQL-Native-Treiber von PHP?</link>, um einen kurzen Überblick über die
+  Vorteile des MySQL-Native-Treibers zu erhalten.
+ </para>
+
+ <para>
+  Es ist möglich, MySQL-Erweiterungen und Client-Bibliotheken
+  frei zu mischen. Zum Beispiel ist es denkbar, dass die MySQL-Erweiterung
+  die MySQL-Client-Bibliothek (libmysql) verwendet, während die
+  <literal>mysqli</literal>-Erweiterung so konfiguriert ist, dass sie den
+  MySQL-Native-Treiber verwendet. Alle Kombinationen von Erweiterungen und
+  Client-Bibliotheken sind möglich.
+ </para>
+
+ <para>
+  Das folgende Beispiel baut die MySQL-Erweiterung unter Verwendung der
+  MySQL-Client-Bibliothek und <literal>mysqli</literal>- sowie
+  PDO-MYSQL-Erweiterungen, die den MySQL-Native-Treiber verwenden:
+ </para>
+
+ <programlisting role="shell">
+./configure --with-mysql=/usr/bin/mysql_config  \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd
+[other options]
+ </programlisting>
 
  <section xml:id="mysqli.installation.windows">
 
   <title>Installation auf Windows-Systemen</title>
 
   <para>
-   Die <literal>mysqli</literal>-Extension ist nicht standardmäßig aktiviert,
-   daher muss die <filename>php_mysqli.dll</filename>-DLL in der php.ini selbst
-   aktiviert werden. Dafür benötigt PHP den Zugriff auf die MySQL client
-   library. Eine Datei namens <filename>libmysql.dll</filename> ist bereits in
-   der PHP-Distribution für Windows enthalten, und um die Kommunikation zwischen
-   PHP und MySQL herzustellen, muss die Datei über die Windows-Systemvariable
-   <envar>PATH</envar> erreichbar sein. Lesen Sie dazu auch den FAQ-Eintrag
-   "<link linkend="faq.installation.addtopath">Wie füge ich unter Windows
-   <varname>PATH</varname> mein PHP-Verzeichnis hinzu?</link>", um weitere
-   Informationen über das dafür benötigte Vorgehen zu erhalten. Obwohl es auch
-   möglich wäre, die <filename>libmysql.dll</filename> in das
-   Windows-Systemverzeichnis zu kopieren, um  die Datei ansprechen zu können
-   (das Systemverzeichnis ist standardmäßig in der <envar>PATH</envar>-Variable
-   enthalten), wird dieses Vorgehen keinesfalls empfohlen.
+   Unter Windows wird PHP in der Regel durch den Binärinstaller installiert.
+   Sobald PHP installiert wurde, sind einige Konfigurationseinstellungen
+   notwendig, um <literal>mysqli</literal> zu aktivieren und die
+   Client-Bibliothek anzugeben, die verwendet werden soll.
+  </para>
+
+  <para>
+   Wie zuvor erwähnt, ist die <literal>mysqli</literal>-Erweiterung nicht
+   standardmäßig aktiviert, daher muss die
+   <filename>php_mysqli.dll</filename>-DLL in der &php.ini; aktiviert werden.
+   Um dies zu tun, müssen Sie die &php.ini;-Datei finden (typischerweise liegt
+   diese unter <filename>c:\php</filename>) und überprüfen, dass das
+   Kommentarzeichen (ein Semikolon) vom Anfang der Zeile
+   <literal>extension=php_mysqli.dll</literal> in der Sektion [PHP_MYSQLI]
+   entfernt wurde.
+  </para>
+
+  <para>
+   Wenn Sie die MySQL-Client-Bibliothek mit <literal>mysqli</literal> verwenden
+   wollen, stellen Sie sicher, dass PHP auf die Bibliothek zugreifen kann. Die
+   MySQL-Client-Bibliothek ist in einer Datei namens
+   <filename>libmysql.dll</filename> der PHP-Windowsdistribution enthalten. Um
+   sie erfolgreich laden zu können, muss sie innerhalb des Pfades liegen, der
+   von der Windows-Umgebungsvariablen <envar>PATH</envar> bestimmt wird. Lesen
+   Sie dazu auch den FAQ-Eintrag "<link
+   linkend="faq.installation.addtopath">Wie füge ich mein PHP-Verzeichnis der
+   PATH-Variablen unter Windows hinzu?</link>", um mehr Informationen darüber zu
+   erhalten. Das Kopieren <filename>libmysql.dll</filename> in das
+   Windows-Systemverzeichnis (typischerweise
+   <filename>c:\Windows\system</filename>) funktioniert ebenfalls, da das
+   Systemverzeichnis standardmäßig im <envar>PATH</envar> enthalten ist.
+   Allerdings raten wir von dieser Arbeitsweise stark ab.
   </para>
 
   <para>
    Unter Windows gilt für die PHP-Versionen 5.3 und neuer, dass die
-   <literal>mysqli</literal>-Erweiterung standardmäßig den MySQL Native Treiber
+   <literal>mysqli</literal>-Erweiterung standardmäßig den MySQL-Native-Treiber
    verwendet. Das bedeutet, dass Sie sich keine Gedanken über die Konfiguration
-   des Zugriffs auf die <filename>libmysql.dll</filename> machen brauchen.
+   des Zugriffs auf die <filename>libmysql.dll</filename> machen brauchen; Sie
+   müssen nur sicherstellen, dass die Erweiterung in der &php.ini; aktiviert
+   ist.
   </para>
 
   <para>
@@ -64,8 +147,8 @@
    <link linkend="ini.extension-dir">extension_dir</link> auf das Verzeichnis
    zeigen, in dem die vorhandenen PHP-Extensions liegen. Lesen Sie dazu auch den
    Abschnitt <link linkend="install.windows.manual">Manual Windows Installation
-   Instructions</link>. Ein entsprechender extension_dir-Wert für PHP 5 könnte
-   zum Beispiel <literal>c:\php\ext</literal> sein.
+   Instructions</link>. Ein entsprechender <literal>extension_dir</literal>-Wert
+   für PHP 5 ist zum Beispiel <filename>c:\php\ext</filename>.
   </para>
 
   <note>
