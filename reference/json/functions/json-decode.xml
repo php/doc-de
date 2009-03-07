@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: 1.1 Maintainer: nobody Status: ready -->
-<!-- $Revision: 1.2 $ -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.3 $ -->
+<!-- EN-Revision: 1.10 Maintainer: sammywg Status: ready -->
+
 <refentry xml:id="function.json-decode" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>json_decode</refname>
-  <refpurpose>Dekodiert einen JSON-String</refpurpose>
+  <refpurpose>Dekodiert eine JSON-Zeichenkette</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -12,10 +13,11 @@
   <methodsynopsis>
    <type>mixed</type><methodname>json_decode</methodname>
    <methodparam><type>string</type><parameter>json</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>assoc</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>assoc</parameter><initializer>false</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>depth</parameter><initializer>512</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Konvertiert einen JSON kodierten String in eine entsprechende PHP-Variable.
+   Konvertiert eine JSON-kodierte Zeichenkette in eine PHP-Variable.
   </para>
  </refsect1>
 
@@ -35,7 +37,16 @@
      <term><parameter>assoc</parameter></term>
      <listitem>
       <para>
-       Wenn &true;, wird <type>object</type> in ein assoziatives <type>Array</type> konvertiert.
+       Wenn &true;, werden zurückgegebene <type>Objekte</type> in assoziative
+       <type>Array</type>s konvertiert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>depth</parameter></term>
+     <listitem>
+      <para>
+
       </para>
      </listitem>
     </varlistentry>
@@ -47,8 +58,8 @@
   &reftitle.returnvalues;
   <para>
    Gibt ein <type>Objekt</type> oder, wenn der optionale Parameter
-   <parameter>assoc</parameter> auf &true; gesetzt ist, ein assoziatives
-   <type>Array</type> zur�ck.
+   <parameter>assoc</parameter> auf &true; gesetzt ist, stattdessen ein
+   assoziatives <type>Array</type> zurück.
   </para>
  </refsect1>
 
@@ -56,7 +67,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>json_decode</function> Beispiel</title>
+    <title><function>json_decode</function>-Beispiele</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -89,6 +100,83 @@ array(5) {
 ]]>
     </screen>
    </example>
+   <example>
+    <title>Ein weiteres Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$json = '{"foo-bar": 12345}';
+
+$obj = json_decode($json);
+print $obj->{'foo-bar'}; // 12345
+
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Häufige Fehler bei der Verwendung von <function>json_decode</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+// die folgenden Zeichenketten sind gültiges JavaSkript aber kein gültiges JSON
+
+// der Name und der Wert müssen in doppelten Anführungszeichen eingeschlossen werden
+// einfache Anführungszeichen sind ungültig
+$bad_json = "{ 'bar': 'baz' }";
+json_decode($bad_json); // null
+
+// der Name muss in doppelten Anführungszeichen eingeschlossen werden
+$bad_json = '{ bar: "baz" }';
+json_decode($bad_json); // null
+
+// nachfolgende Kommata sind nicht erlaubt
+$bad_json = '{ bar: "baz", }';
+json_decode($bad_json); // null
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Die JSON-Spezifikation ist nicht JavaSkript, aber ein Subset davon.
+   </para>
+  </note>
+  <caution>
+   <para>
+    Diese Funktion gibt &false; zurück, wenn JSON-kodierte Daten tiefer als
+    127 Ebenen verschachtelt sind.
+   </para>
+  </caution>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.2.3</entry>
+       <entry>Die Verschachtelungsgrenze wurde von 20 auf 128 angehoben.</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
   </para>
  </refsect1>
 
@@ -100,7 +188,9 @@ array(5) {
    </simplelist>
   </para>
  </refsect1>
+
 </refentry>
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
