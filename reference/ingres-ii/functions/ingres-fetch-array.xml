@@ -1,90 +1,147 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.4 $ -->
-<!-- splitted from ./de/functions/ingres_ii.xml, last change in rev 1.1 -->
-<!-- last change to 'ingres-fetch-array' in en/ tree in rev 1.1 -->
-<!-- EN-Revision: 1.2 Maintainer: conni Status: ready -->
-<!-- OLD-Revision: 1.10/EN.1.1 -->
-  <refentry xml:id="function.ingres-fetch-array" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ingres_fetch_array</refname>
-    <refpurpose>
-     Liest eine Zeile der Ergebnismenge in ein Array ein
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>array</type><methodname>ingres_fetch_array</methodname>
-      <methodparam choice="opt"><type>int</type><parameter>result_type</parameter></methodparam>
-      <methodparam choice="opt"><type>resource</type><parameter>link</parameter></methodparam>
-     </methodsynopsis>
-    &warn.experimental.func;
-    <para>
-     <function>ingres_fetch_array</function> Gibt ein Array zurück, das
-     die die entsprechende Zeile der Ergebnismenge enthält oder &false;
-     falls das die Ergebnismenge keine Zeilen mehr enthält.
-    </para>
-    <para>
-     Diese Funktion ist eine erweiterte Version der Funktion
-     <function>ingres_fetch_row</function>. Zusätzlich zur Speicherung
-     der Daten unter numerischen Indizes  werden die Daten auch unter
-     assoziativen Indizes im Ergebnisarray gespeichert, in dem die
-     Feldnamen als Schlüssel benutzt werden.
-    </para>
-    <para>
-     Falls eine oder mehrere Spalten der Ergebnismenge dieselben
-     Feldnamen haben, bekommt die letzte Spalte die Priorität. Um auf
-     die anderen Spalten zuzugreifen, müssen sie entweder den
-     numerischen Index der Spalte benutzen oder Aliase für die Spalten
-     machen.
-     <informalexample>
-      <programlisting>
-ingres_query(select t1.f1 as foo t2.f1 as bar from t1, t2);
-$result = ingres_fetch_array();
-$foo = $result["foo"];
-$bar = $result["bar"];
-      </programlisting>
-     </informalexample>
-    </para>
-    <para>
-     <parameter>result_type</parameter> kann INGRES_NUM für ein
-     numerisches Array sein oder INGRES_ASSOC für ein assoziatives
-     Array, oder INGRES_BOTH (Standard).
-    </para>
-    <para>
-     Von der Geschwindigkeit her ist diese Funktion identisch zu
-     <function>ingres_fetch_object</function>, und fast so schnell wie
-     <function>ingres_fetch_row</function> (der Unterschied ist zu
-     vernachlässigen).
-    </para>
-    <para>
-     <example>
-      <title><function>ingres_fetch_array</function> Beispiel</title>
-      <programlisting role="php">
-&lt;?php
-ingres_connect ($database, $user, $password);
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.5 $ -->
+<!-- EN-Revision: 1.11 Maintainer: conni Status: ready -->
+ <refentry xml:id="function.ingres-fetch-array" xmlns="http://docbook.org/ns/docbook">
+  <refnamediv>
+   <refname>ingres_fetch_array</refname>
+   <refpurpose>
+    Liest eine Zeile der Ergebnismenge in ein Array ein
+   </refpurpose>
+  </refnamediv>
 
-ingres_query ("select * from table");
-while ($row = ingres_fetch_array()) {
-    echo $row["user_id"];  # benutzt ein assoziatives Array
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>ingres_fetch_array</methodname>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>result_type</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Diese Funktion ist eine erweiterte Version der Funktion
+   <function>ingres_fetch_row</function>. ZusÃ¤tzlich zur Speicherung
+   der Daten unter numerischen Indizes  werden die Daten auch unter
+   assoziativen Indizes im Ergebnisarray gespeichert, in dem die
+   Feldnamen als SchlÃ¼ssel benutzt werden.
+  </para>
+  <para>
+   Falls eine oder mehrere Spalten der Ergebnismenge dieselben
+   Feldnamen haben, bekommt die letzte Spalte die PrioritÃ¤t. Um auf
+   die anderen Spalten zuzugreifen, mÃ¼ssen sie entweder den
+   numerischen Index der Spalte benutzen oder Aliase fÃ¼r die Spalten
+   machen.
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$result = ingres_query($link, "select ap_place as city, ap_ccode as country from airport where ap_iatacode = 'VLL'");
+$result = ingres_fetch_array($result);
+$foo = $result["city"];
+$bar = $result["country"];
+
+?>
+]]>
+    </programlisting>
+   </informalexample>
+  </para>
+  <para>
+   Von der Geschwindigkeit her ist diese Funktion identisch zu
+   <function>ingres_fetch_object</function>, und fast so schnell wie
+   <function>ingres_fetch_row</function> (der Unterschied ist zu
+   vernachlÃ¤ssigen).
+  </para>
+  <para>
+   In der Standardeinstellung beginnt die Indizierung der Arrays, die mit
+   <function>ingres_fetch_array</function> geholt werden bei 1 und nicht
+   bei 0, wie in anderen DBMS-Erweiterungen. Die Startposition kann aber
+   angepasst werden, indem man den Konfigurationsparameter <link
+   linkend="ini.ingres.array-index-start">ingres.array_index_start</link>
+   auf den Wert 0 setzt.
+  </para>
+  <note>
+   <title>Verwandte Konfigurationen</title>
+   <para>
+    Siehe auch die Direktiven <link
+    linkend="ini.ingres.array-index-start">ingres.array_index_start</link>, <link
+    linkend="ini.ingres.fetch-buffer-size">ingres.fetch_buffer_size</link>
+    und <link linkend="ini.ingres.utf8">ingres.utf8</link>
+    der <link linkend="ingres.configuration">Laufzeit-Konfiguration</link>.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>result</parameter></term>
+     <listitem>
+      <para>
+       Die Ergebniskennung
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>result_type</parameter></term>
+     <listitem>
+      <para>
+       Der Ergebnistyp. Der Parameter <parameter>result_type</parameter>
+       kann die Werte INGRES_NUM fÃ¼r ein numerisches Array, INGRES_ASSOC fÃ¼r
+       ein assoziatives Array oder INGRES_BOTH (Vorgabewert) fÃ¼r beides haben.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt eine gelesene Zeile aus einem Ergebnis in einem Array zurÃ¼ck oder
+   &false;, wenn keine Zeilen mehr gelesen werden kÃ¶nnen.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Eine Ergebniszeile in ein Array einlesen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$link = ingres_connect($database, $user, $password);
+
+$result = ingres_query($link,"select * from table");
+while ($row = ingres_fetch_array($result)) {
+    echo $row["user_id"];  // aus dem assoziativen Array
     echo $row["fullname"];
-    echo $row[1];          # benutzt ein numerisches Array
+    echo $row[1];          // aus dem numerischen Array
     echo $row[2];
 }
 ?>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     See also
-     <function>ingres_query</function>,
-     <function>ingres_num_fields</function>,
-     <function>ingres_field_name</function>,
-     <function>ingres_fetch_object</function> und
-     <function>ingres_fetch_row</function>.
-    </para>
-   </refsect1>
-  </refentry>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ingres_query</function></member>
+    <member><function>ingres_num_fields</function></member>
+    <member><function>ingres_field_name</function></member>
+    <member><function>ingres_fetch_object</function></member>
+    <member><function>ingres_fetch_row</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
