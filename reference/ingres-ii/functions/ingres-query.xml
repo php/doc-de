@@ -1,127 +1,311 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- $Revision: 1.5 $ -->
-<!-- splitted from ./de/functions/ingres_ii.xml, last change in rev 1.1 -->
-<!-- last change to 'ingres-query' in en/ tree in rev 1.1 -->
-<!-- EN-Revision: 1.2 Maintainer: conni Status: ready -->
-<!-- OLD-Revision: 1.10/EN.1.1 -->
-  <refentry xml:id="function.ingres-query" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ingres_query</refname>
-    <refpurpose>
-     Sendet eine SQL-Abfrage an den Ingres II Server
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>ingres_query</methodname>
-      <methodparam><type>string</type><parameter>query</parameter></methodparam>
-      <methodparam choice="opt"><type>resource</type><parameter>link</parameter></methodparam>
-     </methodsynopsis>
-    &warn.experimental.func;
-    <para>
-     Gibt bei Erfolg &true; zurück und bei einem Fehler &false;.
-    </para>
-    <para>
-     <function>ingres_query</function> sendet die übergebene
-     <parameter>query</parameter> an den Ingres Server. Diese Abfrage
-     muss ein gültiger SQL-String sein (Siehe die Ingres-Dokumentation).
-    </para>
-    <para>
-     Die Abfrage wird zu einem Teil der aktuell offenen Transaktion.
-     Falls keine Transaktion geöffnet ist, öffnet
-     <function>ingres_query</function> eine neue Transaktion. Um diese
-     zu schließen, können Sie entweder
-     <function>ingres_commit</function> aufrufen, um die gemachten
-     Änderungen in die Datenbank zu schreiben, oder Sie rufen
-     <function>ingres_rollback</function> auf, um diese Änderungen
-     zrückzusetzen. Wenn das Skript beendet wird, wird jede offene
-     Transaktion zurückgesetzt (indem die Funktion
-     <function>ingres_rollback</function> aufgerufen wird). Sie können
-     auch die Funktion <function>ingres_autocommit</function>
-     benutzen, bevor Sie eine neue Transaktion öffnen, damit werden
-     alle einzelnen SQL-Abfrage sofort gesendet.
-    </para>
-    <para>
-     Einige SQL-Abfragen können mit dieser Funktion nicht gesendet
-     werden:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-	close (siehe <function>ingres_close</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	commit (siehe <function>ingres_commit</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	connect (siehe <function>ingres_connect</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	disconnect (siehe <function>ingres_close</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	get dbevent</simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	prepare to commit</simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        rollback (siehe <function>ingres_rollback</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>savepoint</simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        set autocommit (siehe <function>ingres_autocommit</function>)
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-	und alle Abfragen, die Cursors benutzen, werden nicht
-	unterstützt
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <para>
-     <example>
-      <title><function>ingres_query</function> example</title>
-      <programlisting role="php">
-&lt;?php
-ingres_connect ($database, $user, $password);
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 1.6 $ -->
+<!-- EN-Revision: 1.10 Maintainer: conni Status: ready -->
+<refentry xml:id="function.ingres-query" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ingres_query</refname>
+  <refpurpose>Sendet eine SQL-Abfrage an den Ingres-Server</refpurpose>
+ </refnamediv>
 
-ingres_query ("select * from table");
-while ($row = ingres_fetch_row()) {
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>mixed</type><methodname>ingres_query</methodname>
+   <methodparam><type>resource</type><parameter>link</parameter></methodparam>
+   <methodparam><type>string</type><parameter>query</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>params</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>types</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>ingres_query</function> sendet die angegebene
+   <parameter>query</parameter> an den Ingres-Server.
+  </para>
+  <para>
+   Die Abfrage wird zu einem Teil der aktuell offenen Transaktion.
+   Falls keine Transaktion geÃ¶ffnet ist, Ã¶ffnet <function>ingres_query</function>
+   eine neue Transaktion. Um diese Transaktion zu schlieÃŸen, kann man
+   <function>ingres_commit</function> aufrufen, um die gemachten Ã„nderungen
+   in die Datenbank zu schreiben. Mit <function>ingres_rollback</function>
+   kann man diese Ã„nderungen aber auch wieder zrÃ¼cksetzen. Wenn das Skript
+   beendet wird, wird jede offene Transaktion zurÃ¼ckgesetzt (indem die Funktion
+   <function>ingres_rollback</function> aufgerufen wird). Sie kÃ¶nnen auch die
+   Funktion <function>ingres_autocommit</function> benutzen, bevor Sie eine neue
+   Transaktion Ã¶ffnen, damit wird jede einzelne SQL-Abfrage sofort comittet.
+  </para>
+  <note>
+   <title>Verwandte Konfigurationen</title>
+   <para>
+    Schauen Sie sich <link linkend="ini.ingres.describe">ingres.describe</link>,
+    <link linkend="ini.ingres.scrollable">ingres.scrollable</link> und
+    <link linkend="ini.ingres.utf8">ingres.utf8</link> an sowie die Direktiven zur
+    <link linkend="ingres.configuration">Laufzeit Konfiguration</link>.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>link</parameter></term>
+     <listitem>
+      <para>
+       Die Verbindungskennung
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry xml:id="function.ingres-query.query">
+     <term><parameter>query</parameter></term>
+     <listitem>
+      <para>
+       Eine gÃ¼ltige SQL-Abfrage (mehr im Ingres <emphasis>SQL reference
+       guide</emphasis>) der Ingres Dokumentation.
+      </para>
+      <para>
+       Folgende Arten von SQL-Abfragen kÃ¶nnen mit dieser Funktion nicht gesendet werden:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          close (siehe <function>ingres_close</function>)
+         </simpara>
+        </listitem>
+       <listitem>
+         <simpara>
+          commit (siehe <function>ingres_commit</function>)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          connect (siehe <function>ingres_connect</function>)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          disconnect (siehe <function>ingres_close</function>)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>get dbevent</simpara>
+        </listitem>
+        <listitem>
+         <simpara>prepare to commit</simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          rollback (siehe <function>ingres_rollback</function>)
+         </simpara>
+        </listitem>
+        <listitem><simpara>savepoint</simpara></listitem>
+        <listitem>
+         <simpara>
+          set autocommit (siehe <function>ingres_autocommit</function>)
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>alle Abfragen, die sich auf Cursors beziehen werden nicht
+          unterstÃ¼tzt</simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>params</parameter></term>
+     <listitem>
+      <para>
+       Ein Array mit Parameterwerten, die in der Abfrage verwendet werden
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry xml:id="function.ingres-query.types">
+     <term><parameter>types</parameter></term>
+     <listitem>
+      <para>
+       Ein String, der eine Folge von Datentypen fÃ¼r die Ã¼bergebenen Parameterwerte
+       enthÃ¤lt. Wenn die Option <link linkend="ini.ingres.describe">ingres.describe</link>
+       aktiviert ist, kann dieser Parameter ignoriert werden, da die erwarteten
+       Datentypen automatisch vom Server geholt werden.
+      </para>
+      <informaltable>
+       <tgroup cols='4'>
+        <thead>
+         <row>
+          <entry>Type code</entry>
+          <entry>Ingres Datentyp</entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry>b</entry>
+          <entry><type>BYTE</type></entry>
+         </row>
+         <row>
+          <entry>B</entry>
+          <entry><type>LONG BYTE/BLOB</type></entry>
+         </row>
+         <row>
+          <entry>c</entry>
+          <entry><type>CHAR</type></entry>
+         </row>
+         <row>
+          <entry>d</entry>
+          <entry><type>DATE/ANSIDATE/TIMESTAMP/TIME</type></entry>
+         </row>
+         <row>
+          <entry>f</entry>
+          <entry><type>FLOAT</type></entry>
+         </row>
+         <row>
+          <entry>i</entry>
+          <entry><type>INTEGER</type></entry>
+         </row>
+         <row>
+          <entry>L</entry>
+          <entry><type>LONG TEXT</type></entry>
+         </row>
+         <row>
+          <entry>m</entry>
+          <entry><type>MONEY</type></entry>
+         </row>
+         <row>
+          <entry>M</entry>
+          <entry><type>LONG NVARCHAR</type></entry>
+         </row>
+         <row>
+          <entry>n</entry>
+          <entry><type>NCHAR</type></entry>
+         </row>
+         <row>
+          <entry>N</entry>
+          <entry><type>NVARCHAR</type></entry>
+         </row>
+         <row>
+          <entry>t</entry>
+          <entry><type>TEXT</type></entry>
+         </row>
+         <row>
+          <entry>v</entry>
+          <entry><type>VARCHAR</type></entry>
+         </row>
+         <row>
+          <entry>V</entry>
+          <entry><type>LONG VARCHAR</type></entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </informaltable>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   <function>ingres_query</function> gibt eine Ergebniskennung fÃ¼r die Abfrage
+   zurÃ¼ck, sofern Zeilen geholt werden kÃ¶nnen. Anderenfalls wird &false;
+   zurÃ¼ckgegeben. Das ist beispielsweise bei einem INSERT-, UPDATE- oder
+   DELETE-Kommando der Fall. Um festzustellen, ob es einen Fehler gab, benutzt
+   man die Funktionen <function>ingres_errno</function>,
+   <function>ingres_error</function> oder <function>ingres_errsqlstate</function>.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Ein einfaches SELECT-Kommando senden</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$link = ingres_connect("demodb");
+
+$result = ingres_query($link, "select * from user_profile");
+while ($row = ingres_fetch_row($result)) {
     echo $row[1];
     echo $row[2];
 }
 ?>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     Siehe auch
-     <function>ingres_fetch_array</function>,
-     <function>ingres_fetch_object</function>,
-     <function>ingres_fetch_row</function>,
-     <function>ingres_commit</function>,
-     <function>ingres_rollback</function> und
-     <function>ingres_autocommit</function>.
-    </para>
-   </refsect1>
-  </refentry>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Abfrage-Parameter an <function>ingres_query</function> Ã¼bergeben</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$link = ingres_connect("demodb");
+
+$params[] = "Emma";
+$query = "select * from user_profile where up_first = ?";
+$result = ingres_query($link, $query, $params);
+while ($row = ingres_fetch_row($result)) {
+    echo $row[1];
+    echo $row[2];
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Ein BLOB mit Parameter-Typen einfÃ¼gen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$link = ingres_connect("demodb");
+
+// Eine Bilddatei Ã¶ffnen
+$fh = fopen("photo.jpg","r");
+$blob_data = stream_get_contents($fh);
+fclose($fh);
+
+// Parameter vorbereiten
+$params[] = $blob_data;
+$params[] = 1201;
+
+// Parameter-Typen definieren
+$param_types = "Bi";
+
+$query = "update user_profile set up_image = ? where up_id = ?";
+$result = ingres_query($link, $query , $params, $param_types);
+
+if (ingres_errno())
+{
+    echo ingres_errno() . "-" . ingres_error() . "\n";
+}
+
+ingres_commit($link);
+
+ingres_close($link);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ingres_unbuffered_query</function></member>
+    <member><function>ingres_fetch_array</function></member>
+    <member><function>ingres_fetch_object</function></member>
+    <member><function>ingres_fetch_row</function></member>
+    <member><function>ingres_commit</function></member>
+    <member><function>ingres_rollback</function></member>
+    <member><function>ingres_autocommit</function></member>
+    <member><function>ingres_set_environment</function></member>
+    <member><function>ingres_errno</function></member>
+    <member><function>ingres_error</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
