@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<!-- $Revision: 1.1 $ -->
+<!-- $Revision: 1.2 $ -->
 <!-- EN-Revision: 1.11 Maintainer: lapistano Status: working -->
 <refentry xml:id="function.pdo-sqlitecreateaggregate" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
-  <refname>PDO->sqliteCreateAggregate</refname>
+  <refname>PDO::sqliteCreateAggregate</refname>
   <refpurpose>
-   Registers an aggregating User Defined Function for use in SQL statements
+   Registriert eine aggregierte, benutzerdefinierte Funktion, die in einer SQLite-Anfrage genutzt werden kann
   </refpurpose>
  </refnamediv>
 
@@ -23,14 +23,15 @@
   </classsynopsis>
   &warn.experimental.func;
   <para>
-   This method is similar to <xref linkend="function.pdo-sqlitecreatefunction"
-   /> except that it registers functions that can be used to calculate a
-   result aggregated across all the rows of a query.
+   Diese Methode ist gleicht 
+   <xref linkend="function.pdo-sqlitecreatefunction" /> mit dem Unterschied, dass
+   sie Funktionen registriert, welche benutzt werden können, ein Ergebnis über alle 
+   Reihen einer Anfrage zu aggregieren.
   </para>
   <para>
-   The key difference between this method and <xref
-   linkend="function.pdo-sqlitecreatefunction" /> is that two functions are
-   required to manage the aggregate. 
+   Der Hauptunterschied zwischen dieser Methode und <xref
+   linkend="function.pdo-sqlitecreatefunction" /> ist, dass zwei Funktionen
+   notwendig sind, die Aggregierung zu verwalten.
   </para>
  </refsect1>
 
@@ -42,7 +43,7 @@
      <term><parameter>function_name</parameter></term>
      <listitem>
       <para>
-       The name of the function used in SQL statements.
+       Der Name, der in der Anfrage genutzten Funktion.
       </para>
      </listitem>
     </varlistentry>
@@ -50,12 +51,11 @@
      <term><parameter>step_func</parameter></term>
      <listitem>
       <para>
-       Callback function called for each row of the result set. Your PHP
-       function should accumulate the result and store it in the aggregation
-       context.
+       'Callback'-Funktion, welche für jede Reihe des Abfrageergebnisses ausgeführt wird.
+       Ihr PHP sollte das Ergebnis akkumulieren und in der Aggregation 'context' speichern.
       </para>
       <para>
-       This function need to be defined as:
+       Es ist notwendig diese Funktion wie folgt zu definieren:
        <methodsynopsis>
         <methodname><replaceable>step</replaceable></methodname>
         <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
@@ -66,13 +66,12 @@
        </methodsynopsis>
       </para>
       <para>
-       <varname>context</varname> will be &null; for the first row; on
-       subsequent rows it will have the value that was previously returned
-       from the step function; you should use this to maintain the aggregate
-       state.
+       Für die erste Reihe wird <varname>context</varname> &null; sein. Folgende Reihen 
+       werden den zuvor zurückgegebenen Wert haben. Sie sollten diesen nutzen, um den
+       Status der Aggregation zu pflegen.
       </para>
       <para>
-       <varname>rownumber</varname> will hold the current row number.
+       <varname>rownumber</varname> wird die Nu8mber der aktuellen Reihe beinhalten.
       </para>
      </listitem>
     </varlistentry>
@@ -80,32 +79,33 @@
      <term><parameter>finalize_func</parameter></term>
      <listitem>
       <para>
-       Callback function to aggregate the "stepped" data from each row. 
-       Once all the rows have been processed, this function will be called
-       and it should then take the data from the aggregation context and
-       return the result. Callback functions should return a type understood
-       by SQLite (i.e. <link 
+       'Callback'-Funktion, die die Informationen aller Reihen aggregiert.
+       Sind alle Reihen abgearbeitet, wird diese Funktion aufgerufen. Diese
+       sollte dann die Daten der Aggregation 'context' auswerten und das 
+       Ergebnis zurückgeben. 'Callback'-Funktionen sollten einen Variablentyp 
+       liefern, der von SQLite erwartet wird (z.B. <link 
        linkend="language.types.intro">scalar type</link>).
       </para>
       <para>
-       This function need to be defined as:
+       Diese Funktion ist als
        <methodsynopsis>
         <methodname><replaceable>fini</replaceable></methodname>
         <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
         <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
        </methodsynopsis>
+       zu definieren.
       </para>
       <para>
-       <varname>context</varname> will hold the return value from the very
-       last call to the step function.
+       <varname>context</varname> wird den Rückgabewert des letzten Aufrufs der
+       Schritt-Funktion enthalten.
       </para>
       <para>
-       <varname>rownumber</varname> will hold the number of rows over which
-       the aggregate was performed.
+       <varname>rownumber</varname> wird die Anzahl an Reihen enthalten, die
+       bereite Aggregiert wurden.
       </para>
       <para>
-       The return value of this function will be used as the return value for
-       the aggregate.
+       Der Rückgabewert dieser Funktion wird als Rückgabewert für die
+       Aggregation genutzt.
       </para>
      </listitem>
     </varlistentry>
@@ -113,8 +113,8 @@
      <term><parameter>num_args</parameter></term>
      <listitem>
       <para>
-       Hint to the SQLite parser if the callback function accepts a
-       predetermined number of arguments.
+       Hinweis für den SQLite-Parser, ob die 'Callback'-Funktion eine 
+       bestimmte Anzahl an Parametern erwartet.
       </para>
      </listitem>
     </varlistentry>
@@ -133,7 +133,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title>max_length aggregation function example</title>
+    <title>Beispiel für eine 'max_length' Aggregierungs-Funktion</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -180,47 +180,47 @@ var_dump($db->query('SELECT max_len(a) from strings')->fetchAll());
    </example>
   </para>
   <para>
-   In this example, we are creating an aggregating function that will
-   calculate the length of the longest string in one of the columns of the
-   table.  For each row, the <literal>max_len_step</literal> function is
-   called and passed a <parameter>context</parameter> parameter.  The context
-   parameter is just like any other PHP variable and be set to hold an array
-   or even an object value.  In this example, we are simply using it to hold
-   the maximum length we have seen so far; if the
-   <parameter>string</parameter> has a length longer than the current
-   maximum, we update the context to hold this new maximum length.
+   In diesem Beispiel erzeugen wir eine Aggregat-Funktion, die die Länge 
+   der längsten Zeichenkette innerhalb einer der Tabellenspalten ermittelt.
+   Die <literal>max_len_step</literal>-Funktion wird für jede durchlaufene Reihe
+   mit dem Parameter <parameter>context</parameter> aufgerufen. Der Parameter 
+   'context' ist eine normal PHP Variable, welche Listen oder Objektinhalte 
+   beinhalten kann. In diesem Beispiel benötigen wir sie als Speicher für die 
+   größte bisher gefundene Länge der geprüften Zeichenketten. Wenn also die 
+   die Zeichenkette in <parameter>string</parameter> länger ist, als die aktuell
+   Längste, wird der Inhalt von 'context' mit der neuen Länge überschrieben.
   </para>
   <para>
-   After all of the rows have been processed, SQLite calls the
-   <literal>max_len_finalize</literal> function to determine the aggregate
-   result.  Here, we could perform some kind of calculation based on the
-   data found in the <parameter>context</parameter>.  In our simple example
-   though, we have been calculating the result as the query progressed, so we
-   simply need to return the context value.
+   Nachdem alle Reihen abgearbeitet wurden, ruft SQLite die 
+   <literal>max_len_finalize</literal>-Funktion auf, um das Endergebnis 
+   zu ermitteln. Hier können wir nun jede Art von Berechnungen,
+   basierend auf den in <parameter>context</parameter> gesammelten Daten, 
+   durchführen. In unserem Beispiel haben wir die Berechgungen bereits bei
+   der Datenerhebung getätigt, dass wir nun nur noch das Ergebnis - 
+   den Inhalt von 'context' - zurückgeben brauchen.
   </para>
   <tip>
    <para>
-    It is NOT recommended for you to store a copy of the values in the context
-    and then process them at the end, as you would cause SQLite to use a lot of
-    memory to process the query - just think of how much memory you would need
-    if a million rows were stored in memory, each containing a string 32 bytes
-    in length.
+    Es ist nicht ratsam eine Kopie der Inhalte in 'context' zu speichern, 
+    um diese dann am Ende auszuwerten. Das würde dazu führen, dass SQLite eine
+    große Menge an Speicher benötigt, um die Abfrage abzuarbeiten. Überlegen Sie
+    nur mal, wieviel Speicher eine Abfrage braucht, die 1 Millionen Reihen mit
+    je 32 Byte Inhalt aus der Datenbank liest.
    </para>
   </tip>
   <tip>
    <para>
-    You can use <xref linkend="function.pdo-sqlitecreatefunction" /> and
-    <xref linkend="function.pdo-sqlitecreateaggregate" /> to override SQLite
-    native SQL functions.
+    Sie können <xref linkend="function.pdo-sqlitecreatefunction" /> und
+    <xref linkend="function.pdo-sqlitecreateaggregate" /> nutzen, um SQLites
+    native SQL-Funktionen zu überschreiben.
    </para>
   </tip>
   <note>
    <para>
-    This method is not available with the SQLite2 driver.
-    Use the old style sqlite API for that instead.
+    Diese Methode ist im SQLite2-Treiber nicht verfügbar.
+    Benutzen Sie stattdessen die alte SQLite-API.
    </para>
   </note>
-
  </refsect1>
 
 
