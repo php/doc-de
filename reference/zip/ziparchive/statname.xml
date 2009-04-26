@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision: 1.1 $ -->
-<!-- EN-Revision: 1.5 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 1.1 Maintainer: sammywg Status: ready -->
 
-<refentry xml:id="function.ziparchive-locatename" xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="function.ziparchive-statname" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
-  <refname>ZipArchive::locateName</refname>
-  <refpurpose>Gibt den Index eines Archiveintrags zurück</refpurpose>
+  <refname>ZipArchive::statName</refname>
+  <refpurpose>Gibt die Details eines via Namen bestimmten Eintrags zurück</refpurpose>
  </refnamediv>
+ 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>mixed</type><methodname>ZipArchive::locateName</methodname>
-   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <type>mixed</type><methodname>ZipArchive::statName</methodname>
+   <methodparam><type>name</type><parameter>name</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>flags</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Lokalisiert einen Eintrag unter Verwendung seines Namens.
+   Die Funktion erhält Informationen über einen Eintrag, der mittels seines
+   Namens bestimmt wird.
   </para>
  </refsect1>
 
@@ -27,7 +29,7 @@
      <term><parameter>name</parameter></term>
      <listitem>
       <para>
-       Der Name des Eintrags, nach dem gesucht werden soll.
+       Name des Eintrags
       </para>
      </listitem>
     </varlistentry>
@@ -35,9 +37,10 @@
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Die Funktion gibt den Index der Datei namens fname im Archiv zurück.
-       Die Flags können miteinander kombiniert werden, soll keines davon
-       genutzt werden, sollte 0 verwendet werden.
+       Das flags-Argument gibt an, wie die Namensauflösung durchgeführt werden
+       soll. Außerdem kann <constant>ZIPARCHIVE::FL_UNCHANGED</constant>
+       angewendet werden, um ohne Berücksichtigung eventueller Veränderungen
+       Informationen über die originale Datei im Archiv zu erhalten.
        <itemizedlist>
         <listitem>
          <para>
@@ -47,6 +50,11 @@
         <listitem>
          <para>
           <constant>ZIPARCHIVE::FL_NODIR</constant>
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>ZIPARCHIVE::FL_UNCHANGED</constant>
          </para>
         </listitem>
        </itemizedlist>
@@ -60,48 +68,47 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt im Erfolgsfall den Index eines Eintrags, andernfalls &false; zurück.
+   Gibt ein Array zurück, das die Eintragsdetails enthält. Im Fehlerfall wird
+   &false; zurückgegeben.
   </para>
  </refsect1>
 
  <refsect1 role="examples">
   &reftitle.examples;
-    <example>
-     <title>Ein Archiv erstellen und es mit locateName verwenden</title>
-     <programlisting role="php">
+  <example>
+   <title>Die Statusinformation eines Eintrags ausgeben</title>
+   <programlisting role="php">
 <![CDATA[
 <?php
-$file = 'testlocate.zip';
-
 $zip = new ZipArchive;
-if ($zip->open($file, ZIPARCHIVE::CREATE) !== TRUE) {
-    exit('Fehler');
+$res = $zip->open('test.zip');
+if ($res === TRUE) {
+    print_r($zip->statName('foobar/baz'));
+    $zip->close();
+} else {
+    echo 'Fehler, Code:' . $res;
 }
-
-$zip->addFromString('eintrag1.txt', 'Eintrag #1');
-$zip->addFromString('eintrag2.txt', 'Eintrag #2');
-$zip->addFromString('dir/eintrag2d.txt', 'Eintrag #2');
-
-if (!$zip->status == ZIPARCHIVE::ER_OK) {
-    echo "Fehler beim Schreiben des ZIP\n";
-}
-$zip->close();
-
-if ($zip->open($file) !== TRUE) {
-    exit('Fehler');
-}
-
-echo $zip->locateName('eintrag1.txt') . "\n";
-echo $zip->locateName('eiNtrag2.txt') . "\n";
-echo $zip->locateName('eiNtrag2.txt', ZIPARCHIVE::FL_NOCASE) . "\n";
-echo $zip->locateName('einTRag2d.txt', ZIPARCHIVE::FL_NOCASE|ZIPARCHIVE::FL_NODIR) . "\n";
-$zip->close();
-
 ?>
 ]]>
-     </programlisting>
-    </example>
-   </refsect1>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Array
+(
+    [name] => foobar/baz
+    [index] => 3
+    [crc] => 499465816
+    [size] => 27
+    [mtime] => 1123164748
+    [comp_size] => 24
+    [comp_method] => 8
+)
+]]>
+   </screen>
+  </example>
+ </refsect1>
+
 </refentry>
 
 
