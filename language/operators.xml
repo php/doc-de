@@ -487,6 +487,82 @@ if (empty($_POST['action'])) {
     <link linkend="language.operators.array">Array-Operatoren</link>
     und den Abschnitt über <link linkend="language.types">Typen</link>.
    </para>
+
+   <sect2 xml:id="language.operators.comparison.ternary">
+    <title>Ternary Operator</title>
+    <para>
+     Another conditional operator is the "?:" (or ternary) operator.
+     <example>
+      <title>Assigning a default value</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Example usage for: Ternary Operator
+$action = (empty($_POST['action'])) ? 'default' : $_POST['action'];
+
+// The above is identical to this if/else statement
+if (empty($_POST['action'])) {
+    $action = 'default';
+} else {
+    $action = $_POST['action'];
+}
+
+?>
+]]>
+      </programlisting>
+     </example>
+     The expression <literal>(expr1) ? (expr2) : (expr3)</literal>
+     evaluates to <replaceable>expr2</replaceable> if
+     <replaceable>expr1</replaceable> evaluates to &true;, and
+     <replaceable>expr3</replaceable> if
+     <replaceable>expr1</replaceable> evaluates to &false;.
+    </para>
+    <para>
+     Since PHP 5.3, it is possible to leave out the middle part of the ternary
+     operator. Expression <literal>expr1 ?: expr3</literal> returns
+     <replaceable>expr1</replaceable> if <replaceable>expr1</replaceable>
+     evaluates to &true;, and <replaceable>expr3</replaceable> otherwise.
+    </para>
+    <note>
+     <simpara>
+      Please note that the ternary operator is a statement, and that it
+      doesn't evaluate to a variable, but to the result of a statement. This
+      is important to know if you want to return a variable by reference.
+      The statement <literal>return $var == 42 ? $a : $b;</literal> in a
+      return-by-reference function will therefore not work and a warning is
+      issued in later PHP versions.
+     </simpara>
+    </note>
+    <note>
+     <para>
+      It is recommended that you avoid "stacking" ternary expressions. PHP's
+      behaviour when using more than one ternary operator within a single
+      statement is non-obvious:
+      <example>
+       <title>Non-obvious Ternary Behaviour</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+// on first glance, the following appears to output 'true'
+echo (true?'true':false?'t':'f');
+
+// however, the actual output of the above is 't'
+// this is because ternary expressions are evaluated from left to right
+
+// the following is a more obvious version of the same code as above
+echo ((true ? 'true' : 'false') ? 't' : 'f');
+
+// here, you can see that the first expression is evaluated to 'true', which
+// in turn evaluates to (bool)true, thus returning the true branch of the
+// second ternary expression.
+?>
+]]>
+       </programlisting>
+      </example>
+     </para>
+    </note>
+   </sect2>
+
   </sect1>
 
   <sect1 xml:id="language.operators.errorcontrol">
