@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 283800 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 287828 Maintainer: wiesemann Status: ready -->
 <!-- CREDITS: tom -->
 <refentry xml:id="function.extract" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -52,9 +52,9 @@
      <term><parameter>extract_type</parameter></term>
      <listitem>
       <para>
-       The way invalid/numeric keys and collisions are treated is determined
-       by the <parameter>extract_type</parameter>. It can be one of the
-       following values:
+       Die Art, wie ungültige/numerische Schlüssel und Kollisionen behandelt
+       werden, wird durch <parameter>extract_type</parameter> bestimmt. Die
+       folgenden Werte sind erlaubt:
        <variablelist>
         <varlistentry>
          <term><constant>EXTR_OVERWRITE</constant></term>
@@ -258,7 +258,8 @@ blau, groß, Kugel, mittel
   <warning>
    <para>
     Verwenden Sie <function>extract</function> nicht für nicht
-    vertrauenswürdige Daten wie Benutzereingaben ($_GET, ...). Wenn
+    vertrauenswürdige Daten wie Benutzereingaben (d.h.
+    <varname>$_GET</varname>, <varname>$_FILES</varname>, ...). Wenn
     Sie dies tun, z.B. weil Sie alten Code, der sich auf
     <link linkend="security.globals">register_globals</link> verlässt,
     vorübergehend ausführen wollen, so stellen Sie sicher, dass Sie
@@ -269,6 +270,88 @@ blau, groß, Kugel, mittel
     in der <link linkend="ini">&php.ini;</link> angegeben wurde.
    </para>
   </warning>
+  <note>
+   <para>
+    Wenn Sie <link linkend="security.globals">register_globals</link>
+    aktiviert haben, Sie <function>extract</function> auf
+    <varname>$_FILES</varname> anwenden und Sie 
+    <constant>EXTR_SKIP</constant> angeben, könnten Sie über das
+    Ergebnis überrascht sein.
+   </para>
+   <warning>
+    <para>
+     Dies ist keine empfohlene Vorgehensweise; es ist nur der Vollständigkeit
+     halber hier dokumentiert. Die Nutzung von
+     <link linkend="security.globals">register_globals</link> wird nicht
+     mehr empfohlen und das Aufrufen von <function>extract</function>
+     auf nicht vertrauenswürdigen Daten wie <varname>$_FILES</varname> ist,
+     wie oben beschrieben, ein potenzielles Sicherheitsrisiko. Wenn Sie
+     auf dieses Ergebnis stoßen, bedeutet das, dass Sie mindestens zwei
+     schlechte Codierungs-Praktiken benutzen.
+    </para>
+   </warning>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+/* Annahmen: $testfile ist der Name einer hochgeladenen Datei,
+   register_globals ist aktiviert */
+
+var_dump($testfile);
+extract($_FILES, EXTR_SKIP);
+var_dump($testfile);
+var_dump($testfile['tmp_name']);
+
+?>
+]]>
+   </programlisting>
+   <simpara>
+    Sie werden wahrscheinlich folgende Ausgabe erwarten:
+   </simpara>
+   <screen>
+<![CDATA[
+string(14) "/tmp/phpgCCPX8"
+array(5) {
+  ["name"]=>
+  string(10) "somefile.txt"
+  ["type"]=>
+  string(24) "application/octet-stream"
+  ["tmp_name"]=>
+  string(14) "/tmp/phpgCCPX8"
+  ["error"]=>
+  int(0)
+  ["size"]=>
+  int(4208)
+}
+string(14) "/tmp/phpgCCPX8"
+]]>
+   </screen>
+   <simpara>
+    Stattdessen erhalten Sie aber eine Ausgabe wie diese:
+   </simpara>
+   <screen>
+<![CDATA[
+string(14) "/tmp/phpgCCPX8"
+string(14) "/tmp/phpgCCPX8"
+string(1) "/"
+]]>
+   </screen>
+   <para>
+    Dies liegt daran, dass aufgrund der Aktivierung von
+    <link linkend="security.globals">register_globals</link>
+    <varname>$testfile</varname> bereits im globalen Scope existiert,
+    wenn <function>extract</function> aufgerufen wird. Da
+    <constant>EXTR_SKIP</constant> angegeben wurde, wird
+    <varname>$testfile</varname> nicht mit den Inhalten des
+    <constant>$_FILES</constant>-Arrays überschrieben und somit bleibt
+    <varname>$testfile</varname> ein String.
+    Da auf <link linkend="language.types.string.substr">Strings über die
+    Array-Syntax zugegriffen werden kann</link> und der nicht-numerische
+    String <literal>tmp_name</literal> als <literal>0</literal> interpretiert
+    wird, versteht PHP <varname>$testfile['tmp_name']</varname>
+    als <varname>$testfile[0]</varname>.
+   </para>
+  </note>
  </refsect1>
  <refsect1 role="seealso">
   &reftitle.seealso;
