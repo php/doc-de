@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 289301 Maintainer: wiesemann Status: ready -->
 <chapter xml:id="faq.using" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>PHP benutzen</title>
   <titleabbrev>PHP benutzen</titleabbrev>
@@ -11,6 +11,30 @@
   </para>
 
   <qandaset>
+
+   <qandaentry xml:id="faq.using.parameterorder">
+    <question>
+     <para>
+      Ich kann mir die Reihenfolge der Parameter von PHP-Funktionen nicht
+      merken - gibt es ein Schema?
+     </para>
+    </question>
+    <answer>
+     <para>
+      PHP besteht aus Hunderten externer Bibliotheken, so dass dies manchmal
+      etwas durcheinander erscheint. Eine einfache Regel ist aber wie folgt:
+     </para>
+     <para>
+      Parameter von <link linkend="book.array">Array-Funktionen</link> sind
+      als "<emphasis>needle, haystack</emphasis>" (Nadel, Heuhaufen) geordnet,
+      während die Parameter von
+      <link linkend="book.strings">String-Funktionen</link> genau andersrum
+      geordnet sind, also als "<emphasis>haystack, needle</emphasis>"
+      (Heuhaufen, Nadel).
+     </para>
+    </answer>
+   </qandaentry>
+
    <qandaentry xml:id="faq.using.anyform">
     <question>
      <para>
@@ -72,10 +96,14 @@ if (empty($empty)) {
     </question>
     <answer>
      <para>
-      Die Funktion <function>addslashes</function> erledigt genau das.
-      Siehe auch <function>mysql_escape_string</function>. Mit der
-      Funktion <function>stripslashes</function> können Sie die
-      Backslash-Zeichen wieder entfernen.
+      Falls Sie dies für eine Datenbank tun möchten, sollten Sie den
+      Maskierungsmechanismus nutzen, der für diese Datenbank vorgesehen
+      ist. Z.B. sollten Sie <function>mysql_real_escape_string</function>
+      unter MySQL und <function>pg_escape_string</function> unter PostgreSQL
+      nutzen. Es gibt außerdem die generische Funktionen
+      <function>addslashes</function> und
+      <function>stripslashes</function>, die häufig in älterem PHP-Code
+      genutzt werden.
      </para>
 
      &note.magicquotes.gpc;
@@ -93,11 +121,12 @@ if (empty($empty)) {
     </question>
     <answer>
      <para>
-      Die PHP-Funktion <function>stripslashes</function> entfernt solche
-      Backslash-Zeichen aus Ihrem <type>String</type>. In den meisten
-      Fällen existieren diese Zeichen automatisch, weil die <link
-      linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>-Direktive
-      auf on steht.
+      Mit großer Wahrscheinlichkeit existieren die Backslahes, weil die
+      PHP-Direktive <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>
+      aktiviert ist. Dies ist eine alte Funktionalität von PHP, die nicht mehr
+      aktiviert werden sollte und auf die man sich nicht mehr verlassen sollte.
+      Die PHP-Funktion <function>stripslashes</function> kann genutzt werden,
+      um die Backslashes aus dem <type>string</type> zu entfernen.
      </para>
 
      &note.magicquotes.gpc;
@@ -335,38 +364,6 @@ foreach ($headers as $name => $content) {
     </answer>
    </qandaentry>
 
-   <qandaentry xml:id="faq.using.netscape">
-    <question>
-     <para>
-      Mein PHP-Skript funktioniert unter IE und Lynx, aber unter Netscape
-      fehlt ein Teil meiner Ausgabe. Wenn ich mir den Quelltext anschaue,
-      sehe ich die Ausgabe unter IE, aber nicht unter Netscape.
-     </para>
-    </question>
-    <answer>
-     <para>
-      Netscape verarbeitet HTML-Tags (z.B. Tabellen) strenger als der IE.
-      Meist ist es hilfreich, wenn Sie Ihre HTML-Ausgabe mit einem
-      HTML-Validator (z.B.
-      <link xlink:href="&url.w3.validator;">validator.w3.org</link>)
-      prüfen. Z.B. kann ein fehlendes &lt;/table&gt; den Fehler verursachen.
-     </para>
-     <para>
-      IE und Lynx ignorieren auch NULs (<literal>\0</literal>) im HTML-Stream,
-      Netscape nicht. Um dies zu überprüfen, kompilieren Sie am besten die
-      <link linkend="features.commandline">Kommandozeilen</link>-Version
-      von PHP (auch bekannt als die CGI-Version) und führen Sie Ihr Skript
-      auf der Kommandozeile aus. Unter Unix pipen Sie es durch
-      <literal>od -c</literal> und schauen Sie nach <literal>\0</literal>
-      Zeichen.
-      Unter Windows müssen Sie einen Editor oder ein anderes Programm benutzen,
-      das es Ihnen ermöglicht, binäre Dateien anzuschauen.
-      Wenn Netscape ein NUL in einer Datei findet, gibt es normalerweise in dieser
-      Zeile nichts mehr aus, während IE und Lynx die Zeile normal ausgeben.
-     </para>
-    </answer>
-   </qandaentry>
-
    <qandaentry xml:id="faq.using.mixml">
     <question>
      <para>
@@ -384,25 +381,6 @@ foreach ($headers as $name => $content) {
       <link linkend="ini.short-open-tag">short_open_tags</link> auf on oder
       off gesetzt ist, z.B. <literal>&lt;?php echo '&lt;?xml'; ?&gt;</literal>
       benutzen. Der Standardwert für diese Direktive ist on.
-     </para>
-    </answer>
-   </qandaentry>
-
-   <qandaentry xml:id="faq.using.editor">
-    <question>
-     <para>
-      Wie kann ich mit PHP mit Frontpage oder einem anderen HTML-Editor,
-      der meinen Code verschiebt, benutzen?
-     </para>
-    </question>
-    <answer>
-     <para>
-      Die einfachste Möglichkeit ist, ASP-Tags in Ihrem PHP-Code zu aktivieren.
-      Sie können dann &lt;% und %&gt; zur Begrenzung Ihres Codes verwenden.
-      Viele HTML-Editoren verarbeiten solche Code-Blöcke intelligenter.
-      Um die ASP-Tags zu aktiveren, müssen Sie in Ihrer &php.ini;
-      <link linkend="ini.asp-tags">asp_tags</link> aktivieren oder die
-      gleichwertige Apache-Direktive verwenden.
      </para>
     </answer>
    </qandaentry>

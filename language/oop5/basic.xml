@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 287804 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 289308 Maintainer: wiesemann Status: ready -->
 
  <sect1 xml:id="language.oop5.basic" xmlns="http://docbook.org/ns/docbook">
   <title>Die Grundlagen</title>
@@ -11,7 +11,44 @@
     Jede Klassendefinition beginnt mit dem Schlüsselwort
     <literal>class</literal>, gefolgt von einem Klassennamen, gefolgt von
     einem Paar geschweifter Klammern, die die Definitionen der
-    Klassenmember und -methoden enthalten. Die Pseudovariable 
+    Klasseneigenschaften und -methoden enthalten.
+   </para>
+   <para>
+    Der Klassenname kann jeder gültige Bezeichner sein, der kein von PHP
+    PHP <link linkend="reserved">reserviertes Wort</link> ist. Ein gültiger
+    Klassenname beginnt mit einem Buchstaben oder einem Unterstrich, gefolgt
+    von einer beliebigen Anzahl von Buchstaben, Ziffern oder Unterstrichen;
+    als regulärer Ausdruck formuliert:
+    <literal>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*</literal>.
+   </para>
+   <para>
+    Eine Klasse darf aus ihren eigenen
+    <link linkend="language.oop5.constants">Konstanten</link>,
+    <link linkend="language.oop5.properties">Variablen</link>
+    ("Eigenschaften" genannt) und Funktionen ("Methoden" genannt)
+    bestehen.
+   </para>
+   <example>
+    <title>Definition einer einfachen Klasse</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class SimpleClass
+{
+    // Deklaration einer Eigenschaft
+    public $var = 'ein Standardwert';
+
+    // Deklaration einer Methode
+    public function displayVar() {
+        echo $this->var;
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <para>
+    Die Pseudovariable
     <varname>$this</varname> ist verfügbar, falls eine Methode aus einem 
     Objektkontext heraus aufgerufen wird. <varname>$this</varname> ist eine
     Referenz auf das aufrufende Objekt (üblicherweise das Objekt, zu dem die 
@@ -20,19 +57,8 @@
     Kontext eines zusätzlichen Objektes aufgerufen wird).
    </para>
    <para>
-    Der Klassenname kann ein beliebiger Name sein kann, der kein 
-    <link linkend="reserved">reservierter</link> PHP-Bezeichner ist
-    und der ein gültiger Bezeichner ist, d.h. dass er die
-    <link linkend="language.variables.basics">PHP-Regeln für die
-    Benennung von Variablen</link> einhalten muss, mit der Ausnahme, dass
-    der Klassenname kein vorangestelltes Dollarzeichen hat.
-   </para>
-   <para>
-    Hier sind ein paar einfache Beispiele für Klassendefinitionen,
-    Objekterzeugungen und die Benutzung der
-    <varname>$this</varname>-Pseudovariablen:
     <example>
-     <title><varname>$this</varname>-Variable in objektorientierter Programmierung</title>
+     <title>Einige Beispiele für die <varname>$this</varname>-Pseudovariable</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -54,15 +80,21 @@ class B
 {
     function bar()
     {
+        // Hinweis: die folgende Zeile führt zu einer Warnung, wenn
+        // E_STRICT aktiviert ist
         A::foo();
     }
 }
 
 $a = new A();
 $a->foo();
+
+// Hinweis: die folgende Zeile führt zu einer Warnung, wenn E_STRICT aktiviert ist
 A::foo();
 $b = new B();
 $b->bar();
+
+// Hinweis: die folgende Zeile führt zu einer Warnung, wenn E_STRICT aktiviert ist
 B::bar();
 ?>
 ]]>
@@ -78,89 +110,6 @@ $this ist nicht definiert.
      </screen>
     </example>
    </para>
-   <example>
-    <title>Einfache Klassendefinition</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-class SimpleClass
-{
-    // Memberdeklaration
-    public $var = 'ein Vorgabewert';
-
-    // Methodendeklaration
-    public function displayVar() {
-        echo $this->var;
-    }
-}
-?>
-]]>
-    </programlisting>
-   </example>
-
-   <para>
-    Der Standardwert muss ein konstanter Ausdruck sein, aber nicht z.B.
-    eine Variable, ein Klassenattribut oder ein Funktionsaufruf.
-   </para>
-    <example>
-     <title>Standardwerte von Klassenattributen</title>
-     <programlisting role="php">
-<![CDATA[
-<?php
-class SimpleClass
-{
-    // ungültige Attributdeklarationen:
-    public $var1 = 'hallo '.'welt';
-    public $var2 = <<<EOD
-hallo welt
-EOD;
-    public $var3 = 1+2;
-    public $var4 = self::myStaticMethod();
-    public $var5 = $myVar;
-
-    // gültige Attributdeklarationen
-    public $var6 = myConstant;
-    public $var7 = self::classConstant;
-    public $var8 = array(true, false);
-    
-    
-}
-?>
-]]>
-        </programlisting>
-      </example>
-   <note>
-    <para>
-     Es gibt nette Funktionen, um Klassen und Objekte zu behandeln. Sie
-     möchten vielleicht einen Blick auf 
-     <link linkend="ref.classobj">Klassen/Objekte</link> werfen.
-    </para>
-   </note>
-
-   <para>
-    Im Gegensatz zu Heredocs, können Nowdocs in beliebigem, statischem
-    Kontext genutzt werden.
-    <example>
-     <title>Beispiel mit statischen Daten</title>
-     <programlisting role="php">
-<![CDATA[
-<?php
-class foo {
-    // As of PHP 5.3.0
-    public $bar = <<<'EOT'
-bar
-EOT;
-}
-?>
-]]>
-     </programlisting>
-    </example>
-   </para>
-   <note>
-    <para>
-     Nowdoc-Unterstützung wurde in PHP 5.3.0 hinzugefügt.
-    </para>
-   </note>
   </sect2>
 
   <sect2 xml:id="language.oop5.basic.new">
@@ -236,17 +185,18 @@ object(SimpleClass)#1 (1) {
   <sect2 xml:id="language.oop5.basic.extends">
    <title>extends</title>
    <para>
-    Eine Klasse kann Methoden und Member einer anderen Klasse erben, indem
-    man das extends-Schlüsselwort in der Deklaration benutzt. Es ist nicht
-    möglich, mehrere Klassen zu erweitern, eine Klasse kann nur eine einzige
-    Basisklasse beerben.
+    Eine Klasse kann Methoden und Eigenschaften einer anderen Klasse erben, indem
+    man das <literal>extends</literal>-Schlüsselwort in der Deklaration benutzt.
+    Es ist nicht möglich, mehrere Klassen zu erweitern; eine Klasse kann nur eine
+    einzige Basisklasse beerben.
    </para>
    <para>
-    Die ererbten Methoden - es sei denn, sie wurden von der Vaterklasse als
-    <link linkend="language.oop5.final">final</link> definiert - und Member
-    können überschrieben werden, indem Sie mit dem selben Namen wie in der
-    Vaterklasse erneut deklariert werden. Es ist möglich, auf die überschriebenen
-    Methoden oder statischen Member zuzugreifen, wenn diese mittels
+    Die geerbten Methoden und Eigenschaften können durch eine Neudeklaration
+    mit dem gleichen Namen wie in der Elternklasse überschrieben werden. Falls
+    die Elternklasse eine Methode als <link linkend="language.oop5.final">final</link>
+    definiert hat, kann diese Methode nicht überschrieben werden. Es ist möglich,
+    auf die überschriebenen Methoden oder statischen Eigenschaften zuzugreifen,
+    wenn diese mittels
     <link linkend="language.oop5.paamayim-nekudotayim">parent::</link>
     referenziert werden.
    </para>
@@ -293,7 +243,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
