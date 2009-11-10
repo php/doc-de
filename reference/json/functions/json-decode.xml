@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 283820 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.json-decode" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -46,7 +46,7 @@
      <term><parameter>depth</parameter></term>
      <listitem>
       <para>
-       Benutzerspezifische Verschachtelungsgrenze.
+       Benutzerspezifische Verschachtelungstiefe.
       </para>
      </listitem>
     </varlistentry>
@@ -59,7 +59,10 @@
   <para>
    Gibt ein <type>Objekt</type> oder, wenn der optionale Parameter
    <parameter>assoc</parameter> auf &true; gesetzt ist, stattdessen ein
-   assoziatives <type>Array</type> zurück.
+   assoziatives <type>Array</type> zurück. &null; wird zurückgegeben, wenn der
+   Parameter <parameter>json</parameter> nicht dekodiert werden kann oder wenn
+   die dekodierten Daten tiefer verschachtelt sind, als es der Parameter für
+   Verschachtelungstiefe erlaubt.
   </para>
  </refsect1>
 
@@ -140,6 +143,72 @@ json_decode($bad_json); // null
 ]]>
     </programlisting>
    </example>
+   <example>
+    <title>Fehler bei der Verwendung von <parameter>depth</parameter></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Daten kodieren
+$json = json_encode(
+    array(
+        1 => array(
+            'englisch' => array(
+                'One',
+                'January'
+            ),
+            'französisch' => array(
+                'Une',
+                'Janvier'
+            )
+        )
+    )
+);
+
+// Errordefinitionen
+$json_errors = array(
+    JSON_ERROR_NONE => 'Es ist kein Fehler aufgetreten',
+    JSON_ERROR_DEPTH => 'Die maximale Stacktiefe wurde erreicht',
+    JSON_ERROR_CTRL_CHAR => 'Steuerzeichenfehler, möglicherweise fehlerhaft kodiert',
+    JSON_ERROR_SYNTAX => 'Syntaxfehler',
+);
+
+// Zeige die Fehler für unterschiedliche Verschachtelungstiefen
+foreach(range(4, 3, -1) as $depth) {
+    var_dump(json_decode($json, true, $depth));
+    echo 'Letzter Fehler : ', $json_errors[json_last_error()], PHP_EOL, PHP_EOL;
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(1) {
+  [1]=>
+  array(2) {
+    ["English"]=>
+    array(2) {
+      [0]=>
+      string(3) "One"
+      [1]=>
+      string(7) "January"
+    }
+    ["French"]=>
+    array(2) {
+      [0]=>
+      string(3) "Une"
+      [1]=>
+      string(7) "Janvier"
+    }
+  }
+}
+Letzter Fehler : Es ist kein Fehler aufgetreten
+
+NULL
+Letzter Fehler : Die maximale Stacktiefe wurde erreicht
+]]>
+    </screen>
+   </example>
   </para>
  </refsect1>
 
@@ -150,12 +219,12 @@ json_decode($bad_json); // null
     Die JSON-Spezifikation ist nicht JavaScript, aber ein Subset davon.
    </para>
   </note>
-  <caution>
+  <note>
    <para>
-    Diese Funktion gibt &false; zurück, wenn JSON-kodierte Daten tiefer als
-    127 Ebenen verschachtelt sind.
+    Tritt ein Dekodierungsfehler auf, kann <function>json_last_error</function>
+    verwendet werden, um die exakte Natur des Fehlers zu ermitteln.
    </para>
-  </caution>
+  </note>
  </refsect1>
 
  <refsect1 role="changelog">
@@ -173,7 +242,8 @@ json_decode($bad_json); // null
       <row>
        <entry>5.3.0</entry>
        <entry>Der optionale Parameter <parameter>depth</parameter> wurde
-        hinzugefügt.</entry>
+        hinzugefügt. Die Standardrekursionstiefe wurde von 128 auf 512
+        heraufgesetzt.</entry>
       </row>
       <row>
        <entry>5.2.3</entry>
@@ -190,6 +260,7 @@ json_decode($bad_json); // null
   <para>
    <simplelist>
     <member><function>json_encode</function></member>
+    <member><function>json_last_error</function></member>
    </simplelist>
   </para>
  </refsect1>
@@ -208,7 +279,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
