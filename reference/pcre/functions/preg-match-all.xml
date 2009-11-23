@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 290051 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.preg-match-all" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>preg_match_all</refname>
@@ -18,10 +18,10 @@
    <methodparam choice="opt"><type>int</type><parameter>offset</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Durchsucht <parameter>Zeichenkette</parameter> nach allen Übereinstimmungen
-   mit dem in <parameter>Suchmuster</parameter> angegebenen regulären Ausdruck
-   und legt sie in der durch <parameter>Flags</parameter> festgelegten
-   Reihenfolge in <parameter>Treffer</parameter> ab.
+   Durchsucht <parameter>subject</parameter> nach allen Übereinstimmungen mit
+   dem in <parameter>pattern</parameter> angegebenen regulären Ausdruck und
+   legt sie in der durch <parameter>flags</parameter> festgelegten Reihenfolge
+   in <parameter>matches</parameter> ab.
   </para>
   <para>
    Nachdem die erste Übereinstimmung gefunden wurde, wird die nachfolgende
@@ -70,10 +70,10 @@
          <term><constant>PREG_PATTERN_ORDER</constant></term>
          <listitem>
           <para>
-           Ordnet die Ergebnisse so an, dass $treffer[0] ein Array von
-           Übereinstimmungen mit dem kompletten Suchmuster ist, $treffer[1]
-           ein Array von Zeichenketten, die auf das erste eingeklammerte
-           Teilsuchmuster passen und so weiter.
+           Ordnet die Ergebnisse so an, dass <varname>$matches[0]</varname>
+           ein Array von Übereinstimmungen mit dem kompletten Suchmuster ist,
+           <varname>$matches[1]</varname> ein Array von Zeichenketten, die auf
+           das erste eingeklammerte Teilsuchmuster passen und so weiter.
           </para>
           <para>
            <informalexample>
@@ -96,9 +96,10 @@ Beispiel: , das ist ein Test
 ]]>
             </screen>
             <para>
-             Also enthält $ausgabe[0] ein Array von Zeichenketten, die auf das
-             komplette Suchmuster passen und $ausgabe[1] ein Array von
-             Zeichenketten, die sich zwischen Tags befinden.
+             Also enthält <varname>$ausgabe[0]</varname> ein Array von
+             Zeichenketten, die auf das komplette Suchmuster passen und
+             <varname>$ausgabe[1]</varname> ein Array von Zeichenketten, die
+             sich zwischen Tags befinden.
             </para>
            </informalexample>
           </para>
@@ -108,9 +109,10 @@ Beispiel: , das ist ein Test
          <term><constant>PREG_SET_ORDER</constant></term>
          <listitem>
           <para>
-           Ordnet die Ergebnisse so an, dass $treffer[0] ein Array aus dem
-           ersten Satz von Übereinstimmungen ist, $treffer[1] ein Array aus
-           dem zweiten Satz von Übereinstimmungen und so weiter.
+           Ordnet die Ergebnisse so an, dass <varname>$matches[0]</varname>
+           ein Array aus dem ersten Satz von Übereinstimmungen ist,
+           <varname>$matches[1]</varname> ein Array aus dem zweiten Satz von
+           Übereinstimmungen und so weiter.
            <informalexample>
             <programlisting role="php">
 <![CDATA[
@@ -141,11 +143,11 @@ echo $ausgabe[1][0] . ", " . $ausgabe[1][1] . "\n";
            Wenn dieses Flag gesetzt ist, wird mit jeder gefundenen
            Übereinstimmung der dazugehörige Versatz in der Zeichenkette
            zurückgegeben. Beachten Sie, dass dies den Wert von
-           <parameter>matches</parameter> in einem Array dahingehend ändert,
-           dass jedes Element ein Array ist, das aus der übereinstimmenden
-           Zeichenkette als Element <literal>0</literal> und deren Stelle in
-           <parameter>subject</parameter> als Element
-           <literal>1</literal> besteht.
+           <parameter>matches</parameter> in einen Array ändert, in dem jedes
+           Element ein Array ist, das aus der übereinstimmenden Zeichenkette
+           als Element <literal>0</literal> und deren Stelle in
+           <parameter>subject</parameter> als Element <literal>1</literal>
+           besteht.
           </para>
          </listitem>
         </varlistentry>
@@ -163,14 +165,14 @@ echo $ausgabe[1][0] . ", " . $ausgabe[1][1] . "\n";
       <para>
        Normalerweise beginnt die Suche am Anfang der Zeichenkette. Der
        optionale Parameter <parameter>offset</parameter> kann verwendet
-       werden, um eine andere Stelle in Bytes anzugeben, ab der gesucht
-       werden soll.
+       werden, um eine andere Stelle in Bytes anzugeben, ab der gesucht werden
+       soll.
       </para>
       <note>
        <para>
         Die Verwendung von <parameter>offset</parameter> entspricht nicht der
-        Übergabe von <literal>substr($zeichenkette, $versatz)</literal> an Stelle
-        der Zeichenkette an <function>preg_match_all</function>, weil
+        Übergabe von <literal>substr($zeichenkette, $versatz)</literal> an
+        Stelle der Zeichenkette an <function>preg_match_all</function>, weil
         <parameter>pattern</parameter> Angaben wie zum Beispiel
         <emphasis>^</emphasis>, <emphasis>$</emphasis> oder
         <emphasis>(?&lt;=x)</emphasis> enthalten kann. Für Beispiele siehe
@@ -253,8 +255,9 @@ preg_match_all("/(<([\w]+)[^>]*>)(.*?)(<\/\\2>)/", $html, $treffer, PREG_SET_ORD
 foreach ($treffer as $wert) {
   echo "gefunden: " . $wert[0] . "\n";
   echo "Teil 1: " . $wert[1] . "\n";
-  echo "Teil 2: " . $wert[3] . "\n";
-  echo "Teil 3: " . $wert[4] . "\n\n";
+  echo "Teil 2: " . $wert[2] . "\n";
+  echo "Teil 3: " . $wert[3] . "\n";
+  echo "Teil 4: " . $wert[4] . "\n\n";
 }
 ?>
 ]]>
@@ -264,13 +267,15 @@ foreach ($treffer as $wert) {
 <![CDATA[
 gefunden: <b>fett gedruckter Text</b>
 Teil 1: <b>
-Teil 2: fett gedruckter Text
-Teil 3: </b>
+Teil 2: b
+Teil 3: fett gedruckter Text
+Teil 4: </b>
 
 gefunden: <a href=howdy.html>klick mich an</a>
 Teil 1: <a href=howdy.html>
-Teil 2: klick mich an
-Teil 3: </a>
+Teil 2: a
+Teil 3: klick mich an
+Teil 4: </a>
 ]]>
     </screen>
    </example>
@@ -367,7 +372,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
