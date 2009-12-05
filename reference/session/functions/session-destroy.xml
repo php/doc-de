@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 291738 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.session-destroy" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>session_destroy</refname>
@@ -18,7 +18,7 @@
    aktuellen Session stehenden Daten. Mit der Session zusammenhängende globale
    Variablen und das Session-Cookie werden nicht gelöscht. Um wieder
    Session-Variablen verwenden zu können, muss
-   <function>session_start</function> aufgerufen werden. 
+   <function>session_start</function> aufgerufen werden.
   </simpara>
   <para>
    Um die Session komplett zu löschen, z.B. um einen Benutzer auszuloggen,
@@ -55,8 +55,11 @@ $_SESSION = array();
 // Falls die Session gelöscht werden soll, löschen Sie auch das
 // Session-Cookie.
 // Achtung: Damit wird die Session gelöscht, nicht nur die Session-Daten!
-if (isset($_COOKIE[session_name()])) {
-    setcookie(session_name(), '', time()-42000, '/');
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000, $params["path"],
+        $params["domain"], $params["secure"], $params["httponly"]
+    );
 }
 
 // Zum Schluß, löschen der Session.
