@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 291759 Maintainer: samesch Status: ready -->
 <refentry xml:id='function.mssql-execute' xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_execute</refname>
@@ -11,8 +11,8 @@
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>mssql_execute</methodname>
-   <methodparam><type>resource</type><parameter>Anweisungskennung</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>Ergebnisse_überspringen</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>stmt</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>skip_results</parameter><initializer>false</initializer></methodparam>
   </methodsynopsis>
   <para>
    Führt eine Stored Procedure in einer MS SQL-Datenbank aus
@@ -24,22 +24,56 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Anweisungskennung</parameter></term>
+     <term><parameter>stmt</parameter></term>
      <listitem>
       <para>
-       Der mittels <function>mssql_init</function> erhaltene
-       Bezeichner der Anweisung
+       Der mittels <function>mssql_init</function> erhaltene Bezeichner der
+       Anweisung
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Ergebnisse_überspringen</parameter></term>
+     <term><parameter>skip_results</parameter></term>
      <listitem>
       <para>
+       Bestimmt, ob die Ergebnisse übersprungen werden sollen oder nicht.
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_execute</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Eine neue Anweisung erzeugen
+$anweisung = mssql_init('NeuerBlogEintrag');
+
+// Ein paar Daten
+$titel = 'Test des Blogsystems';
+$inhalt = 'Falls Sie das lesen können, ist das neue System mit MSSQL kompatibel';
+
+// Werte anbinden
+mssql_bind($anweisung, '@autor',   'Felipe Pena',  SQLVARCHAR,  false,  false,  60);
+mssql_bind($anweisung, '@datum',   '08/10/2008',   SQLVARCHAR,  false,  false,  20);
+mssql_bind($anweisung, '@titel',   $title,         SQLVARCHAR,  false,  false,  60);
+mssql_bind($anweisung, '@inhalt',  $content,       SQLTEXT);
+
+// Anweisung ausführen
+mssql_execute($anweisung);
+
+// Und so kann der Anweisungsspeicher freigegeben werden:
+mssql_free_statement($anweisung);
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
  </refsect1>
 
@@ -82,7 +116,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil

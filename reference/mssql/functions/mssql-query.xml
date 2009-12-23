@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 291759 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.mssql-query" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_query</refname>
@@ -11,14 +11,14 @@
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>mssql_query</methodname>
-   <methodparam><type>string</type><parameter>Anfrage</parameter></methodparam>
-   <methodparam choice="opt"><type>resource</type><parameter>Verbindungskennung</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>Stapelgröße</parameter></methodparam>
+   <methodparam><type>string</type><parameter>query</parameter></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>batch_size</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>mssql_query</function> sendet eine Anfrage an die gerade aktive
-   Datenbank auf dem Server, die zur angegebenen
-   <parameter>Verbindungskennung</parameter> gehört.
+   Datenbank auf dem Server, die zur angegebenen Verbindungskennung
+   <parameter>link_identifier</parameter> gehört.
   </para>
  </refsect1>
 
@@ -27,7 +27,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Anfrage</parameter></term>
+     <term><parameter>query</parameter></term>
      <listitem>
       <para>
        Eine SQL-Anfrage
@@ -35,7 +35,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Verbindungskennung</parameter></term>
+     <term><parameter>link_identifier</parameter></term>
      <listitem>
       <para>
        Der von <function>mssql_connect</function> oder
@@ -52,7 +52,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Stapelgröße</parameter></term>
+     <term><parameter>batch_size</parameter></term>
      <listitem>
       <para>
        Die Anzahl der Datensätze, die im Puffer abgelegt werden sollen
@@ -68,6 +68,37 @@
   <para>
    Gibt bei Erfolg eine Ergebniskennung zurück, &true;, falls kein Datensatz
    zurückgegeben wurde oder &false; bei Auftreten eines Fehlers.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_query</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Mit MSSQL verbinden
+$verbindung = mssql_connect('KALLESPC\SQLEXPRESS', 'sa', 'phpfi');
+
+if (!$verbindung || !mssql_select_db('php', $verbindung)) {
+    die('Konnte keine Verbindung aufbauen oder keine Datenbank auswählen!');
+}
+
+// Eine einfache Anfrage durchführen, MSSQL-Version
+// auswählen und ausgeben.
+$version = mssql_query('SELECT @@VERSION');
+$datensatz = mssql_fetch_array($version);
+
+echo $datensatz[0];
+
+// Den Ergebnisspeicher freigeben
+mssql_free_result($version);
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
  </refsect1>
 
@@ -106,7 +137,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil

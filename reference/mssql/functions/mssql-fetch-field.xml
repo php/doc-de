@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 291759 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.mssql-fetch-field" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_fetch_field</refname>
@@ -11,8 +11,8 @@
   &reftitle.description;
   <methodsynopsis>
    <type>object</type><methodname>mssql_fetch_field</methodname>
-   <methodparam><type>resource</type><parameter>Ergebniskennung</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>Feld-Offset</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>field_offset</parameter><initializer>-1</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>mssql_fetch_field</function> wird verwendet, um im Ergebnis einer
@@ -25,7 +25,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Ergebniskennung</parameter></term>
+     <term><parameter>result</parameter></term>
      <listitem>
       <para>
        Der Bezeichner des Ergebnisses, das ausgewertet wird. Dieses Ergebnis
@@ -34,12 +34,12 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Feld-Offset</parameter></term>
+     <term><parameter>field_offset</parameter></term>
      <listitem>
       <para>
        Der numerische Feld-Offset. Wurde kein Feld-Offset angegeben, liefert
        diese Funktion das nächste Feld, das noch nicht abgefragt wurde. Der
-       <parameter>Feld-Offset</parameter> beginnt bei Null.
+       <parameter>field_offset</parameter> beginnt bei Null.
       </para>
      </listitem>
     </varlistentry>
@@ -86,6 +86,61 @@
   </itemizedlist>
  </refsect1>
 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_fetch_field</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Mit MSSQL verbinden und Datenbank auswählen
+mssql_connect('MANGO\SQLEXPRESS', 'sa', 'phpfi');
+mssql_select_db('php');
+
+// Eine Select-Anfrage an MSSQL senden
+$anfrage = mssql_query('SELECT * FROM [php].[dbo].[persons]');
+
+// Eine Tabelle bauen
+echo '<h3>Tabellenstruktur für \'persons\'</h3>';
+echo '<table border="1">';
+
+// Tabellenkopf
+echo '<thead>';
+echo '<tr>';
+echo '<td>Feldname</td>';
+echo '<td>Datentyp</td>';
+echo '<td>Max. Länge</td>';
+echo '</tr>';
+echo '</thead>';
+
+// Alle Felder anzeigen
+echo '<tbody>';
+
+for ($i = 0; $i < mssql_num_fields($anfrage); ++$i) {
+    // Feldinformationen abrufen
+    $feld = mssql_fetch_field($anfrage, $i);
+
+    // Eine Zeile ausgeben
+    echo '<tr>';
+    echo '<td>' . $feld->name . '</td>';
+    echo '<td>' . strtoupper($feld->type) . '</td>';
+    echo '<td>' . $feld->max_length . '</td>';
+    echo '</tr>';
+}
+
+echo '</tbody>';
+echo '</table>';
+
+// Den Ergebnisspeicher freigeben
+mssql_free_result($anfrage);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -108,7 +163,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil

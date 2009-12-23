@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 291759 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.mssql-next-result" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_next_result</refname>
@@ -11,7 +11,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>mssql_next_result</methodname>
-   <methodparam><type>resource</type><parameter>Ergebniskennung</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>result_id</parameter></methodparam>
   </methodsynopsis>
   <para>
    Wird mehr als eine SQL-Anweisung an den Server geschickt oder eine Stored
@@ -27,7 +27,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Ergebniskennung</parameter></term>
+     <term><parameter>result_id</parameter></term>
      <listitem>
       <para>
        Der Bezeichner des Ergebnisses, das ausgewertet wird. Dieses Ergebnis
@@ -55,16 +55,24 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$link = mssql_connect("localhost", "benutzer", "geheim");
-mssql_select_db("MyDB", $link);
-$sql = "Select * from table1 select * from table2";
-$rs = mssql_query($sql, $link);
+// Mit MSSQL verbinden und Datenbank auswählen
+$verbindung = mssql_connect('MANGO\SQLEXPRESS', 'sa', 'phpfi');
+mssql_select_db('php', $verbindung);
+
+// Eine Anfrage an MSSQL senden
+$sql = 'SELECT [name], [age] FROM [php].[dbo].[persons]';
+$anfrage = mssql_query($sql, $verbindung);
+
+// Die gefundenen Datensätze durchgehen
 do {
-    while ($row = mssql_fetch_row($rs)) {
+    while ($datensatz = mssql_fetch_row($anfrage)) {
+        // Datensatz verarbeiten ...
     }
-} while (mssql_next_result($rs));
-mssql_free_result($rs);
-mssql_close($link);
+} while (mssql_next_result($anfrage));
+
+// Aufräumen
+mssql_free_result($anfrage);
+mssql_close($verbindung);
 ?>
 ]]>
     </programlisting>
@@ -85,7 +93,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil

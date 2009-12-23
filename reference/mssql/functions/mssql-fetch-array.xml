@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 291759 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.mssql-fetch-array" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_fetch_array</refname>
@@ -11,8 +11,8 @@
   &reftitle.description;
   <methodsynopsis>
    <type>array</type><methodname>mssql_fetch_array</methodname>
-   <methodparam><type>resource</type><parameter>Ergebniskennung</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>Ergebnistyp</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>result_type</parameter><initializer>MSSQL_BOTH</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>mssql_fetch_array</function> ist die erweiterte Version von
@@ -33,7 +33,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Ergebniskennung</parameter></term>
+     <term><parameter>result</parameter></term>
      <listitem>
       <para>
        Der Bezeichner des Ergebnisses, das ausgewertet wird. Dieses Ergebnis
@@ -42,13 +42,13 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Ergebnistyp</parameter></term>
+     <term><parameter>result_type</parameter></term>
      <listitem>
       <para>
        Der Typ des Arrays, das abgerufen werden soll. Er ist eine Konstante,
        der die folgenden Werte annehmen kann:
        <constant>MSSQL_ASSOC</constant>, <constant>MSSQL_NUM</constant> und
-       den Standardwert <constant>MSSQL_BOTH</constant>.
+       <constant>MSSQL_BOTH</constant>.
       </para>
      </listitem>
     </varlistentry>
@@ -61,6 +61,39 @@
   <para>
    Gibt ein Array mit dem gelieferten Datensatz zurück oder &false;, wenn es
    keinen weiteren Datensatz gibt.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_fetch_array</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Eine Select-Anfrage an MSSQL senden
+$anfrage = mssql_query('SELECT [username], [name] FROM [php].[dbo].[userlist]');
+
+// Überprüfen, ob es Datensätze gab
+if (!mssql_num_rows($anfrage)) {
+    echo 'Keine Datensätze gefunden';
+} else {
+    // Folgendes ist mit dem Code darunter identisch:
+    //
+    // while ($datensatz = mssql_fetch_row($anfrage))
+
+    while ($datensatz = mssql_fetch_array($anfrage, MSSQL_NUM)) {
+        // ...
+    }
+}
+
+// Den Ergebnisspeicher freigeben
+mssql_free_result($anfrage);
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
  </refsect1>
 
@@ -92,7 +125,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil

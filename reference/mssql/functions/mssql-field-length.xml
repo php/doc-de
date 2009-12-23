@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 292371 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.mssql-field-length" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_field_length</refname>
@@ -11,12 +11,12 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>mssql_field_length</methodname>
-   <methodparam><type>resource</type><parameter>Ergebniskennung</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>Feld-Offset</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>offset</parameter><initializer>-1</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Gibt die Länge des Feldes Nr. <parameter>Feld-Offset</parameter> aus
-   <parameter>Ergebniskennung</parameter> zurück.
+   Gibt die Länge des Feldes Nr. <parameter>offset</parameter> aus
+   <parameter>result</parameter> zurück.
   </para>
  </refsect1>
 
@@ -25,7 +25,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Ergebniskennung</parameter></term>
+     <term><parameter>result</parameter></term>
      <listitem>
       <para>
        Der Bezeichner des Ergebnisses, das ausgewertet wird. Dieses Ergebnis
@@ -34,7 +34,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Feld-Offset</parameter></term>
+     <term><parameter>offset</parameter></term>
      <listitem>
       <para>
        Der Offset des Feldes, beginnend bei 0. Falls er nicht angegeben wurde,
@@ -49,20 +49,53 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die Länge des angegebenen Feldes zurück oder &false;, falls ein Fehler
-   auftrat.
+   Gibt die Länge des angegebenen Feldes zurück. &return.falseforfailure;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_field_length</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Mit MSSQL verbinden und Datenbank auswählen
+mssql_connect('MANGO\SQLEXPRESS', 'sa', 'phpfi');
+mssql_select_db('php');
+
+// Eine select-Anfrage an MSSQL senden
+$anfrage = mssql_query('SELECT [name], [age] FROM [php].[dbo].[persons]');
+
+// Feldlänge ausgeben
+echo 'Das Feld \'age\' hat die Datenlänge ' .
+      mssql_field_length($anfrage, 1);
+
+// Den Ergebnisspeicher freigeben
+mssql_free_result($anfrage);
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Das Feld 'age' hat die Datenlänge 4
+]]>
+    </screen>
+   </example>
   </para>
  </refsect1>
 
  <refsect1 role="notes">
   &reftitle.notes;
   <note>
-  <title>Anmerkung für Win32-Benutzer</title>
+  <title>Anmerkung für Windows-Benutzer</title>
    <para>
     Wegen einer Einschränkung des von PHP verwendeten zugrundeliegenden API
-    (MS DbLib C API) ist die Länge von VARCHAR-Feldern auf
-    <emphasis>255</emphasis> begrenzt. Verwenden Sie stattdesssen ein
-    TEXT-Feld, wenn Sie mehr Daten speichern wollen.
+    (MS DBLib C API) ist die Länge von <literal>VARCHAR</literal>-Feldern auf
+    <emphasis>255</emphasis> begrenzt. Verwenden Sie stattdessen ein
+    <literal>TEXT</literal>-Feld, wenn Sie mehr Daten speichern wollen.
    </para>
   </note>
  </refsect1>
@@ -90,7 +123,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil

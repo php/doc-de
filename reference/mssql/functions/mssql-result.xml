@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 292374 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.mssql-result" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mssql_result</refname>
@@ -11,9 +11,9 @@
   &reftitle.description;
   <methodsynopsis>
    <type>string</type><methodname>mssql_result</methodname>
-   <methodparam><type>resource</type><parameter>Ergebniskennung</parameter></methodparam>
-   <methodparam><type>int</type><parameter>Datensatz</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>Feld</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam><type>int</type><parameter>row</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>field</parameter></methodparam>
   </methodsynopsis>
   <para>
    <function>mssql_result</function> gibt den Inhalt einer Zelle des
@@ -26,7 +26,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Ergebniskennung</parameter></term>
+     <term><parameter>result</parameter></term>
      <listitem>
       <para>
        Der Bezeichner des Ergebnisses, das ausgewertet wird. Dieses Ergebnis
@@ -35,7 +35,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Datensatz</parameter></term>
+     <term><parameter>row</parameter></term>
      <listitem>
       <para>
        Die Nummer des Datensatzes
@@ -43,7 +43,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>Feld</parameter></term>
+     <term><parameter>field</parameter></term>
      <listitem>
       <para>
        Kann der Feld-Offset, der Feldname oder vom Format
@@ -53,7 +53,7 @@
       <note>
        <para>
         Die Angabe eines numerischen Offsets als Argument
-        <parameter>Feld</parameter> ist viel schneller, als die Angabe von
+        <parameter>field</parameter> ist viel schneller, als die Angabe von
         <literal>Feldname</literal> oder des Arguments
         <literal>tabellenname.feldname</literal>.
        </para>
@@ -68,6 +68,69 @@
   &reftitle.returnvalues;
   <para>
    Gibt den Inhalt der angegebenen Zelle zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mssql_result</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Eine select-Anfrage an MSSQL senden
+$anfrage = mssql_query('SELECT [username] FROM [php].[dbo].[userlist]');
+
+// Prüfen, ob Datensätze gefunden wurden
+if (!mssql_num_rows($anfrage)) {
+    echo 'Keine Datensätze gefunden';
+} else {
+    for ($i = 0; $i < mssql_num_rows($anfrage); ++$i) {
+        echo mssql_result($anfrage, $i, 'username'), PHP_EOL;
+    }
+}
+
+// Den Ergebnisspeicher freigeben
+mssql_free_result($anfrage);
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Kalle
+Felipe
+Emil
+Ross
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Die schnellere Alternative zu obigem Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Eine select-Anfrage an MSSQL senden
+$anfrage = mssql_query('SELECT [username] FROM [php].[dbo].[userlist]');
+
+// Prüfen, ob Datensätze gefunden wurden
+if (!mssql_num_rows($anfrage)) {
+    echo 'Keine Datensätze gefunden';
+} else {
+    while ($datensatz = mssql_fetch_array($anfrage)) {
+        echo $datensatz['username'], PHP_EOL;
+    }
+}
+
+// Den Ergebnisspeicher freigeben
+mssql_free_result($anfrage);
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
  </refsect1>
 
@@ -91,6 +154,7 @@
    <simplelist>
     <member><function>mssql_fetch_row</function></member>
     <member><function>mssql_fetch_array</function></member>
+    <member><function>mssql_fetch_assoc</function></member>
     <member><function>mssql_fetch_object</function></member>
    </simplelist>
   </para>
@@ -109,7 +173,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
