@@ -1,255 +1,53 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
+<?xml version="1.0" encoding="utf8"?>
+<!-- EN-Revision: 288721 Maintainer: wiesemann Status: ready -->
 <!-- $Revision$ -->
 <!-- Purpose: basic.vartype -->
-<!-- Membership: pecl -->
 
 <book xml:id="book.filter" xmlns="http://docbook.org/ns/docbook">
- <title>Filter &Functions;</title>
+ <title>Datenfilterung</title>
  <titleabbrev>Filter</titleabbrev>
 
-  <preface xml:id="intro.filter">
-   &reftitle.intro;
-   <para>
-    Diese Erweiterung validiert und filtert Daten die normalerweise aus
-    unsicheren Quellen, wie z.B. Benutzereingaben, kommen.
-   </para>
-   <para>
-    Die folgenden Filter sind aktuell verfügbar. Lesen Sie den Abschnitt
-    <link linkend="filter.constants">Filter-Konstanten</link>, der das
-    Verhalten der einzelnen Konstanten beschreibt:
-    <table>
-     <title>Verfügbare Filter</title>
-     <tgroup cols="5">
-      <thead>
-       <row>
-        <entry>ID</entry>
-        <entry>Name</entry>
-        <entry>OptionEN</entry>
-        <entry>Flags</entry>
-        <entry>Beschreibung</entry>
-       </row>
-      </thead>
-      <tbody>
-       <row>
-        <entry><constant>FILTER_VALIDATE_INT</constant></entry>
-        <entry>"int"</entry>
-        <entry>
-         <parameter>min_range</parameter>,
-         <parameter>max_range</parameter>
-        </entry>
-        <entry>
-         <constant>FILTER_FLAG_ALLOW_OCTAL</constant>,
-         <constant>FILTER_FLAG_ALLOW_HEX</constant>
-        </entry>
-        <entry>Validiert Werte als integer, optional ist der Wertebereich einschränkbar.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_VALIDATE_BOOLEAN</constant></entry>
-        <entry>"boolean"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_NULL_ON_FAILURE</constant>
-        </entry>
-        <entry>
-         <para>
-          Gibt &true; für "1", "true", "on" und "yes",
-          &false; für "0", "false", "off", "no" und ""
-          und &null; für sonstiges zurück.
-         </para>
-         <para>
-          Wenn <constant>FILTER_NULL_ON_FAILURE</constant> gesetzt ist, wird &false; 
-          nur zurückgegeben für "0", "false", "off", "no", und "". Für alle Werte die
-          nicht vom Typ Boolean sind wird &null; zurückgegeben.
-         </para>
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_VALIDATE_FLOAT</constant></entry>
-        <entry>"float"</entry>
-        <entry>
-         <parameter>decimal</parameter>
-        </entry>
-        <entry>
-         <constant>FILTER_FLAG_ALLOW_THOUSAND</constant>
-        </entry>
-        <entry>Validiert Werte als float.</entry>
-       </row>
-
-       <row>
-        <entry><constant>FILTER_VALIDATE_REGEXP</constant></entry>
-        <entry>"validate_regexp"</entry>
-        <entry>
-         <parameter>regexp</parameter>
-        </entry>
-        <entry></entry>
-        <entry>
-         Validiert Werte gegen <parameter>regexp</parameter>, einen
-         <link linkend="ref.pcre">Perl kompatiblen</link> Regulären Ausdruck.
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_VALIDATE_URL</constant></entry>
-        <entry>"validate_url"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_PATH_REQUIRED</constant>,
-         <constant>FILTER_FLAG_QUERY_REQUIRED</constant>
-        </entry>
-        <entry>Validiert Werte als URL, optional einschränkbar auf benötigte URL-Komponenten.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_VALIDATE_EMAIL</constant></entry>
-        <entry>"validate_email"</entry>
-        <entry></entry>
-        <entry></entry>
-        <entry>Validiert Werte als E-Mail.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_VALIDATE_IP</constant></entry>
-        <entry>"validate_ip"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_IPV4</constant>,
-         <constant>FILTER_FLAG_IPV6</constant>,
-         <constant>FILTER_FLAG_NO_PRIV_RANGE</constant>,
-         <constant>FILTER_FLAG_NO_RES_RANGE</constant>
-        </entry>
-        <entry>
-         Validiert Werte als IP-Adresse, optional einschränkbar auf nur IPv4 oder 
-         IPv6 oder keine privaten oder reservierten Bereiche.
-        </entry>
-       </row>
-
-       <row>
-        <entry><constant>FILTER_SANITIZE_STRING</constant></entry>
-        <entry>"string"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_NO_ENCODE_QUOTES</constant>,
-         <constant>FILTER_FLAG_STRIP_LOW</constant>,
-         <constant>FILTER_FLAG_STRIP_HIGH</constant>,
-         <constant>FILTER_FLAG_ENCODE_LOW</constant>,
-         <constant>FILTER_FLAG_ENCODE_HIGH</constant>,
-         <constant>FILTER_FLAG_ENCODE_AMP</constant>
-        </entry>
-        <entry>Tags entfernen, optional können auch Sonderzeichen entfernt oder kodiert werden.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_STRIPPED</constant></entry>
-        <entry>"stripped"</entry>
-        <entry></entry>
-        <entry></entry>
-        <entry>Alias für "string"-Filter.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_ENCODED</constant></entry>
-        <entry>"encoded"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_STRIP_LOW</constant>,
-         <constant>FILTER_FLAG_STRIP_HIGH</constant>,
-         <constant>FILTER_FLAG_ENCODE_LOW</constant>,
-         <constant>FILTER_FLAG_ENCODE_HIGH</constant>
-        </entry>
-        <entry>URL-kodierte Zeichenkette, optional können auch Sonderzeichen entfernt oder kodiert werden.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_SPECIAL_CHARS</constant></entry>
-        <entry>"special_chars"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_STRIP_LOW</constant>,
-         <constant>FILTER_FLAG_STRIP_HIGH</constant>,
-         <constant>FILTER_FLAG_ENCODE_HIGH</constant>
-        </entry>
-        <entry>
-         HTML-kodieren von <literal>'"&lt;&gt;&amp;</literal> und Zeichen
-         mit einem ASCII-Wert kleiner 32, optional können andere Sonderzeichen 
-         entfernt oder kodiert werden.
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_UNSAFE_RAW</constant></entry>
-        <entry>"unsafe_raw"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_STRIP_LOW</constant>,
-         <constant>FILTER_FLAG_STRIP_HIGH</constant>,
-         <constant>FILTER_FLAG_ENCODE_LOW</constant>,
-         <constant>FILTER_FLAG_ENCODE_HIGH</constant>,
-         <constant>FILTER_FLAG_ENCODE_AMP</constant>
-        </entry>
-        <entry>Keine Tätigkeit, optional können auch Sonderzeichen entfernt oder kodiert werden.</entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_EMAIL</constant></entry>
-        <entry>"email"</entry>
-        <entry></entry>
-        <entry></entry>
-        <entry>
-         Alle Zeichen außer Buchstaben, Zahlen und
-         <literal>!#$%&amp;'*+-/=?^_`{|}~@.[]</literal> entfernen.
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_URL</constant></entry>
-        <entry>"url"</entry>
-        <entry></entry>
-        <entry></entry>
-        <entry>
-         Alle Zeichen außer Buchstaben, Zahlen und
-         <literal>$-_.+!*'(),{}|\\^~[]`&lt;&gt;#%";/?:@&amp;=</literal>
-         entfernen.
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_NUMBER_INT</constant></entry>
-        <entry>"number_int"</entry>
-        <entry></entry>
-        <entry></entry>
-        <entry>
-         Alle Zeichen außer Buchstaben, Zahlen, Plus- und Minuszeichen 
-         entfernen.
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_NUMBER_FLOAT</constant></entry>
-        <entry>"number_float"</entry>
-        <entry></entry>
-        <entry>
-         <constant>FILTER_FLAG_ALLOW_FRACTION</constant>,
-         <constant>FILTER_FLAG_ALLOW_THOUSAND</constant>,
-         <constant>FILTER_FLAG_ALLOW_SCIENTIFIC</constant>
-        </entry>
-        <entry>
-         Alle Zeichen außer Buchstaben, Zahlen, <literal>+-</literal> und
-         optional <literal>.,eE</literal> entfernen.
-        </entry>
-       </row>
-       <row>
-        <entry><constant>FILTER_SANITIZE_MAGIC_QUOTES</constant></entry>
-        <entry>"magic_quotes"</entry>
-        <entry></entry>
-        <entry></entry>
-        <entry><function>addslashes</function> anwenden.</entry>
-       </row>
-
-       <row>
-        <entry><constant>FILTER_CALLBACK</constant></entry>
-        <entry>"callback"</entry>
-        <entry><type>callback</type> function or method</entry>
-        <entry></entry>
-        <entry>Benutzerdefinierte Funktion auf Filterdaten anwenden.</entry>
-       </row>
-      </tbody>
-     </tgroup>
-    </table>
-   </para>
-  </preface>
+ <preface xml:id="intro.filter">
+  &reftitle.intro;
+  <para>
+   Diese Erweiterung filtert Daten, indem sie sie entweder validiert oder
+   sÃ¤ubert. Dies ist besonders nÃ¼tzlich, wenn die Datenquelle ubekannte
+   (oder fremde) Daten enthÃ¤lt, wie eine Eingabe vom Nutzer. Zum Beispiel
+   kÃ¶nnen diese Daten aus einem HTML-Formular stammen.
+  </para>
+  <para>
+   Es gibt zwei Haupttypen der Filterung:
+   <emphasis>Validierung</emphasis> und <emphasis>SÃ¤uberung</emphasis>.
+  </para>
+  <para>
+   <link linkend="filter.filters.validate">Validierung</link> wird genutzt,
+   um zu prÃ¼fen, ob die Daten gewisse Bedingungen erfÃ¼llen. Zum Beispiel
+   fÃ¼hrt die Angabe von <constant>FILTER_VALIDATE_EMAIL</constant> dazu,
+   dass entschieden wird, ob die Daten eine gÃ¼ltige E-Mail-Adresse bilden,
+   aber es wird keine Ã„nderung an den Daten selbst vorgenommen.
+  </para>
+  <para>
+   <link linkend="filter.filters.sanitize">SÃ¤uberung</link> wird die Daten
+   sÃ¤ubern, indem es sie so verÃ¤ndert, dass unerwÃ¼nschte Zeichen entfernt
+   werden. Zum Beispiel fÃ¼hrt die Angabe von
+   <constant>FILTER_SANITIZE_EMAIL</constant> will dazu, dass Zeichen entfernt
+   werden, die nicht in einer E-Mail-Adresse enthalten sein sollten. Das bedeutet,
+   dass die Daten nicht validiert werden.
+  </para>
+  <para>
+   <emphasis>Flags</emphasis> werden optional sowohl bei der Validierung
+   als auch bei der SÃ¤uberung genutzt, um das Verhalten an Ihre Anforderungen
+   anzupassen, Zum Beispiel fÃ¼hrt die Angabe von
+   <constant>FILTER_FLAG_SCHEME_REQUIRED</constant> bei der Filterung eines
+   <acronym>URL</acronym> dazu, dass ein Schema (wie http://) erzwungen
+   wird.
+  </para>
+ </preface>
 
  &reference.filter.setup;
+ &reference.filter.filters;
  &reference.filter.constants;
+ &reference.filter.examples;
  &reference.filter.reference;
 
 </book>
@@ -265,7 +63,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
@@ -274,3 +72,4 @@ vim600: syn=xml fen fdm=syntax fdl=2 si
 vim: et tw=78 syn=sgml
 vi: ts=1 sw=1
 -->
+
