@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 297638 Maintainer: simp Status: ready -->
+ <sect1 xml:id="language.oop5.overloading" xmlns="http://docbook.org/ns/docbook">
+  <title>Überladung</title>
+
+  <para>
+   Überladung bietet in PHP Möglichkeiten, um dynamisch
+   Eigenschaften und Methoden zu <quote>erzeugen</quote>.
+   Diese Dynamisch erzeugten Entitäten werden unter
+   Zuhilfenahme von magischen Methoden verarbeitet,
+   die man in einer Klasse zu verschiedenen Aktivitäten
+   definieren kann.
+  </para>
+
+  <para>
+   Die Überladungsmethoden werden aufgerufen, wenn mit
+   Eigenschaften oder Methoden interagiert wird, die entweder
+   nicht deklariert wurden oder im aktuellen Geltungsbereich
+   nicht <link linkend="language.oop5.visibility">sichtbar</link>
+   sind. Im Rest dieses Abschnitts werden die Begriffe
+   <quote>unzugreifbare Eigenschaft</quote> und
+   <quote>unzugreifbare Methode</quote> verwendet, um auf die
+   Kombination von Deklaration und Sichtbarkeit zu verweisen.
+  </para>
+
+  <para>
+   Alle Überladungsmethoden müssen als <literal>public</literal>
+   definiert sein.
+  </para>
+
+  <note>
+   <para>
+    Keiner der Parameter dieser magischen Methoden kann
+    <link linkend="functions.arguments.by-reference">als
+    Referenz</link> übergeben werden.
+   </para>
+  </note>
+
+  <note>
+   <para>
+    Die Interpretation von <quote>Überladung</quote> weicht
+    von den meisten objektorientierten Programmiersprachen
+    ab. Traditionell bezeichnet Überladung die Möglichkeit
+    mehrere Methoden mit gleichem Namen aber unterschiedlichen
+    Anzahlen und Typen von Parametern zu definieren.
+   </para>
+  </note>
+
+
+  <sect2 xml:id="language.oop5.overloading.changelog">
+   &reftitle.changelog;
+   <para>
+    <informaltable>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>&Version;</entry>
+        <entry>&Description;</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>5.3.0</entry>
+        <entry>
+         <function>__callStatic</function> hinzugefügt.
+         Eine Warnung wurde hinzugefügt, um die Sichtbakeit
+         public und nicht statische Deklaration zu erzwingen.
+        </entry>
+       </row>
+       <row>
+        <entry>5.1.0</entry>
+        <entry>
+         <function>__isset</function> und 
+         <function>__unset</function> hinzugefügt.
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </para>
+  </sect2>
+
+
+  <sect2 xml:id="language.oop5.overloading.members">
+   <title>Überladung von Eigenschaften</title>
+
+   <methodsynopsis>
+    <type>void</type><methodname>__set</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+    <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
+   </methodsynopsis>
+   <methodsynopsis>
+    <type>mixed</type><methodname>__get</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   </methodsynopsis>
+   <methodsynopsis>
+    <type>bool</type><methodname>__isset</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   </methodsynopsis>
+   <methodsynopsis>
+    <type>void</type><methodname>__unset</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   </methodsynopsis>
+
+   <para>
+    <function>__set</function> wird aufgerufen, wenn Daten in unzugreifbare
+    Eigenschaften geschrieben werden sollen.
+   </para>
+
+   <para>
+    <function>__get</function> wird verwendet, um Daten aus unzugreifbaren
+    Eigenschaften zu lesen.
+   </para>
+
+   <para>
+    <function>__isset</function> wird aufgerufen, indem 
+    <function>isset</function> oder <function>empty</function>
+    auf unzugreifbare Eigenschaften angewendet wird.
+   </para>
+
+   <para>
+    <function>__unset</function> wird aufgerufen, wenn
+    <function>unset</function> für unzugreifbaren Eigenschaften 
+    aufgerufen wird.
+   </para>
+
+   <para>
+    Der Parameter <varname>$name</varname> beinhaltet den Namen
+    der Eigenschaft, mit der interagiert wird. Der Parameter
+    <varname>$value</varname> der Funktion <function>__set</function>
+    spezifiziert den Wert den die Eigenschaft <varname>$name</varname>
+    annehmen soll.
+   </para>
+
+   <para>
+    Überladung von Eigenschaften funktioniert nur im Kontext von
+    Objekten. Diese magischen Methoden werden nicht aus einem
+    statischen Kontext aufgerufen. Diese Methoden sollten daher
+    nicht als <link linkend="language.oop5.static">static</link>
+    deklariert werden. Seit PHP 5.3.0 wird eine Warnung ausgegeben,
+    wemm eine dieser magischen Überladungsmethoden als
+    <literal>static</literal> deklariert ist.
+   </para>
+
+   <note>
+    <para>
+     Der Rückgabewert von <function>__set</function> wird, aufgrund
+     der Behandlung des Zuweisungsoperators in PHP, ignoriert.
+     Aus ähnlichen Gründen wird <function>__get</function> nicht
+     aufgerufen, wenn man Zuweisungen in etwa wie folgt verkettet:
+     <literal><![CDATA[ $a = $obj->b = 8; ]]></literal>
+    </para>
+   </note>
+
+   <example>
+    <title>
+     Überladung von Eigenschaften mit den Methoden 
+     <function>__get</function>, <function>__set</function>, 
+     <function>__isset</function> und <function>__unset</function>
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class EigenschaftTest {
+    /**  Speicherplatz für überladene Daten.  */
+    private $data = array();
+
+    /**  Überladung wird nicht bei deklarierten Eigenschaften benutzt.  */
+    public $declared = 1;
+
+    /**  Überladung wird nur von außerhalb der Klasse angewendet.  */
+    private $hidden = 2;
+
+    public function __set($name, $value) {
+        echo "Setze '$name' auf '$value'\n";
+        $this->data[$name] = $value;
+    }
+
+    public function __get($name) {
+        echo "Lese '$name'\n";
+        if (array_key_exists($name, $this->data)) {
+            return $this->data[$name];
+        }
+
+        $trace = debug_backtrace();
+        trigger_error(
+            'Undefinierte Eigenschaft für __get(): ' . $name .
+            ' in ' . $trace[0]['file'] .
+            ' Zeile ' . $trace[0]['line'],
+            E_USER_NOTICE);
+        return null;
+    }
+
+    /** Seit PHP 5.1.0  */
+    public function __isset($name) {
+        echo "Ist '$name' gesetzt?\n";
+        return isset($this->data[$name]);
+    }
+
+    /** Seit PHP 5.1.0  */
+    public function __unset($name) {
+        echo "Lösche '$name'\n";
+        unset($this->data[$name]);
+    }
+
+    /**  Keine magische Methode, nur beispielhaft hier.  */
+    public function getHidden() {
+        return $this->hidden;
+    }
+}
+
+
+echo "<pre>\n";
+
+$obj = new EigenschaftTest;
+
+$obj->a = 1;
+echo $obj->a . "\n\n";
+
+var_dump(isset($obj->a));
+unset($obj->a);
+var_dump(isset($obj->a));
+echo "\n";
+
+echo $obj->declared . "\n\n";
+
+echo "Wir experimentieren nun mit der private Eigenschaft 'hidden':\n";
+echo "Private ist innerhalb der Klasse sichtbar, also wird __get() nicht benutzt...\n";
+echo $obj->getHidden() . "\n";
+echo "Private nicht sichtbar von außerhaln der Klasse, also wird __get() benutzt...\n";
+echo $obj->hidden . "\n";
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+Setze 'a' auf '1'
+Lese 'a'
+1
+
+Ist 'a' gesetzt?
+bool(true)
+Lösche 'a'
+Ist 'a' gesetzt?
+bool(false)
+
+1
+
+Wir experimentieren nun mit der private Eigenschaft 'hidden':
+Private ist innerhalb der Klasse sichtbar, also wird __get() nicht benutzt...
+2
+Private nicht sichtbar von außerhaln der Klasse, also wird __get() benutzt...
+Lese 'hidden'
+
+
+Notice:  Undefinierte Eigenschaft für __get(): hidden in <file> Zeile 70 in <file> on line 29
+]]>
+    </screen>
+
+   </example>
+  </sect2>
+
+  <sect2 xml:id="language.oop5.overloading.methods">
+   <title>Überladung von Methoden</title>
+
+   <methodsynopsis>
+    <type>mixed</type><methodname>__call</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+    <methodparam><type>array</type><parameter>arguments</parameter></methodparam>
+   </methodsynopsis>
+   <methodsynopsis>
+    <type>mixed</type><methodname>__callStatic</methodname>
+    <methodparam><type>string</type><parameter>name</parameter></methodparam>
+    <methodparam><type>array</type><parameter>arguments</parameter></methodparam>
+   </methodsynopsis>
+
+   <para>
+    <function>__call</function> wird aufgerufen, wenn eine unzugreifbare
+    Methode in einem Objekt aufgerufen wird.
+   </para>
+
+   <para>
+    <function>__callStatic</function> wird aufgerufen, wenn eine
+    unzugreifbare Methode in einem statischen Kontext aufgerufen wird.
+   </para>
+
+   <para>
+    Der Parameter <varname>$name</varname> ist der Name der aufgerufenen
+    Methode. Der Parameter <varname>$arguments</varname> beinhaltet ein
+    Array mit den Parametern, die der Methode <varname>$name</varname>
+    übergeben wurden.
+   </para>
+
+   <example>
+    <title>
+     Überladung von Methoden mit den methoden <function>__call</function>
+     und <function>__callStatic</function>
+    </title>
+    <programlisting role="php">
+  <![CDATA[
+<?php
+class MethodenTest {
+    public function __call($name, $arguments) {
+        // Achtung: Der Wert von $name beachtet die Groß-/Kleinschreibung
+        echo "Rufe die Objektmethode '$name' "
+             . implode(', ', $arguments). "\n";
+    }
+
+    /**  Seit PHP 5.3.0  */
+    public static function __callStatic($name, $arguments) {
+        // NAchtung: Der Wert von $name beachtet die Groß-/Kleinschreibung
+        echo "Rufe die statische Methode '$name' "
+             . implode(', ', $arguments). "\n";
+    }
+}
+
+$obj = new MethodenTest;
+$obj->runTest('eines Objektes auf');
+
+MethodTest::runTest('aus statischem Kontext auf');  // Seit PHP 5.3.0
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+Rufe die Objektmethode 'runTest' eines Objektes auf
+Rufe die statische Methode 'runTest' aus statischem Kontext auf
+]]>
+    </screen>
+   </example>
+
+  </sect2>
+
+ </sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
