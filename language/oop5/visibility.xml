@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 300372 Maintainer: wiesemann Status: ready -->
  <sect1 xml:id="language.oop5.visibility" xmlns="http://docbook.org/ns/docbook">
   <title>Sichtbarkeit</title>
   <para>
@@ -12,6 +12,7 @@
    (sowie die Klasse, die das Element definiert). Private grenzt die Sichtbarkeit
    einzig auf die Klasse ein, die das Element definiert.
   </para>
+
   <sect2 xml:id="language.oop5.visiblity-members">
    <title>Sichtbarkeit von Membern</title>
    <para>
@@ -87,6 +88,7 @@ $obj2->printHello(); // Zeigt Public, Protected2, Undefined
     </simpara>
    </note>
   </sect2>
+
   <sect2 xml:id="language.oop5.visiblity-methods">
    <title>Sichtbarkeit von Methoden</title>
    <para>
@@ -186,8 +188,62 @@ $myFoo->test(); // Bar::testPrivate
     </example>
    </para>
   </sect2>
+
+  <sect2 xml:id="language.oop5.visibility-other-objects">
+   <title>Sichtbarkeit von anderen Objekten</title>
+   <para>
+    Objekte des gleichen Types haben untereinander Zugriff auf die als private
+    und protected markierten Member, obwohl es sich nicht um die
+    gleichen Instanzen handelt. Dies liegt daran, dass die Details über die
+    Implementierung innerhalb solcher Objekte bekannt sind.
+   </para>
+   <example>
+    <title>Zugriff auf als private markierte Member des gleichen Objekttyps</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Test
+{
+    private $foo;
+
+    public function __construct($foo)
+    {
+        $this->foo = $foo;
+    }
+
+    private function bar()
+    {
+        echo 'Zugriff auf die private Methode';
+    }
+
+    public function baz(Test $other)
+    {
+        // Ändern der privaten Eigenschaft ist möglich:
+        $other->foo = 'Hallo';
+        var_dump($other->foo);
+
+        // Aufruf der privaten Methode ist ebenfalls möglich:
+        $other->bar();
+    }
+}
+
+$test = new Test('test');
+
+$test->baz(new Test('other'));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+string(5) "Hallo"
+Zugriff auf die private Methode
++]]>
+    </screen>
+   </example>
+  </sect2>
  </sect1>
- 
+
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
