@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: 294527 Maintainer: jaenecke Status: ready -->
 
 <chapter xml:id="image.examples" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  &reftitle.examples;
@@ -25,15 +25,106 @@ imagedestroy($im);
 ]]>
     </programlisting>
    </example>
-   Dieses Beispiel würde von einer Seite über einen Link wie
-   &lt;img src=&quot;button.php?text=text&quot;&gt; aufgerufen.
-   Das oben aufgezeigte Beispielskript button.php nimmt den Text &quot;text&quot;
-   entgegen und legt diesen über ein vorhandenes Bild, in diesem Fall
-   &quot;images/button1.png&quot; und gibt die resultierende Grafik aus.
+   Dieses Beispiel würde von einer Seite über einen Link wie <literal>&lt;img 
+   src=&quot;button.php?text=text&quot;&gt;</literal> aufgerufen.
+   Das oben aufgezeigte Beispielskript <filename>button.php</filename> nimmt den 
+   Text <literal>&quot;text&quot;</literal> entgegen und legt diesen über ein 
+   vorhandenes Bild, in diesem Fall <literal>&quot;images/button1.png&quot;</literal> 
+   und gibt die resultierende Grafik aus.
    Diese Vorgehensweise ist sehr zweckmäßig, wenn Sie vermeiden wollen, dass
    Sie immer wieder neue Button-Grafiken erstellen müssen, falls Sie die
    Beschriftung eines Buttons ändern wollen. Mit der vorgestellten Methode
    werden Ihre Buttons, samt Beschriftung, dynamisch generiert.
+  </para>
+ </section>
+ <section xml:id="image.examples-watermark">
+  <para>
+   <example>
+    <title>Wasserzeichen mit Hilfe von Alpha-Kanälen zufügen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Wasserzeichen und Foto laden
+$stamp = imagecreatefrompng('stamp.png');
+$im = imagecreatefromjpeg('photo.jpeg');
+
+// Ränder für Wasserzeichen festlegen, dessen Höhe und Breite bestimmen 
+$marge_right = 10;
+$marge_bottom = 10;
+$sx = imagesx($stamp);
+$sy = imagesy($stamp);
+ 
+// Wasserzeichen auf das Foto kopieren, die Position berechnet sich dabei aus
+// den Rändern und der Bildbreite
+imagecopy($im, $stamp, imagesx($im) - $sx - $marge_right, imagesy($im) - $sy - $marge_bottom, 0, 0, imagesx($stamp), imagesy($stamp));
+
+// Ausgeben und aufräumen
+header('Content-type: image/png');
+imagepng($im);
+imagedestroy($im);
+?>
+]]>
+    </programlisting>
+    <mediaobject>
+     <alt>Wasserzeichen mit Hilfe von Alpha-Kanälen zufügen</alt>
+     <imageobject>
+      <imagedata fileref="en/reference/image/figures/watermarks.png" />
+     </imageobject>
+    </mediaobject>
+   </example>
+   Dieses Beispiel zeigt eine übliche Vorgehensweise um ein Wasserzeichen auf
+   Fotos oder urheberrechtlich geschützten Bildern anzubringen. Beachten Sie, daß
+   die Wasserzeichen-Grafik einen Alphakanal enthält. Dieser wird beim Kopiervorgang
+   beibehalten.
+  </para>
+ </section>
+ <section xml:id="image.examples.merged-watermark">
+  <para>
+   <example>
+    <title>Erstellen eines transparenten Wasserzeichens mit <function>imagecopymerge</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Foto laden
+$im = imagecreatefromjpeg('photo.jpeg');
+
+// wir erstellen ein Wasserzeichen mit GD
+$stamp = imagecreatetruecolor(100, 70);
+imagefilledrectangle($stamp, 0, 0, 99, 69, 0x0000FF);
+imagefilledrectangle($stamp, 9, 9, 90, 60, 0xFFFFFF);
+$im = imagecreatefromjpeg('photo.jpeg');
+imagestring($stamp, 5, 20, 20, 'libGD', 0x0000FF);
+imagestring($stamp, 3, 20, 40, '(c) 2007-9', 0x0000FF);
+
+// Ränder setzen, Dimensionen ermitteln
+$marge_right = 10;
+$marge_bottom = 10;
+$sx = imagesx($stamp);
+$sy = imagesy($stamp);
+
+// Wasserzeichen mit einer Transparenz von 50% über das Foto legen
+imagecopymerge($im, $stamp, imagesx($im) - $sx - $marge_right, imagesy($im) - $sy - $marge_bottom, 0, 0, imagesx($stamp), imagesy($stamp), 50);
+
+// Bild speichern, aufräumen
+imagepng($im, 'photo_stamp.png');
+imagedestroy($im);
+
+?>
+]]>
+    </programlisting>
+    <mediaobject>
+     <alt>Erstellen eines transparenten Wasserzeichens mit imagecopymerge()</alt>
+     <imageobject>
+      <imagedata fileref="en/reference/image/figures/watermark-merged.png" />
+     </imageobject>
+    </mediaobject>
+   </example>
+   Dieses Beispiel nutzt <function>imagecopymerge</function> um das Wasserzeichen
+   über das Original-Bild zu legen. Dabei können wir die Transparenz des Wasserzeichens
+   frei bestimmen - im Beispiel werden 50% gesetzt.
+   In der Praxis wäre dies ein sinnvolles Vorgehen zum Urheberschutz, da halbtransparente
+   Wasserzeichen schwierig zu entfernen sind, dem Betrachter aber trotzdem erlauben
+   das Bild zu sehen.
   </para>
  </section>
 </chapter>
