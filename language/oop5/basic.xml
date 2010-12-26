@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297948 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 306693 Maintainer: wiesemann Status: ready -->
 
  <sect1 xml:id="language.oop5.basic" xmlns="http://docbook.org/ns/docbook">
   <title>Die Grundlagen</title>
@@ -115,13 +115,17 @@ $this ist nicht definiert.
   <sect2 xml:id="language.oop5.basic.new">
    <title>new</title>
    <para>
-    Um eine Instanz einer Klasse zu erzeugen, muss ein neues Objekt erzeugt
-    und einer Variablen zugewiesen werden. Bei der Erzeugung wird das Objekt 
-    immer zugewiesen, außer wenn das Objekt einen definierten
+    Um eine Instanz einer Klasse zu erzeugen, muss das <literal>new</literal>-Schlüsselwort
+    verwendet werden. Ein Objekt wird immer erzeugt, außer wenn das Objekt einen definierten
     <link linkend="language.oop5.decon">Konstruktor</link> besitzt, der
     aufgrund eines Fehlers eine <link linkend="language.exceptions">Exception</link>
     wirft. Klassen sollten vor ihrer Instantiierung definiert werden (in manchen
     Fällen ist dies eine Notwendigkeit).
+   </para>
+   <para>
+    Wenn ein <type>string</type> mit dem Namen einer Klasse mit <literal>new</literal>
+    genutzt wird, wird eine neue Instanz dieser Klasse erzeugt. Falls sich die Klasse
+    in einem Namensraum befindet, muss der vollqualifizierte Name hierfür genutzt werden.
    </para>
    <example>
     <title>Eine Instanz erzeugen</title>
@@ -179,6 +183,47 @@ object(SimpleClass)#1 (1) {
    ["var"]=>
      string(30) "$zugewiesen wird diesen Wert haben"
 }
+]]>
+    </screen>
+   </example>
+   <para>
+    Mit PHP 5.3.0 wurden neue Möglichkeiten zur Erzeugung von Instanzen eines
+    Objekts eingeführt:
+   </para>
+   <example>
+    <title>Erzeugen neuer Objekte</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Test
+{
+    static public function getNew()
+    {
+        return new static;
+    }
+}
+
+class Child extends Test
+{}
+
+$obj1 = new Test();
+$obj2 = new $obj1;
+var_dump($obj1 !== $obj2);
+
+$obj3 = Test::getNew();
+var_dump($obj3 instanceof Test);
+
+$obj4 = Child::getNew();
+var_dump($obj4 instanceof Child);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+bool(true)
+bool(true)
+bool(true)
 ]]>
     </screen>
    </example>
