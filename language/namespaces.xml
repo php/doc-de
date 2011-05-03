@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 301115 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 309629 Maintainer: simp Status: ready -->
 <chapter xml:id="language.namespaces" xmlns="http://docbook.org/ns/docbook"
  version="1.1">
  <title>Namespaces</title>
@@ -615,9 +615,10 @@ $b = namespace\CONSTANT; // weist den Wert der Konstante CONSTANT $b zu
    Datei oder ein Verzeichnis anzulegen.
   </para>
   <para>
-   PHP-Namespaces unterstützen zwei Arten von Aliasen oder Importen: Einen Alias
-   für einen Klassennamen und einen Alias für einen Namespace. Beachten Sie, dass
-   das importieren einer Funktion oder Konstanten nicht unterstützt wird.
+   PHP-Namespaces unterstützen drei Arten von Aliasen oder Importen: Einen Alias
+   für einen Klassennamen, einen Alias für einen Interfacenamen und einen Alias 
+   für einen Namespace. Beachten Sie, dass das importieren einer Funktion oder 
+   Konstanten nicht unterstützt wird.
   </para>
   <para>
    Ein Alias wird in PHP mittels des <literal>use</literal>-Operators angelegt. Hier ein
@@ -634,13 +635,13 @@ use My\Full\Classname as Another;
 use My\Full\NSname;
 
 // importiert eine globale Klasse
-use \ArrayObject;
+use ArrayObject;
 
 $obj = new namespace\Another; // erzeugt ein Objekt der Klasse foo\Another
 $obj = new Another; // erzeugt ein Objekt der Klasse My\Full\Classname
 NSname\subns\func(); // ruft die Funktion My\Full\NSname\subns\func auf
 $a = new ArrayObject(array(1)); // erzeugt ein Objekt der Klasse ArrayObject
-// ohne das "use \ArrayObject" wäre ein Objekt der Klasse foo\ArrayObject erzeugt worden
+// ohne das "use ArrayObject" wäre ein Objekt der Klasse foo\ArrayObject erzeugt worden
 ?>
 ]]>
     </programlisting>
@@ -648,7 +649,7 @@ $a = new ArrayObject(array(1)); // erzeugt ein Objekt der Klasse ArrayObject
    Beachten Sie, dass für Namen von Namespaces (vollständig qualifizierte Namespacenamen
    mit einem Namensraumseparator, wie <literal>Foo\Bar</literal>, im Gegensatz zu
    globalen Namen ohne Separator, wie <literal>FooBar</literal>) der führende
-   Backslash nicht notwendig und nicht erlaubt ist, weil importierte Namen vollständig
+   Backslash nicht notwendig und nicht empfohlen ist, weil importierte Namen vollständig
    qualifiziert sein müssen und nicht relativ zum aktuellen Namespace verarbeitet
    werden.
   </para>
@@ -707,6 +708,43 @@ $obj = new \Another\thing; // erzeugt ein Objekt der Klasse Another\thing
     </programlisting>
    </example>
   </para>
+ </sect1>
+  <sect2 xml:id="language.namespaces.importing.scope">
+   <title>Gültigkeitsbereiche für Importe</title>
+   <para>
+    Das Schlüsselwort <literal>use</literal> muss im äußersten Gültigkeitsbereich
+    (dem globalen Gültigkeitsbereich) oder innerhalb einer Namespace-Deklaration
+    angegeben werden. Das ist darin begründet, dass Importe zur Kompilierungszeit
+    und nicht zur Laufzeit durchgeführt werden und daher nicht in einem anderen
+    Gültigkeitsbereich liegen dürfen. Das folgende Beispiel zeigt eine ungültige
+    Verwendung des <literal>use</literal>-Schlüsselwortes:
+   </para>
+   <para>
+    <example>
+     <title>Ungültige Importregel</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+namespace Languages;
+
+class Greenlandic
+{
+    use Languages\Danish;
+
+    ...
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <note>
+    <para>
+     Importregeln sind auf Dateibasis gültig, das heißt eine eingebundene Datei
+     wird <emphasis>NICHT</emphasis> die Importregeln der einbindenden Datei erben.
+    </para>
+   </note>
+  </sect2>
  </sect1>
  <sect1 xml:id="language.namespaces.global">
   <title>Globaler Namensraum</title>
@@ -1010,7 +1048,7 @@ A\B::foo();   // ruft die Methode "foo" der Klasse "B" aus dem Namespace "A\A" a
               // wenn die Klasse "A\A\B" nicht bekannt ist, so wird
               //  versucht die Klasse "A\A\B" mittels Autoload zu laden
 
-\A\B::foo();  // ruft die Methode "foo" der Klasse "B" aus dem Namespace "A\B" auf
+\A\B::foo();  // ruft die Methode "foo" der Klasse "B" aus dem Namespace "A" auf
               // wenn die Klasse "A\B" nicht bekannt ist, so wird
               //  versucht die Klasse "A\B" mittels Autoload zu laden
 ?>
