@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: fa Status: ready -->
+<!-- EN-Revision: 305216 Maintainer: fa Status: ready -->
 
 <chapter xml:id="pdo.transactions" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>Transaktionen und auto-commit</title>
     <para>
      Jetzt, wo Sie via PDO verbunden sind, müssen Sie sich bewusst machen, wie PDO
      Transaktionen verwaltet, bevor Sie anfangen, Abfragen auszuführen. Falls Sie noch 
-     niemit Transaktionen zu tun hatten, diese bieten 4 wichtige Features: Atomizität, 
+     nie mit Transaktionen zu tun hatten, diese bieten 4 wichtige Features: Atomizität, 
      Konsistenz (Consistency), Isolation und Dauerhaftigkeit (Durability) (ACID).
      Einfach gesagt wird alles in einer Transaktion, auch wenn es in Einzelschritten
      ausgeführt wird, garantiert in sicherer Weise in die Datenbank eingetragen, ohne
@@ -37,13 +37,25 @@
      um die Transaktion abzuschließen, abhängig vom Erfolg des Codes, den Sie während der
      Transaktion ausgeführt haben.
     </para>
+    <warning>
+     <para>
+      PDO überprüft nur auf Treiberebene auf Transaktionsfähigkeit. Wenn bestimmte
+      Laufzeitbedingunen ergeben, dass Transaktionen nicht verfügbar sind, wird
+      <methodname>PDO::beginTransaction</methodname> trotzdem ohne Fehler &true;
+      zurückgeben, wenn der Server die Anfrage zum Start einer Transaktion akzeptiert.
+     </para>
+     <para>
+      Ein Beispiel wäre es, Transaktionen auf MyISAM-Tabellen in einer MySQL-Datenbank
+      zu verwenden
+     </para>
+    </warning>
     <para>
      Wenn das Script endet oder die Verbindung im Begriff ist, geschlossen zu werden und
      Sie eine Transaktion ausstehen haben, wird PDO automatisch einen Rollback 
-     durchführen. Dies ist eine Sicherheitsmaßnahme, um Inkonsistenzen in dem Fall, wo
+     durchführen. Dies ist eine Sicherheitsmaßnahme, um Inkonsistenzen in dem Fall, dass
      das Script unerwartet beendet wird, zu vermeiden - wenn Sie die Transaktion nicht
      explizit ausgeführt haben, wird angenommen, dass etwas schiefgegangen ist, deswegen
-     wird zur Sicherheit ein Rollback durchgeführt.
+     wird zur Sicherheit Ihrer Daten ein Rollback durchgeführt.
     </para>
     <warning>
      <para>
@@ -73,6 +85,11 @@ try {
   $dbh = new PDO('odbc:SAMPLE', 'db2inst1', 'ibmdb2', 
       array(PDO::ATTR_PERSISTENT => true));
   echo "Connected\n";
+} catch (Exception $e) {
+  die("Unable to connect: " . $e->getMessage());
+}
+
+try {
   $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
   $dbh->beginTransaction();
@@ -111,7 +128,7 @@ sgml-indent-step:1
 sgml-indent-data:t
 indent-tabs-mode:nil
 sgml-parent-document:nil
-sgml-default-dtd-file:"../../../manual.ced"
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
 sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
