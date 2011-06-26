@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 311151 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.shm-attach" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>shm_attach</refname>
@@ -13,7 +13,7 @@
     <type>resource</type><methodname>shm_attach</methodname>
     <methodparam><type>int</type><parameter>key</parameter></methodparam> 
     <methodparam choice="opt"><type>int</type><parameter>memsize</parameter></methodparam>
-    <methodparam choice="opt"><type>int</type><parameter>perm</parameter></methodparam>
+    <methodparam choice="opt"><type>int</type><parameter>perm</parameter><initializer>0666</initializer></methodparam>
    </methodsynopsis>
   <para>
    <function>shm_attach</function> liefert eine ID über die auf ein 
@@ -74,6 +74,70 @@
   <para>
    Liefert ein Shared Memory Resource Handle.
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Diese Funktion gibt nun eine &resource; anstatt eines 
+        <link linkend="language.types.integer">Integer</link>
+        zurück.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+    </informaltable>
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Diese Funktion vor PHP 5.3.0 einen Integer-Wert zurück.
+    Dieses Verhalten kann durch einen Cast auf Integer simuliert
+    werden falls dies aus Portabilitätsgründen nötig sein sollte.
+   </para>
+   <para>
+    <example>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Temporäre Datei erstellen und Dateipfad speichern
+$tmp = tempnam('/tmp', 'PHP');
+
+// Dateitoken-Schlüssel ermitteln
+$key = ftok($tmp, 'a');
+
+// SHM-Resource anbinden, beachten Sie den weiter unten folgenden Cast
+$id = shm_attach($key);
+
+if ($id === false) {
+    die('SHM-Segment kann nicht erzeugt werden');
+}
+
+// Cast auf Integer, da vor PHP 5.3.0 die Resource-ID als
+// Integer zurückgegeben wurde. Der Cast simuliert dieses
+// Verhalten
+$id = (integer) $id;
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="seealso">
