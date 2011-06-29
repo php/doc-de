@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 298371 Maintainer: sammywg Status: ready -->
 <refentry xml:id="function.exit" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>exit</refname>
@@ -19,6 +19,9 @@
   </methodsynopsis>
   <para>
    Beendet die Ausführung des Skripts.
+   <link linkend="function.register-shutdown-function">Shutdown Funktionen</link>
+   und <link linkend="language.oop5.decon.destructor">Objekt Destruktoren</link>
+   werden immer ausgeführt, auch wenn <function>exit</function> aufgerufen wurde.
   </para>
  </refsect1>
 
@@ -35,9 +38,9 @@
       </para>
       <para>
        Falls <parameter>status</parameter> eine <type>Ganzzahl</type> ist,
-       wird dieser Wert als Exit-Status verwendet. Ein Exit-Status sollte im
-       Bereich von 0 bis 254 liegen, weil der Exit-Status 255 von PHP
-       reserviert ist und deshalb nicht benutzt werden sollte. Der Status 0
+       wird dieser Wert als Exit-Status verwendet anstatt ausgegeben zu werden.
+       Ein Exit-Status sollte im Bereich von 0 bis 254 liegen, weil der Exit-Status
+       255 von PHP reserviert ist und deshalb nicht benutzt werden sollte. Der Status 0
        wird verwendet, um ein Programm erfolgreich zu beenden.
       </para>
       <note>
@@ -96,6 +99,42 @@ exit(0376); // oktal
 ?>
 ]]>
     </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Shutdown Funktionen und Destruktoren werden trotzdem aufgerufen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Foo
+{
+    public function __destruct()
+    {
+        echo 'Destruktor: ' . __METHOD__ . '()' . PHP_EOL;
+    }
+}
+
+function shutdown()
+{
+    echo 'Shutdown Funktion: ' . __FUNCTION__ . '()' . PHP_EOL;
+}
+
+$foo = new Foo();
+register_shutdown_function('shutdown');
+
+exit();
+echo 'Das hier wird nicht mehr ausgegeben werden.';
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+ <![CDATA[
+ Shutdown Funktion: shutdown()
+ Destruktor: Foo::__destruct()
+ ]]>
+    </screen>
    </example>
   </para>
  </refsect1>
