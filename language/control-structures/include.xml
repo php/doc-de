@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: raphaelm Status: ready -->
+<!-- EN-Revision: 310855 Maintainer: raphaelm Status: ready -->
 
 <sect1 xml:id="function.include" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title><function>include</function></title>
@@ -15,15 +15,20 @@
  <simpara>
   Dateien werden unter dem angegebenen Pfad gesucht, oder, wenn keiner
   gegeben ist, im <link linkend="ini.include-path">include_path</link>.
+  Wenn die Datei auch im <link linkend="ini.include-path">include_path</link>
+  nicht gefunden werden kann, sucht <function>include</function> noch in
+  dem Verzeichnis der aufrufenden Datei und dem aktuellen Arbeitsverzeichnis.
   Wenn keine Datei gefunden wurde, erzeugt <function>include</function>
   eine <link linkend="errorfunc.constants.errorlevels.e-warning">Warnung</link>,
   im Gegensatz dazu erzeugt <function>require</function> in diesem Fall einen
   <link linkend="errorfunc.constants.errorlevels.e-error">Fatal Error</link>.
  </simpara>
  <simpara>
-  Wenn ein Pfad angegeben ist (absolut oder relativ), wird der
-  <link linkend="ini.include-path">include_path</link> ignoriert. Wenn der
-  Dateiname beispielsweise mit <literal>../</literal> befinnt, sucht der
+  Wenn ein Pfad angegeben ist — ob absolut (beginnend mit einem Laufwerksbuchstaben
+  oder <literal>\</literal> auf Windows oder <literal>/</literal> auf Unix/Linux)
+  oder relativ (beginnend mit <literal>.</literal> oder <literal>..</literal>), wird
+  der <link linkend="ini.include-path">include_path</link> ignoriert. Wenn der
+  Dateiname beispielsweise mit <literal>../</literal> beginnt, sucht der
   Parser im übergeordneten Verzeichnis des aktuellen Arbeitsverzeichnisses
   nach der Datei.
  </simpara>
@@ -287,9 +292,7 @@ function get_include_contents($filename) {
     if (is_file($filename)) {
         ob_start();
         include $filename;
-        $contents = ob_get_contents();
-        ob_end_clean();
-        return $contents;
+        return ob_get_clean();
     }
     return false;
 }
