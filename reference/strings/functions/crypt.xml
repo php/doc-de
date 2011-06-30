@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 312628 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink"  xmlns="http://docbook.org/ns/docbook" xml:id="function.crypt">
  <refnamediv>
   <refname>crypt</refname>
-  <refpurpose>Einweg-String-Verschlüsselung (Hashbildung)</refpurpose>
+  <refpurpose>Einweg-String-Hashing</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -17,57 +17,81 @@
   </methodsynopsis>
   <para>
    <function>crypt</function> gibt einen Hash-String zurück, der unter
-   Verwendung des <abbrev>DES</abbrev>-basierenden Algorithmus Unix-Standard-Verschlüsselungsalgorithmus
-   erstellt wurde. Dieser Algorithmus muss auf dem System verfügbar sein.
+   Verwendung des <abbrev>DES</abbrev>-basierenden Unix-Standard-Hashingalgorithmus
+   oder einem anderen auf ihrem System verfügbaren Algorithmus erstellt wurde.
   </para>
   <para>
-   Einige Betriebssystem unterstützen mehr als eine Methode zur
-   Verschlüsselung. So wird manchmal der DES- durch einen
-   MD5-Algorithmus ersetzt. Der verwendete Schlüssel wird durch das
-   Salt-Argument bestimmt. Zum Installationszeitpunkt untersucht PHP die
-   vorhandenen Möglichkeiten und wird, abhängig vom Ergebnis dieser
-   Prüfung, auch andere Schlüssel-Typen zulassen. Wird kein Salt
-   unterstützt, erzeugt PHP per Voreinstellung einen 2-Zeichen
-   DES-Salt, es sei denn, auf ihrem System ist MD5 der Standardverschlüsselungstyp.
-   In diesem Fall wird PHP einen zufälligen MD5-kompatiblen Salt generieren.
-   PHP setzt eine Konstante namens <constant>CRYPT_SALT_LENGTH</constant>,
-   die Ihnen sagt, ob ihr System einen regulären 2-Zeichen-Salt oder den
-   längeren 12-Zeichen-Salt unterstützt.
+   Einige Betriebssystem unterstützen mehr als eine Methode zum Hashen. So wird
+   manchmal der DES- durch einen MD5-Algorithmus ersetzt. Der verwendete Algorithmus
+   wird durch das Salt-Argument bestimmt. Vor PHP 5.3 wurden die Verfügbaren Algorithmen
+   zum Installationszeitpunkt anhand der systemeigenen crypt() Funktion
+   untersucht. Wird kein Salt angegeben, erzeugt PHP entweder einen 2-Zeichen
+   DES-Salt oder einen 12-Zeichen MD5 Salt, je nachdem welcher Algorithmus
+   verfügbar ist. PHP setzt eine Konstante <constant>CRYPT_SALT_LENGTH</constant>,
+   welche die Länge des längsten von den Algorithmen unterstützen Salts enthält.
   </para>
   <para>
-   Die Standard-DES-Verschlüsselung <function>crypt</function>
-   enthält den Salt als erste 2 Zeichen der Ausgabe. Ebenso werden nur die ersten
-   acht Zeichen von <parameter>str</parameter> berücksichtigt; verwenden Sie also
-   einen längeren String, der mit den gleichen 8 Buchstaben beginnt, so erhalten
-   Sie denselben Rückgabewert (sofern Sie ebenfalls den gleichen Salt nutzen).
+   Der Standard-DES-Algorithmus gibt den Salt als erste 2 Zeichen zurück.
+   Weiterhin werden nur die ersten acht Zeichen von <parameter>str</parameter>
+   genutzt. Wenn also eine längere Zeichenkette verwendet wird, die mit den
+   selben 8 Buchstaben beginnt, so erhalten Sie denselben Rückgabewert
+   (sofern Sie ebenfalls den gleichen Salt genutzt haben).
   </para>
   <simpara>
-   Auf Systemen, wo die crypt()-Funktion mehrere Verschlüsselungsarten
+   Auf Systemen, wo <function>crypt</function> mehrere Hashingalgorithmen
    unterstützt, werden die folgenden Konstanten auf 0 oder 1
    gesetzt, je nachdem, ob der entsprechende Typ verfügbar ist:
   </simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <constant>CRYPT_STD_DES</constant> - Standard DES-Schlüssel mit 2-Zeichen-Salt
+     <constant>CRYPT_STD_DES</constant> - Standard DES-Hash mit einem 2-Zeichen-Salt
+     aus dem base64 Alphabet "./0-9A-Za-z". Bei Nutzung eines ungültigen Zeichens schlägt
+     <function>crypt</function> fehl.
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <constant>CRYPT_EXT_DES</constant> - Erweiterte DES-basierte Verschlüsselung
-     mit einem 9-Zeichen-Salt
+     <constant>CRYPT_EXT_DES</constant> - Erweiterte DES-basiertes Hashing
+     mit einem 9-Zeichen-Salt, welcher aus einem Unterstrich, 4 Zeichen Iterationsanzahl
+     und 4 Zeichen Salt besteht. Iterationsanzahl und Salt werden dargestellt durch Zeichen
+     aus dem base64 Alphabet "./0-9A-Za-z" dargestellt. Bei Nutzung eines ungültigen
+     Zeichens schlägt <function>crypt</function> fehl.
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <constant>CRYPT_MD5</constant> - MD5-Verschlüsselung mit 12-Zeichen-Salt,
-     beginnend mit $1$
+     <constant>CRYPT_MD5</constant> - MD5-Hashing mit 12-Zeichen-Salt,
+     beginnend mit "$1$"
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <constant>CRYPT_BLOWFISH</constant> - Blowfish-Verschlüsselung mit
-     16-Zeichen-Salt, beginnend mit $2$ oder $2a$
+     <constant>CRYPT_BLOWFISH</constant> - Blowfish-Hash mit 22-Zeichen-Salt
+     folgenden Aufbaus: "$2a$", gefolgt von einem zweistelligen Kostenparameter, einem
+     weiteren "$", und 22 Zahlen des base64 Alphabets "./0-6A-Za-z". Bei Nutzung eines
+     ungültigen Zeichens gibt crypt() einen leeren String zurück. Der zweistellige
+     Kostenparameter ist der binäre Logarithmus der Iterationsanzahl und muss im
+     Bereich von 04-31 liegen. Bei Nutzung von Werten außerhalb dieses Bereichs schlägt
+     crypt() fehl.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>CRYPT_SHA256</constant> - SHA-256 Hash mit einem 16-Zeichen Salt, beginnend mit
+     "$5$". Wenn anschließend "rounds=&lt;N&gt;$" folgt, gibt der Zahlenwert von N die
+     Iterationsanzahl an, ansonsten wird 5000 als Anzahl angenommen. Die Anzahl muss zwischen
+     1000 und 999,999,999 liegen. Falls ein Wert außerhalb dieses Bereichs angegeben wird, wird
+     die jeweils näher liegende Grenze als Anzahl genutzt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>CRYPT_SHA512</constant> - SHA-512 Hash mit einem 16-Zeichen Salt, beginnend mit
+      "$6$". Wenn anschließend "rounds=&lt;N&gt;$" folgt, gibt der Zahlenwert von N die
+     Iterationsanzahl an, ansonsten wird 5000 als Anzahl angenommen. Die Anzahl muss zwischen
+     1000 und 999,999,999 liegen. Falls ein Wert außerhalb dieses Bereichs angegeben wird, wird
+     die jeweils näher liegende Grenze als Anzahl genutzt.
     </simpara>
    </listitem>
   </itemizedlist>
@@ -87,7 +111,7 @@
      <term><parameter>str</parameter></term>
      <listitem>
       <para>
-       Die zu verschlüsselnde Zeichenkette.
+       Die zu hashende Zeichenkette.
       </para>
      </listitem>
     </varlistentry>
@@ -95,15 +119,9 @@
      <term><parameter>salt</parameter></term>
      <listitem>
       <para>
-       Ein optionaler Salt-String, der die Schlüsselbasis bildet. Sofern nicht
-       angegeben, wird von PHP ein zufälliger Wert bei jedem Aufruf der Funktion
-       generiert.
-      </para>
-      <para>
-       Wenn Sie das gegebene Salt benutzen, sollten Sie beachten, dass
-       dieser Wert nur einmal bestimmt wird. Rufen Sie diese Funktion nun
-       mehrmals auf, beeinträchtigt das nicht nur das Ergebnis, sondern
-       unter Umständen auch die Sicherheit.
+       Ein optionaler Salt-String, der die Schlüsselbasis bildet. Falls dieser
+       nicht angegeben wird hängt das Verhalten von der Implementierung des
+       Algorithmus ab und kann zu unerwarteten Ergebnissen führen.
       </para>
      </listitem>
     </varlistentry>
@@ -114,7 +132,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die verschlüsselte Zeichenkette zurück.
+   Gibt die gehashte Zeichenkette zurück oder im Fehlerfall eine Zeichenkette,
+   die kürzer ist als 13 Zeichen und garantiert ist, nicht dem Salt zu entsprechen.
   </para>
  </refsect1>
 
@@ -130,6 +149,21 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.3.2</entry>
+       <entry>
+        SHA-256 und SHA-512 wurden hinuzgefügt auf Basis von
+        Ulrich Drepper's <link xlink:href="&url.crypt.sha;">Implementierung</link>.
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.2</entry>
+       <entry>
+        Blowfishs fehlerhaftes Verhalten wurde behoben, bei welchem ein ungültiger
+        Kostenparameter auf DES zurückfiel anstatt einen Fehlerstring ("*0" or "*1")
+        zurückzugeben.
+       </entry>
+      </row>
       <row>
        <entry>5.3.0</entry>
        <entry>
@@ -185,7 +219,7 @@ $hash = crypt($passwort);
   </para>
   <para>
    <example>
-    <title>Verwendung von <function>crypt</function> mit verschiedenen Verschlüsselungsarten</title>
+    <title>Verwendung von <function>crypt</function> mit verschiedenen Hasharten</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -204,6 +238,14 @@ if (CRYPT_MD5 == 1) {
 if (CRYPT_BLOWFISH == 1) {
     echo 'Blowfish:     ' . crypt('rasmuslerdorf', '$2a$07$usesomesillystringforsalt$') . "\n";
 }
+
+if (CRYPT_SHA256 == 1) {
+    echo 'SHA-256:      ' . crypt('rasmuslerdorf', '$5$rounds=5000$usesomesillystringforsalt$') . "\n";
+}
+
+if (CRYPT_SHA512 == 1) {
+    echo 'SHA-512:      ' . crypt('rasmuslerdorf', '$6$rounds=5000$usesomesillystringforsalt$') . "\n";
+}
 ?>
 ]]>
     </programlisting>
@@ -214,6 +256,8 @@ Standard DES: rl.3StKT.4T8M
 Extended DES: _J9..rasmBYk8r9AiWNc
 MD5:          $1$rasmusle$rISCgZzpwk3UhDidwXvin0
 Blowfish:     $2a$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi
+SHA-256:      $5$rounds=5000$usesomesillystri$KqJWpanXZHKq2BOB43TSaYhEWsQ1Lr5QNyPCDH/Tp.6
+SHA-512:      $6$rounds=5000$usesomesillystri$D4IrlXatmP7rx3P3InaxBeoomnAihCKRVQP22JZ6EY47Wc6BkroIuUUBOov1i.S5KPgErtP/EN5mcO.ChWQW21
 ]]>
     </screen>
    </example>
@@ -225,7 +269,7 @@ Blowfish:     $2a$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi
   <note>
    <simpara>
     Es existiert keine decrypt Funktion, da <function>crypt</function>
-    eine Einweg-Verschlüsselung ist.
+    ein Einweg-Algorithmus ist.
    </simpara>
   </note>
  </refsect1>
@@ -237,7 +281,7 @@ Blowfish:     $2a$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi
     <member><function>md5</function></member>
     <member>Die <link linkend="ref.mcrypt">Mcrypt</link>-Erweiterung</member>
     <member>Lesen Sie die Man-Pages ihres Unix-Systems, wenn Sie weitere
-       Informationen zu Crypt benötigen.</member>
+       Informationen zu crypt benötigen.</member>
    </simplelist>
   </para>
  </refsect1>
