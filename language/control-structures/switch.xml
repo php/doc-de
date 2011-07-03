@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 288721 Maintainer: hholzgra Status: working -->
+<sect1 xml:id="control-structures.switch" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title><literal>switch</literal></title>
+ <simpara>
+  Die <literal>switch</literal> Anweisung entspricht in etwa einer
+  Folge von <literal>if</literal> Anweisungen die jeweils den gleichen
+  Ausdruck prüfen. Es kommt oft vor das man dieselbe Variable (oder
+  denselben Ausdruck) gegen viele verschiedene mögliche Werte prüfen
+  und abhängig davon unterschiedlichen Code ausführen möchte. Genau
+  hierfür wurde die <literal>switch</literal> Anweisung eingeführt.
+ </simpara>
+ <note>
+  <simpara>
+   Beachten Sie das im Unterschied zu einigen anderen Sprachen die
+   <link linkend="control-structures.continue">continue</link> Anweisung 
+   auch auf switch anwendbar ist und sich ähnlich wie <literal>break</literal>
+   verhält. Wenn Sie ein switch innerhalb einer Schleife verwenden und
+   mit dem nächsten Schleifendurchlauf beginnen wollen so müssen Sie in
+   diesem Fall <literal>continue 2</literal> angeben.
+  </simpara>
+ </note>
+ <note>
+  <para>
+   Beachten Sie auch das switch/case <link linkend="types.comparisions-loose"
+   >typschwache Vergleiche</link> durchführt.
+  </para>
+ </note>
+ <para>
+  Die folgenden beiden Beispiele zeigen zwei verschiedene Wege
+  um das gleiche Verhalten zu erreichen. Eines benutzt eine 
+  Folge von <literal>if</literal> und <literal>elseif</literal> 
+  Anweisungen, das andere eine <literal>switch</literal>
+  Anweisung:
+  <example>
+   <title><literal>switch</literal> Anweisung</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+if ($i == 0) {
+    echo "i equals 0";
+} elseif ($i == 1) {
+    echo "i equals 1";
+} elseif ($i == 2) {
+    echo "i equals 2";
+}
+
+switch ($i) {
+    case 0:
+        echo "i equals 0";
+        break;
+    case 1:
+        echo "i equals 1";
+        break;
+    case 2:
+        echo "i equals 2";
+        break;
+}
+?>
+]]>
+   </programlisting>
+  </example>
+  <example>
+   <title><literal>switch</literal> gestattet den Vergleich mit Strings</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch ($i) {
+    case "apple":
+        echo "i is apple";
+        break;
+    case "bar":
+        echo "i is bar";
+        break;
+    case "cake":
+        echo "i is cake";
+        break;
+}
+?>
+]]>
+   </programlisting>
+  </example>
+ </para>
+ <para>
+  Um Fehler zu vermeiden ist es wichtig zu verstehen wie eine
+  <literal>switch</literal> Anweisung ausgeführt wird. Eine
+  <literal>switch</literal> Anweisung wird zeilenweise (genauer:
+  Anweisung für Anweisung) ausgewertet. Zunächst einmal wird
+  überhaupt kein Code ausgeführt. Erst wenn eine <literal>case</literal>
+  Anweisung gefunden wird die dem Wert des an <literal>switch</literal>
+  übergebenen Ausdrucks entspricht beginnt PHP tatsächlich die folgenden
+  Anweisungen auszuführen. Die Ausführung wird fortgesetzt bis das Ende
+  der <literal>switch</literal> Anweisung erreicht ist oder bis PHP 
+  bei der Ausführung auf eine <literal>break</literal> Anweisung stößt.
+  Wenn Sie am Ende eines <literal>case</literal> Blocks kein <literal
+  >break</literal> setzen so wird die Ausführung mit dem nächsten
+  <literal>case</literal> fortgesetzt, z.B.:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch ($i) {
+    case 0:
+        echo "i equals 0";
+    case 1:
+        echo "i equals 1";
+    case 2:
+        echo "i equals 2";
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <simpara>
+  Here, if <varname>$i</varname> is equal to 0, PHP would execute all of the echo
+  statements!  If <varname>$i</varname> is equal to 1, PHP would execute the last two
+  echo statements. You would get the expected behavior ('i equals 2'
+  would be displayed) only if <varname>$i</varname> is equal to 2.  Thus,
+  it is important not to forget <literal>break</literal> statements
+  (even though you may want to avoid supplying them on purpose under
+  certain circumstances).
+ </simpara>
+ <simpara>
+  In a <literal>switch</literal> statement, the condition is
+  evaluated only once and the result is compared to each
+  <literal>case</literal> statement. In an <literal>elseif</literal>
+  statement, the condition is evaluated again. If your condition is
+  more complicated than a simple compare and/or is in a tight loop,
+  a <literal>switch</literal> may be faster.
+ </simpara>
+ <para>
+  The statement list for a case can also be empty, which simply
+  passes control into the statement list for the next case.
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch ($i) {
+case 0:
+case 1:
+case 2:
+    echo "i is less than 3 but not negative";
+    break;
+case 3:
+    echo "i is 3";
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  A special case is the <literal>default</literal> case.  This case matches
+  anything that wasn't matched by the other cases.  For example:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch ($i) {
+    case 0:
+        echo "i equals 0";
+        break;
+    case 1:
+        echo "i equals 1";
+        break;
+    case 2:
+        echo "i equals 2";
+        break;
+    default:
+       echo "i is not equal to 0, 1 or 2";
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  The <literal>case</literal> expression may be any expression that
+  evaluates to a simple type, that is, integer or floating-point
+  numbers and strings.  Arrays or objects cannot be used here unless
+  they are dereferenced to a simple type.
+ </para>
+ <para>
+  The alternative syntax for control structures is supported with
+  switches. For more information, see <link
+  linkend="control-structures.alternative-syntax">Alternative syntax
+  for control structures</link>.
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch ($i):
+    case 0:
+        echo "i equals 0";
+        break;
+    case 1:
+        echo "i equals 1";
+        break;
+    case 2:
+        echo "i equals 2";
+        break;
+    default:
+        echo "i is not equal to 0, 1 or 2";
+endswitch;
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  Its possible to use a semicolon instead of a colon after a case like:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch($beer)
+{
+    case 'tuborg';
+    case 'carlsberg';
+    case 'heineken';
+        echo 'Good choice';
+    break;
+    default;
+        echo 'Please make a new selection...';
+    break;
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
