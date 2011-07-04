@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 312800 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.header">
  <refnamediv>
@@ -80,6 +80,19 @@ header("HTTP/1.0 404 Not Found");
        </informalexample>
       </para>
       <para>
+       Wenn FastCGI verwendet wird, muss folgendes benutzt
+       werden um einen 404 Response Header zu senden:
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+header("Status: 404 Not Found");
+?>
+]]>
+        </programlisting>
+       </informalexample>         
+      </para>
+      <para>
        Der zweite Spezialfall ist der "Location:" Header. Es wird nicht nur
        der Header an den Browser geschickt, sondern auch ein
        <literal>REDIRECT</literal> (302) Statuscode, wenn nicht bereits der
@@ -131,7 +144,8 @@ header('WWW-Authenticate: NTLM', false);
      <term><parameter>http_response_code</parameter></term>
      <listitem>
       <para>
-       Forciert einen HTTP-Response-Code des angegebenen Wertes.
+       Forciert einen HTTP-Response-Code des angegebenen Wertes. Dieser Parameter
+       hat nur einen Effekt, wenn <parameter>string</parameter> nicht leer ist.
       </para>
      </listitem>
     </varlistentry>
@@ -254,7 +268,14 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Datum in der Vergangenheit
   &reftitle.notes;
   <note>
    <para>
-    Sie können dieses Problem umgehen, indem Sie Outputbuffering benutzen, mit
+    Header sind nur dann zugänglich und werden nur dann gesendet,
+    wenn die genutzte SAPI sie unterstützt.
+   </para>
+  </note>
+  <note>
+   <para>
+    Sie können die Limitierung, dass Header vor jeglicher Ausgabe gesendet
+    werden müssen, umgehen, indem Sie Outputbuffering benutzen, mit
     dem Overhead, dass Ihre gesamten Ausgaben an den Browser auf dem Server
     gepuffert werden, bis Sie diese senden. Sie können dies tun, indem Sie in
     Ihrem Skript <function>ob_start</function> und
