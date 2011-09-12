@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 315994 Maintainer: sammywg Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.strrpos">
  <refnamediv>
   <refname>strrpos</refname>
@@ -18,58 +18,9 @@
   <para>
    Gibt die numerische Position des letzten Vorkommens von
    <parameter>needle</parameter> innerhalb der Zeichenkette
-   <parameter>haystack</parameter> zurück. Beachten Sie, dass needle unter
-   PHP 4 in diesem Fall nur ein einzelnes Zeichen sein kann. Wenn Sie eine
-   Zeichenkette als needle übergeben, wird nur deren erstes Zeichen verwendet.
+   <parameter>haystack</parameter> zurück.
   </para>
-  <para>
-   Wurde <parameter>needle</parameter> nicht gefunden, wird &false;
-   zurückgegeben.
-  </para>
-  <para>
-   Es liegt nahe, einen Fehler bei der Auswertung der Rückgabewerte von
-   "Zeichen an Position 0 gefunden" und "Zeichen nicht gefunden" zu begehen.
-   Am einfachsten finden Sie den Unterschied wie folgt heraus:
-   <informalexample>
-    <programlisting role="php">
-<![CDATA[
-<?php
-
-// in PHP 4.0.0 und neuer:
-$pos = strrpos($meinstring, "b");
-if ($pos === false) { // Beachten sie die drei Gleichheitszeichen
-    // nicht gefunden ...
-}
-
-// in Versionen aelter als 4.0.0:
-$pos = strrpos($meinstring, "b");
-if (is_bool($pos) && !$pos) {
-    // nicht gefunden ...
-}
-?>
-]]>
-    </programlisting>
-   </informalexample>
-  </para>
-  <para>
-   Ist <parameter>needle</parameter> kein String, wird der Parameter in einen
-   Integerwert konvertiert, der dem Ordinalwert des Zeichens entspricht.
-  </para>
-  <note>
-   <simpara>
-    Seit PHP 5.0.0 kann <parameter>offset</parameter> den Anfangspunkt
-    der Suche ab einer beliebigen Anzahl Zeichen innerhalb des Strings angeben.
-    Negative Werte beenden die Suche an einem beliebigen Punkt vor dem Ende
-    der Zeichenkette.
-   </simpara>
-  </note>
-  <note>
-   <simpara>
-    Der Parameter <parameter>needle</parameter> kann seit PHP 5.0.0 auch ein
-    String aus mehr als einem Zeichen sein.
-   </simpara>
-  </note>
-  </refsect1>
+ </refsect1>
 
  <refsect1 role="parameters">
   &reftitle.parameters;
@@ -79,6 +30,7 @@ if (is_bool($pos) && !$pos) {
      <term><parameter>haystack</parameter></term>
      <listitem>
       <para>
+       Die Zeichenkette in der gesucht werden soll.
       </para>
      </listitem>
     </varlistentry>
@@ -86,6 +38,8 @@ if (is_bool($pos) && !$pos) {
      <term><parameter>needle</parameter></term>
      <listitem>
       <para>
+       Ist <parameter>needle</parameter> kein String, wird der Parameter in einen
+       Integerwert konvertiert, der dem Ordinalwert des Zeichens entspricht.
       </para>
      </listitem>
     </varlistentry>
@@ -93,11 +47,9 @@ if (is_bool($pos) && !$pos) {
      <term><parameter>offset</parameter></term>
      <listitem>
       <para>
-        Der optionale Parameter <parameter>offset</parameter> ermöglicht
-        es Ihnen, die Startposition für die Suche innerhalb von
-        <parameter>haystack</parameter> anzugeben. Die zurück gegebene
-        Positions-Angabe ist dann relativ zum Anfang von
-        <parameter>haystack</parameter>.
+       Wenn angegeben, wird die Suche diese Anzahl an Buchstaben vom Anfang des
+       Strings gezählt stoppen. Wenn der Wert negativ ist, startet die Suche
+       stattdessen diese Anzahl an Zeichen vom Ende des Strings aus.
       </para>
      </listitem>
     </varlistentry>
@@ -108,7 +60,85 @@ if (is_bool($pos) && !$pos) {
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
+   Gibt die Position des letzten Vorkommens von <parameter>needle</parameter>
+   zurück oder &false; falls kein Vorkommen gefunden wurde.
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.0.0</entry>
+       <entry>
+        <parameter>needle</parameter> kann nun aus mehr als
+        einem Buchstaben bestehen.
+       </entry>
+      </row>
+      <row>
+       <entry>5.0.0</entry>
+       <entry>
+        Der <parameter>offset</parameter> Parameter wurde eingeführt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Prüfen ob needle in haystack vorkommt</title>
+    <para>
+     Es liegt nahe, einen Fehler bei der Auswertung der Rückgabewerte von
+     "Zeichen an Position 0 gefunden" und "Zeichen nicht gefunden" zu begehen.
+     Am einfachsten finden Sie den Unterschied wie folgt heraus:
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
 
+$pos = strrpos($meinstring, "b");
+if ($pos === false) { // Beachten sie die drei Gleichheitszeichen
+    // nicht gefunden ...
+}
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Searching with offsets</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$foo = "0123456789a123456789b123456789c";
+
+var_dump(strrpos($foo, '7', -5));  // Beginnt die Suche fünf Zeichen
+                                   // vom Ende aus. Result: int(17)
+
+var_dump(strrpos($foo, '7', 20));  // Endet die Suche zwanzig Zeichen
+                                   // vom Anfang aus. Result: int(27)
+
+var_dump(strrpos($foo, '7', 28));  // Result: bool(false)
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
  </refsect1>
 
