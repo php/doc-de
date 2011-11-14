@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 306483 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 313876 Maintainer: wiesemann Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.pathinfo">
  <refnamediv>
   <refname>pathinfo</refname>
@@ -15,9 +15,9 @@
    <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PATHINFO_DIRNAME | PATHINFO_BASENAME | PATHINFO_EXTENSION | PATHINFO_FILENAME</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>pathinfo</function> gibt ein assoziatives Array mit
-   Informationen über einen Dateipfad (<parameter>path</parameter>)
-   zurück.
+   <function>pathinfo</function> gibt Informationen über einen Dateipfad
+   (<parameter>path</parameter>) zurück: entweder als assoziatives Array
+   oder als String, abhängig vom <parameter>options</parameter>-Parameter.
   </para>
  </refsect1>
 
@@ -29,7 +29,7 @@
      <term><parameter>path</parameter></term>
      <listitem>
       <para>
-       Der zu prüfende Dateipfad.
+       Der zu analysierende Dateipfad.
       </para>
      </listitem>
     </varlistentry>
@@ -37,14 +37,15 @@
      <term><parameter>options</parameter></term>
      <listitem>
       <para>
-       Sie können mit dem optionalen Parameter
-       <parameter>options</parameter> angeben, welche Elemente zurückgeben
-       werden. Verwenden können Sie die Konstanten
+       Falls angegeben, wird nur dieses eine Element zurückgegeben.
+       Mögliche Werte:
        <constant>PATHINFO_DIRNAME</constant>,
        <constant>PATHINFO_BASENAME</constant>,
-       <constant>PATHINFO_EXTENSION</constant> und
-       <constant>PATHINFO_FILENAME</constant>. Standardmäßig werden alle
-       Elemente zurückgegeben.
+       <constant>PATHINFO_EXTENSION</constant> oder
+       <constant>PATHINFO_FILENAME</constant>.
+      </para>
+      <para>Falls <parameter>options</parameter> nicht angegeben wird, werden
+       alle verfügbaren Elemente zurückgegeben.
       </para>
      </listitem>
     </varlistentry>
@@ -55,15 +56,22 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Die folgenden assoziativen <type>array</type>-Elemente werden
+   Falls der <parameter>options</parameter>-Parameter nicht angegeben wird,
+   wird ein assoziatives <type>Array</type> mit den folgenden Elementen
    zurückgegeben: <literal>dirname</literal>, <literal>basename</literal>,
    <literal>extension</literal> (falls vorhanden) und
    <literal>filename</literal>.
   </para>
+  <note>
+   <para>
+    Falls <parameter>path</parameter> keine Erweiterung hat, wird das
+    <literal>extension</literal>-Element nicht zurückgegeben
+    (siehe das zweite Beispiel unten).
+   </para>
+  </note>
   <para>
    Falls <parameter>options</parameter> genutzt wird, gibt diese Funktion
-   einen <type>string</type> zurück sofern nicht alle Elemente angefordert
-   werden.
+   einen <type>String</type> mit dem gewünschten Element zurück.
   </para>
  </refsect1>
 
@@ -119,6 +127,30 @@ lib.inc
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title><function>pathinfo</function>-Beispiel für den Unterschied zwischen einer leeren und keiner Erweiterung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$path_parts = pathinfo('/path/nullextension.');
+var_dump($path_parts['extension']);
+
+$path_parts = pathinfo('/path/noextension');
+var_dump($path_parts['extension']);
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+string(0) ""
+
+Notice:  Undefined index:  extension in /test.php on line 6
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
@@ -132,8 +164,8 @@ lib.inc
   </note>
   <note>
    <para>
-    <function>pathinfo</function> berücksichtigt die locale-Einstellung. Um den
-    Pfad mit Multibyte-Zeichen korrekt parsen zu können, muss die entsprechende
+    <function>pathinfo</function> berücksichtigt die locale-Einstellung. Um einen
+    Pfad, der Multibyte-Zeichen enthält, korrekt parsen zu können, muss die entsprechende
     locale mit der <function>setlocale</function>-Funktion gesetzt werden.
    </para>
   </note>
