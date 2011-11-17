@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288982 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 317095 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.htmlspecialchars" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -13,7 +13,7 @@
   <methodsynopsis>
    <type>string</type><methodname>htmlspecialchars</methodname>
    <methodparam><type>string</type><parameter>string</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>quote_style</parameter><initializer>ENT_COMPAT</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>ENT_COMPAT | ENT_HTML401</initializer></methodparam>
    <methodparam choice="opt"><type>string</type><parameter>charset</parameter></methodparam>
    <methodparam choice="opt"><type>bool</type><parameter>double_encode</parameter><initializer>true</initializer></methodparam>
   </methodsynopsis>
@@ -47,7 +47,7 @@
     </listitem>
     <listitem>
      <simpara>
-      '&#039;' (einfaches Anführungszeichen) wird nur zu '&amp;#039;',
+      &quot;&#039;&quot; (einfaches Anführungszeichen) wird nur zu '&amp;#039;',
       wenn <constant>ENT_QUOTES</constant> gesetzt ist.
      </simpara>
     </listitem>
@@ -78,18 +78,89 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>quote_style</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Das optionale zweite Argument <parameter>quote_style</parameter> gibt an,
-       wie die Funktion mit einfachen und doppelten Anführungszeichen umgehen
-       soll. Der Standardmodus <constant>ENT_COMPAT</constant> ist
-       abwärtskompatibel und übersetzt nur die doppelten Anführungszeichen,
-       während die einfachen Anführungszeichen unbehandelt bleiben. Wird statt
-       dessen der Modus <constant>ENT_QUOTES</constant> verwendet, werden sowohl
-       einfache als auch doppelte Anführungszeichen umgewandelt. Das Setzen von
-       <constant>ENT_NOQUOTES</constant> bewirkt ein Ignorieren sowohl von
-       einfachen als auch von doppelten Anführungszeichen.
+        Eine Bitmaske von einem oder mehreren der folgenden Flags, die
+        die Behandlung von Anführungszeichen, ungültigen Zeichenfolgen
+        und den genutzten Dokumententyp festlegen.
+        Der Standardwert ist <literal>ENT_COMPAT | ENT_HTML401</literal>.
+       <table>
+        <title>Verfügbare <parameter>flags</parameter> Konstanten</title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Konstante</entry>
+           <entry>&Description;</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><constant>ENT_COMPAT</constant></entry>
+           <entry>Konvertiert nur doppelte Anführungszeichen und lässt einfache
+            Anführungszeichen unverändert.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_QUOTES</constant></entry>
+           <entry>Konvertiert sowohl doppelte als auch einfache Anführungszeichen.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_NOQUOTES</constant></entry>
+           <entry>Lässt doppelte und einfache Anführungszeichen unverändert.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_IGNORE</constant></entry>
+           <entry>
+             Verwirft still ungültige Zeichenfolgen anstatt eine leere
+             Zeichenkette zurückzugeben. In PHP 5.3.0 hinzugefügt.
+             Diese wurde wegen Rückwärtskompatibilität hinzugefügt;
+             vermeiden sie die Verwendung, da dies Auswirkungen auf die
+             Sicherheit haben kann.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_SUBSTITUTE</constant></entry>
+           <entry>
+             Ersetzt ungültige Zeichenfolgen mit einem Unicode Ersatz Zeichen
+             U+FFFD (UTF-8) oder &amp;#FFFD; (ansonst) anstatt eine
+             leere Zeichenkette zurückzugeben.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_DISALLOWED</constant></entry>
+           <entry>
+             Ersetzt Zeichenfolgen, die in dem spezifizierten
+            Dokumententyp ungültig sind, mit einem Unicode Ersatz
+            Zeichen U+FFFD (UTF-8) or &amp;#FFFD; (ansonst).
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_HTML401</constant></entry>
+           <entry>
+            Behandle Code als HTML 4.01.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_XML1</constant></entry>
+           <entry>
+            Behandle Code als XML 1.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_XHTML</constant></entry>
+           <entry>
+            Behandle Code als XHTML.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_HTML5</constant></entry>
+           <entry>
+            Behandle Code als HTML 5.
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
       </para>
      </listitem>
     </varlistentry>
@@ -105,7 +176,9 @@
        <literal>ISO-8859-1</literal>, <literal>ISO-8859-15</literal>,
        <literal>UTF-8</literal>, <literal>cp866</literal>,
        <literal>cp1251</literal>, <literal>cp1252</literal> und
-       <literal>KOI8-R</literal> tatsächlich äquivalent, da die von
+       <literal>KOI8-R</literal> tatsächlich äquivalent, vorausgesetzt der
+       <parameter>string</parameter> selbst ist gültig in dem
+       Zeichensatz, da die von
        <function>htmlspecialchars</function> betroffenen Zeichen in allen
        genannten Zeichensätzen an gleicher Position stehen.
       </para>
@@ -131,6 +204,12 @@
   <para>
    Der konvertierte <type>string</type>.
   </para>
+  <para>
+   Enthält der Eingabe <parameter>string</parameter> eine ungültige
+   Zeichenfolge in dem übergebenen <parameter>charset</parameter> und der
+   <constant>ENT_IGNORE</constant> Flag ist nicht gesetzt, wird
+   <function>htmlspecialchars</function> eine leere Zeichenkette zurückgeben.
+  </para>
  </refsect1>
 
  <refsect1 role="changelog">
@@ -145,6 +224,21 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.4.0</entry>
+       <entry>
+        Die Konstanten <constant>ENT_SUBSTITUTE</constant>, <constant>ENT_DISALLOWED</constant>,
+        <constant>ENT_HTML401</constant>, <constant>ENT_XML1</constant>,
+        <constant>ENT_XHTML</constant>
+        und <constant>ENT_HTML5</constant> wurden hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Die Konstante <constant>ENT_IGNORE</constant> wurde hinzugefügt.
+       </entry>
+      </row>
       <row>
        <entry>5.2.3</entry>
        <entry>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 290417 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 308179 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.substr">
  <refnamediv>
@@ -31,7 +31,7 @@
      <term><parameter>string</parameter></term>
      <listitem>
       <para>
-       Die Eingabezeichenkette.
+       Die Eingabezeichenkette. Muss mindestens ein Zeichen lang sein.
       </para>
      </listitem>
     </varlistentry>
@@ -85,13 +85,18 @@ $rest = substr("abcdef", -3, 1); // gibt "d" zurück
        genau so viele Zeichen vom Ende von <parameter>string</parameter>
        abgeschnitten (nachdem die Startposition ermittelt wurde, sollte
        <parameter>start</parameter> negativ sein). Gibt
-       <parameter>start</parameter> eine Position hinter dem abzuschneidenden
-       Teil an, wird ein leerer String zurückgegeben.
+       <parameter>start</parameter> die Position des abzuschneidenden Teiles
+       oder dahinter an, wird false zurückgegeben.
       </para>
       <para>
        Wenn <parameter>length</parameter> gegeben ist und den Wert
        <literal>0</literal>, &false; oder &null; hat, wird ein leerer String
        zurückgegeben.
+      </para>
+      <para>
+       Wird <parameter>length</parameter> ausgelassen, wird die
+       Teilzeichenkette beginned von <parameter>start</parameter> bis zum Ende
+       der Zeichenkette zurückgegeben.
       </para>
       <example>
        <title>Negativen <parameter>length</parameter>-Wert verwenden</title>
@@ -100,7 +105,7 @@ $rest = substr("abcdef", -3, 1); // gibt "d" zurück
 <?php
 $rest = substr("abcdef", 0, -1);  // gibt "abcde" zurück
 $rest = substr("abcdef", 2, -1);  // gibt "cde" zurück
-$rest = substr("abcdef", 4, -4);  // gibt "" zurück
+$rest = substr("abcdef", 4, -4);  // gibt false zurück
 $rest = substr("abcdef", -3, -1); // gibt "de" zurück
 ?>
 ]]>
@@ -115,7 +120,34 @@ $rest = substr("abcdef", -3, -1); // gibt "de" zurück
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den extrahierten Teil der Zeichenkette zurück. &return.falseforfailure;
+   Gibt den extrahierten Teil der Zeichenkette zurück.
+   &return.falseforfailure; oder eine leere Zeichenkette.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.2.2 - 5.2.6</entry>
+       <entry>
+         Wenn der <parameter>start</parameter> Parameter die Position einer
+         negativen Trunkierung oder außerhalb bezeichnet, wird false
+         zurückgegeben. Andere Versionen bekommen die Zeichenkette von start.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
   </para>
  </refsect1>
 
@@ -143,6 +175,40 @@ echo $string[strlen($string)-1]; // f
 ?>
 ]]>
     </programlisting>
+   </example>
+   <example>
+    <title><function>substr</function> Typumwandlungs Verhalten</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class apple {
+    public function __toString() {
+        return "green";
+    }
+}
+
+echo "1) ".var_export(substr("pear", 0, 2), true).PHP_EOL;
+echo "2) ".var_export(substr(54321, 0, 2), true).PHP_EOL;
+echo "3) ".var_export(substr(new apple(), 0, 2), true).PHP_EOL;
+echo "4) ".var_export(substr(true, 0, 1), true).PHP_EOL;
+echo "5) ".var_export(substr(false, 0, 1), true).PHP_EOL;
+echo "6) ".var_export(substr("", 0, 1), true).PHP_EOL;
+echo "7) ".var_export(substr(1.2e3, 0, 4), true).PHP_EOL;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+1) 'pe'
+2) '54'
+3) 'gr'
+4) '1'
+5) false
+6) false
+7) '1200'
+]]>
+    </screen>
    </example>
   </para>
  </refsect1>
@@ -173,6 +239,8 @@ var_dump(substr('a', 1)); // bool(false)
     <member><function>trim</function></member>
     <member><function>mb_substr</function></member>
     <member><function>wordwrap</function></member>
+    <member><link linkend="language.types.string.substr">Zeichenketten Zugriff
+    und Veränderung je Zeichen</link></member>
    </simplelist>
   </para>
  </refsect1>

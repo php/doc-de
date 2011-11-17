@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 309935 Maintainer: sammywg Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.str-replace">
  <refnamediv>
   <refname>str_replace</refname>
@@ -25,7 +25,7 @@
   <para>
    Wenn Sie keine ausgefallenen Ersetzungsregeln (wie Reguläre Ausdrücke)
    benötigen, sollten Sie immer diese Funktion anstelle von
-   <function>ereg_replace</function> oder <function>preg_replace</function>
+   <function>preg_replace</function>
    verwenden.
   </para>
  </refsect1>
@@ -53,6 +53,9 @@
      <term><parameter>search</parameter></term>
      <listitem>
       <para>
+        Der gesuchte Wert, auch <emphasis>Nadel (needle)</emphasis>
+        genannt. Ein Array kann genutzt werden, um mehrere Nadeln zu
+        bestimmen.
       </para>
      </listitem>
     </varlistentry>
@@ -60,6 +63,9 @@
      <term><parameter>replace</parameter></term>
      <listitem>
       <para>
+        Der Ersetzungswert, der gefundene <parameter>search</parameter>
+        Werte ersetzt. Ein Array kann genutzt werden, um mehrere Nadeln zu
+        bestimmen.
       </para>
      </listitem>
     </varlistentry>
@@ -78,8 +84,8 @@
      <listitem>
       <note>
        <simpara>
-        Sofern angegeben, enthält der Parameter die Anzahl der gefunden und
-        ersetzten Textstellen.
+        Falls übergeben, wird dies auf die Anzahl der durchgeführten
+        Ersetzungen gesetzt.
        </simpara>
       </note>
      </listitem>
@@ -144,7 +150,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>str_replace</function>-Beispiele</title>
+    <title>Grundlegende<function>str_replace</function>-Beispiele</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -162,10 +168,20 @@ $lecker = array("Pizza", "Bier", "Eiscreme");
 
 $newphrase = str_replace($gesund, $lecker, $phrase);
 
-// Die Verwendung des count-Parameters ist ab PHP 5.0.0 möglich
+// Liefert: 2
 $str = str_replace("ll", "", "good golly miss molly!", $count);
-echo $count; // 2
-
+echo $count;
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Beispiele möglicher <function>str_replace</function> Überraschungen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
 // Reihenfolge von Ersetzungen
 $str     = "Zeile 1\nZeile 2\rZeile 3\r\nZeile 4\n";
 $order   = array("\r\n", "\n", "\r");
@@ -173,7 +189,15 @@ $replace = '<br />';
 // Verarbeitet \r\n's zuerst, so dass sie nicht doppelt konvertiert werden
 $newstr = str_replace($order, $replace, $str);
 
+// Ausgabe: F da A durch B ersetzt wird, dann B durch C, und so weiter...
+// Letztlich wird E durch F ersetzt, wegen der Ersetzung von Links nach Rechts
+$search  = array('A', 'B', 'C', 'D', 'E');
+$replace = array('B', 'C', 'D', 'E', 'F');
+$subject = 'A';
+echo str_replace($search, $replace, $subject);
+
 // Ausgabe: apearpearle pear
+// Aus dem gleichen Grund wie oben beschrieben
 $letters = array('a', 'p');
 $fruit   = array('apple', 'pear');
 $text    = 'a p';
@@ -189,6 +213,16 @@ echo $output;
  <refsect1 role="notes">
   &reftitle.notes;
   &note.bin-safe;
+  <caution>
+   <title>Reihenfolge der Ersetzungen Überraschung</title>
+   <para>
+     Weil <function>str_ireplace</function> von links nach rechts ersetzt,
+     kann sie einen zuvor eingesetzten Wert ersetzen, falls mehrere
+     Ersetzungen durchgeführrt werden. Beispiel #2 in der Dokomenation
+     von <function>str_replace</function> zeigt, wie dies sie in der Praxis
+     betreffen kann.
+   </para>
+  </caution>
   <note>
    <para>
     Die Funktion berücksichtigt Groß- und Kleinschreibung. Verwenden Sie

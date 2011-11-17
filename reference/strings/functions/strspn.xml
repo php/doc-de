@@ -1,23 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 283839 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 311396 Maintainer: sammywg Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.strspn">
  <refnamediv>
   <refname>strspn</refname>
-  <refpurpose>Ermittelt die Länge der am Anfang übereinstimmenden Zeichen</refpurpose>
+  <refpurpose>
+   Ermittelt die Länge des initialen Abschnitts einer Zeichenkette, der
+   ausschließlich aus Zeichen besteht, die in einer übergebenen Maske
+   enthalten sind.
+  </refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>strspn</methodname>
-   <methodparam><type>string</type><parameter>str1</parameter></methodparam>
-   <methodparam><type>string</type><parameter>str2</parameter></methodparam>
+   <methodparam><type>string</type><parameter>subject</parameter></methodparam>
+   <methodparam><type>string</type><parameter>mask</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>start</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Ermittelt die Länge der am Anfang übereinstimmenden Zeichen.
+    Ermittelt die Länge des initialen Abschnitts von <parameter>subject</parameter>
+    der <emphasis>ausschließlich</emphasis> Zeichen
+    aus <parameter>mask</parameter> enthält.
+  </para>
+  <para>
+   Wenn <parameter>start</parameter> und <parameter>length</parameter>
+   ausgelassen werden, werden alle Zeichen von <parameter>subject</parameter>
+   untersucht. Wenn sie enthalten sind, ist das Ergebnis das Gleiche wie der
+   Aufruf <literal>strspn(substr($subject, $start, $length),
+   $mask)</literal> (siehe <xref linkend="function.substr" />
+   für mehr Informationen).
   </para>
   <para>
    Die Zeile
@@ -25,13 +39,15 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$var = strspn("42 ist die Antwort, was ist die Frage?", "1234567890");
+$var = strspn("42 ist die Antwort, was auf die 128. Frage?", "1234567890");
 ?>
 ]]>
     </programlisting>
    </informalexample>
-   ordnet 2 der Variable <varname>$var</varname> zu, da der String "42" das
-   längste Segment darstellt, das Zeichen der Menge "1234567890" enthält.
+   ordnet <literal>2</literal> der Variable <varname>$var</varname> zu, da der
+   String "42" das ist der initiale Abschnitt
+   des <parameter>subject</parameter> das ausschließlich aus Zeichen besteht,
+   die in der Menge "1234567890" enthalten sind.
   </para>
  </refsect1>
 
@@ -40,18 +56,18 @@ $var = strspn("42 ist die Antwort, was ist die Frage?", "1234567890");
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>str1</parameter></term>
+     <term><parameter>subject</parameter></term>
      <listitem>
       <para>
-       Die erste Zeichenkette.
+        Die zu untersuchende Zeichenkette.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>str2</parameter></term>
+     <term><parameter>mask</parameter></term>
      <listitem>
       <para>
-       Die zweite Zeichenkette.
+        Die Menge der erlaubten Zeichen.
       </para>
      </listitem>
     </varlistentry>
@@ -59,8 +75,23 @@ $var = strspn("42 ist die Antwort, was ist die Frage?", "1234567890");
      <term><parameter>start</parameter></term>
      <listitem>
       <para>
-       Die Anfangsstelle der zu untersuchenden Zeichenkette.
-       Negative Werte ermitteln die Position vom Ende der Zeichenkette aus.
+        Die Position in <parameter>subject</parameter> an der die Suche
+        startet.
+      </para>
+      <para>
+       Wurde <parameter>start</parameter> übergeben und ist nicht-negativ,
+       wird <function>strspn</function>
+       beginnen <parameter>subject</parameter> an der
+       <parameter>start</parameter>n Position zu untersuchen. Zum Beispiel in
+       der Zeichenkette '<literal>abcdef</literal>', das Zeichen an Position
+       <literal>0</literal> ist '<literal>a</literal>', das Zeichen an
+       Position <literal>2</literal> ist '<literal>c</literal>' und so weiter.
+      </para>
+      <para>
+       Wurde<parameter>start</parameter> übergeben und ist negativ, wird
+       <function>strspn</function> beginnen <parameter>subject</parameter> an
+       der <parameter>start</parameter>n Position vom Ende von
+       <parameter>subject</parameter> zu untersuchen.
       </para>
      </listitem>
     </varlistentry>
@@ -68,8 +99,19 @@ $var = strspn("42 ist die Antwort, was ist die Frage?", "1234567890");
      <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Die Länge der zu untersuchenden Zeichensequenz.
-       Negative Werte betrachten eine Anzahl von Zeichen vom Ende der Zeichenkette aus.
+        Die zu untersuchende Länge des Abschnitts
+       von <parameter>subject</parameter>.
+      </para>
+      <para>
+       Wurde <parameter>start</parameter> übergeben und ist nicht-negativ,
+       werden <parameter>length</parameter> Zeichen
+       von <parameter>subject</parameter> nach der Startposition untersucht.
+      </para>
+      <para>
+       Wurde <parameter>start</parameter> übergeben und ist negativ,
+       wird <parameter>subject</parameter> von der Startposition bis zu
+       <parameter>length</parameter> Zeichen vom Ende von
+       <parameter>subject</parameter> untersucht.
       </para>
      </listitem>
     </varlistentry>
@@ -80,8 +122,8 @@ $var = strspn("42 ist die Antwort, was ist die Frage?", "1234567890");
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die Länge des Abschnittes am Anfang von <parameter>str1</parameter>
-   zurück, der vollständig aus in <parameter>str2</parameter> angegebenen
+   Gibt die Länge des Abschnittes am Anfang von <parameter>subject</parameter>
+   zurück, der vollständig aus in <parameter>mask</parameter> angegebenen
    Zeichen besteht.
   </para>
  </refsect1>
@@ -119,10 +161,25 @@ $var = strspn("42 ist die Antwort, was ist die Frage?", "1234567890");
     <programlisting role="php">
 <![CDATA[
 <?php
-echo strspn("foo", "o", 1, 2); // 2
+// subject beginnt nicht mit einem der Zeichen aus mask
+var_dump(strspn("foo", "o"));
+
+// Untersuche zwei Zeichen aus subject beginnend bei Offset 1
+var_dump(strspn("foo", "o", 1, 2));
+
+// Untersuche ein Zeichen aus subject beginnend bei Offset 1
+var_dump(strspn("foo", "o", 1, 1));
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+int(0)
+int(2)
+int(1)
+]]>
+    </screen>
    </example>
   </para>
  </refsect1>

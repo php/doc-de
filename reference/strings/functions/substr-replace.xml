@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 310346 Maintainer: sammywg Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.substr-replace">
  <refnamediv>
   <refname>substr_replace</refname>
@@ -12,9 +12,9 @@
   <methodsynopsis>
    <type>mixed</type><methodname>substr_replace</methodname>
    <methodparam><type>mixed</type><parameter>string</parameter></methodparam>
-   <methodparam><type>string</type><parameter>replacement</parameter></methodparam>
-   <methodparam><type>int</type><parameter>start</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>replacement</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>start</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>length</parameter></methodparam>
   </methodsynopsis>
   <para>
    <function>substr_replace</function> ersetzt in einer Kopie von
@@ -34,6 +34,16 @@
      <listitem>
       <para>
        Die Eingabezeichenkette.
+      </para>
+      <para>
+       Ein <type>array</type> von <type>string</type>s kann übergeben werden;
+       die Ersetzungen erfolgen dann bei jeder Zeichenkette der Reihe nach.
+       In diesem Fall können
+       die <parameter>replacement</parameter>, <parameter>start</parameter>
+       und <parameter>length</parameter> Parameter entweder als Skalar
+       übergeben werden, die auf jede Eingabezeichenkette der Reihe nach
+       angewandt werden, oder als <type>array</type>s; in diesem Fall wird
+       das entsprechende Array Element für jede Eingabe Zeichenkette genutzt.
       </para>
      </listitem>
     </varlistentry>
@@ -92,11 +102,35 @@
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.3</entry>
+       <entry>
+        Alle Parameter akzeptieren nun <type>array</type>s.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>substr_replace</function>-Beispiel</title>
+    <title>Einfache <function>substr_replace</function>-Beispiele</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -123,6 +157,40 @@ echo substr_replace($var, '', 10, -1) . "<br />\n";
     </programlisting>
    </example>
   </para>
+  <para>
+   <example>
+    <title>
+     Nutzung von <function>substr_replace</function> um mehrere Zeichenketten
+     auf einmal zu ersetzen.
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$input = array('A: XXX', 'B: XXX', 'C: XXX');
+
+// Ein einfacher Fall: ersetze XXX in jeder Zeichenkette mit YYY.
+echo implode('; ', substr_replace($input, 'YYY', 3, 3))."\n";
+
+// Ein komplizierterer Fall bei dem jede Ersetzung unterschiedlich ist.
+$replace = array('AAA', 'BBB', 'CCC');
+echo implode('; ', substr_replace($input, $replace, 3, 3))."\n";
+
+// Ersetze eine jedesmal unterschiedliche Anzahl von Zeichen
+$length = array(1, 2, 3);
+echo implode('; ', substr_replace($input, $replace, 3, $length))."\n";
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+A: YYY; B: YYY; C: YYY
+A: AAA; B: BBB; C: CCC
+A: AAAXX; B: BBBX; C: CCC
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
@@ -136,6 +204,8 @@ echo substr_replace($var, '', 10, -1) . "<br />\n";
    <simplelist>
     <member><function>str_replace</function></member>
     <member><function>substr</function></member>
+    <member><link linkend="language.types.string.substr">Zeichenketten Zugriff
+    und Veränderung je Zeichen</link></member>
    </simplelist>
   </para>
  </refsect1>
