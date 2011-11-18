@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 283836 Maintainer: conni Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: conni Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.socket-recv">
  <refnamediv>
   <refname>socket_recv</refname>
@@ -17,7 +17,212 @@
    <methodparam><type>int</type><parameter>flags</parameter></methodparam>
   </methodsynopsis>
   <para>
-   &warn.undocumented.func;
+   Die <function>socket_recv</function> Funktion empfängt
+   <parameter>len</parameter> Bytes Daten in <parameter>buf</parameter> von
+   <parameter>socket</parameter>. <function>socket_recv</function> kann
+   genutzt werden, um Daten von verbundenen Sockets zu lesen. Zusätzlich
+   können einer oder mehrere Flags angegeben werden, um das Verhalten der
+   Funktion zu modifizieren.
+  </para>
+  <para>
+   <parameter>buf</parameter> wird als Referenz übergeben, daher muss er als
+   Variable in der Liste der Argumente angegeben werden. Gelesene Daten von
+   <parameter>socket</parameter> durch <function>socket_recv</function>
+   werden in <parameter>buf</parameter> zurückgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>socket</parameter></term>
+     <listitem>
+      <para>
+       Der <parameter>socket</parameter> muss eine socket Ressource sein, die
+       zuvor mit socket_create() erzeugt wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><parameter>buf</parameter></term>
+     <listitem>
+      <para>
+       Empfangene Daten werden in die Variable geschrieben, die durch
+       <parameter>buf</parameter> spezifiziert ist. Tritt ein Fehler auf, wird
+       die Verbindung zurückgesetzt oder, wenn keine Daten verfügbar sind, wird
+       <parameter>buf</parameter> auf &null; gesetzt.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><parameter>len</parameter></term>
+     <listitem>
+      <para>
+       Maximal <parameter>len</parameter> Bytes werden von dem entfernten
+       System abgerufen.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+       Der Wert von <parameter>flags</parameter> kann jede beliebige
+       Kombination der folgenden Flags sein, verknüpft mit dem binären ODER
+       (<literal>|</literal>) Operator.
+      </para>
+
+      <table>
+       <title>Mögliche Werte von <parameter>flags</parameter></title>
+       <tgroup cols="2">
+        <thead>
+         <row>
+          <entry>Flag</entry>
+          <entry>&Description;</entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry><constant>MSG_OOB</constant></entry>
+          <entry>
+           Verarbeite bandexterne (out-of-band) Daten.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MSG_PEEK</constant></entry>
+          <entry>
+           Lies Daten ab Anfang der Empfangs-Warteschlange, ohne die Daten
+           aus der Warteschlange zu löschen.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MSG_WAITALL</constant></entry>
+          <entry>
+           Blockiere so lange, bis mindestens <parameter>len</parameter> Daten
+           gelesen wurden. Wenn jedoch ein Signal empfangen wurde oder der
+           entfernte Host die Verbindung beendet, kann die Funktion auch weniger
+           Daten zurückgeben.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MSG_DONTWAIT</constant></entry>
+          <entry>
+           Wenn dieses Flag gesetzt ist, kehrt die Funktion zurück, auch wenn
+           sie normalerweise blockieren würde.
+          </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   <function>socket_recvfrom</function> gibt die Anzahl der empfangenen Bytes
+   zurück oder &false;, falls ein Fehler auftrat. Der aktuelle Fehlercode kann mit 
+   <function>socket_last_error</function> abgefragt werden. Dieser Fehlercode
+   kann an die Funktion <function>socket_strerror</function> übergeben werden,
+   um eine textuelle Beschreibung des Fehlers zu erhalten.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>socket_recv</function> Beispiel</title>
+    <para>
+     Dies ist eine einfache Umformulierung des ersten Beispieles
+     von <xref linkend="sockets.examples" /> unter Nutzung von
+     <function>socket_recv</function>.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+error_reporting(E_ALL);
+
+echo "<h2>TCP/IP Verbindung</h2>\n";
+
+/* Erhalte Port für den WWW Service. */
+$service_port = getservbyname('www', 'tcp');
+
+/* Erhalte die IP Adresse des Ziel Hosts. */
+$address = gethostbyname('www.example.com');
+
+/* Erzeuge ein TCP/IP Socket. */
+$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+if ($socket === false) {
+    echo "socket_create() schlug fehl: Grund: " . socket_strerror(socket_last_error()) . "\n";
+} else {
+    echo "OK.\n";
+}
+
+echo "Versuche Verbing zu '$address' auf Port '$service_port' aufzubauen...";
+$result = socket_connect($socket, $address, $service_port);
+if ($result === false) {
+    echo "socket_connect() schulg fehl.\nGrund: ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
+} else {
+    echo "OK.\n";
+}
+
+$in = "HEAD / HTTP/1.1\r\n";
+$in .= "Host: www.example.com\r\n";
+$in .= "Connection: Close\r\n\r\n";
+$out = '';
+
+echo "Sende HTTP HEAD Request...";
+socket_write($socket, $in, strlen($in));
+echo "OK.\n";
+
+echo "Lese Response:\n\n";
+$buf = 'Dies ist mein Puffer.';
+if (false !== ($bytes = socket_recv($socket, $buf, 2048, MSG_WAITALL))) {
+    echo "Las $bytes bytes von socket_recv(). Schliesse Socket...";
+} else {
+    echo "socket_recv() schlug fehl; Grund: " . socket_strerror(socket_last_error($socket)) . "\n";
+}
+socket_close($socket);
+
+echo $buf . "\n";
+echo "OK.\n\n";
+?>
+]]>
+    </programlisting>
+    <para>
+     Obiges Beispiel erzeugt eine Ausgabe ähnlich wie:
+    </para>
+    <screen>
+<![CDATA[
+<h2>TCP/IP Verbindung</h2>
+OK.
+Versuche Verbing zu '208.77.188.166' auf Port '80' aufzubauen...OK.
+Sende HTTP HEAD Request...OK.
+Lese Response:
+
+Schliesse Socket...HTTP/1.1 200 OK
+Date: Mon, 14 Sep 2009 08:56:36 GMT
+Server: Apache/2.2.3 (Red Hat)
+Last-Modified: Tue, 15 Nov 2005 13:24:10 GMT
+ETag: "b80f4-1b6-80bfd280"
+Accept-Ranges: bytes
+Content-Length: 438
+Connection: close
+Content-Type: text/html; charset=UTF-8
+
+OK.
+]]>
+    </screen>
+   </example>
   </para>
  </refsect1>
 
