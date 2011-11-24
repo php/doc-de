@@ -1,29 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.feof" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>feof</refname>
-    <refpurpose>Prüft, ob der Dateizeiger am Ende der Datei steht</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>feof</methodname>
-      <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Gibt &true; zurück, falls der Dateizeiger am Ende der Datei steht
-     oder ein Fehler aufgetreten ist, andernfalls &false;.
-    </para>
-    <para>
-     Der Dateizeiger muss gültig sein, d.h. die Datei, auf die gezeigt
-     wird, muss zuvor mit <function>fopen</function>,
-     <function>popen</function> oder <function>fsockopen</function>
-     geöffnet worden sein.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- EN-Revision: 301119 Maintainer: khp Status: ready -->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.feof">
+ <refnamediv>
+  <refname>feof</refname>
+  <refpurpose>Prüft, ob ein Dateizeiger am Ende der Datei steht</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>feof</methodname>
+   <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Prüft, ob ein Dateizeiger am Ende der Datei steht.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>handle</parameter></term>
+     <listitem>
+      &fs.validfp.all;
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt &true; zurück, wenn der Dateizeiger an EOF (Dateiende) steht oder ein
+   Fehler auftritt (inklusive Socket Zeitüberschreitung); ansonsten wird
+   &false; zurückgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <warning>
+   <para>
+    Wenn eine mit <function>fsockopen</function> geöffnete Verbindung nicht
+    durch den Server geschlossen wurde, wird <function>feof</function> hängen.
+    Um dies zu umgehen, beachten sie folgendes Beispiel:
+    <example>
+     <title>Zeitüberschreitungen mit <function>feof</function> abhandeln</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function safe_feof($fp, &$start = NULL) {
+ $start = microtime(true);
+
+ return feof($fp);
+}
+
+/* Annahme: $fp wurde zuvor mit fsockopen() geöffnet */
+
+$start = NULL;
+$timeout = ini_get('default_socket_timeout');
+
+while(!safe_feof($fp, $start) && (microtime(true) - $start) < $timeout)
+{
+ /* Abhandeln */
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </warning>
+  <warning>
+   <para>
+    Wenn der übergebene Dateizeiger nicht gültig ist, können sie eine
+    Endlosschleife erhalten, denn <function>feof</function> gibt nicht &true;
+    zurück.
+    <example>
+     <title><function>feof</function> Beispiel mit einem ungültigen Dateizeiger</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Wenn Datei nicht gelsen werden kann oder nicht existiert fopen gibt FALSE zurück
+$file = @fopen("no_such_file", "r");
+
+// FALSE von fopen wird eine Warnung  auslösen und hier in einer
+// Endlosschleife resultieren
+while (!feof($file)) {
+}
+
+fclose($file);
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </warning>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
