@@ -1,195 +1,390 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.fopen" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>fopen</refname>
-    <refpurpose>Öffnet eine Datei oder URL</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>resource</type><methodname>fopen</methodname>
-      <methodparam><type>string</type><parameter>filename</parameter></methodparam>
-      <methodparam><type>string</type><parameter>mode</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>use_include_path</parameter></methodparam>
-      <methodparam choice="opt"><type>resource</type><parameter>zcontext</parameter></methodparam>
-     </methodsynopsis>
-    <simpara>
-     <function>fopen</function> bindet eine benannte Resource, welche
-     mittels <parameter>filename</parameter> spezifiziert wurde, an einen
-     Stream. Hat <parameter>filename</parameter> die Form "schema://..."
-     wird angenommen, dass es sich hier um eine URL handelt und PHP sucht
-     nach einem Protokollhandler (auch als Wrapper bekannt) für dieses
-     Schema. Sind keine Wrapper für dieses Protokoll registriert, gibt
-     PHP als Hilfe zum Verfolgen potentieller Probleme in Ihrem Skript
-     einen Hinweis aus und setzt dann weiter fort, obwohl
-     <parameter>filename</parameter> eine reguläre Datei spezifiziert.
-    </simpara>
-    <simpara>
-     Ist PHP zu dem Schluss gekommen, dass <parameter>filename</parameter>
-     eine lokale Datei spezifiziert, wird es versuchen, einen Stream
-     an dieser Datei zu öffnen. Die Datei muss für PHP verfügbar sein,
-     weshalb Sie sicherstellen müssen, dass die Dateirechte diesen
-     Zugriff ermöglichen. Wenn Sie &safemode; oder <link
-     linkend="ini.open-basedir">open_basedir</link> aktiviert haben,
-     können weitere Einschränkungen zutreffen.
-    </simpara>
-    <simpara>
-     Kam PHP zum Schluss, dass es sich bei <parameter>filename</parameter>
-     um ein registriertes Protokoll handelt, und ist dieses Protokoll
-     als eine Netzwerk URL registriert, prüft PHP, ob <link
-     linkend="ini.allow-url-fopen">allow_url_fopen</link> aktiviert ist.
-     Ist es nicht aktiviert, gibt PHP eine Warnung aus, und der
-     Aufruf von fopen wird scheitern.
-    </simpara>
-    <note>
-     <simpara>
-      Die Liste der unterstützten Wrapper finden Sie unter
-      <xref linkend="wrappers"/>.
-     </simpara>
-    </note>
-    <para>
-     Der Parameter <parameter>mode</parameter> spezifiziert den von Ihnen
-     gewünschten Zugriffstyp auf den Stream und kann die folgenden Werte haben:
-     <table>
-      <title>
-       Liste von möglichen Modi für <function>fopen</function>
-       mit <parameter>mode</parameter>
-      </title>
-      <tgroup cols="2">
-       <thead>
-        <row>
-         <entry><parameter>mode</parameter></entry>
-         <entry>Beschreibung</entry>
-        </row>
-       </thead>
-       <tbody>
-        <row>
-         <entry><literal>'r'</literal></entry>
-         <entry>
-          Öffnet die Datei nur zum Lesen und positioniert den
-          Dateizeiger auf den Anfang der Datei.
-         </entry>
-        </row>
-        <row>
-         <entry><literal>'r+'</literal></entry>
-         <entry>
-          Öffnet die Datei zum Lesen und Schreiben und setzt den
-          Dateizeiger auf den Anfang der Datei.
-         </entry>
-        </row>
-        <row>
-         <entry><literal>'w'</literal></entry>
-         <entry>
-          Öffnet die Datei nur zum Schreiben und setzt den
-          Dateizeiger auf den Anfang der Datei sowie die Länge der Datei
-          auf 0 Byte. Wenn die Datei nicht existiert wird versucht sie
-          anzulegen.
-         </entry>
-        </row>
-        <row>
-         <entry><literal>'w+'</literal></entry>
-         <entry>
-          Öffnet die Datei zum Lesen und Schreiben und setzt den
-          Dateizeiger auf den Anfang der Datei sowie die Länge der Datei
-          auf 0 Byte. Wenn die Datei nicht existiert, wird versucht sie
-          anzulegen.
-         </entry>
-        </row>
-        <row>
-         <entry><literal>'a'</literal></entry>
-         <entry>
-          Öffnet die Datei nur zum Schreiben. Positioniert den
-          Dateizeiger auf das Ende der Datei. Wenn die Datei nicht
-          existiert, wird versucht sie anzulegen.
-         </entry>
-        </row>
-        <row>
-         <entry><literal>'a+'</literal></entry>
-         <entry>
-          Öffnet die Datei zum Lesen und Schreiben. Positioniert
-          den Dateizeiger auf das Ende der Datei. Wenn die Datei nicht
-          existiert, wird versucht sie anzulegen.
-         </entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </table>
-    </para>
-    <note>
-     <para>
-      Zusätzlich kann <parameter>mode</parameter> der Buchstabe 'b'
-      hinzugefügt werden, der die Behandlung von Binärdateien erlaubt.
-      Dies ist nur auf Systemen sinnvoll, welche zwischen Binär- und
-      Text-Dateien unterscheiden (z.B. Windows. Ist bei Unix sinnlos).
-      Wenn das Feature nicht gebraucht wird, wird es einfach ignoriert.
-      Sie sollten den 'b' Flag verwenden, um Ihre Skripte portabler zu
-      machen.
-     </para>
-    </note>
-    <para>
-     Sie können den optionalen Parameter <parameter>use_include_path</parameter>
-     auf '1' oder &true; setzten, wenn Sie die Datei auch im <link
-     linkend="ini.include-path">include_path</link> suchen möchten.
-    </para>
-    <para>
-     Der optionale vierte Parameter <parameter>zcontext</parameter> wird
-     zur Spezifikation von Einstellungsparametern und Callbacks verwendet.
-    </para>
-    <simpara>
-     Scheitert das Öffnen der Datei, gibt die Funktion &false; zurück.
-    </simpara>
-    <para>
-     <example>
-      <title><function>fopen</function> Beispiele</title>
-      <programlisting role="php">
+<!-- EN-Revision: 315065 Maintainer: khp Status: ready -->
+<refentry xml:id="function.fopen" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>fopen</refname>
+  <refpurpose>Öffnet eine Datei oder URL</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>fopen</methodname>
+   <methodparam><type>string</type><parameter>filename</parameter></methodparam>
+   <methodparam><type>string</type><parameter>mode</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>use_include_path</parameter><initializer>false</initializer></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>context</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>fopen</function> bindet eine benannte Ressource, die durch
+   <parameter>filename</parameter> spezifiziert wurde, an einen Stream.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>filename</parameter></term>
+     <listitem>
+      <para>
+       Hat <parameter>filename</parameter> die Form "schema://..."
+       wird angenommen, dass es sich hier um einen URL handelt und PHP sucht
+       nach einem Protokollhandler (auch als Wrapper bekannt) für dieses
+       Schema. Sind keine Wrapper für dieses Protokoll registriert, gibt
+       PHP als Hilfe zum Verfolgen potentieller Probleme in Ihrem Skript
+       einen Hinweis aus und setzt dann weiter fort, als wenn
+       <parameter>filename</parameter> eine reguläre Datei spezifiziert.
+      </para>
+      <para>
+       Ist PHP zu dem Schluss gekommen, dass <parameter>filename</parameter>
+       eine lokale Datei spezifiziert, wird es versuchen, einen Stream
+       an dieser Datei zu öffnen. Die Datei muss für PHP zugreifbar sein,
+       weshalb Sie sicherstellen müssen, dass die Dateirechte diesen
+       Zugriff ermöglichen. Wenn Sie &safemode; oder
+       <link linkend="ini.open-basedir">open_basedir</link> aktiviert haben,
+       können weitere Einschränkungen zutreffen.
+      </para>
+      <para>
+       Kam PHP zum Schluss, dass es sich bei <parameter>filename</parameter>
+       um ein registriertes Protokoll handelt, und ist dieses Protokoll
+       als ein Netzwerk URL registriert, prüft PHP, ob
+       <link linkend="ini.allow-url-fopen">allow_url_fopen</link> aktiviert
+       ist. Ist es nicht aktiviert, gibt PHP eine Warnung aus, und der
+       Aufruf von fopen wird scheitern.
+      </para>
+      <note>
+       <para>
+        Die Liste der unterstützten Protokolle können Sie unter
+        <xref linkend="wrappers"/> finden. Einige Protokolle (auch als
+        <literal>Wrapper</literal> bezeichnet)
+        unterstützen <literal>context</literal> und/oder &php.ini; Optionen.
+        Beziehen sie sich auf die jeweilige Seite für das genutzte Potokoll,
+        um eine Liste der Optionen, die gesetzt werden können, zu erhalten.
+        (z.B. &php.ini; Wert <literal>user_agent</literal> genutzt vom
+        <literal>http</literal> Wrapper).
+       </para>
+      </note>
+      <para>
+       Achten sie darauf, unter Windows alle Backslash-Zeichen, die in Pfaden
+       genutzt werden, zu maskieren oder nutzen sie Schrägstriche (Slash).
+       <informalexample>
+        <programlisting role="php">
 <![CDATA[
 <?php
-$handle = fopen ("/home/rasmus/file.txt", "r");
-$handle = fopen ("/home/rasmus/file.gif", "wb");
-$handle = fopen ("http://www.example.com/", "r");
-$handle = fopen ("ftp://user:password@example.com/somefile.txt", "w");
+$handle = fopen("c:\\verzeichnis\\ressource.txt", "r");
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <simpara>
-     Wenn Sie Probleme mit dem Lesen oder Schreiben von Dateien haben 
-     und PHP als Servermodul benutzen, stellen Sie zunächst
-     sicher, dass die Dateien und Verzeichnisse die Sie benutzen
-     wollen auch für den Server-Prozess zugänglich sind
-     (Rechtevergabe).
-    </simpara>
-    <para>
-     Achten Sie auf Windows-Systemen darauf, dass Sie als
-     Verzeichnistrenner normale Schrägstriche '/' benutzen um
-     plattformunabhängig programmieren zu können. Sollten Sie dennoch
-     Backslashes verwenden, vergessen Sie nicht diese zu escapen '\\'
-     <informalexample>
-      <programlisting role="php">
+        </programlisting>
+       </informalexample>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
+     <listitem>
+      <para>
+       Der <parameter>mode</parameter> Parameter spezifiziert den Zugriffstyp,
+       den sie auf den Stream anfordern. Es kann einer der folgenden sein:
+       <table>
+        <title>
+         Eine Liste der möglichen Modi von <function>fopen</function> mittels
+         <parameter>mode</parameter>
+        </title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry><parameter>mode</parameter></entry>
+           <entry>Beschreibung</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><literal>'r'</literal></entry>
+           <entry>
+            Nur zum Lesen geöffnet; platziere Dateizeiger auf Dateianfang.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'r+'</literal></entry>
+           <entry>
+            Zum Lesen und Schreiben geöffnet; platziere Dateizeiger auf
+            Dateianfang.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'w'</literal></entry>
+           <entry>
+            Nur zum Schreiben geöffnet; platziere Dateizeiger auf Dateianfang
+            und kürze die Datei auf eine Länge von 0. Existiert die Datei
+            nicht, versuche, diese zu erzeugen.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'w+'</literal></entry>
+           <entry>
+            Zum Schreiben und Lesen geöffnet; platziere Dateizeiger auf
+            Dateianfang und kürze die Datei auf eine Länge von 0. Existiert
+            die Datei nicht, versuche, diese zu erzeugen.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'a'</literal></entry>
+           <entry>
+            Nur zum Schreiben geöffnet; platziere Dateizeiger auf Dateiende.
+            Existiert die Datei nicht, versuche, diese zu erzeugen.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'a+'</literal></entry>
+           <entry>
+            Zum Schreiben und Lesen geöffnet; platziere Dateizeiger auf
+            Dateiende. Existiert die Datei nicht, versuche, diese zu erzeugen.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'x'</literal></entry>
+           <entry>
+            Erzeuge und Öffne nur zum Schreiben; platziere Dateizeiger auf
+            Dateianfang. Falls die Datei schon existiert, wird der
+            <function>fopen</function> Aufruf fehlschlagen durch Rückgabe von
+            &false; und dem Auslösen eines Fehlers der Stufe
+            <constant>E_WARNING</constant>. Existiert die Datei nicht,
+            versuche, diese zu erzeugen. Dies ist zur Angabe der
+            <literal>O_EXCL|O_CREAT</literal> Flags für den darunterliegenden
+            <literal>open(2)</literal> System Aufruf äquivalent.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'x+'</literal></entry>
+           <entry>
+            Erzeuge und Öffne zum Schreiben und Lesen; ansonsten ist das
+            Verhalten gleich wie bei <literal>'x'</literal>.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'c'</literal></entry>
+           <entry>
+            Öffne Datei nur zum Schreiben. Wenn die Datei nicht existiert,
+            wird diese erzeugt. Wenn sie existiert, wird sie weder gekürzt (im
+            Gegensatz zu <literal>'w'</literal>), noch schlägt der Aufruf
+            dieser Funktion fehl (wie dies mit <literal>'x'</literal> der Fall
+            ist). Der Dateizeiger wird auf den Dateianfang platziert. Dies
+            kann nützlich sein, wenn man eine "beratende" (kooperative) Sperre
+            erhalten möchte (siehe <function>flock</function>) bevor man
+            versucht, die Datei zu ändern, da die Nutzung
+            von <literal>'w'</literal> die Datei kürzen könnte, bevor die
+            Sperre erhalten wurde (falls Kürzen gewünscht ist, kann
+            <function>ftruncate</function> genutzt werden, nachdem die Sperre
+            angefragt wurde).
+           </entry>
+          </row>
+          <row>
+           <entry><literal>'c+'</literal></entry>
+           <entry>
+            Öffne Datei zum Lesen und Schreiben; ansonsten ist das
+            Verhalten gleich wie bei <literal>'c'</literal>.
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
+      <note>
+       <para>
+        Verschiedene Betriebssysteme haben unterschiedliche Zeilenende
+        Konventionen. Wenn sie eine Text Datei schreiben und einen
+        Zeilenumbruch einfügen möchten, müssen sie das/die korrekte(n)
+        Zeilenende Zeichen für ihr Betriebssystem nutzen. Unix basierte
+        Systeme nutzen <literal>\n</literal> als Zeilenende Zeichen, Windows
+        basierte Systeme nutzen <literal>\r\n</literal> als Zeilenende Zeichen
+        und Macintosh basierte Systeme nutzen <literal>\r</literal> als
+        Zeilenende Zeichen.
+       </para>
+       <para>
+        Wenn sie die falschen Zeilenende Zeichen beim Schreiben ihrer Dateien
+        nutzen, kann es sein, dass andere Anwendungen, die diese Dateien
+        öffnen, "seltsam aussehen".
+       </para>
+       <para>
+        Windows bietet einen Text-Mode translations Flag
+        (<literal>'t'</literal>) an, der transparent <literal>\n</literal> zu
+        <literal>\r\n</literal> übersetzt, wenn mit der Datei gearbeitet wird.
+        Andererseits können sie auch <literal>'b'</literal> nutzen, um
+        Binärmode zu erzwingen, der ihre Daten nicht übersetzt. Um diese Flags
+        zu nutzen, geben sie entweder <literal>'b'</literal>
+        oder <literal>'t'</literal> als das letzte Zeichen des
+        <parameter>mode</parameter> Parameters an.
+       </para>
+       <para>
+        Der Standard Übersetzungsmodus hängt von der SAPI und der PHP Version
+        ab, die sie nutzen, daher ist es empfehlenswert, immer den passenden
+        Flag aus Portabilitätsgründen anzugeben. Sie
+        sollten <literal>'t'</literal> Modus nutzen, wenn sie mit Textdateien
+        arbeiten und sie nutzen <literal>\n</literal> um die Zeilenenden im
+        Skript zu begrenzen, erwarten aber, dass ihre Dateien mit Anwendungen
+        wie etwa Notepad lesbar sind. Ansonsten sollten
+        sie <literal>'b'</literal> nutzen.
+       </para>
+       <para>
+        Wenn sie beim Arbeiten mit binären Dateien nicht das 'b' Flag angeben,
+        können sie seltsame Probleme mit ihren Daten erleben, einschließlich
+        zerstörter Bild Dateien und merkwürdiger Probleme mit
+        <literal>\r\n</literal> Zeichen.
+       </para>
+      </note>
+      <note>
+       <para>
+        Aus Portabilitätsgründen wird dringend empfohlen, dass sie immer das
+        'b' Flag nutzen, wenn sie Dateien mit <function>fopen</function>
+        öffnen.
+       </para>
+      </note>
+      <note>
+       <para>
+        Außerdem wird aus Gründen der Portabilität dringend empfohlen, dass
+        sie Code umschreiben, der den <literal>'t'</literal> Modus nutzt oder
+        sich darauf verlässt, so dass die korrekten Zeilenendungen und der
+        <literal>'b'</literal> Modus stattdessen genutzt werden.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>use_include_path</parameter></term>
+     <listitem>
+      <para>
+       Der optionale dritte Parameter <parameter>use_include_path</parameter>
+       kann auf '1' oder &true; gesetzt werden, wenn sie wollen, dass nach der
+       Datei auch im <link linkend="ini.include-path">include_path</link>
+       gesucht wird.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>context</parameter></term>
+     <listitem>
+      &note.context-support;
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt bei Erfolg eine Dateizeiger Ressource zurück oder &false; bei Fehlern.
+  </para>
+ </refsect1>
+
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <para>
+   Wenn das Öffnen fehlschlägt, wird ein Fehler der Stufe
+   <constant>E_WARNING</constant> erzeugt. Sie können <link
+   linkend="language.operators.errorcontrol">@</link> um diese Warnung zu
+   unterdrücken.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.2</entry>
+       <entry>
+        Seit PHP 4.3.2 ist der Standard Modus auf binär für alle Plattformen,
+        die zwischen binärem und Text Modus unterscheiden, gesetzt. Wenn sie
+        Probleme mit ihren Skripten nach einem Upgrade haben, versuchen sie
+        als Übergangslösung das <literal>'t'</literal> Flag zu nutzen bis sie
+        ihr Skript wie zuvor beschrieben portabler umgeschrieben haben.
+       </entry>
+      </row>
+      <row>
+       <entry>4.3.2</entry>
+       <entry>
+        Die <literal>'x'</literal> und <literal>'x+'</literal> Optionen wurden
+        hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>5.2.6</entry>
+       <entry>
+        Die <literal>'c'</literal> und <literal>'c+'</literal> Optionen wurden
+        hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>fopen</function> Beispiele</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-$handle = fopen ("c:\\data\\info.txt", "r");
+$handle = fopen("/home/rasmus/file.txt", "r");
+$handle = fopen("/home/rasmus/file.gif", "wb");
+$handle = fopen("http://www.example.com/", "r");
+$handle = fopen("ftp://user:password@example.com/somefile.txt", "w");
 ?>
 ]]>
-      </programlisting>
-     </informalexample>
-    </para>
-    <simpara>
-     Siehe auch <xref linkend="wrappers"/>,
-     <function>fclose</function>,
-     <function>fgets</function>, 
-     <function>fsockopen</function>,
-     <function>file</function>,
-     <function>file_exists</function>,
-     <function>is_readable</function>,
-     <function>socket_set_timeout</function> und
-     <function>popen</function>.
-    </simpara>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  &warn.ssl-non-standard;
+  &note.sm.uidcheck.dir;
+  <para>
+   Wenn sie Probleme beim Lesen und Schrieben von Dateien haben und sie nutzen
+   die Server Modul Version von PHP, denken sie daran, sicherzustellen, dass
+   die Dateien und Verzeichnisse, die sie nutzen, für den Server Prozess
+   zugänglich sind.
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><xref linkend="wrappers"/></member>
+    <member><function>fclose</function></member>
+    <member><function>fgets</function></member>
+    <member><function>fread</function></member>
+    <member><function>fwrite</function></member>
+    <member><function>fsockopen</function></member>
+    <member><function>file</function></member>
+    <member><function>file_exists</function></member>
+    <member><function>is_readable</function></member>
+    <member><function>stream_set_timeout</function></member>
+    <member><function>popen</function></member>
+    <member><function>stream_context_create</function></member>
+    <member><function>umask</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

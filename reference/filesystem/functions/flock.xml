@@ -1,103 +1,246 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.flock" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>flock</refname>
-    <refpurpose>Portables Datei-Verriegelungs-Verfahren</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>flock</methodname>
-      <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
-      <methodparam><type>int</type><parameter>operation</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>&amp;wouldblock</parameter></methodparam>
-     </methodsynopsis>
-    <simpara>
-     PHP liefert einen portablen Weg, Dateien in einer "beratenden"
-     Art und Weise zu verriegeln. D.h. alle zugreifende Programme
-     müssen die gleiche Art und Weise der Verriegelung benutzen, oder
-     es funktioniert nicht.
-    </simpara>
-    <simpara>
-     <function>flock</function> arbeitet mit <parameter>handle</parameter>,
-     welcher ein existierender Dateizeiger sein muss. Der Parameter
-     <parameter>operation</parameter> bestimmt die Art der
-     Verriegelung und kann einen der folgenden Werte annehmen:
-    </simpara>
-    <para>
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        Um eine verteilte, nur lesende Verriegelung zu erhalten, setzen Sie
-        <parameter>operation</parameter> auf <constant>LOCK_SH</constant>
-        (bzw. 1 vor PHP 4.0.1).
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Um eine exklusive, nur schreibende Verriegelung zu erhalten, setzen Sie
-        <parameter>operation</parameter> auf <constant>LOCK_EX</constant> (bzw.
-        2 vor PHP 4.0.1).
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Um eine Verriegelung freizugeben (lesend oder schreibend), setzen Sie
-        <parameter>operation</parameter> auf <constant>LOCK_UN</constant> (bzw.
-        3 vor PHP 4.0.1).
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Wenn Sie Zugriffe während der Verriegelung durch <function>flock</function>
-        erlauben wollen, fügen Sie <constant>LOCK_NB</constant> (bzw. 4 vor PHP
-        4.0.1) zu <parameter>operation</parameter> hinzu.
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <simpara>
-     <function>flock</function> erlaubt es Ihnen ein einfaches
-     Leser/Schreiber Modell zu erstellen, welches auf fast jeder Plattform
-     benutzt werden kann (inkl. den meisten UNIX-Derivaten und auch Windows).
-     Das optionale dritte Argument ist auf &true; gesetzt, wenn die 
-     Verriegelung sperren sollte (EWOULDBLOCK errno Bedingung).
-    </simpara>
-    <simpara>
-      &return.success;
-    </simpara>
-    <note>
-     <para>
-      Da <function>flock</function> einen Dateizeiger benötigt, könnten Sie
-      eine spezielle Sperrdatei benutzen, um den Zugriff auf eine Datei zu
-      schützen, welche Sie mittels Öffnen im Schreibmodus (mit dem Argument
-      "w" or "w+" von <function>fopen</function>) kürzen wollen.
-     </para>
-    </note>
-    <warning>
-     <para>
-      <function>flock</function> funktioniert nicht auf NFS und verschiedenen
-      anderen vernetzten Dateisystemen. Für weitere Detail konsultieren Sie
-      bitte Ihre Betriebssystemdokumentation.
-     </para>
-     <para>
-      Bei einigen Betriebssystemen ist <function>flock</function> auf dem
-      Prozesslevel implementiert. Wenn Sie ein multithreaded Server API wie
-      ISAPI benutzen können Sie sich nicht auf <function>flock</function>
-      verlassen, um Dateien vor anderen PHP-Skripten zu schützen, welche in
-      parallelen Threads der gleichen Server-Instanz laufen!
-     </para>
-     <para>
-      <function>flock</function> wird antiquierten Dateisystemen wie 
-      <literal>FAT</literal> und dessen Derivate nicht unterstützt, und gibt
-      deshalb in solchen Umgebungen immer &false; zurück (Dies ist speziell
-      bei Windows 98 Benutzern der Fall).
-     </para>
-    </warning>
-   </refsect1>
-  </refentry>
+<!-- EN-Revision: 301386 Maintainer: khp Status: ready -->
+<refentry xml:id="function.flock" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>flock</refname>
+  <refpurpose>Portables Datei-Sperr-Verfahren (advisory locking)</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>flock</methodname>
+   <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
+   <methodparam><type>int</type><parameter>operation</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter role="reference">wouldblock</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>flock</function> erlaubt ihnen, ein einfaches Leser/Schreiber
+   Modell umzusetzen, was auf nahezu jeder Platform (inklusive der meisten
+   Unix Abkömmlinge und sogar Winows) genutzt werden kann.
+  </para>
+  <para>
+   Unter PHP Versionen vor 5.3.2, wurde die Sperre auch von
+   <function>fclose</function> gelöst (was auch automatisch aufgerufen wird,
+   wenn das Skript endet).
+  </para>
+  <para>
+   PHP unterstützt eine portable Art komplette Dateien "beratend" zu sperren
+   (was bedeutet, dass alle zugreifenden Programme das gleiche Sperrverfahren
+   nutzen müssen, oder die Sperre wird nicht wirken). Standardmäßig wird diese
+   Funktion blockieren, bis die angefragte Sperre erlangt wurde; dies kann
+   (auf nicht-Windows Systemen) mit der <constant>LOCK_NB</constant> Option,
+   dokumentiert unten, gesteuert werden.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>handle</parameter></term>
+     <listitem>
+      &fs.file.pointer;
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>operation</parameter></term>
+     <listitem>
+      <para>
+       <parameter>operation</parameter> ist einer der Folgenden Werte:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          <constant>LOCK_SH</constant> um eine geteilte Sperre (Leser) zu
+          erhalten.
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>LOCK_EX</constant> um eine exklusive Sperre (Schreiber) zu
+          erhalten.
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>LOCK_UN</constant> um eine Sperre zu lösen (geteilt oder
+          exklusiv).
+         </simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
+      <para>
+       Man kann auch <constant>LOCK_NB</constant> als Bitmaske zu einer der
+       obigen Operationen hinzufügen, falls man nicht möchte,
+       dass <function>flock</function> während der Sperrens blockiert (wird
+       nicht unter Windows unterstützt).
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>wouldblock</parameter></term>
+     <listitem>
+      <para>
+       Das optionale dritte Argument ist auf &true; gesetzt, falls das Sperren
+       blockierte (EWOULDBLOCK Fehler Nummer). (wird nicht unter Windows
+       unterstützt)
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.3.2</entry>
+       <entry>
+        Das automatische Entsperren, wenn das Ressource handle der Datei
+        geschlossen wurde, wurde entfernt. Entsperren muss nun immer manuell
+        ausgeführt werden.
+       </entry>
+      </row>
+      <row>
+       <entry>4.0.1</entry>
+       <entry>
+        Die <literal>LOCK_XXX</literal> Konstanten wurden hinzugefügt. Zuvor
+        mussten sie 1 für <constant>LOCK_SH</constant>, 2 für
+        <constant>LOCK_EX</constant>, 3 für <constant>LOCK_UN</constant> und
+        4 für <constant>LOCK_NB</constant> nutzen.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>flock</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$fp = fopen("/tmp/lock.txt", "r+");
+
+if (flock($fp, LOCK_EX)) { // exklusive Sperre
+    ftruncate($fp, 0); // kürze Datei
+    fwrite($fp, "Write something here\n");
+    flock($fp, LOCK_UN); // Gib Sperre frei
+} else {
+    echo "Konnte Sperre nicht erhalten!";
+}
+
+fclose($fp);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>flock</function> Nutzung der <constant>LOCK_NB</constant> Option</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$fp = fopen('/tmp/lock.txt', 'r+');
+
+/* Aktiviere die LOCK_NB Option bei einer LOCK_EX Operation */
+if(!flock($fp, LOCK_EX | LOCK_NB)) {
+    echo 'Kann Sperre nicht erhalten';
+    exit(-1);
+}
+
+/* ... */
+
+fclose($fp);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    <function>flock</function> nutzt "verbindliche" (mandatory) anstatt
+    "beratende" (advisory) Sperren unter Windows. "Verbindliches" Sperren wird
+    auch unter Linux und System V basierten Betriebssystemen, durch den
+    üblichen Mechanismus, der von dem fcntl() System Aufruf geliefert wird,
+    unterstützt: das heißt, falls bei der fraglichen Datei das setgid
+    Zugriffs-Bit gesetzt ist und das Ausführungs-Bit für Gruppen null ist.
+    Unter Linux muss das Dateisystem zusätzlich mit der Mount Option mand
+    eingebunden sein, damit dies Auswirkungen hat.
+   </para>
+  </note>
+  <note>
+   <para>
+    Da <function>flock</function> einen Dateizeiger benötigt, müssen Sie unter
+    Umständen
+    eine spezielle Sperrdatei benutzen, um den Zugriff auf eine Datei zu
+    schützen, welche Sie mittels Öffnen im Schreibmodus (mit dem Argument
+    "w" or "w+" von <function>fopen</function>) kürzen wollen.
+   </para>
+  </note>
+  <note>
+   <para>
+    Kann nur mit Dateizeigern verwendet werden, die von <function>fopen</function>
+    für lokale Dateien zurückgegeben wurden oder mit Dateizeigern, die auf
+    Nutzer-Modus Streams zeigen, die
+    die <function>streamWrapper::stream_lock</function> Methode
+    implementieren.
+   </para>
+  </note>
+  <warning>
+   <para>
+    Weisst man dem <parameter>handle</parameter> Argument einen anderen Wert
+    zu, wird nachfolgender Code die Sperre lösen.
+   </para>
+  </warning>
+  <warning>
+   <para>
+    Bei einigen Betriebssystemen ist <function>flock</function> auf dem
+    Prozesslevel implementiert. Wenn Sie ein multithreaded Server API wie
+    ISAPI benutzen können Sie sich nicht auf <function>flock</function>
+    verlassen, um Dateien vor anderen PHP-Skripten zu schützen, welche in
+    parallelen Threads der gleichen Server-Instanz laufen!
+   </para>
+   <para>
+    <function>flock</function> wird antiquierten Dateisystemen wie
+    <literal>FAT</literal> und dessen Derivate nicht unterstützt, und gibt
+    deshalb in solchen Umgebungen immer &false; zurück (Dies ist speziell
+    bei Windows 98 Benutzern der Fall).
+   </para>
+  </warning>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
