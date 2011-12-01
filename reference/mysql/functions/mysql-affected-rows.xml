@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
 
 <refentry xml:id="function.mysql-affected-rows" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
-  <refname>mysql_affected_rows</refname> 
+  <refname>mysql_affected_rows</refname>
   <refpurpose>
    Liefert die Anzahl betroffener Datensätze einer vorhergehenden
    MySQL Operation
@@ -14,121 +14,152 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>mysql_affected_rows</methodname>
-   <methodparam choice="opt"><type>resource</type><parameter>
-     Verbindungs-Kennung
-    </parameter></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter></methodparam>
   </methodsynopsis>
-  <para> 
-   <function>mysql_affected_rows</function> liefert die Anzahl
-   betroffener Datensätze durch die letzte INSERT, UPDATE oder
-   DELETE Anfrage an den Server, die mit der angegebenen
-   <parameter>Verbindungs-Kennung</parameter> assoziiert wird.
-   Wird die Verbindungskennung nicht angegeben, wird die letzte
-   durch <function>mysql_connect</function> geöffnete Verbindung
-   angenommen.
+  <para>
+   Liefert die Anzahl betroffener Datensätze durch die letzte INSERT, UPDATE oder
+   DELETE Anweisung, die mit <parameter>link_identifier</parameter> assoziiert
+   ist.
   </para>
-  <note>
-   <para>
-    Falls Sie Transaktionen verwenden, müssen Sie
-    <function>mysql_affected_rows</function> unmittelbar nach Ihrer INSERT,
-    UPDATE, oder DELETE Anfrage aufrufen, nicht nach dem Commit.
-   </para>
-  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysql.linkid.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt bei Erfolg die Anzahl betroffener Datensätze und -1 falls die letzte
+   Abfrage fehlschlug zurück.
+  </para>
   <para>
    War die letzte Anfrage ein DELETE-Anweisung ohne WHERE Bedingung,
-   wurden alle Datensätze aus der Tabelle gelöscht. Für MySQL 
-   Versionen vor 4.1.2 wird diese Funktion hier aber Null (0) 
+   wurden alle Datensätze aus der Tabelle gelöscht. Für MySQL
+   Versionen vor 4.1.2 wird diese Funktion hier aber Null (0)
    zurückliefern.
   </para>
-  <note>
-   <para>
-    Benutzen Sie UPDATE wird MySQL keine Spalten aktualisieren,
-    bei denen der neue dem alten Wert entpspricht.
-    Das kann dazu führen, dass <function>mysql_affected_rows</function>
-    nicht die tatsächliche Anzahl der betroffenen Zeilen liefert, sondern
-    nur die, die wörtlich durch die Anfrage betroffen sind.
-   </para>
-   <para>
-    REPLACE Anfragen löschen zunächst den Eintrag mit dem gleichen 
-    Primärschlüssel und fügen dann den neuen Eintrag ein. Diese
-    Funktion gibt in diesem Fall die Summe aus gelöschten und
-    eingefügten Einträgen zurück.
-   </para>
-  </note>
   <para>
-   Um die Anzahl der gelieferten Datensätze einer SELECT-Anfrage zu 
-   erhalten benutzen Sie stattdessen die Funktion 
-   <function>mysql_num_rows</function>.
+   Benutzen Sie UPDATE wird MySQL keine Spalten aktualisieren,
+   bei denen der neue dem alten Wert entpspricht.
+   Das kann dazu führen, dass <function>mysql_affected_rows</function>
+   nicht die tatsächliche Anzahl der betroffenen Zeilen liefert, sondern
+   nur die, die wörtlich durch die Anfrage betroffen sind.
   </para>
   <para>
-   Falls die letze Anfrage fehlschlägt, liefert diese Funktion -1 zurück.
+   REPLACE Anfragen löschen zunächst den Eintrag mit dem gleichen
+   Primärschlüssel und fügen dann den neuen Eintrag ein. Diese
+   Funktion gibt in diesem Fall die Summe aus gelöschten und
+   eingefügten Einträgen zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
    <example>
-    <title>Delete-Query</title>
+    <title><function>mysql_affected_rows</function> Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-/* Verbindung zur Datenabank */
 $link = mysql_connect('localhost', 'mysql_user', 'mysql_password');
 if (!$link) {
     die('Keine Verbindung möglich: ' . mysql_error());
 }
 mysql_select_db('mydb');
 
-/* Das sollte die korrekte Anzahl gelöschter Datensätze liefern */
-mysql_query("DELETE FROM mytable WHERE id < 10");
-printf ("Datensätze gelöscht: %d\n", mysql_affected_rows());
+/* dies sollte die korrekte Anzahl gelöschter Datensätze zurückgeben */
+mysql_query('DELETE FROM mytable WHERE id < 10');
+printf("Gelöschte Datensätze: %d\n", mysql_affected_rows());
 
-// Mit einer where Bedingung, die niemals wahr sein kann,
-// sollte 0 zurückgegben werden
+/* mit einer WHERE Bedingung, die niemals wahr ist, sollte 0 zurückgegeben
+   werden */
 mysql_query('DELETE FROM mytable WHERE 0');
-printf ("Datensätze gelöscht: %d\n", mysql_affected_rows());
+printf("Gelöschte Datensätze: %d\n", mysql_affected_rows());
 ?>
 ]]>
     </programlisting>
-    <para>
-     Das obige Beispiel gibt folgendes aus:
-    </para>
+    &example.outputs.similar;
     <screen>
 <![CDATA[
-Datensätze gelöscht: 10
-Datensätze gelöscht: 0
+Gelöschte Datensätze: 10
+Gelöschte Datensätze: 0
 ]]>
     </screen>
    </example>
   </para>
   <para>
    <example>
-    <title>Update-Query</title>
+    <title><function>mysql_affected_rows</function> Beispiel mit Transaktionen</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-/* Verbindung zur Datenabank */
-mysql_pconnect("localhost", "mysql_user", "mysql_password")
-    or die ("Keine Verbindung möglich: " : . mysql_error());
-mysql_select_db("mydb");
+$link = mysql_connect('localhost', 'mysql_user', 'mysql_password');
+if (!$link) {
+    die('keine Verbindung möglich: ' . mysql_error());
+}
+mysql_select_db('mydb');
 
-/* Update von Datensätzen */
+/* Update der Datensätze */
 mysql_query("UPDATE mytable SET used=1 WHERE id < 10");
-printf ("Veränderte Datensätze: %d\n", mysql_affected_rows());
+printf ("Updated records: %d\n", mysql_affected_rows());
 mysql_query("COMMIT");
 ?>
 ]]>
     </programlisting>
-    <para>
-     Das obige Beispiel gibt folgendes aus:
-    </para>
+    &example.outputs.similar;
     <screen>
 <![CDATA[
-Veränderte Datensätze: 10
+Updated Records: 10
 ]]>
     </screen>
-   </example> 
-  </para>
-  <para>
-   Siehe auch: <function>mysql_num_rows</function>,
-               <function>mysql_info</function>.
+   </example>
   </para>
  </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <title>Transaktionen</title>
+   <para>
+    Falls Sie Transaktionen verwenden, müssen Sie
+    <function>mysql_affected_rows</function> unmittelbar nach Ihrer INSERT,
+    UPDATE, oder DELETE Anfrage aufrufen, nicht nach dem Commit.
+   </para>
+  </note>
+  <note>
+   <title>SELECT Anweisungen</title>
+   <para>
+    Um die Anzahl der gelieferten Datensätze einer SELECT-Anfrage zu
+    erhalten benutzen Sie stattdessen die Funktion
+    <function>mysql_num_rows</function>.
+   </para>
+  </note>
+  <note>
+   <title>Kaskadierende Fremdschlüssel-Beziehungen</title>
+   <para>
+     <function>mysql_affected_rows</function> zählt keine Zeilen, die implizit
+     durch die Nutzung von ON DELETE CASCADE und/oder ON UPDATE CASCADE in
+     Fremmschlüssel-Bedingungen betroffen sind.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysql_num_rows</function></member>
+    <member><function>mysql_info</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
 </refentry>
 
 <!-- Keep this comment at the end of the file
