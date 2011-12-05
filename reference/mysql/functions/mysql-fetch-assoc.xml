@@ -1,97 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
 
-  <refentry xml:id="function.mysql-fetch-assoc" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>mysql_fetch_assoc</refname> 
-    <refpurpose>
-     Liefert einen Datensatz als assoziatives Array
-    </refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>array</type><methodname>mysql_fetch_assoc</methodname>
-      <methodparam><type>resource</type><parameter>Ergebnis</parameter></methodparam>
-     </methodsynopsis>
-    <para> 
-     Liefert ein assoziatives Array, das den geholten entprechenden Datensatz
-     enthält. Sind keine weiteren Datensätze vorhanden gibt diese Funktion
-     &false; zurück.
-    </para>
-    <para>
-     <function>mysql_fetch_assoc</function> entspricht in der Funktionsweise
-     exakt dem Aufruf von <function>mysql_fetch_array</function> mit Angabe
-     von MYSQL_ASSOC als optionalen zweiten Parameter. Diese Funktion
-     liefert Ihnen nur ein assoziatives Array. Das war das ursprüngliche
-     Verhalten von <function>mysql_fetch_array</function>. Falls Sie sowohl
-     numerische, als auch assoziative Indizes benötigen, verwenden Sie
-     <function>mysql_fetch_array</function>.
-    </para>
-    <para>
-     Falls zwei oder mehrere Felder des Ergebnisses den gleichen
-     Feldnamen haben, dann wird nur der Wert des letzten Felds im Array
-     unter diesem Feldnamen abgelegt. Um auch auf die anderen, gleichnamigen,
-     Felder zugreifen zu können, müssen Sie entweder numerische Indizes 
-     und damit <function>mysql_fetch_row</function> benutzen, oder Aliase
-     für Ihre Felder anlegen. Zur Verwendung von Aliasen schauen Sie sich das
-     Beispiel unter der Beschreibung von <function>mysql_fetch_array</function>
-     an.
-    </para>
-    <para>
-     Zu betonen ist, dass der Gebrauch von
-     <function>mysql_fetch_assoc</function>
-     <emphasis> nicht signifikant</emphasis> langsamer ist als
-     <function>mysql_fetch_row</function>, obwohl die Funktion einen
-     sichtlichen Mehrwert bietet.
-    </para>
-    &database.field-case;
-    &database.fetch-null;
-    <para>
-     <example>
-     <title>
-      Ein ausführliches Beispiel zu<function>mysql_fetch_assoc</function>
-     </title>
-     <programlisting role="php">
+<refentry xml:id="function.mysql-fetch-assoc" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysql_fetch_assoc</refname> 
+  <refpurpose>
+   Liefert einen Datensatz als assoziatives Array
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>mysql_fetch_assoc</methodname>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Liefert ein assoziatives Array, das der geholten Zeile entspricht und
+   bewegt den internen Datenatzzeiger vorwärts.
+   <function>mysql_fetch_assoc</function> entspricht in der Funktionsweise
+   exakt dem Aufruf von <function>mysql_fetch_array</function> mit Angabe
+   von MYSQL_ASSOC als optionalen zweiten Parameter. Diese Funktion
+   liefert Ihnen nur ein assoziatives Array.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysql.result.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt ein Array von Zeichenketten zurück, das der gelesenen Zeile entspricht
+   oder &false; falls keine weiteren Zeilen vorhanden sind.
+  </para>
+  <para>
+   Falls zwei oder mehrere Felder des Ergebnisses den gleichen
+   Feldnamen haben, dann wird nur der Wert des letzten Felds im Array
+   unter diesem Feldnamen abgelegt. Um auch auf die anderen, gleichnamigen,
+   Felder zugreifen zu können, müssen Sie entweder numerische Indizes
+   und damit <function>mysql_fetch_row</function> benutzen, oder Aliase
+   für Ihre Felder anlegen. Zur Verwendung von Aliasen schauen Sie sich das
+   Beispiel unter der Beschreibung von <function>mysql_fetch_array</function>
+   an.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>An ausführliches <function>mysql_fetch_assoc</function> Beispiel</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 
 $conn = mysql_connect("localhost", "mysql_user", "mysql_password");
 
 if (!$conn) {
-    echo "Keine Verbindung zur DB: " . mysql_error();
+    echo "Keine Verbindung zu DB möglich: " . mysql_error();
     exit;
 }
 
 if (!mysql_select_db("mydbname")) {
-    echo "Kann  mydbname nicht auswählen: " . mysql_error();
+    echo "Konnte mydbname nicht selektieren: " . mysql_error();
     exit;
 }
 
-$sql = "SELECT id as userid, fullname, userstatus 
+$sql = "SELECT id as userid, fullname, userstatus
         FROM   sometable
         WHERE  userstatus = 1";
 
 $result = mysql_query($sql);
 
 if (!$result) {
-    echo "Anfrage ($sql) konnte nicht ausgeführt werden : " . mysql_error();
+    echo "Konnte Abfrage ($sql) nicht erfolgreich ausführen von DB: " . mysql_error();
     exit;
 }
 
 if (mysql_num_rows($result) == 0) {
-    echo "Keine Zeilen gefunden, nichts auszugeben, daher Abbruch";
+    echo "Keine Zeilen gefunden, nichts auszugeben, also Ende";
     exit;
 }
 
-// Solange eine Zeile mit Daten existiert, wird dies in dem assoziativen Array
-// $row abgelegt.
-// Anmerkung: Wenn Sie nur eine Zeile erwarten, brauchen Sie keine Schleife.
-// Anmerkung: Wenn Sie extract($row) innerhalb der folgenden Schleife
-//            verwenden, können Sie damit die Variablen
-//            $userid, $fullname und $userstatus erzeugen.
-
+// Solange eine Zeile mit Daten vorhanden ist, schreibe dies Zeile in $row als
+// assoziatives Array
+// Hinweis: Wenn sie nur eine Ergebniszeile erwarten, benötigen sie keine Schleife
+// Hinweis: Wenn sie extract($row) innerhalb dieser Schleife schreiben,
+//          erzeugen sie $userid, $fullname und $userstatus
 while ($row = mysql_fetch_assoc($result)) {
     echo $row["userid"];
     echo $row["fullname"];
@@ -102,18 +105,40 @@ mysql_free_result($result);
 
 ?>
 ]]>
-     </programlisting>
-    </example>
-    </para>
-    <para>
-     Siehe auch
-     <function>mysql_fetch_row</function>,
-     <function>mysql_fetch_array</function>,
-     <function>mysql_query</function> und
-     <function>mysql_error</function>
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <title>Performance</title>
+   <para>
+    Zu betonen ist, dass der Gebrauch von
+    <function>mysql_fetch_array</function>
+    <emphasis> nicht signifikant</emphasis> langsamer ist als
+    <function>mysql_fetch_row</function>, obwohl die Funktion einen
+    sichtlichen Mehrwert bietet.
+   </para>
+  </note>
+  &database.field-case;
+  &database.fetch-null;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysql_fetch_row</function></member>
+    <member><function>mysql_fetch_array</function></member>
+    <member><function>mysql_data_seek</function></member>
+    <member><function>mysql_query</function></member>
+    <member><function>mysql_error</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

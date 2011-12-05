@@ -1,121 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
 
-  <refentry xml:id="function.mysql-fetch-array" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>mysql_fetch_array</refname> 
-    <refpurpose>
-     Liefert einen Datensatz als assoziatives Array, als numerisches Array oder beides
-    </refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>array</type><methodname>mysql_fetch_array</methodname>
-      <methodparam><type>resource</type><parameter>Ergebnis-Kennung</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>Ergebnistyp</parameter></methodparam>
-     </methodsynopsis>
-    <para> 
-     Liefert ein Array das dem aktuellen Datensatz entspricht oder &false;,
-     wenn keine weiteren Datensätze vorliegen.
-    </para>
-    <para>
-     <function>mysql_fetch_array</function> ist eine erweiterte Version von
-     <function>mysql_fetch_row</function>. Die Daten werden sowohl unter
-     numerischen Indizes des Ergebnis-Arrays abgelegt, als auch unter
-     assoziativen Indizes. Als Schlüssel für die assoziativen Indizes werden
-     die Feldnamen benutzt.
-    </para>
-    <para>
-     Falls zwei oder mehrere Spalten des Ergebnisses den gleichen
-     Feldnamen haben, dann wird nur der Wert der letzten Spalte im Array
-     unter diesem Feldnamen abgelegt. Um auch auf die anderen gleichnamigen
-     Spalten zugreifen zu können, müssen Sie den numerischen Index der Spalte
-     verwenden oder einen Alias für die Spalte vergeben. Falls Sie Aliase für
-     Spalten verwenden, können Sie auf die Inhalte dieser Spalten nicht über
-     ihren ursprünglichen Namen zugreifen. (In folgendem Beispiel können Sie
-     <literal>'field'</literal> nicht benutzen).
-     <example>
-      <title>Abfrage mit alias für identische Feldnamen</title>
-      <programlisting role="sql">
+<refentry xml:id="function.mysql-fetch-array" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysql_fetch_array</refname> 
+  <refpurpose>
+   Liefert einen Datensatz als assoziatives Array, als numerisches Array oder beides
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>mysql_fetch_array</methodname>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>result_type</parameter><initializer>MYSQL_BOTH</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Gibt ein Array zurück das der gelesenen Zeile entspricht und bewegt den
+   internen Datenzeiger nach vorwärts.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysql.result.description;
+    <varlistentry>
+     <term><parameter>result_type</parameter></term>
+     <listitem>
+      <para>
+       Der Typ des Arrays, das gelesen werden soll. Er ist ein Konstante, die
+       folgende Werte haben kann: <constant>MYSQL_ASSOC</constant>,
+       <constant>MYSQL_NUM</constant> und
+       <constant>MYSQL_BOTH</constant>.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt ein Array von Zeichenketten zurück, das der gelesenen Zeile entspricht
+   oder &false; falls keine weiteren Zeilen vorhanden sind.
+   Der Typ des zurückgegebenen Arrays hängt davon ab,
+   wie <parameter>result_type</parameter> definiert ist. Nutzen sie
+   <constant>MYSQL_BOTH</constant> (Standard), erhalten sie ein Array mit
+   sowohl assoziativen als auch numerischen Indice. Nutzen
+   sie <constant>MYSQL_ASSOC</constant> erhalten sie nur assoziative Indice
+   (wie <function>mysql_fetch_assoc</function> arbeitet),
+   mit <constant>MYSQL_NUM</constant> erhalten sie nur numerische Indice
+   (wie <function>mysql_fetch_row</function> arbeitet).
+  </para>
+  <para>
+   Falls zwei oder mehrere Spalten des Ergebnisses den gleichen
+   Feldnamen haben, dann wird nur der Wert der letzten Spalte im Array
+   unter diesem Feldnamen abgelegt. Um auch auf die anderen gleichnamigen
+   Spalten zugreifen zu können, müssen Sie den numerischen Index der Spalte
+   verwenden oder einen Alias für die Spalte vergeben. Falls Sie Aliase für
+   Spalten verwenden, können Sie auf die Inhalte dieser Spalten nicht über
+   ihren ursprünglichen Namen zugreifen.
+  </para>
+ </refsect1>
+
+<refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Abfrage mit alias für identische Feldnamen</title>
+    <programlisting role="sql">
 <![CDATA[
 SELECT table1.field AS foo, table2.field AS bar FROM table1, table2
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     Zu betonen ist, dass der Gebrauch von
-     <function>mysql_fetch_array</function>
-     <emphasis> nicht signifikant</emphasis> langsamer ist als
-     <function>mysql_fetch_row</function>, obwohl die Funktion einen
-     sichtlichen Mehrwert bietet.
-    </para>
-    <para>
-     Das optionale zweite Argument <parameter>Ergebnistyp</parameter> in
-     <function>mysql_fetch_array</function> ist eine Konstante und kann die
-     folgenden Werte annehmen: MYSQL_ASSOC, MYSQL_NUM und
-     MYSQL_BOTH. Diese Eigenschaft steht seit PHP 3.0.7 zur Verfügung.
-     MYSQL_BOTH ist der Standard für diesen Paramater.
-    </para>
-    <para>
-     Verwenden Sie MYSQL_BOTH, erhalten Sie ein Array mit assoziativen und
-     numerischen Indizes. Bei MYSQL_ASSOC erhalten Sie nur asoziative Indizes
-     (genau wie bei <function>mysql_fetch_assoc</function>). Verwenden Sie
-     MYSQL_NUM erhalten Sie nur numerische Indizes (genau wie bei 
-     <function>mysql_fetch_row</function>).
-    </para>
-    &database.field-case;
-    &database.fetch-null;
-    <para>
-     <example>
-      <title><function>mysql_fetch_array</function> mit MYSQL_NUM</title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>mysql_fetch_array</function> mit <constant>MYSQL_NUM</constant></title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-mysql_connect("localhost", "mysql_user", "mysql_password")
-    or die("Keine Verbindung möglich: " . mysql_error());
+mysql_connect("localhost", "mysql_user", "mysql_password") or
+    die("Keine Verbindung möglich: " . mysql_error());
 mysql_select_db("mydb");
 
 $result = mysql_query("SELECT id, name FROM mytable");
 
 while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
-    printf ("ID: %s  Name: %s", $row[0], $row[1]);  
+    printf("ID: %s  Name: %s", $row[0], $row[1]);
 }
 
 mysql_free_result($result);
 ?>
 ]]>
-      </programlisting>
-     </example>
-     <example>
-      <title><function>mysql_fetch_array</function> mit MYSQL_ASSOC</title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>mysql_fetch_array</function> mit <constant>MYSQL_ASSOC</constant></title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-mysql_connect("localhost", "mysql_user", "mysql_password")
-    or die("Keine Verbindung möglich: " . mysql_error());
+mysql_connect("localhost", "mysql_user", "mysql_password") or
+    die("Keine Verbindung möglich: " . mysql_error());
 mysql_select_db("mydb");
 
 $result = mysql_query("SELECT id, name FROM mytable");
 
 while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
-    printf ("ID: %s  Name: %s", $row["id"], $row["name"]);
+    printf("ID: %s  Name: %s", $row["id"], $row["name"]);
 }
 
-    mysql_free_result($result);
+mysql_free_result($result);
 ?>
 ]]>
-      </programlisting>
-     </example>
-     <example>
-      <title><function>mysql_fetch_array</function> mit MYSQL_BOTH</title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>mysql_fetch_array</function> mit <constant>MYSQL_BOTH</constant></title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-mysql_connect("localhost", "mysql_user", "mysql_password")
-    or die("Keine Verbindung möglich: " . mysql_error());
+mysql_connect("localhost", "mysql_user", "mysql_password") or
+    die("Keine Verbindung möglich: " . mysql_error());
 mysql_select_db("mydb");
 
 $result = mysql_query("SELECT id, name FROM mytable");
@@ -127,16 +143,40 @@ while ($row = mysql_fetch_array($result, MYSQL_BOTH)) {
 mysql_free_result($result);
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     Siehe auch
-     <function>mysql_fetch_row</function> und
-     <function>mysql_fetch_assoc</function>
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <title>Performance</title>
+   <para>
+    Zu betonen ist, dass der Gebrauch von
+    <function>mysql_fetch_array</function>
+    <emphasis> nicht signifikant</emphasis> langsamer ist als
+    <function>mysql_fetch_row</function>, obwohl die Funktion einen
+    sichtlichen Mehrwert bietet.
+   </para>
+  </note>
+  &database.field-case;
+  &database.fetch-null;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysql_fetch_row</function></member>
+    <member><function>mysql_fetch_assoc</function></member>
+    <member><function>mysql_data_seek</function></member>
+    <member><function>mysql_query</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
