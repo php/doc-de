@@ -1,121 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 316587 Maintainer: hholzgra Status: ready -->
 
-  <refentry xml:id="function.mysql-query" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>mysql_query</refname>
-    <refpurpose>Sendet eine Anfrage an MySQL</refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>resource</type><methodname>mysql_query</methodname>
-      <methodparam><type>string</type><parameter>Anfrage</parameter></methodparam>
-      <methodparam choice="opt"><type>resource</type><parameter>Verbindungs-Kennung</parameter>
-      </methodparam>
-     </methodsynopsis>
-    <para> 
-     <function>mysql_query</function> sendet eine Anfrage an die zur
-     Zeit aktiven Datenbank, die mit der angegebenen
-     <parameter>Verbindungs-Kennung</parameter> assoziiert wird.
-     Wird die <parameter>Verbindungs-Kennung</parameter> nicht angegeben,
-     wird die zuletzt geöffnete Verbindung angenommen. Wenn keine offene
-     Verbindung besteht, wird versucht eine Verbindung aufzubauen, wie beim
-     Aufruf von <function>mysql_connect</function> ohne Argumente und diese
-     wird dann benutzt. Das Ergebnis der Anfrage wird gepuffert.
-    </para>
-    <note>
-     <para>
-      Die Anfrage sollte nicht mit einem Semikolon enden.
-     </para>
-    </note>
-    <para>
-     Nur für SELECT, EXPLAIN, SHOW oder DESCRIBE Anweisungen liefert
-     <function>mysql_query</function> 
-     eine Ressourcen-Kennung oder &false;, falls die Anfrage nicht korrekt 
-     ausgeführt wurde. Für alle anderen SQL Anweisungen ist der Rückgabewert
-     von <function>mysql_query</function> im Erfolgsfall &true;, im Fehlerfall
-     &false;. Ein Rückgabewert ungleich &false; bedeutet, dass die Anfrage
-     gültig war und vom Server ausgeführt werden konnte. Das alleine sagt
-     jedoch überhaupt nichts über die Anzahl veränderter oder gelieferter 
-     Datensätze aus. Es ist durchaus möglich, dass eine Anfrage erfolgreich
-     war, ohne einen einzigen Datensatz zu verändern oder zu liefern.
-    </para>
+<refentry xml:id="function.mysql-query" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysql_query</refname>
+  <refpurpose>Sendet eine Anfrage an MySQL</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>mysql_query</methodname>
+   <methodparam><type>string</type><parameter>query</parameter></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>Verbindungs-Kennung</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>mysql_query</function> sendet eine einzelne Abfrage (mehrere
+   Abfragen werden nicht unterstützt) zu dem momentan aktiven Schema auf dem
+   Server, der mit der übergebenen
+   Verbings-Kennung <parameter>Verbindungs-Kennung</parameter> assoziiert ist.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>query</parameter></term>
+     <listitem>
+      <para>
+       Eine SQL Anweisung
+      </para>
+      <para>
+       Die Anweisung sollte nicht mit einem Semikolon abgeschlossen werden.
+       Werte innerhalb der Abfrage
+       sollten <link linkend="function.mysql-real-escape-string">korrekt
+       maskiert werden</link>.
+      </para>
+     </listitem>
+    </varlistentry>
+    &mysql.linkid.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Für SELECT, SHOW, DESCRIBE, EXPLAIN und andere Anweisungen, die eine
+   Ergebnismenge zurückgeben, gibt <function>mysql_query</function>
+   eine Kennung <type>resource</type> bei Erfolg zurück oder &false; bei
+   Fehlern.
+  </para>
+  <para>
+   Für alle anderen von SQL Anweisungen wie INSERT, UPDATE, DELETE, DROP, etc,
+   gibt <function>mysql_query</function> &true; bei Erfolg zurück oder &false;
+   bei Fehlern.
+  </para>
+  <para>
+   Die zurückgegebene Ergebnis Ressource sollte
+   an <function>mysql_fetch_array</function> oder andere Funktionen, die mit
+   Ergebnis Tabellen umgehen, übergeben werden, um auf die erhaltenen Daten
+   zuzuzugreifen.
+  </para>
+  <para>
+   Nutzen sie <function>mysql_num_rows</function> um zu erfahren, wieviele
+   Zeilen für eine SELECT Anweisungen zurückgegeben wurden oder
+   <function>mysql_affected_rows</function> um zu erfahren, wieviele Zeilen
+   von einer DELETE, INSERT, REPLACE oder UPDATE Anweisung betroffen waren.
+  </para>
+  <para>
+   <function>mysql_query</function> wird ebenfalls fehlschlagen und &false;
+   zurückgeben, wenn der Nutzer nicht die Rechte hat, auf die Tabellen, die in
+   der Anweisung referenziert wurden, zuzugreifen.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Ungültige Anfrage</title>
     <para>
      Die folgende Anfrage ist syntaktisch falsch, deshalb liefert
      <function>mysql_query</function> &false; zurück:
-     <example>
-      <title><function>mysql_query</function> Beispiel</title>
-      <programlisting role="php">
+    </para>
+    <programlisting role="php">
 <![CDATA[
 <?php
 $result = mysql_query('SELECT * WHERE 1=1');
 if (!$result) {
-    die('Ungültige Abfrage: ' . mysql_error());
+    die('Ungültige Anfrage: ' . mysql_error());
 }
+
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Gültige Anfrage</title>
     <para>
-     Die folgende Anfrage ist semantisch falsch, wenn
-     <literal>my_col</literal> kein Feld in der Tabelle
-     <literal>my_tbl</literal> ist. Deshalb schlägt
-     <function>mysql_query</function> fehl und liefert &false;:
-     <example>
-      <title><function>mysql_query</function></title>
-      <programlisting role="php">
+     Die folgende Abfrage ist gültig, daher gibt <function>mysql_query</function>
+     ein Ergebnis <type>resource</type> zurück.
+    </para>
+    <programlisting role="php">
 <![CDATA[
 <?php
-$result = mysql_query('SELECT my_col FROM my_tbl');
+// Dies kömmze z.B. durch einen Nutzer angegeben werden
+$firstname = 'fred';
+$lastname  = 'fox';
+
+// Formuliere Abfrage
+// Dies ist die beste Art, eine SQL Abfrage duerchzuführen
+// Für weitere Beispiele, siehe: mysql_real_escape_string()
+$query = sprintf("SELECT firstname, lastname, address, age FROM friends 
+    WHERE firstname='%s' AND lastname='%s'",
+    mysql_real_escape_string($firstname),
+    mysql_real_escape_string($lastname));
+
+// Führe Abfrage aus
+$result = mysql_query($query);
+
+// Prüfe Ergebnis
+// Dies zeigt die tatsächliche Abfrage, die an MySQL gesandt wurde und den
+// Fehler. Nützlich bei der Fehlersuche
 if (!$result) {
-    die('Ungültige Abfrage: ' . mysql_error());
+    $message  = 'Ungültige Abfrage: ' . mysql_error() . "\n";
+    $message .= 'Gesamte Abfrage: ' . $query;
+    die($message);
 }
+
+// Nutze Ergebnis
+// Der Versuch $result auszugeben, erlaubt keine Zugriff auf die Informationen
+// der Ressource.
+// Eine der MySQ result Funktionen muss genutzt werden
+// Siehe auch: mysql_result(), mysql_fetch_array(), mysql_fetch_row(), etc.
+while ($row = mysql_fetch_assoc($result)) {
+    echo $row['firstname'];
+    echo $row['lastname'];
+    echo $row['address'];
+    echo $row['age'];
+}
+
+// Gebe Ressourcen, die mit der Ergebnismenge assoziiert sind, frei
+// Dies geshieht am Ende eines Skriptes automatisch
+mysql_free_result($result);
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     <function>mysql_query</function> schlägt ebenso fehl und liefert
-     &false;, wenn Sie keine Berechtigung zum Zugriff auf die verwiesene(n)
-     Tabelle(n) haben.
-    </para>
-    <para>
-     Angenommen eine Anfrage ist erfolgreich, dann können Sie für eine
-     SELECT Anweisung mit <function>mysql_num_rows</function> die Anzahl der
-     gelieferten Datensätze herausfinden. Falls Sie DELETE, INSERT, REPLACE,
-     oder UPDATE benutzt haben, können Sie die Anzahl der betroffenen Datensätze
-     mit <function>mysql_affected_rows</function> feststellen.
-    </para>
-    <para>
-     Nur bei SELECT, EXPLAIN, SHOW oder DESCRIBE Anweisungen liefert 
-     <function>mysql_query</function> eine neue Ergebnis-Kennung, die Sie 
-     an die Funktion <function>mysql_fetch_array</function> und andere
-     Funktionen, die mit Ergebnistabellen umgehen können, übergeben können.
-     Sind sie mit der Bearbeitung Ihrer Ergebnisse fertig, können Sie die 
-     belegten Resourcen durch den Aufruf von
-     <function>mysql_free_result</function> freigeben.
-     Ist die Ausführung des Skripts abgeschlossen, wird der belegte Speicher
-     automatisch freigegeben.
-    </para>
-    <para>
-     Siehe auch:
-     <function>mysql_num_rows</function>
-     <function>mysql_affected_rows</function>,
-     <function>mysql_unbuffered_query</function>,
-     <function>mysql_free_result</function>,
-     <function>mysql_fetch_array</function>,
-     <function>mysql_fetch_row</function>,
-     <function>mysql_fetch_assoc</function>,
-     <function>mysql_result</function>,
-     <function>mysql_select_db</function> und
-     <function>mysql_connect</function>.
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysql_connect</function></member>
+    <member><function>mysql_error</function></member>
+    <member><function>mysql_real_escape_string</function></member>
+    <member><function>mysql_result</function></member>
+    <member><function>mysql_fetch_assoc</function></member>
+    <member><function>mysql_unbuffered_query</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

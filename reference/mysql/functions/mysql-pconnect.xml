@@ -1,97 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
 
-  <refentry xml:id="function.mysql-pconnect" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>mysql_pconnect</refname> 
-    <refpurpose>
-     Öffnet eine persistente Verbindung zum MySQL Server
-    </refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>resource</type><methodname>mysql_pconnect</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>Server</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>Benutztername</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>Benutzerkennwort</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>client_flags</parameter></methodparam>
-     </methodsynopsis>
-    <para> 
-     Rückgabewert: Eine positive, MySQL-persistente Verbindungs-Kennung im Erfolgsfall oder
-     &false; im Fehlerfall.
-    </para>
-    <para>
-     <function>mysql_pconnect</function> baut eine Verbindung zu einem
-     MySQL Server auf. Für fehlende optionale Parameter werden folgende
-     Standardwerte angenommen:
-     <parameter>Server</parameter> = 'localhost:3306',
-     <parameter>Benutzername</parameter> = Name des Benutzers dem der 
-     Server-Prozess gehört und <parameter>Benutzerkennwort</parameter> =
-     leeres Kennwort.  Der Parameter <parameter>client_flags</parameter>
-     kann eine Kombination der Konstanten MYSQL_CLIENT_COMPRESS,
-     MYSQL_CLIENT_IGNORE_SPACE oder MYSQL_CLIENT_INTERACTIVE sein.
-    </para>
-    <para>
-     Der Parameter <parameter>Server</parameter> kann ausserdem eine
-     Portnummer enthalten, z.B. &quot;hostname:port&quot; oder den
-     Pfad zu einem Socket z.B. &quot;:/pfad/zu/socket&quot; für
-     Zugriffe auf dem lokalen Rechner (localhost).
-     <note>
+<refentry xml:id="function.mysql-pconnect" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysql_pconnect</refname> 
+  <refpurpose>
+   Öffnet eine persistente Verbindung zum MySQL Server
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>mysql_pconnect</methodname>
+   <methodparam choice="opt"><type>string</type><parameter>server</parameter><initializer>ini_get("mysql.default_host")</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>username</parameter><initializer>ini_get("mysql.default_user")</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>password</parameter><initializer>ini_get("mysql.default_password")</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>client_flags</parameter></methodparam>
+  </methodsynopsis>
+
+  <para>
+   Baut eine persistente Verbindung zu einem MySQL Server auf.
+  </para>
+  <!-- TODO: Integrate this information more nicely with features.persistent -->
+  <para>
+   <function>mysql_pconnect</function> verhält sich weitgehend wie
+   <function>mysql_connect</function> mit zwei großen Unterscheden.
+  </para>
+  <para>
+   Erstens: vor dem Verbindungsaufbau wird zunächst versucht eine offene
+   (persistente) Verbindung zum gleichen Host, mit dem gleichen
+   Benutzernamen und Benutzerkennwort zu finden. Wenn das gelingt,
+   wird die Verbindungskennung dieser Verbindung zurückgeliefert anstatt
+   eine neue Verbindung aufzubauen.
+  </para>
+  <para>
+   Zweitens: die Verbindung zum SQL Server wird beim Beenden
+   des PHP-Skripts nicht geschlossen. Sie bleibt zur zukünftigen
+   Verwendung bestehen.
+   (<function>mysql_close</function> schließt keine von
+   <function>mysql_pconnect</function> geöffneten Verbindungen).
+  </para>
+  <para>
+   Deshalb wird dieser Verbindungstyp 'persistent' genannt.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>server</parameter></term>
+     <listitem>
       <para>
-       Unterstützung für &quot;:port&quot; wurde in PHP 3.0B4 hinzugefügt.
+       Der MySQL Server. Er kann zudem eine Portnummer enthalten, z.B.
+       "hostname:port" oder den Pfad zu einem lokalen Socket z.B.
+       ":/pfad/zum/socket" für Zugriffe auf dem lokalen Rechner (localhost).
       </para>
       <para>
-       Unterstützung für &quot;:/pfad/zum/socket&quot; wurde in
-       PHP 3.0.10 hinzugefügt.
+       Wenn die PHP Direktive <link linkend="ini.mysql.default-host">
+       mysql.default_host</link> nicht definiert ist (Standard), ist der
+       Vorgabewert 'localhost:3306'.
       </para>
-     </note>
-    </para>     
-    <para>
-     <function>mysql_pconnect</function> verhält sich sehr ähnlich zu
-     <function>mysql_connect</function>, weist aber zwei wesentliche
-     Unterschiede auf.
-    </para>
-    <para> 
-     Erstens: vor dem Verbindungsaufbau wird zunächst versucht eine offene
-     (persistente) Verbindung zum gleichen Host, mit dem gleichen
-     Benutzernamen und Benutzerkennwort zu finden. Wenn das gelingt,
-     wird die Verbindungskennung dieser Verbindung zurückgeliefert anstatt
-     eine neue Verbindung aufzubauen.
-    </para>
-    <para> 
-     Zweitens: die Verbindung zum SQL Server wird beim Beenden
-     des PHP-Skripts nicht geschlossen. Sie bleibt zur zukünftigen
-     Verwendung bestehen.
-     (<function>mysql_close</function> schließt keine von
-     <function>mysql_pconnect</function> geöffneten Verbindungen).
-    </para>
-     <para>
-      Der optionale Parameter <parameter>client_flags</parameter> steht seit
-      PHP 4.3.0 zur Verfügung.
-     </para>
-    <para>
-     Deshalb wird dieser Verbindungstyp 'persistent' genannt.
-    </para>
-    <note>
-     <para>
-      Beachten Sie, dass diese Art der Verbindung nur funktioniert. wenn Sie
-      PHP als Modul-Version benutzen. Für mehr Informationen schauen Sie unter
-      <link linkend="features.persistent-connections">
-      Persistente Datenbankverbindungen</link> nach.
-     </para>
-    </note>
-    <warning>
-     <para>
-      Die Verwendung von persistenten Verbindungen verlangt unter Umständen
-      eine feinere Abstimmung der Konfiguration von Apache und MySQL. Dadurch
-      sollten Sie sicherstellen, dass Sie die Anzahl der Verbindungen, die MySQL
-      maximal erlaubt, nicht überschreiten.
-     </para>
-    </warning>
-   </refsect1>
-  </refentry>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>username</parameter></term>
+     <listitem>
+      <para>
+       Der Nutzername. Der Standardwert ist  der Name des Nutzers, dem der
+       Prozess gehört.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>password</parameter></term>
+     <listitem>
+      <para>
+       Dass Passwort. Der Standardwert ist ein leeres Passwort.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>client_flags</parameter></term>
+     <listitem>
+      <para>
+       Der Parameter <parameter>client_flags</parameter> kann eine Kombination
+       der folgenden Konstanten sein:
+       128 (erlaube <literal>LOAD DATA LOCAL</literal> Nutzung),
+       <constant>MYSQL_CLIENT_SSL</constant>,
+       <constant>MYSQL_CLIENT_COMPRESS</constant>,
+       <constant>MYSQL_CLIENT_IGNORE_SPACE</constant> oder
+       <constant>MYSQL_CLIENT_INTERACTIVE</constant>.
+      </para>
+     </listitem>
+    </varlistentry> 
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt eine persitente  MySQL Verbindungs-Kennung im Erfolgsfall zurück oder
+   &return.falseforfailure;.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        Der <parameter>client_flags</parameter> Parameter wurde hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Beachten Sie, dass diese Art der Verbindung nur funktioniert. wenn Sie
+    PHP als Modul-Version benutzen. Für mehr Informationen schauen Sie unter
+    <link linkend="features.persistent-connections">
+     Persistente Datenbankverbindungen</link> nach.
+   </para>
+  </note>
+  <warning>
+   <para>
+    Die Verwendung von persistenten Verbindungen verlangt unter Umständen
+    eine feinere Abstimmung der Konfiguration von Apache und MySQL. Dadurch
+    sollten Sie sicherstellen, dass Sie die Anzahl der Verbindungen, die MySQL
+    maximal erlaubt, nicht überschreiten.
+   </para>
+  </warning>
+  <note>
+   <para>
+    Sie können die Fehlermeldungen bei Fehlern durch Voranstellen von
+    einem <link linkend="language.operators.errorcontrol">@</link> an den
+    Funktions Namen unterdrücken.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysql_connect</function></member>
+    <member><link linkend="features.persistent-connections">Persistent
+    Database Connections</link></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

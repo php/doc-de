@@ -1,85 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
 
-  <refentry xml:id="function.mysql-result" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>mysql_result</refname>
-    <refpurpose>Liefert Ergebnis</refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-     <methodsynopsis>
-      <type>mixed</type><methodname>mysql_result</methodname>
-      <methodparam><type>resource</type><parameter>Ergebnis-Kennung</parameter></methodparam>
-      <methodparam><type>int</type><parameter>Datensatz</parameter></methodparam>
-      <methodparam choice="opt"><type>mixed</type><parameter>Feld</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>mysql_result</function> liefert den Inhalt eines Felds
-     aus einem Anfrageergebnis. Das Argument <parameter>Feld</parameter>
-     kann der Feldname, der Feldoffset ein Bezeichner in der Form
-     'Tabellenname.Feldname.' sein. Wenn das Feld einen Alias besitzt
-     ('select foo as bar from...') muss der Alias anstatt des Feldnamens
-     verwendet werden.
-    </para>
-    <para>
-     Wenn auf Anfrageergebnisse mit vielen Datensätzen zugegriffen werden soll,
-     sollten Sie Funktionen, die auf ganze Datensätze zugreifen,in Betracht
-     ziehen (siehe unten). Diese Funktionen liefern bei einem einzigen Aufruf
-     den Inhalt mehrerer Felder und sind aus diesem Grund SEHR viel schneller als
-     <function>mysql_result</function>. Beachten Sie auch, dass die Angabe
-     eines numerischen Offsets für ein Feld sehr viel schneller ist als die
-     Angabe eines Feldnamens oder tabellenname.feldname.
-    </para>
-    <para>
-     Aufrufe von <function>mysql_result</function> sollten nicht mit Aufrufen
-     anderer Funktionen verschachtelt werden, die auch auf das Ergebnis zugreifen.
-    </para>
-    <para>
-     <example>
-      <title><function>mysql_result</function> example</title>
-      <programlisting role="php">
-<![CDATA[
-<?php
-$link = mysql_connect("localhost", "mysql_user", "mysql_password")
-    or die(": " . mysql_error());
+<refentry xml:id="function.mysql-result" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysql_result</refname>
+  <refpurpose>Liefert Ergebnis</refpurpose>
+ </refnamediv>
 
-$result = mysql_query("SELECT name FROM work.employee")
-    or die(":" . mysql_error());
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>mysql_result</methodname>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam><type>int</type><parameter>row</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>field</parameter><initializer>0</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Liefert den Inhalt einer Spalte von einer MySQL Ergebnismenge.
+  </para>
+  <para>
+   Wenn auf Anfrageergebnisse mit vielen Datensätzen zugegriffen werden soll,
+   sollten Sie Funktionen, die auf ganze Zeilen zugreifen, in Betracht
+   ziehen (siehe unten). Diese Funktionen liefern bei einem einzigen Aufruf
+   den Inhalt mehrerer Spalten und sind aus diesem Grund SEHR viel schneller als
+   <function>mysql_result</function>. Beachten Sie auch, dass die Angabe
+   eines numerischen Offsets für ein Feld sehr viel schneller ist als die
+   Angabe eines Feldnamens oder tabellenname.feldname.
+  </para>
+ </refsect1>
 
-echo mysql_result($result, 2); // 
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysql.result.description;
+    <varlistentry>
+     <term><parameter>row</parameter></term>
+     <listitem>
+      <para>
+       Die Spaltennummer des erhaltenen Ergebnisses. Spaltennummern beginnen
+       mit <literal>0</literal>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>field</parameter></term>
+     <listitem>
+      <para>
+       Der Name oder der Offset der zu erhaltenden Spalte (Feld).
+      </para>
+      <para>
+       Dies kann der Offset der Spalte sein, der Name der Spalte oder ein
+       Bezeichner in der Form Tabellenname.Spaltenname. Wurde ein Alias für
+       den Spaltennamen verwendet ('select foo as bar from...'), nutzen sie
+       stattdessen den Alias. Ist der Wert nicht definiert, wird die erste
+       Spalte zurückgegeben.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
 
-mysql_close($link);
-?>
-]]>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Die Inhalte einer Spalte einer MySQL Ergebnismenge bei Erfolg oder &false;
+   bei Fehlern.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>mysql_result</function> Beispiel</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 $link = mysql_connect('localhost', 'mysql_user', 'mysql_password');
 if (!$link) {
     die('Keine Verbindung möglich: ' . mysql_error());
 }
+if (!mysql_select_db('database_name')) {
+    die('Konnte Schema nicht selektieren: ' . mysql_error());
+}
 $result = mysql_query('SELECT name FROM work.employee');
 if (!$result) {
-    die('Abfrage fehlgeschlagen:' . mysql_error());
+    die('Konnte Abfrage nicht ausführen:' . mysql_error());
 }
-echo mysql_result($result, 2); // gibt den Namen des dritten Angestellten aus
+echo mysql_result($result, 2); // gibt Name des dritten Angestellten aus
 
 mysql_close($link);
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     Empfohlende, leistungsfähigere Alternativen:
-     <function>mysql_fetch_row</function>,
-     <function>mysql_fetch_array</function>,
-     <function>mysql_fetch_assoc</function> und
-     <function>mysql_fetch_object</function>.
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Aufrufe von <function>mysql_result</function> sollten nicht mit Aufrufen
+    anderer Funktionen verschachtelt werden, die auch auf das Ergebnis zugreifen.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysql_fetch_row</function></member>
+    <member><function>mysql_fetch_array</function></member>
+    <member><function>mysql_fetch_assoc</function></member>
+    <member><function>mysql_fetch_object</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
