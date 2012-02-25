@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 316017 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 323270 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.get-html-translation-table">
  <refnamediv>
@@ -15,14 +15,14 @@
   <methodsynopsis>
    <type>array</type><methodname>get_html_translation_table</methodname>
    <methodparam choice="opt"><type>int</type><parameter>table</parameter><initializer>HTML_SPECIALCHARS</initializer></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>quote_style</parameter><initializer>ENT_COMPAT</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>charset_hint</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>ENT_COMPAT | ENT_HTML401</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>encoding</parameter><initializer>'UTF-8'</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>get_html_translation_table</function> gibt die
    Umwandlungs-Tabelle zurück, die intern in den Funktionen
    <function>htmlspecialchars</function> und
-   <function>htmlentities</function> mit dem Standardzeichensatz verwendet wird.
+   <function>htmlentities</function> verwendet wird.
   </para>
   <note>
    <para>
@@ -45,32 +45,69 @@
      <term><parameter>table</parameter></term>
      <listitem>
       <para>
-       Es gibt zwei neue Konstanten (<constant>HTML_ENTITIES</constant> und
-       <constant>HTML_SPECIALCHARS</constant>), die es Ihnen erlauben, die
-       gewünschte Tabelle auszuwählen, die Sie verwenden wollen.
+       Welche Tabelle zurückgegeben werden soll. Entweder
+       <constant>HTML_ENTITIES</constant> oder <constant>HTML_SPECIALCHARS</constant>.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>quote_style</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Wie für die Funktionen <function>htmlspecialchars</function> und
-       <function>htmlentities</function> können Sie optional den Parameter
-       <parameter>quote_style</parameter> festlegen, mit dem Sie arbeiten
-       wollen. Die Beschreibung der Modi finden Sie unter
-       <function>htmlspecialchars</function>.
+       Eine Bitmaske von einem oder mehreren der folgenden Flags, welche festlegen
+       welche Anführungszeichen die Tabelle enthalten wird, sowie für welchen
+       Dokumenttyp sie ist. Der Standardwert ist <literal>ENT_COMPAT | ENT_HTML401</literal>.
+       <table>
+        <title>Verfügbare <parameter>flags</parameter>-Konstanten</title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Konstantenname</entry>
+           <entry>&Description;</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><constant>ENT_COMPAT</constant></entry>
+           <entry>Tabelle soll Entities für doppelte Anführungszeichen enthalten, aber nicht für einfache.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_QUOTES</constant></entry>
+           <entry>Tabelle soll Entities sowohl für einfache, als auch doppelte Anführungszeichen enthalten.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_NOQUOTES</constant></entry>
+           <entry>Tabelle soll weder Entities für einfache, noch für doppelte Anführungszeichen enthalten.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_HTML401</constant></entry>
+           <entry>Tabelle für HTML 4.01.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_XML1</constant></entry>
+           <entry>Tabelle für XML 1.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_XHTML</constant></entry>
+           <entry>Tabelle für XHTML.</entry>
+          </row>
+          <row>
+           <entry><constant>ENT_HTML5</constant></entry>
+           <entry>Tabelle für HTML 5.</entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>charset_hint</parameter></term>
+     <term><parameter>encoding</parameter></term>
      <listitem>
       <para>
-       Wie für <function>htmlentities</function> können sie optional
-       ein drittes Argument <parameter>charset</parameter>  übergeben,
-       welches den Zeichensatz festlegt, der bei Umwandlungen genutzt
-       wird. Momentan ist der ISO-8859-1 Zeichensatz die Voreinstellung.
+       Definiert die zu verwendende Zeichenkodierung.
+       Standardwert ist ISO-8859-1 in PHP Versionen vor 5.4.0 und
+       UTF-8 in PHP 5.4.0 und neuer.
       </para>
       &reference.strings.charsets;
      </listitem>
@@ -82,7 +119,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die Umwandlungstabelle als Array zurück.
+   Gibt die Umwandlungstabelle als Array zurück, wobei die ursprünglichen
+   Zeichen die Schlüssel sind und die Entities die Werte.
   </para>
  </refsect1>
 
@@ -99,9 +137,24 @@
      </thead>
      <tbody>
       <row>
+       <entry>5.4.0</entry>
+       <entry>
+        Der Standardwert für <parameter>encoding</parameter> wurde
+        zu UTF-8 geändert.
+       </entry>
+      </row>
+      <row>
+       <entry>5.4.0</entry>
+       <entry>
+        Die Konstanten <constant>ENT_HTML401</constant>,
+        <constant>ENT_XML1</constant>, <constant>ENT_XHTML</constant>
+        und <constant>ENT_HTML5</constant> wurden hinzugefügt.
+       </entry>
+      </row>
+      <row>
        <entry>5.3.4</entry>
        <entry>
-        Der <parameter>charset_hint</parameter> parameter wurde
+        Der <parameter>encoding</parameter> parameter wurde
         hinzugefügt.
        </entry>
       </row>
@@ -119,18 +172,35 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$trans = get_html_translation_table(HTML_ENTITIES);
-$str = "Hallo & <Frau> & Krämer";
-$encoded = strtr($str, $trans);
-
-echo $encoded;
+var_dump(get_html_translation_table(HTML_ENTITIES, ENT_QUOTES | ENT_HTML5));
 ?>
 ]]>
     </programlisting>
-    &example.outputs;
+    &example.outputs.similar;
     <screen>
 <![CDATA[
-Hallo &amp; &lt;Frau&gt; &amp; Kr&auml;mer
+array(1510) {
+  ["    "]=>
+  string(5) "&Tab;"
+  ["
+"]=>
+  string(9) "&NewLine;"
+  ["!"]=>
+  string(6) "&excl;"
+  ["""]=>
+  string(6) "&quot;"
+  ["#"]=>
+  string(5) "&num;"
+  ["$"]=>
+  string(8) "&dollar;"
+  ["%"]=>
+  string(8) "&percnt;"
+  ["&"]=>
+  string(5) "&amp;"
+  ["'"]=>
+  string(6) "&apos;"
+  // ...
+}
 ]]>
     </screen>
    </example>

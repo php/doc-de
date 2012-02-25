@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 312428 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 323270 Maintainer: sammywg Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.html-entity-decode">
  <refnamediv>
   <refname>html_entity_decode</refname>
@@ -13,12 +13,12 @@
   <methodsynopsis>
    <type>string</type><methodname>html_entity_decode</methodname>
    <methodparam><type>string</type><parameter>string</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>quote_style</parameter><initializer>ENT_COMPAT</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>charset</parameter><initializer>'UTF-8'</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>ENT_COMPAT | ENT_HTML401</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>encoding</parameter><initializer>'UTF-8'</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>html_entity_decode</function> ist das Gegenstück zu
-   <function>htmlentities</function>, das alle benannten HTML-Zeichen
+   <function>htmlentities</function>, welches alle HTML-Entities
     innerhalb von <parameter>string</parameter> in ihre entsprechenden
     Ursprungszeichen zurückwandelt.
   </para>
@@ -32,20 +32,19 @@
      <term><parameter>string</parameter></term>
      <listitem>
       <para>
-       The input string.
+       Die Eingabezeichenkette.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>quote_style</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Der optionale zweite Parameter <parameter>quote_style</parameter> lässt
-       Ihnen die Entscheidung, was mit 'einfachen' und "doppelten"
-       Anführungszeichen geschehen soll. Sie können eine der drei genannten
-       Konstanten einsetzen:
+       Eine Bitmaske von einem oder mehreren der folgenden Flags, die
+       die Behandlung von Anführungszeichen, sowie den zu nutzenden Dokumententyp
+       festlegen. Der Standardwert ist <literal>ENT_COMPAT | ENT_HTML401</literal>.
        <table>
-        <title>Verfügbare <parameter>quote_style</parameter>-Konstanten</title>
+        <title>Verfügbare <parameter>flags</parameter>-Konstanten</title>
         <tgroup cols="2">
          <thead>
           <row>
@@ -69,6 +68,30 @@
            <entry>Lässt sowohl doppelte als auch einfache Anführungszeichen
             unberührt.</entry>
           </row>
+          <row>
+           <entry><constant>ENT_HTML401</constant></entry>
+           <entry>
+            Behandle Code als HTML 4.01.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_XML1</constant></entry>
+           <entry>
+            Behandle Code als XML 1.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_XHTML</constant></entry>
+           <entry>
+            Behandle Code als XHTML.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>ENT_HTML5</constant></entry>
+           <entry>
+            Behandle Code als HTML 5.
+           </entry>
+          </row>
          </tbody>
         </tgroup>
        </table>
@@ -76,13 +99,12 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>charset</parameter></term>
+     <term><parameter>encoding</parameter></term>
      <listitem>
       <para>
-       Dieser Parameter gibt den Zeichensatz an, der für die Konvertierung
-       genutzt werden soll. Wenn ein leerer String übergeben wird, wird ein
-       Zeichensatz anhand des aktuellen mbstring Zeichensatzes und der
-       aktuellen Sprache automatisch gewählt.
+       Zu verwendende Zeichenkodierung.
+       Standardwert ist ISO-8859-1 in PHP Versionen vor 5.4.0 und
+       UTF-8 in PHP 5.4.0 und neuer.
       </para>
       &reference.strings.charsets;
      </listitem>
@@ -113,13 +135,21 @@
       <row>
        <entry>5.4.0</entry>
        <entry>
-        Der Standardzeichensatz wurde von ISO-8859-1 auf UTF-8 geändert.
+        Die Standardkodierung wurde von ISO-8859-1 auf UTF-8 geändert.
+       </entry>
+      </row>
+      <row>
+       <entry>5.4.0</entry>
+       <entry>
+        Die Optionen <constant>ENT_HTML401</constant>, <constant>ENT_XML1</constant>,
+        <constant>ENT_XHTML</constant> und <constant>ENT_HTML5</constant> wurden
+        hinzugefügt.
        </entry>
       </row>
       <row>
        <entry>5.0.0</entry>
        <entry>
-        Die Unterstützung für Multibyte-Zeichensätze wurde hinzugefügt.
+        Die Unterstützung für Multibyte-Kodierungen wurde hinzugefügt.
        </entry>
       </row>
      </tbody>
@@ -145,24 +175,6 @@ $b = html_entity_decode($a);
 echo $a; // I'll &quot;walk&quot; the &lt;b&gt;dog&lt;/b&gt; now
 
 echo $b; // I'll "walk" the <b>dog</b> now
-
-
-// Usern mit einer PHP-Version vor 4.3.0 hilft folgender Workaround:
-function unhtmlentities($string)
-{
-    // replace numeric entities
-    $string = preg_replace('~&#x([0-9a-f]+);~ei', 'chr(hexdec("\\1"))', $string);
-    $string = preg_replace('~&#([0-9]+);~e', 'chr("\\1")', $string);
-    // replace literal entities
-    $trans_tbl = get_html_translation_table(HTML_ENTITIES);
-    $trans_tbl = array_flip($trans_tbl);
-    return strtr($string, $trans_tbl);
-}
-
-$c = unhtmlentities($a);
-
-echo $c; // I'll "walk" the <b>dog</b> now
-
 ?>
 ]]>
     </programlisting>
@@ -175,10 +187,10 @@ echo $c; // I'll "walk" the <b>dog</b> now
   <note>
    <para>
     Sie wundern sich vielleicht, warum trim(html_entity_decode('&amp;nbsp;'));
-    den String nicht zu einem leeren Sting reduziert. Der Grund ist darin zu
-    finden, dass '&amp;nbsp;' nicht dem Zeichen mit ASCII-Code 32 entspricht
-    (dieser wird von <function>trim</function> entfernt), sondern dem Zeichen
-    mit ASCII-Code 160 (0xa0) in der Standard-Zeichentabelle ISO 8859-1.
+    den String nicht zu einem leeren Sting reduziert. Der Grund dafür ist,
+    dass '&amp;nbsp;' in der Standard-Kodierung nicht dem Zeichen mit ASCII-Code 32
+    entspricht (dieses wird von <function>trim</function> entfernt), sondern dem
+    Zeichen mit ASCII-Code 160 (0xa0).
    </para>
   </note>
  </refsect1>
