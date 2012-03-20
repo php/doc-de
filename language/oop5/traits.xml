@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 323806 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 323957 Maintainer: simp Status: ready -->
  <sect1 xml:id="language.oop5.traits" xmlns="http://docbook.org/ns/docbook">
   <title>Traits</title>
   <para>
@@ -16,14 +16,14 @@
    stecken wiederzuverwenden. Die Semantik der Kombination von Traits und
    Klassen ist so definiert, dass die Komplexität reduziert wird und die
    üblichen Probleme vermeidet, die mit Mehrfachvererbung und Mixins in 
-   Verbindung gebracht werden .
+   Verbindung gebracht werden.
   </para>
   <para>
    Ein Trait hat Ähnlichkeit mit einer Klasse ist aber nur dafür vorgesehen
    Funktionalität in einer feingranularen und konsistenten Art und Weise zu
-   bündeln. Es ist nicht möglich einen Trait aleinstehend zu instantiieren.
-   Es handelt sich um einn Zusatz zur traditionellen Vererbung und erlaubt
-   horizolntale Komposition von Verhaltensweisen, d.h. die Verwendung von 
+   bündeln. Es ist nicht möglich einen Trait alleinstehend zu instantiieren.
+   Es handelt sich um einen Zusatz zur traditionellen Vererbung und erlaubt
+   horizontale Komposition von Verhaltensweisen, d.h. die Verwendung von 
    Klassenmethoden ohne Vererbung vorauszusetzen.
   </para>
   
@@ -54,19 +54,15 @@ class ezcReflectionFunction extends ReflectionFunction {
   <sect2 xml:id="language.oop5.traits.precedence">
    <title>Rangfolge</title>
    <para>
-    Eine ererbte Methode einer Basisklasse wird durch Eine, die durch
-    einen Trait hinzugefügt wird, überschrieben. Die Rangfolge ist so, dass
-    Member der aktuellen Klasse die Methoden von Traits überschreiben, welche
-    widerrum Jene von ererbten Methoden überschreiben.
+    Methoden der aktuellen Klasse überschreiben Methoden, welche von Traits
+    definiert wurden. Jene wiederum überschreiben von Elternklassen geerbte
+    Methoden.
    </para>
    <example xml:id="language.oop5.traits.precedence.examples.ex1">
     <title>Rangfolge Beispiel</title>
     <para>
-     Eine ererbte Methode einer Basisklasse wird durch die Methode, die vom
-     SayWorld-Trait in MyHelloWorld eingefügt wird, überschrieben. Die
-     Rangfolge ist so, dass Methoden der aktuelen Klasse die Methoden von
-     Traits überschreiben, welche widerrum die Methodne der Basisklasse
-     überschreiben.
+     Die Methode <literal>sayHello</literal> der Basisklasse wird durch die
+     gleichnamige Methode aus dem Trait überschrieben.
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -414,6 +410,57 @@ class Example {
 }
 
 Example::doSomething();
+?>
+]]>
+    </programlisting>
+   </example>
+  </sect2>
+  
+  <sect2 xml:id="language.oop5.traits.properties">
+   <title>Attribute</title>
+   <para>
+    Traits können ebenfalls Attribute definieren.
+   </para>
+   <example xml:id="language.oop5.traits.properties.example">
+    <title>Attribute definieren</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+trait PropertiesTrait {
+    public $x = 1;
+}
+
+class PropertiesExample {
+    use PropertiesTrait;
+}
+
+$example = new PropertiesExample;
+$example->x;
+?>
+]]>
+    </programlisting>
+   </example>
+   <para>
+    Ein Attribut, welches durch einen Trait definiert wurde, kann nicht von der
+    Klasse erneut definiert werden. Wenn die Attribute kompatibel sind, d.h. die selbe
+    Sichtbarkeit und den selben Standardwert besitzen, wird ein <constant>E_STRICT</constant>
+    Fehler geworfen. Anderfalls wird ein Fatal Error geworfen.
+   </para>
+   <example xml:id="language.oop5.traits.properties.conflicts">
+    <title>Konfliktauflösung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+trait PropertiesTrait {
+    public $same = true;
+    public $different = false;
+}
+
+class PropertiesExample {
+    use PropertiesTrait;
+    public $same = true; // Strict Standards
+    public $different = true; // Fatal error
+}
 ?>
 ]]>
     </programlisting>
