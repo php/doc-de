@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 322134 Maintainer: hholzgra Status: ready -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.decon" xmlns="http://docbook.org/ns/docbook">
   <title>Konstruktoren und Destruktoren</title>
 
   <sect2 xml:id="language.oop5.decon.constructor">
    <title>Konstruktor</title>
-   <methodsynopsis>
+   <methodsynopsis xml:id="object.construct">
     <type>void</type><methodname>__construct</methodname>
     <methodparam choice="opt"><type>mixed</type><parameter>args</parameter></methodparam>
     <methodparam choice="opt"><parameter>...</parameter></methodparam>
@@ -51,27 +51,53 @@ $obj = new SubClass();
     </programlisting>
    </example>
    <para>
-    Für die Abwärtskompatibilität sucht PHP 5 nach einer Konstruktorfunktion 
-    nach dem alten Stil mit dem Namen der Klasse, falls es keine
-    <function>__construct</function> Funktion für eine Klasse findet.
-    Effektiv bedeutet das, dass der einzige Fall mit Kompatibilitätsproblemen
-    derjenige einer Klasse mit dem Namen <function>__construct</function> ist, 
-    welche für andere Zwecke benutzt wird.
+    Aus Gründen der Abwärtskompatibilität sucht PHP 5, falls die Klasse keine
+    <link linkend="object.construct">__construct()</link> Methode beistzt, nach einem
+    Konstruktur des alten Stils, d.h. einer Methode mit dem selben Namen wie die Klasse.
+    Der einzige Fall in dem somit Kompatibilitätsprobleme auftreten können, ist wenn
+    die Klasse eine Methode <link linkend="object.construct">__construct()</link> definiert,
+    welche jedoch für andere Zwecke benutzt wird.
    </para>
+   <para>
+    Im Gegensatz zu anderen Methoden, generiert PHP keinen <constant>E_STRICT</constant>
+    Fehler, wenn <link linkend="object.construct">__construct()</link> in einer Kindklasse
+    andere Parameter definiert, als die <link linkend="object.construct">__construct()</link>
+    Methode der Elternklasse.
+   </para>
+   <para>
+    Seit PHP 5.3.3 werden Methoden, welche mit dem Klassennamen übereinstimmen, nicht länger
+    als Konstruktoren behandelt, wenn die Klasse sich in einem Namespace befindet. Klassen,
+    welche sich nicht in einem Namespace befinden, betrifft dies jedoch nicht.
+   </para>
+   <example>
+    <title>Konstruktoren in Klassen in Namespaces</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+namespace Foo;
+class Bar {
+    public function Bar() {
+        // wird in PHP 5.3.0-5.3.2 als Konstruktor behandelt
+        // wird in PHP 5.3.3 und höher als reguläre Methode behandelt
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
   </sect2>
 
   <sect2 xml:id="language.oop5.decon.destructor">
    <title>Destruktor</title>
-   <methodsynopsis>
+   <methodsynopsis xml:id="object.destruct">
     <type>void</type><methodname>__destruct</methodname>
     <void />
    </methodsynopsis>
    <para>
     PHP 5 führt ein Destruktorkonzept ähnlich dem anderer objektorientierter
     Programmiersprachen wie C++ ein. Die Destruktormethode wird aufgerufen,
-    sobald alle Referenzen auf ein bestimmtes Objekt entfernt werden oder
-    wenn das Objekt explizit zerstört wird, oder in beliebiger Reihenfolge
-    am Ende des Skripts.
+    sobald es keine weiteren Referenzen auf ein bestimmtes Objekt mehr gibt,
+    oder in beliebiger Reihenfolge am Ende des Skripts.
    </para>
    <example>
     <title>Destruktor Beispiel</title>
@@ -99,6 +125,12 @@ $obj = new MyDestructableClass();
     Engine aufgerufen. Um einen Vaterdestruktor zu benutzen muss man
     explizit die Funktion <function>parent::__destruct</function> in der
     Destruktorimplementierung aufrufen
+   </para>
+   <para>
+    Der Destruktor wird aufgerufen, wenn das Script mittels <function>exit</function>
+    abgebrochen wird. Wenn <function>exit</function> innerhalb eines Destruktors
+    aufgerufen wird, verhindert das die Ausführung von jeglichen weiteren Shutdown
+    Routinen.
    </para>
    <note>
     <para>
