@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 322136 Maintainer: hholzgra Status: ready -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.magic" xmlns="http://docbook.org/ns/docbook">
   <title>Magische Methoden</title>
   <para>
    Die Funktionen
-   <link linkend="language.oop5.decon.constructor"><literal>__construct</literal></link>,
-   <link linkend="language.oop5.decon.destructor"><literal>__destruct</literal></link>,
-   <link linkend="language.oop5.overloading.methods"><literal>__call</literal></link>,
-   <link linkend="language.oop5.overloading.methods"><literal>__callStatic</literal></link>,
-   <link linkend="language.oop5.overloading.members"><literal>__get</literal></link>,
-   <link linkend="language.oop5.overloading.members"><literal>__set</literal></link>,
-   <link linkend="language.oop5.overloading.members"><literal>__isset</literal></link>,
-   <link linkend="language.oop5.overloading.members"><literal>__unset</literal></link>,
-   <link linkend="language.oop5.magic.sleep"><literal>__sleep</literal></link>,
-   <link linkend="language.oop5.magic.sleep"><literal>__wakeup</literal></link>,
-   <link linkend="language.oop5.magic.tostring"><literal>__toString</literal></link>,
-   <link linkend="language.oop5.magic.invoke"><literal>__invoke</literal></link>,
-   <link linkend="language.oop5.magic.set-state"><literal>__set_state</literal></link> und
-   <link linkend="language.oop5.cloning"><literal>__clone</literal></link>
+   <link linkend="object.construct">__construct()</link>,
+   <link linkend="object.destruct">__destruct()</link>,
+   <link linkend="object.call">__call()</link>,
+   <link linkend="object.callstatic">__callStatic()</link>,
+   <link linkend="object.get">__get()</link>,
+   <link linkend="object.set">__set()</link>,
+   <link linkend="object.isset">__isset()</link>,
+   <link linkend="object.unset">__unset()</link>,
+   <link linkend="object.sleep">__sleep()</link>,
+   <link linkend="object.wakeup">__wakeup()</link>,
+   <link linkend="object.tostring">__toString()</link>,
+   <link linkend="object.invoke">__invoke()</link>,
+   <link linkend="object.set-state">__set_state()</link> and
+   <link linkend="object.clone">__clone()</link>
    sind in PHP-Klassen magisch. Man kann keine Funktionen gleichen Namens in
    einer seiner Klassen haben, wenn man nicht die magische Funktionalität,
    die sie mit sich bringen, haben will.
@@ -34,40 +34,61 @@
   </caution>
 
   <sect2 xml:id="language.oop5.magic.sleep">
-   <title><literal>__sleep</literal> und <literal>__wakeup</literal></title>
+   <title>
+    <link linkend="object.sleep">__sleep()</link> and
+    <link linkend="object.wakeup">__wakeup()</link>
+   </title>
+   
+   <methodsynopsis xml:id="object.sleep">
+    <modifier>public</modifier> <type>array</type><methodname>__sleep</methodname>
+    <void/>
+   </methodsynopsis>
+   <methodsynopsis xml:id="object.wakeup">
+    <type>void</type><methodname>__wakeup</methodname>
+    <void/>
+   </methodsynopsis>
+   
    <para>
     <function>serialize</function> prüft, ob Ihre Klasse eine Funktion mit dem
-    magischen Namen <literal>__sleep</literal> besitzt.  Wenn dem so ist, wird
-    die Funktion vor jeder Serialisierung ausgeführt. Sie kann das Objekt
-    aufräumen und es wird von ihr erwartet, dass sie ein Array mit den Namen
-    aller Variablen zurückliefert, die serialisiert werden sollen. Wenn die
-    Methode nichts zurückgibt, so wird &null; serialisiert und eine E_NOTICE
-    ausgegeben.
+    magischen Namen <link linkend="object.sleep">__sleep()</link> besitzt. Wenn
+    dem so ist, wird die Funktion vor jeder Serialisierung ausgeführt. Sie kann
+    das Objekt aufräumen und es wird von ihr erwartet, dass sie ein Array mit den
+    Namen aller Variablen zurückliefert, die serialisiert werden sollen. Wenn die
+    Methode nichts zurückgibt, so wird &null; serialisiert und eine
+    <constant>E_NOTICE</constant> geworfen.
    </para>
+   <note>
+    <para>
+     <link linkend="object.sleep">__sleep()</link> kann nicht Namen von privaten
+     Eigenschaften von Elternklassen zurückgeben. In diesem Fall wird eine
+     <constant>E_NOTICE</constant> geworfen. Stattdessen sollte das
+     <classname>Serializable</classname> Interface verwendet werden.
+    </para>
+   </note>
    <para>
-    Die beabsichtigte Verwendung von <literal>__sleep</literal> ist,
-    nicht gespeicherte Daten zu sichern oder ähnliche Aufräumarbeiten zu
+    Die beabsichtigte Verwendung von <link linkend="object.sleep">__sleep()</link>
+    ist, nicht gespeicherte Daten zu sichern oder ähnliche Aufräumarbeiten zu
     erledigen. Die Funktion ist ebenfalls nützlich, wenn Sie sehr große Objekte
     haben, welche nicht komplett gespeichert werden müssen.
    </para>
    <para>
     Umgekehrt überprüft <function>unserialize</function> die Anwesenheit einer
-    Funktion mit dem magischen Namen <literal>__wakeup</literal>. Falls
-    vorhanden, kann diese Funktion alle Ressourcen, die das Objekt haben könnte,
+    Funktion mit dem magischen Namen <link linkend="object.wakeup">__wakeup()</link>.
+    Falls vorhanden, kann diese Funktion alle Ressourcen, die das Objekt haben könnte,
     wiederherstellen.
    </para>
    <para>
-    Der beabsichtigte Zweck von <literal>__wakeup</literal> ist es, alle
-    Datenbankverbindungen wiederherzustellen, die während der Serialisierung
-    verloren gegangen sein könnten, oder auch andere Aufgaben zur
-    erneuten Initialisierung.
+    Der beabsichtigte Zweck von <link linkend="object.wakeup">__wakeup()</link> ist es,
+    alle Datenbankverbindungen wiederherzustellen, die während der Serialisierung
+    verloren gegangen sein könnten, oder auch andere Aufgaben zur erneuten Initialisierung.
    </para>
    <example>
     <title>Sleep- und Wakeup-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-class Connection {
+class Connection
+{
     protected $link;
     private $server, $username, $password, $db;
 
@@ -103,11 +124,17 @@ class Connection {
   </sect2>
 
   <sect2 xml:id="language.oop5.magic.tostring">
-   <title><literal>__toString</literal></title>
+   <title><link linkend="object.tostring">__toString()</link></title>
+   <methodsynopsis xml:id="object.tostring">
+    <modifier>public</modifier> <type>string</type><methodname>__toString</methodname>
+    <void/>
+   </methodsynopsis>
    <para>
-    Die <literal>__toString</literal>-Methode erlaubt einer Klasse zu
-    entscheiden, wie sie reagieren will, wenn sie in eine Zeichenkette
-    umgewandelt wird.
+    Die <link linkend="object.tostring">__toString()</link> Methode erlaubt
+    einer Klasse zu entscheiden, wie sie reagieren soll, wenn sie in eine Zeichenkette
+    umgewandelt wird. Die beeinflusst beispielsweise, was <literal>echo $obj;</literal>
+    ausgeben wird. Diese Methode muss eine Zeichenkette zurückgeben, ansonsten wird ein
+    <constant>E_RECOVERABLE_ERROR</constant> geworfen.
    </para>
    <example>
     <title>Einfaches Beispiel</title>
@@ -119,11 +146,13 @@ class TestClass
 {
     public $foo;
 
-    public function __construct($foo) {
+    public function __construct($foo)
+    {
         $this->foo = $foo;
     }
 
-    public function __toString() {
+    public function __toString()
+    {
         return $this->foo;
     }
 }
@@ -141,24 +170,27 @@ Hallo
     </screen>
    </example>
    <para>
-    Es muss angemerkt werden, dass die <literal>__toString</literal>-Methode
-    in Versionen vor PHP 5.2.0 nur in direkter Kombination mit
+    Es muss angemerkt werden, dass die <link linkend="object.tostring">__toString()</link>
+    Methode in Versionen vor PHP 5.2.0 nur in direkter Kombination mit
     <function>echo</function> oder <function>print</function> aufgerufen
     wurde.
     Beginnend mit PHP 5.2.0 erfolgt dieser Aufruf in jedem Stringkontext
     (z.B. in <function>printf</function> mit <literal>%s</literal>-Platzhalter),
     aber in keinem der anderen Typenkontexte (z.B. mit dem
     <literal>%d</literal>-Platzhalter). Ebenfalls beginnend mit PHP 5.2.0
-    bewirkt die Umwandlung eines Objekts ohne
-    <literal>__toString</literal>-Methode in einen String einen Fehler der
-    Klasse <constant>E_RECOVERABLE_ERROR</constant>.
+    bewirkt die Umwandlung eines Objekts ohne <link linkend="object.tostring">__toString()</link>
+    Methode in einen String einen Fehler der Klasse <constant>E_RECOVERABLE_ERROR</constant>.
    </para>
   </sect2>
 
   <sect2 xml:id="language.oop5.magic.invoke">
-   <title><literal>__invoke</literal></title>
+   <title><link linkend="object.invoke">__invoke()</link></title>
+   <methodsynopsis xml:id="object.invoke">
+    <type>mixed</type><methodname>__invoke</methodname>
+    <methodparam choice="opt"><parameter>...</parameter></methodparam>
+   </methodsynopsis>
    <para>
-    Die <literal>__invoke</literal>-Methode wird aufgerufen,
+    Die <link linkend="object.invoke">__invoke()</link>-Methode wird aufgerufen,
     wenn ein Skript versucht, ein Objekt als Funktion aufzurufen.
    </para>
    <note>
@@ -167,14 +199,16 @@ Hallo
     </para>
    </note>
    <example>
-    <title>Nutzung von <literal>__invoke</literal></title>
+    <title>Nutzung von <link linkend="object.invoke">__invoke()</link></title>
     <programlisting role="php">
 <![CDATA[
 <?php
-class CallableClass {
-  function __invoke($x) {
-    var_dump($x);
-  }
+class CallableClass
+{
+    function __invoke($x)
+    {
+        var_dump($x);
+    }
 }
 $obj = new CallableClass;
 $obj(5);
@@ -193,7 +227,11 @@ bool(true)
   </sect2>
 
   <sect2 xml:id="language.oop5.magic.set-state">
-   <title><literal>__set_state</literal></title>
+   <title><link linkend="object.set-state">__set_state()</link></title>
+   <methodsynopsis xml:id="object.set-state">
+    <modifier>static</modifier> <type>object</type><methodname>__set_state</methodname>
+    <methodparam><type>array</type><parameter>properties</parameter></methodparam>
+   </methodsynopsis>
    <para>
     Diese <link linkend="language.oop5.static">statische</link> Methode wird
     seit PHP 5.1.0 für Klassen aufgerufen, die mittels
@@ -205,7 +243,7 @@ bool(true)
     besteht.
    </para>
     <example>
-    <title>Verwendung von <literal>__set_state</literal> (seit PHP 5.1.0)</title>
+    <title>Verwendung von <link linkend="object.set-state">__set_state()</link> (seit PHP 5.1.0)</title>
     <programlisting role="php">
 <![CDATA[
 <?php
