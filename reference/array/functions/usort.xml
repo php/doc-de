@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 326718 Maintainer: hholzgra Status: ready -->
 <!-- CREDITS: tom, simp -->
 <refentry xml:id="function.usort" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -13,7 +13,7 @@
   <methodsynopsis>
    <type>bool</type><methodname>usort</methodname>
    <methodparam><type>array</type><parameter role="reference">array</parameter></methodparam>
-   <methodparam><type>callback</type><parameter>cmp_function</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>cmp_function</parameter></methodparam>
   </methodsynopsis>
   <para>
    Diese Funktion sortiert ein Array nach seinen Werten mittels
@@ -23,7 +23,7 @@
   </para>
   <note>
    <para>
-    Wenn zwei Elemente als gleich verglichen werden, ist ihre Reihenfolge
+    Wenn zwei Elemente als gleich verglichen werden, ist ihre relative Reihenfolge
     im sortierten Array undefiniert.
    </para>
   </note>
@@ -46,11 +46,18 @@
      <term><parameter>cmp_function</parameter></term>
      <listitem>
       <para>
-       Die Vergleichsfunktion muss einen Integerwert kleiner als,
-       gleich oder größer als 0 zurückgeben je nachdem ob das
-       erste übergebene Argument kleiner als, gleich oder
-       größer als das zweite ist.
+       &return.callbacksort;
       </para>
+      &callback.cmp;
+      <caution>
+       <para>
+        Werden von der Vergleichsfunktion <emphasis>nicht-integer</emphasis>
+        Werte zurückgegeben so werden diese auf <type>integer</type> gecastet.
+        Gibt die Funktion zB. <type>float</type> Werte zurück so werden Werte
+        wie 0.99 oder 0.1 zu 0 und die verglichenen Werte werden als gleich
+        angesehen.
+       </para>
+      </caution>
      </listitem>
     </varlistentry>
    </variablelist>
@@ -90,7 +97,7 @@
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
-   <example>
+   <example xml:id="function.usort.examples.basic">
     <title><function>usort</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
@@ -133,7 +140,7 @@ foreach ($a as $key => $value) {
    </para>
   </note>
   <para>
-   <example>
+   <example xml:id="function.usort.examples.multi">
     <title>
      <function>usort</function>-Beispiel für multidimensionale Arrays
     </title>
@@ -173,7 +180,7 @@ $fruechte[2]: Zitronen
    </example>
   </para>
   <para>
-   <example>
+   <example xml:id="function.usort.examples.object">>
     <title>
      <function>usort</function>-Beispiel, das die Methode eines Objekts benutzt
     </title>
@@ -218,6 +225,41 @@ foreach ($a as $item) {
 b
 c
 d
+]]>
+    </screen>
+   </example>
+   <example xml:id="function.usort.examples.closure">
+    <title>
+     <function>usort</function> Beispiel zum Einsatz einer <link linkend="functions.anonymous">Closure</link>
+     zum Sortieren eines mehrdimensionalen Arrays
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array[0] = array('key_a' => 'z', 'key_b' => 'c');
+$array[1] = array('key_a' => 'x', 'key_b' => 'b');
+$array[2] = array('key_a' => 'y', 'key_b' => 'a');
+
+function build_sorter($key) {
+    return function ($a, $b) use ($key) {
+        return strnatcmp($a[$key], $b[$key]);
+    };
+}
+
+usort($array, build_sorter('key_b'));
+
+foreach ($array as $item) {
+    echo $item['key_a'] . ', ' . $item['key_b'] . "\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+y, a
+x, b
+z, c
 ]]>
     </screen>
    </example>
