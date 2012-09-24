@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 313299 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 326912 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink"  xmlns="http://docbook.org/ns/docbook" xml:id="function.crypt">
  <refnamediv>
@@ -67,13 +67,18 @@
    </listitem>
    <listitem>
     <simpara>
-     <constant>CRYPT_BLOWFISH</constant> - Blowfish-Hash mit 22-Zeichen-Salt
-     folgenden Aufbaus: "$2a$", gefolgt von einem zweistelligen Kostenparameter, einem
-     weiteren "$", und 22 Zahlen des Alphabets "./0-9A-Za-z". Bei Nutzung eines
+     <constant>CRYPT_BLOWFISH</constant> - Blowfish-Hash mit einem Salt folgenden Aufbaus:
+     "$2a$", "$2x$" oder "$2y$", gefolgt von einem zweistelligen Kostenparameter, einem
+     weiteren "$", und 22 Zeichen des Alphabets "./0-9A-Za-z". Bei Nutzung eines
      ungültigen Zeichens gibt crypt() einen leeren String zurück. Der zweistellige
      Kostenparameter ist der binäre Logarithmus der Iterationsanzahl und muss im
      Bereich von 04-31 liegen. Bei Nutzung von Werten außerhalb dieses Bereichs schlägt
-     crypt() fehl.
+     crypt() fehl. Versionen vor PHP 5.3.7 unterstützten nur "$2a$" als Salt-Präfix. Die
+     anderen Präfixe wurden in PHP 5.3.7 eingeführt, um eine Sicherheits-Schwachstelle
+     in der Blowfish-Implementierung zu beheben. Für weitere Informationen siehe
+     <link xlink:href="&url.crypt.blowfish;">dieses Dokument</link>. Kurz zusammengefasst
+     sollten Entwickler "$2y$" bevorzugt verweden, wenn sie nicht mit PHP Versionen vor
+     PHP 5.3.7 kompatibel sein müssen.
     </simpara>
    </listitem>
    <listitem>
@@ -153,9 +158,16 @@
      </thead>
      <tbody>
       <row>
+       <entry>5.3.7</entry>
+       <entry>
+        Die <literal>$2x$</literal> und <literal>$2y$</literal> Blowfish-Modi
+        wurden hinzugefügt.
+       </entry>
+      </row>
+      <row>
        <entry>5.3.2</entry>
        <entry>
-        SHA-256 und SHA-512 wurden hinuzgefügt auf Basis von
+        SHA-256 und SHA-512 wurden hinzugefügt auf Basis von
         Ulrich Drepper's <link xlink:href="&url.crypt.sha;">Implementierung</link>.
        </entry>
       </row>
@@ -189,14 +201,14 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$passwort = crypt('mein_Pwd'); // Der Salt wird automatisch generiert
+$gehashtes_passwort = crypt('mein_Pwd'); // Der Salt wird automatisch generiert
 
 /* Sie sollten das vollständige Ergebnis von crypt() als Salt zum
    Passwort-Vergleich übergeben, um Problemen mit unterschiedlichen
    Hash-Algorithmen vorzubeugen. (Wie bereits ausgeführt, verwendet
    ein Standard-DES-Passwort-Hash einen 2-Zeichen-Salt, ein
    MD5-basierter hingegen nutzt 12 Zeichen. */
-if (crypt($benutzer_eingabe, $passwort) == $passwort) {
+if (crypt($benutzer_eingabe, $gehashtes_passwort) == $gehashtes_passwort) {
    echo "Passwort stimmt überein!";
 }
 ?>
@@ -226,6 +238,10 @@ $hash = crypt($passwort);
     <programlisting role="php">
 <![CDATA[
 <?php
+/* Die im folgenden Code genutzen Salts sind nur Beispiele und sollten nicht in dieser
+   Form benutzt werden. Stattdessen muss für jedes Password ein neuer, korrekt formatierter
+   Salt generiert werden.
+*/
 if (CRYPT_STD_DES == 1) {
     echo 'Standard DES: ' . crypt('rasmuslerdorf', 'rl') . "\n";
 }
