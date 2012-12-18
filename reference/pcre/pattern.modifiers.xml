@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 308190 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 328430 Maintainer: samesch Status: ready -->
 <!-- splitted from ./en/functions/pcre.xml, last change in rev 1.2 -->
 <article xml:id="reference.pcre.pattern.modifiers" xmlns="http://docbook.org/ns/docbook">
  <title>Suchmuster-Modifikatoren</title>
@@ -78,6 +78,7 @@
     <varlistentry>
      <term><emphasis>e</emphasis> (<literal>PREG_REPLACE_EVAL</literal>)</term>
      <listitem>
+      &warn.deprecated.feature-5-5-0;
       <simpara>
        Wenn dieser Modifikator gesetzt ist, macht
        <function>preg_replace</function> in der Ersetzungszeichenkette eine
@@ -87,14 +88,77 @@
        (<literal>\</literal>) und NULL-Zeichen werden in den ersetzten
        Rückreferenzen mit einem Backslash maskiert.
       </simpara>
-      <tip>
+      <caution>
+       <para>
+        Bei jeder passenden Rückreferenz wird die Funktion
+        <function>addslashes</function> aufgerufen, bevor sie ersetzt wird.
+        Wenn die Rückreferenz als Zeichenkette in Anführungszeichen verwendet
+        wird, werden von daher maskierte Zeichen in Buchstabensymbole
+        umgewandelt. Allerdings behalten maskierte Zeichen, die normalerweise
+        nicht umgewandelt würden, ihre Backslashes. Das macht die Verwendung
+        dieses Modifikators sehr kompliziert.
+       </para>
+      </caution>
+      <caution>
        <para>
         Stellen Sie sicher, dass <parameter>replacement</parameter> gültigen
         PHP-Code erzeugt, weil sich PHP sonst über einen Parse Error in der
         Zeile beschwert, die den Aufruf von <function>preg_replace</function>
         enthält.
        </para>
-      </tip>
+      </caution>
+      <caution>
+       <para>
+        Von der Verwendung dieses Modifikators wird
+        <emphasis>abgeraten</emphasis>, weil damit sehr leicht
+        Sicherheitslücken entstehen können:
+       </para>
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+$html = $_POST['html'];
+
+// großgeschriebene Überschriften
+$html = preg_replace(
+    '(<h([1-6])>(.*?)</h\1>)e',
+    '"<h$1>" . strtoupper("$2") . "</h$1>"',
+    $html
+);
+]]>
+        </programlisting>
+       </informalexample>
+       <para>
+        Der obige Beispiel-Code kann durch Übergabe einer Zeichenkette wie
+        z.B.
+        <literal>&lt;h1&gt;{${eval($_GET[php_code])}}&lt;/h1&gt;</literal>
+        leicht ausgenutzt werden. Das gibt dem Angreifer die Möglichkeit,
+        beliebigen PHP-Code auszuführen und gibt ihm somit beinahe
+        vollständigen Zugriff auf den Server.
+       </para>
+       <para>
+        Um diese Sicherheitslücke zur Ausführung von Code von außen (Remote
+        Code Execution) zu vermeiden, sollte stattdessen die Funktion
+        <function>preg_replace_callback</function> verwendet werden:
+       </para>
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+$html = $_POST['html'];
+
+// großgeschriebene Überschriften
+$html = preg_replace_callback(
+    '(<h([1-6])>(.*?)</h\1>)',
+    function ($m) {
+        return "<h$m[1]>" . strtoupper($m[2]) . "</h$m[1]>";
+    },
+    $html
+);
+]]>
+        </programlisting>
+       </informalexample>
+      </caution>
       <note>
        <para>
         Dieser Modifikator wird nur von <function>preg_replace</function>
