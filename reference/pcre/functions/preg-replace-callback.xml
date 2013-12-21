@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 324122 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 331556 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.preg-replace-callback" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>preg_replace_callback</refname>
@@ -44,16 +44,21 @@
       <para>
        Ein Callback, dem ein Array von Übereinstimmungen mit
        <parameter>subject</parameter> übergeben wird. Der Callback sollte die
-       Ersetzungs-Zeichenkette liefern.
+       Ersetzungs-Zeichenkette liefern. Das ist die Callback-Signatur:
+      </para>
+      <para>
+       <methodsynopsis>
+        <type>string</type><methodname><replaceable>handler</replaceable></methodname>
+        <methodparam><type>array</type><parameter>matches</parameter></methodparam>
+       </methodsynopsis>
       </para>
       <para>
        Häufig werden Sie die <parameter>callback</parameter>-Funktion für
        <function>preg_replace_callback</function> nur an einer Stelle
        benötigen. In diesem Fall können Sie eine <link
-       linkend="functions.anonymous">Anonyme Funktion</link> (seit PHP 5.3.0)
-       oder <function>create_function</function> verwenden, um innerhalb des
-       Aufrufs von <function>preg_replace_callback</function> eine anonyme
-       Funktion als Callback zu deklarieren. Auf diese Weise haben Sie alle
+       linkend="functions.anonymous">Anonyme Funktion</link> verwenden, um
+       innerhalb des Aufrufs von <function>preg_replace_callback</function>
+       den Callback zu deklarieren. Auf diese Weise haben Sie alle
        Informationen für den Aufruf an einer Stelle und stopfen den Namensraum
        für Funktionen nicht mit Namen für Callback-Funktionen voll, die sonst
        nirgends verwendet werden.
@@ -61,8 +66,7 @@
       <para>
        <example>
         <title>
-         <function>preg_replace_callback</function> und
-         <function>create_function</function>
+         <function>preg_replace_callback</function> und Anonyme Funktion
         </title>
         <programlisting role="php">
 <![CDATA[
@@ -74,12 +78,9 @@ while (!feof($fp)) {
   $zeile = fgets($fp);
   $zeile = preg_replace_callback(
     '|<p>\s*\w|',
-    create_function(
-      // hier sind entweder einfache Anführungszeichen nötig
-      // oder alternativ die Maskierung aller $ als \$
-      '$treffer',
-      'return strtolower($treffer[0]);'
-    ),
+    function ($treffer) {
+      return strtolower($treffer[0]);
+    },
     $zeile
   );
   echo $zeile;
@@ -236,7 +237,6 @@ echo $ausgabe;
     <member><link linkend="pcre.pattern">PCRE-Suchmuster</link></member>
     <member><function>preg_replace</function></member>
     <member><function>preg_last_error</function></member>
-    <member><function>create_function</function></member>
     <member><link linkend="functions.anonymous">Anonymous functions</link></member>
     <member>&seealso.callback;</member>
    </simplelist>
