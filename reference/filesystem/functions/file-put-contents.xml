@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 328095 Maintainer: Tim Hollmann Status: ready -->
+<!-- Reviewed: no -->
+
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.file-put-contents">
+ <refnamediv>
+  <refname>file_put_contents</refname> 
+  <refpurpose>Schreibt einen String in eine Datei</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>file_put_contents</methodname>
+   <methodparam><type>string</type><parameter>filename</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>data</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>0</initializer></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>context</parameter></methodparam>
+  </methodsynopsis>
+  <para> 
+   Diese Funktion entspricht <function>fopen</function>, 
+   <function>fwrite</function> und <function>fclose</function>, um Daten in eine Datei zu schreiben.
+  </para>
+  <para>
+   Wenn <parameter>filename</parameter> nicht existiert, wird die Datei erstellt.
+   Sonst wird die existierende Datei überschrieben, es sei denn 
+   <constant>FILE_APPEND</constant> ist gesetzt.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>filename</parameter></term>
+     <listitem>
+      <para>
+       Pfad zur Datei in die die Daten geschrieben werden sollen.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>data</parameter></term>
+     <listitem>
+      <para>
+       Die zu schreibenden Daten. Kann entweder <type>string</type>, oder
+       <type>array</type> sowie <type>stream</type> sein.
+      </para>
+      <para>
+       Wenn <parameter>data</parameter> eine <type>stream</type>-Quelle ist, wird 
+       der verbleibende Puffer des Streams in die festgegte Datei kopiert.
+       Dies ähnelt der Funktion <function>stream_copy_to_stream</function>.
+      </para>
+      <para>
+       Sie können auch den Parameter <parameter>data</parameter> als eindimensionales Array angeben.
+       Dies ist äquivalent zu
+       <literal>file_put_contents($filename, implode('', $array))</literal>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+       Der Wert von <parameter>flags</parameter> kann eine Kombination der folgenden Flags sein, verbunden mit dem binären OR(<literal>|</literal>)
+       -Operator.
+      </para>
+      <para>
+       <table>
+        <title>verfügbare Flags</title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Flag</entry>
+           <entry>Beschreibung</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>
+            <constant>FILE_USE_INCLUDE_PATH</constant>
+           </entry>
+           <entry>
+            Sucht nach <parameter>filename</parameter> im enthaltenen Verzeichnis.
+            Siehe <link linkend="ini.include-path">include_path</link> für mehr Information.
+           </entry>
+          </row>
+          <row>
+           <entry>
+            <constant>FILE_APPEND</constant>
+           </entry>
+           <entry>
+            Falls die Datei <parameter>filename</parameter> bereits existiert, füge die Daten
+            an die Datei an anstatt diese zu überschreiben.
+           </entry>
+          </row>
+          <row>
+           <entry>
+            <constant>LOCK_EX</constant>
+           </entry>
+           <entry>
+            Erwirbt exklusive Schreibrechte auf die Datei während des Fortschreitenden Schreibens.
+           </entry>
+          </row>
+          <!-- FIXME PHP_6
+          <row>
+           <entry>
+            <constant>FILE_TEXT</constant>
+           </entry>
+           <entry>
+            <parameter>data</parameter> wird im Textmodus geschrieben. Wenn Unicode-Schema aktiviert ist,
+            ist die standartmäßige formatierung UTF-8.
+            Sie können eine andere formatierung wählen bei Verwendung eines anderen Kontextes
+            oder ber Verwendung der <function>stream_default_encoding</function>-Funktion um
+            den stadartwert zu ändern. Dieses Flag kannn nicht benutzt werden mit 
+            <constant>FILE_BINARY</constant>. Dieses Flag ist erst seit PHP 6 verfügbar.
+           </entry>
+          </row>
+          <row>
+           <entry>
+            <constant>FILE_BINARY</constant>
+           </entry>
+           <entry>
+            <parameter>data</parameter> wird in binärem Modus geschrieben.Dies ist die standartmäßige Einstellung und kann nicht mit
+            <constant>FILE_TEXT</constant> verwendet werden. Dieses Flag ist erst seit PHP 6 verfügbar.
+           </entry>
+          </row>
+          -->
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>context</parameter></term>
+     <listitem>
+      <para>
+       Eine gültige Kontakt-Ressource erstellt mit der Funktion 
+       <function>stream_context_create</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Diese Funktion gibt die Anzahl der gechriebenen Bytes, or
+   &false; bei einem Fehler zurück.
+  </para>
+  &return.falseproblem;
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Einfaches Verwendungsbeispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$file = 'people.txt';
+// Öffnet die Datei, um den vorhandenen Inhalt zu laden
+$current = file_get_contents($file);
+// Fügt eine neue Person zur Datei hinzu
+$current .= "John Smith\n";
+// Schreibt den Inhalt in die Datei zurück
+file_put_contents($file, $current);
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Verwendung der Flags</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$file = 'people.txt';
+//Die neue Person, die zur Datei hinzugefügt werden soll
+$person = "John Smith\n";
+// Schreibt den Inhalt in die Datei
+// unter Verwendung des Flags FILE_APPEND, um den Inhalt an das Ende der Datei anzufügen
+// und das Flag LOCK_EX, um ein Schreiben in die selbe Datei zur gleichen Zeit zu verhindern
+file_put_contents($file, $person, FILE_APPEND | LOCK_EX);
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.0.0</entry>
+       <entry>
+        Unterstützung für Kontexte hinzugefügt
+       </entry>
+      </row>
+      <row>
+       <entry>5.1.0</entry>
+       <entry>
+        Unterstützung für <constant>LOCK_EX</constant> hinzugefügt und die Möglichkeit,eine Stream-Quelle als <parameter>data</parameter>-Parameter zu übergeben
+       </entry>
+      </row>
+      <!--
+      FIXME PHP_6
+      <row>
+       <entry>6.0.0</entry>
+       <entry>
+        Added support for the <constant>FILE_TEXT</constant> and
+        <constant>FILE_BINARY</constant> flags
+       </entry>
+      </row>
+      -->
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+  
+ <refsect1 role="notes">
+  &reftitle.notes;
+  &note.bin-safe;
+  &tip.fopen-wrapper;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>fopen</function></member>
+    <member><function>fwrite</function></member>
+    <member><function>file_get_contents</function></member>
+    <member><function>stream_context_create</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
