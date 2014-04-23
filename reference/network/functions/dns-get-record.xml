@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 330268 Maintainer: Markus Mauksch Status: ready -->
+<!-- Reviewed: no -->
+
+<refentry xml:id="function.dns-get-record" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>dns_get_record</refname>
+  <refpurpose>Den DNS Resource Record für einen gegebenen Hostname finden.</refpurpose>
+ </refnamediv>
+ 
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>dns_get_record</methodname>
+   <methodparam><type>string</type><parameter>hostname</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>type</parameter><initializer>DNS_ANY</initializer></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter role="reference">authns</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter role="reference">addtl</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter role="reference">raw</parameter><initializer>false</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Fragt einen Resource Redcord für den übergeben 
+   <parameter>hostname</parameter> ab.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>hostname</parameter></term>
+     <listitem>
+      <para>
+       <parameter>hostname</parameter> sollte ein valider Hostname wie z.B.
+       "<literal>www.example.com</literal>". sein. Reverse lookups sind mit der
+       <literal>in-addr.arpa</literal> möglich, jedoch
+       sollte für diesen Fall <function>gethostbyaddr</function> genutzt werden.
+      </para>
+      <note>
+       <para>
+        Gemäß dem DNS-Standard werden E-Mail Adressen in der Form <literal>user.host</literal> (zum Beispiel: 
+        <literal>hostmaster.example.com</literal> statt <literal>hostmaster@example.com</literal>) zurückgegeben.
+        Darum ist es wichtig diesen Wert zu überprüfen und ihn gegebenenfalls mit Funktionen wie z.B. 
+        <function>mail</function> anzupassen.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>type</parameter></term>
+     <listitem>
+      <para>
+       Standardmäßig sucht <function>dns_get_record</function> nach jedem Resource Record
+       für den <parameter>hostname</parameter>. 
+       Um die Anfrage zu spezialisieren muss <parameter>type</parameter>
+       gegeben sein. Dieser Paramter kann einen der folgenden Werte annehmen:
+       <constant>DNS_A</constant>, <constant>DNS_CNAME</constant>,
+       <constant>DNS_HINFO</constant>, <constant>DNS_MX</constant>,
+       <constant>DNS_NS</constant>, <constant>DNS_PTR</constant>,
+       <constant>DNS_SOA</constant>, <constant>DNS_TXT</constant>,
+       <constant>DNS_AAAA</constant>, <constant>DNS_SRV</constant>,
+       <constant>DNS_NAPTR</constant>, <constant>DNS_A6</constant>,
+       <constant>DNS_ALL</constant> or <constant>DNS_ANY</constant>.
+      </para>
+      <note>
+       <para>
+        Durch Eigenheiten in der Performance von libresolv auf verschiedenen Plattformen
+        kann es passieren, dass <constant>DNS_ANY</constant> nicht alle Records zurückgibt.
+        <constant>DNS_ALL</constant>, auch wenn es langsamer ist, arbeite für diesen Fall zuverlässiger.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>authns</parameter></term>
+     <listitem>
+      <para>
+       Passed by reference. Wird, wenn es übergeben wird, mit den Records für die
+       <emphasis>Autoritativen Nameserver</emphasis> gefüllt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>addtl</parameter></term>
+     <listitem>
+      <para>
+       Passed by reference. Wird, wenn es übergeben, mit
+       <emphasis>zusätzlichen Records</emphasis> gefüllt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>raw</parameter></term>
+     <listitem>
+      <para>
+       Im raw Modus wird nur nach dem übergeben Typ gefragt statt durch jeden Typ zu gehen.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Diese Funktion gibt ein Array an assioziativen Arrays zurück
+   &return.falseforfailure;. Jedes Assoziative Array enthält
+   <emphasis>mindestens</emphasis> die folgenden Keys:
+   <table>
+    <title>Grundlegende DNS Attribute</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Attribut</entry>
+       <entry>Bedeutung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>host</entry>
+       <entry>
+        Der Host im DNS Namespace auf den sich die restlichen Werte in dem assoziativen Array beziehen..
+       </entry>
+      </row>
+      <row>
+       <entry>class</entry>
+       <entry>
+        <function>dns_get_record</function> gibt nur Internet class Records zurück wodurch dieser Paramater immer
+        <literal>IN</literal> zurückgibt.
+       </entry>
+      </row>
+      <row>
+       <entry>type</entry>
+       <entry>
+        String in dem der Record Typ hinterlegt ist. Zusätliche Attribute sind abhängig vom Typ ebenfalls in dem Array enthalten. 
+        Siehe untere Tabelle
+       </entry>
+      </row>
+      <row>
+       <entry>ttl</entry>
+       <entry>
+        <literal>"Time To Live"</literal> die für dieses Record noch verbleibt.
+        . <emphasis>nicht</emphasis> identisch mit der originalen ttl des Records sondern die originale ttl abzüglich der Zeit,
+        die vergangen ist seit der autorative Nameserver die Anfrage erhalten hat.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+  </para>
+  <para>
+   <table>
+    <title>Andere Keys im assoziativen Array abhängig von 'type'</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Type</entry>
+       <entry>Extra Spalte</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry><literal>A</literal></entry>
+       <entry>
+        <literal>ip</literal>: Eine IPv4 Addresse in dotted decimal Notation.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>MX</literal></entry>
+       <entry>
+        <literal>pri</literal>: Priorität des MX Records. Niedriegere Zahlen bedeuten eine höhere Priorität.
+        <literal>target</literal>: FQDN des MX Records. 
+        Siehe auch: <function>dns_get_mx</function>.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>CNAME</literal></entry>
+       <entry>
+        <literal>target</literal>: FQDN des Ziels auf das dieses Alias zeigt.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>NS</literal></entry>
+       <entry>
+        <literal>target</literal>: FQDN des Nameservers, der der autorative Nameserver für dieses Zone ist.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>PTR</literal></entry>
+       <entry>
+        <literal>target</literal>: Stelle im DNS namespace auf den dieser Record zeigt.
+       </entry>
+      </row>
+       <row>
+       <entry><literal>TXT</literal></entry>
+       <entry>
+        <literal>txt</literal>: Beliebieger String der diesem Record zugeordnet ist.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>HINFO</literal></entry>
+       <entry>
+        <literal>cpu</literal>: IANA Nummer für die CPU des Hosts, der durch dieses Record referenziert wird.
+        <literal>os</literal>: IANA Nummer für das Betriebssystem des Hosts, der durch dieses Record referenziert wird.
+        Siehe IANAs <link xlink:href="&url.iana.system-names;"><literal>Operating System
+        Names</literal></link> für die Bedeutung dieses Records.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>SOA</literal></entry>
+       <entry>
+        <literal>mname</literal>: FQND für den Host von dem dieses Records kommen.
+        <literal>rname</literal>: E-Mail Adress für den Administrator dieser Domain.
+        <literal>serial</literal>: Aufsteigende Nummer für die Revision der angefragen Domain.
+        <literal>refresh</literal>: Aktualisierungsintervall den die sekundären Nameserver nutzen sollten, 
+        wenn sie ihre gespiegelten Kopien der Zone aktualisieren wollen.
+        <literal>retry</literal>: Zeit die nach einem fehlerhaften Versuch gewartet werden soll.
+        <literal>expire</literal>: Maximale Zeit, die ein sekundärer Nameserver Kopien der Zone behalten soll. Wird nach jedem erfolgreichen Refresh neu gezählt.
+        <literal>minimum-ttl</literal>: Anzahl der Sekunden, die eine Anfrage im Cache behalten wird. 
+        Kann von individuellen Resource Records überschrieben werden
+        resource records.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>AAAA</literal></entry>
+       <entry>
+        <literal>ipv6</literal>: IPv6 Addresse
+       </entry>
+      </row>
+      <row>
+       <entry><literal>A6</literal>(PHP &gt;= 5.1.0)</entry>
+       <entry>
+        <literal>masklen</literal>: Anzahl der Bits, die von dem durch <parameter>chain</parameter> vorgegeben Ziel geerbt werden.
+        <literal>ipv6</literal>: Adresse mit dem dieser spezielle Record zusammengeführt wird.
+        <parameter>chain</parameter>.
+        <literal>chain</literal>: Übergeordneter Record mit dem
+        <parameter>ipv6</parameter> Daten zusammengeführt werden.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>SRV</literal></entry>
+       <entry>
+        <literal>pri</literal>: (Priorität) Niedrigere Zahlen bedeuten höhrere Priorität.
+        <literal>weight</literal>: Gewicht um die Chance jedes 
+        <parameter>targets</parameter> zu beeinflussen. Bsp: Ziel A: 3, Ziel B: 2. Ziel A wird im Mittel in 60% der Fälle gewählt.
+        <literal>target</literal> and <literal>port</literal>: Hostname und Port unter dem der Service erreicht werden kann.
+        Für weitere Information siehe: <link xlink:href="&url.rfc;2782">RFC 2782</link>
+       </entry>
+      </row>
+      <row>
+       <entry><literal>NAPTR</literal></entry>
+       <entry>
+         <literal>order</literal> and <literal>pref</literal>: Gleichweritg zu 
+        <parameter>pri</parameter> and <parameter>weight</parameter> oben.
+        <literal>flags</literal>, <literal>services</literal>, <literal>regex</literal>,
+        und <literal>replacement</literal>: Parameter wie in
+        <link xlink:href="&url.rfc;2915">RFC 2915</link> definiert.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.4.0</entry>
+       <entry>
+        <parameter>raw</parameter> Parameter hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+         Diese Funktion ist jetzt auf Windows Plattformen verfügbar.
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Bis zu diesesm Release wurde bei gegebenem <parameter>authns</parameter> Parameter
+        auch der <parameter>addtl</parameter> Parameter benötigt
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Benutzung von <function>dns_get_record</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$result = dns_get_record("php.net");
+print_r($result);
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Array
+(
+    [0] => Array
+        (
+            [host] => php.net
+            [type] => MX
+            [pri] => 5
+            [target] => pair2.php.net
+            [class] => IN
+            [ttl] => 6765
+        )
+
+    [1] => Array
+        (
+            [host] => php.net
+            [type] => A
+            [ip] => 64.246.30.37
+            [class] => IN
+            [ttl] => 8125
+        )
+
+)
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Benutzung von <function>dns_get_record</function> und DNS_ANY</title>
+    <para>
+     Da man häufig auch die IP des Mailservers für einen MX Record benötigt gibt <function>dns_get_record</function>
+     auch ein Array in <parameter>addtl</parameter> in dem die zugehörigen Records zu finden sind. 
+     Ebenso wird <parameter>authns</parameter> mit einer Liste der autorativen Nameserver zurückgegeben.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+/* Request "ANY" record for php.net,
+   and create $authns and $addtl arrays
+   containing list of name servers and
+   any additional records which go with
+   them */
+$result = dns_get_record("php.net", DNS_ANY, $authns, $addtl);
+echo "Result = ";
+print_r($result);
+echo "Auth NS = ";
+print_r($authns);
+echo "Additional = ";
+print_r($addtl);
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Result = Array
+(
+    [0] => Array
+        (
+            [host] => php.net
+            [type] => MX
+            [pri] => 5
+            [target] => pair2.php.net
+            [class] => IN
+            [ttl] => 6765
+        )
+
+    [1] => Array
+        (
+            [host] => php.net
+            [type] => A
+            [ip] => 64.246.30.37
+            [class] => IN
+            [ttl] => 8125
+        )
+
+)
+Auth NS = Array
+(
+    [0] => Array
+        (
+            [host] => php.net
+            [type] => NS
+            [target] => remote1.easydns.com
+            [class] => IN
+            [ttl] => 10722
+        )
+
+    [1] => Array
+        (
+            [host] => php.net
+            [type] => NS
+            [target] => remote2.easydns.com
+            [class] => IN
+            [ttl] => 10722
+        )
+
+    [2] => Array
+        (
+            [host] => php.net
+            [type] => NS
+            [target] => ns1.easydns.com
+            [class] => IN
+            [ttl] => 10722
+        )
+
+    [3] => Array
+        (
+            [host] => php.net
+            [type] => NS
+            [target] => ns2.easydns.com
+            [class] => IN
+            [ttl] => 10722
+        )
+
+)
+Additional = Array
+(
+    [0] => Array
+        (
+            [host] => pair2.php.net
+            [type] => A
+            [ip] => 216.92.131.5
+            [class] => IN
+            [ttl] => 6766
+        )
+
+    [1] => Array
+        (
+            [host] => remote1.easydns.com
+            [type] => A
+            [ip] => 64.39.29.212
+            [class] => IN
+            [ttl] => 100384
+        )
+
+    [2] => Array
+        (
+            [host] => remote2.easydns.com
+            [type] => A
+            [ip] => 212.100.224.80
+            [class] => IN
+            [ttl] => 81241
+        )
+
+    [3] => Array
+        (
+            [host] => ns1.easydns.com
+            [type] => A
+            [ip] => 216.220.40.243
+            [class] => IN
+            [ttl] => 81241
+        )
+
+    [4] => Array
+        (
+            [host] => ns2.easydns.com
+            [type] => A
+            [ip] => 216.220.40.244
+            [class] => IN
+            [ttl] => 81241
+        )
+
+)
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Für die Kompatibilität auf einigen Betriebsystemem mit Versionen vor PHP 5.3.0 kann
+    die <link xlink:href="&url.php.pear;">PEAR</link> Klasse
+    <link xlink:href="&url.pear.package;Net_DNS">Net_DNS</link> benutzt werden.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>dns_get_mx</function></member>
+    <member><function>dns_check_record</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
