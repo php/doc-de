@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 316911 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 332727 Maintainer: simp Status: ready -->
+<!-- Credits: wiesemann -->
  <sect1 xml:id="language.oop5.abstract" xmlns="http://docbook.org/ns/docbook">
   <title>Klassenabstraktion</title>
 
   <para>
    PHP 5 führt abstrakte Klassen und Methoden ein. Abstrakt definierte
-   Klassen dürfen nicht instanziiert werden; wurde. Jede Klasse,
+   Klassen dürfen nicht instanziiert werden. Jede Klasse,
    die wenigstens eine abstrakte Methode enthält, muss ebenso abstrakt sein.
    Abstrakt definierte Methoden deklarieren nur die Signatur der Methode -
    sie können nicht die Implementierung definieren.
@@ -20,11 +21,13 @@
    <link linkend="language.oop5.visibility">Sichtbarkeit</link>
    definiert werden. Wenn die abstrakte Methode zum Beispiel als protected
    definiert ist, muss die Funktionsimplementierung entweder als protected
-   oder public, aber nicht private, definiert sein. Außerdem müssen sich die
-   Signaturen der Methoden sich entsprechen, d.h.  die Type-Hints und die
-   Anzahl der erforderlichen Parameter müssen gleich sein. Dies gilt seit PHP 5.4
-   auch für Konstruktoren. Vor 5.4 konnten Konstruktor-Signaturen voneinander
-   abweichen.
+   oder public, aber nicht private, definiert sein. Ebenfalls müssen die
+   Methodensignaturen zueinander passen, d.h. die Type Hints und die Anzahl
+   der verpflichtenden Parameter muss gleich sein. Wenn zum Beispiel die 
+   Kindklasse einen optionalen Parameter definiert, den die Signatur der
+   abstrakten Methode nicht vorsieht, dann gibt es keinen Konflikt in den
+   Signaturen. Gleiches gilt seit PHP 5.4 für Konstruktoren. Vor 5.4. konnten
+   die Signaturen von Konstruktoren von einander abweichen.
   </para>
 
   <example>
@@ -86,6 +89,49 @@ FOO_ConcreteClass2
 ]]>
    </screen>
   </example>
+  
+  <example>
+   <title>Abstract class example</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+abstract class AbstractClass
+{
+  // Unsere abstrakte Methode muss nur die verpflichtenden Parameter definieren
+  abstract protected function prefixName($name);
+
+}
+
+class ConcreteClass extends AbstractClass
+{
+  // Unsere Kindklasse kann optionale Parameter definieren die sich nicht in der
+  // Signatur der Elternklasse wiederfinden
+  public function prefixName($name, $separator = ".") {
+      if ($name == "Pacman") {
+          $prefix = "Mr";
+      } elseif ($name == "Pacwoman") {
+          $prefix = "Mrs";
+      } else {
+          $prefix = "";
+      }
+      return "{$prefix}{$separator} {$name}";
+  }
+}
+
+$class = new ConcreteClass;
+echo $class->prefixName("Pacman"), "\n";
+echo $class->prefixName("Pacwoman"), "\n";
+?>
+]]>
+    </programlisting>
+     &example.outputs;
+    <screen>
+<![CDATA[
+Mr. Pacman
+Mrs. Pacwoman
+]]>
+    </screen>
+   </example>
 
    <para>
      Älterer Code, der keine nutzerdefinierten Klassen oder Funktionen mit
