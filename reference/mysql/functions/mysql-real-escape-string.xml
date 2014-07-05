@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 300101 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 328734 Maintainer: simp Status: ready -->
+<!-- Credits: sammywg -->
 
 <refentry xml:id="function.mysql-real-escape-string" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -9,12 +10,22 @@
    Verwendung in einer SQL-Anweisung</refpurpose>
  </refnamediv>
 
+ <refsynopsisdiv>
+  <warning>
+   &mysql.alternative.note;
+   <simplelist role="alternatives">
+    <member><function>mysqli_real_escape_string</function></member>
+    <member><methodname>PDO::quote</methodname></member>
+   </simplelist>
+  </warning>
+ </refsynopsisdiv>
+ 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>string</type><methodname>mysql_real_escape_string</methodname>
    <methodparam><type>string</type><parameter>unescaped_string</parameter></methodparam>
-   <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter><initializer>NULL</initializer></methodparam>
   </methodsynopsis>
   <para>
    Maskiert spezielle Zeichen im <parameter>unescaped_string</parameter> unter
@@ -35,6 +46,18 @@
    Die Funktion muss immer (mit wenigen Ausnahmen) verwendet werden, um Daten
    abzusichern, bevor sie per Query an MySQL übermittelt werden.
   </para>
+  
+  <caution>
+   <title>Sicherheit: Der Standardzeichensatz</title>
+   <para>
+    Der Zeichensatz muss entweder auf Ebene des Servers oder mittels der
+    API-Funktion <function>mysql_set_charset</function> gesetzt werden,
+    damit dieser <function>mysql_real_escape_string</function>
+    beeinflusst. Sehen sie das Grundlagenkapitel zum Thema
+    <link linkend="mysqlinfo.concepts.charset">Zeichensätze</link> für
+    mehr Informationen.
+   </para>
+  </caution>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -88,14 +111,15 @@ $query = sprintf("SELECT * FROM users WHERE user='%s' AND password='%s'",
     <programlisting role="php">
 <![CDATA[
 <?php
+// Wir haben $_POST['password'] nicht geprüft, dies könnte
+// ein beliebiger Wert sein den der Benutzer will
+// Zum Beispiel:
+$_POST['username'] = 'aidan';
+$_POST['password'] = "' OR ''='";
+
 // Datenbankabfrage zur Ueberpruefung der Logindaten
 $query = "SELECT * FROM users WHERE user='{$_POST['username']}' AND password='{$_POST['password']}'";
 mysql_query($query);
-
-// Wir haben $_POST['password'] nicht geprueft, es koennte also alles darin
-// stehen, was der User will. Zum Beispiel:
-$_POST['username'] = 'aidan';
-$_POST['password'] = "' OR ''='";
 
 // Das bedeutet, der an MySQL gesendete Query wuerde sein:
 echo $query;
@@ -158,6 +182,7 @@ SELECT * FROM users WHERE user='aidan' AND password='' OR ''=''
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>mysql_set_charset</function></member>
     <member><function>mysql_client_encoding</function></member>
     <member><function>addslashes</function></member>
     <member><function>stripslashes</function></member>
