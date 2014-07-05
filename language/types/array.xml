@@ -1,159 +1,403 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra  Status: working -->
+<!-- EN-Revision: 332515 Maintainer: simp  Status: working -->
 <sect1 xml:id="language.types.array">
  <title>Arrays</title>
 
  <para>
-  An <type>array</type> in PHP is actually an ordered map. A map is a type that
-  associates <emphasis>values</emphasis> to <emphasis>keys</emphasis>. This type
-  is optimized for several different uses; it can be treated as an array,
-  list (vector), hash table (an implementation of a map), dictionary,
-  collection, stack, queue, and probably more. As <type>array</type> values can
-  be other <type>array</type>s, trees and multidimensional <type>array</type>s
-  are also possible.
+  Ein <type>Array</type> in PHP ist tatsächlich eine geordnete Map. Eine Map ist ein
+  Typ, der <emphasis>Werte</emphasis> zu <emphasis>Schlüsseln</emphasis> zuordnet.
+  Dieser Typ ist für einige verschiedene Nutzungsarten optimiert. Er kann als ein
+  Array verwendet werden, als Liste (Vektor), Hash Table (eine Implementierung einer
+  Map), Dictionary, Collection, Stack, Queue und wahrscheinlich noch andere.
+  Da ein Wert eines <type>Array</type>s ein weiteres <type>Array</type> sein kann
+  sind auch Bäume und mehrdimensionale <type>Array</type>s möglich.
  </para>
 
  <para>
-  Explanation of those data structures is beyond the scope of this manual, but
-  at least one example is provided for each of them. For more information, look
-  towards the considerable literature that exists about this broad topic.
+  Die Erläuterung dieser Datenstrukturen ist nicht im Rahmen dieses Handbuches,
+  aber wenigstens ein Beispiel für jedes ist hier angegeben. Um weitere Informationen
+  zu erhalten wird auf die immense Literatur zu diesem weiten Feld verwiesen.
  </para>
-   
+
  <sect2 xml:id="language.types.array.syntax">
   <title>Syntax</title>
-  
+
   <sect3 xml:id="language.types.array.syntax.array-func">
-   <title>Specifying with <function>array</function></title>
+   <title>Spezifizierung mittels <function>array</function></title>
 
    <para>
-    An <type>array</type> can be created by the <function>array</function>
-    language construct. It takes as parameters any number of comma-separated
-    <literal><replaceable>key</replaceable> =&gt;
-    <replaceable>value</replaceable></literal> pairs.
+    Ein <type>Array</type> kann durch das Sprachkonstrukt <function>array</function>
+    erzeugt werden. Dies nimmt eine beliebige Anzahl kommaseparierter
+    <literal><replaceable>Schlüssel</replaceable> =&gt; <replaceable>Wert</replaceable></literal>-
+    Paare als Parameter entgegen.
    </para>
 
    <synopsis>
-array( <optional> <replaceable>key</replaceable> =&gt; </optional> <replaceable>value</replaceable>
-     , ...
-     )
-// <replaceable>key</replaceable> may only be an <type>integer</type> or <type>string</type>
-// <replaceable>value</replaceable> may be any value of any type</synopsis>
+array(
+    <optional><replaceable>Schlüssel</replaceable>  =&gt; </optional><replaceable>Wert</replaceable>,
+    <optional><replaceable>Schlüssel2</replaceable> =&gt; </optional><replaceable>Wert2</replaceable>,
+    <optional><replaceable>Schlüssel3</replaceable> =&gt; </optional><replaceable>Wert3</replaceable>,
+    ...
+)</synopsis>
    <!-- Do not fix the whitespace for the synopsis end element. A limitation of PhD prevents proper trimming -->
 
-   <informalexample>
+   <para>
+    Das Komma nach dem letzten Array-Element ist optional und kann weggelassen werden. Dies wird
+    üblicherweise in einzeiligen Arrays getan, d.h. <literal>array(1, 2)</literal> wird der
+    Schreibweise <literal>array(1, 2, )</literal> vorgezogen. Andererseits wird bei mehrzeiligen 
+    Arrays wird das Komma am Ende üblicherweise genutzt, da dies ein einfaches Hinzufügen weiterer
+    Elemente am Ende erlaubt.
+   </para>
+
+   <para>
+    Seit PHP 5.4 kann auch eine kurze Array-Syntax verwendet werden, welche
+    <literal>array()</literal> durch <literal>[]</literal> ersetzt.
+   </para>
+
+   <example>
+    <title>Ein einfaches Array</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$arr = array("foo" => "bar", 12 => true);
+$array = array(
+    "foo" => "bar",
+    "bar" => "foo",
+);
 
-echo $arr["foo"]; // bar
-echo $arr[12];    // 1
+// seit PHP 5.4
+$array = [
+    "foo" => "bar",
+    "bar" => "foo",
+];
 ?>
 ]]>
     </programlisting>
-   </informalexample>
+   </example>
 
    <para>
-    A <varname>key</varname> may be either an <type>integer</type> or a
-    <type>string</type>. If a key is the standard representation of an
-    <type>integer</type>, it will be interpreted as such (i.e.
-    <literal>"8"</literal> will be interpreted as <literal>8</literal>, while
-    <literal>"08"</literal> will be interpreted as <literal>"08"</literal>).
-    <type>Float</type>s in <varname>key</varname> are truncated to
-    <type>integer</type>. The indexed and associative <type>array</type> types
-    are the same type in PHP, which can both contain <type>integer</type> and
-    <type>string</type> indices.
+    Der <replaceable>Schlüssel</replaceable> kann entweder ein <type>Integer</type>
+    oder ein <type>String</type> sein. Der <replaceable>Wert</replaceable> kann
+    beliebige Datentypen annehmen.
    </para>
 
    <para>
-    A value can be any PHP type.
+    Zusätzlich werden die folgenden Typkonvertierungen auf den 
+    <replaceable>Schlüssel</replaceable> angewendet:
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <type>String</type>s die einen gültigen <type>Integer</type> enthalten werden
+       zum entsprechenden <type>Integer</type> umgewandelt. Beispielsweise wird der
+       Schlüssel <literal>"8"</literal> tatsächlich unter <literal>8</literal>
+       gespeichert. Andererseits wird <literal>"08"</literal> nicht umgewandelt, da
+       dies kein gültiger Ganzzahlwert ist.   
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <type>Float</type>s werden ebenfalls zu <type>Integer</type> umgewandelt, was ein
+       Abschneiden des Dezimalbruches zur Folge hat. Beispielsweise wird der Schlüssel
+       <literal>8.7</literal> als <literal>8</literal> gespeichert.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <type>Bool</type>s werden ebenfalls zu <type>Integer</type> umgewandelt, d.h.
+       der Schlüssel <literal>true</literal> wird unter <literal>1</literal>
+       gespeichert und der Schlüssel <literal>false</literal> unter <literal>0</literal>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <type>Null</type> wird zu einem leeren String umgewandelt, d.h. der Schlüssel
+       <literal>null</literal> wird tatsächlich unter <literal>""</literal> gespeichert.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Werte vom typ <type>Array</type> oder <type>Object</type> können nicht als Schlüssel
+       verwendet werden. Ein Versuch dies zu tun wird die Warnung 
+       <literal>Illegal offset type</literal> zur Folge haben.
+      </simpara>
+     </listitem>
+    </itemizedlist>
    </para>
 
-   <informalexample>
+   <para>
+    Wenn mehrere Elemente in einer Array-Deklaration den gleichen Schlüssel verwenden,
+    dann wird nur der letzte verwendet und alle weiteren überschrieben.
+   </para>
+
+   <example>
+    <title>Beispiel für Typenumwandlung und Überschreibung</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$arr = array("somearray" => array(6 => 5, 13 => 9, "a" => 42));
-
-echo $arr["somearray"][6];    // 5
-echo $arr["somearray"][13];   // 9
-echo $arr["somearray"]["a"];  // 42
+$array = array(
+    1    => "a",
+    "1"  => "b",
+    1.5  => "c",
+    true => "d",
+);
+var_dump($array);
 ?>
 ]]>
     </programlisting>
-   </informalexample>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(1) {
+  [1]=>
+  string(1) "d"
+}
+]]>
+    </screen>
+    <para>
+     Da alle Schlüssel im obigen Beispiel zu <literal>1</literal> umgewandelt werden, wird der Wert
+     dieses Elements durch jeden angegebenen Wert überschrieben und nur der letzte zugewiesene
+     Wert <literal>"d"</literal> bleibt übrig.
+    </para>
+   </example>  
 
    <para>
-    If a key is not specified for a value, the maximum of the
-    <type>integer</type> indices is taken and the new key will be that value
-    plus 1. If a key that already has an assigned value is specified, that value
-    will be overwritten.
+    Arrays können in PHP gleichzeitig Schlüssel der Typen <type>Integer</type> und
+    <type>String</type> enthalten, da PHP nicht zwischen indizierten und 
+    assoziativen Arrays unterscheidet.
    </para>
-   
-   <informalexample>
+
+   <example>
+    <title>Gemischte <type>Integer</type> und <type>String</type> Schlüssel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// This array is the same as ...
-array(5 => 43, 32, 56, "b" => 12);
-
-// ...this array
-array(5 => 43, 6 => 32, 7 => 56, "b" => 12);
+$array = array(
+    "foo" => "bar",
+    "bar" => "foo",
+    100   => -100,
+    -100  => 100,
+);
+var_dump($array);
 ?>
 ]]>
     </programlisting>
-   </informalexample>
-
-   <warning>
-    <simpara>
-     Before PHP 4.3.0, appending to an <type>array</type> in which the current
-     maximum key was negative would create a new key as described above. Since
-     PHP 4.3.0, the new key will be <literal>0</literal>.
-    </simpara>
-   </warning>
-
-   <para>
-    Using &true; as <varname>key</varname> will evaluate to <type>integer</type>
-    <literal>1</literal> as a key. Using &false; as <varname>key</varname> will
-    evaluate to <type>integer</type> <literal>0</literal> as a key. Using
-    &null; as a key will evaluate to the empty string. Using the empty string as
-    a key will create (or overwrite) a key with the empty string and its value;
-    it is <emphasis>not</emphasis> the same as using empty brackets.
-   </para>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(4) {
+  ["foo"]=>
+  string(3) "bar"
+  ["bar"]=>
+  string(3) "foo"
+  [100]=>
+  int(-100)
+  [-100]=>
+  int(100)
+}
+]]>
+    </screen>
+   </example>
 
    <para>
-    <type>Array</type>s and <type>object</type>s can not be used as keys. Doing
-    so will result in a warning: <literal>Illegal offset type</literal>.
+    Die Angabe des <replaceable>Schlüssel</replaceable> ist optional.Ist keiner angegeben,
+    so wird PHP den bisher größten angegebenen <type>Integer</type> Schlüssel erhöhen
+    und das Ergebnis als Schlüssel verwenden.
    </para>
 
+   <example>
+    <title>Indizierte Arrays ohne Schlüssel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = array("foo", "bar", "hello", "world");
+var_dump($array);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(4) {
+  [0]=>
+  string(3) "foo"
+  [1]=>
+  string(3) "bar"
+  [2]=>
+  string(5) "hello"
+  [3]=>
+  string(5) "world"
+}
+]]>
+    </screen>
+   </example>
+
+   <para>
+    Es ist auch möglich den Schlüssel nur bei einigen Elementen anzugeben:
+   </para>
+
+   <example>
+    <title>Schlüssel nicht bei allen Elementen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = array(
+         "a",
+         "b",
+    6 => "c",
+         "d",
+);
+var_dump($array);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(4) {
+  [0]=>
+  string(1) "a"
+  [1]=>
+  string(1) "b"
+  [6]=>
+  string(1) "c"
+  [7]=>
+  string(1) "d"
+}
+]]>
+    </screen>
+    <para>
+     Wie Sie sehen können wurde dem letzten Wert <literal>"d"</literal> der 
+     Schlüssel <literal>7</literal> zugewiesen. Dies erfolgte da der größte 
+     vorherige ganzzahlige Schlüssel die <literal>6</literal> war.
+    </para>
+   </example>
   </sect3>
-  
+
+  <sect3 xml:id="language.types.array.syntax.accessing">
+   <title>Zugriff auf Elemente mit eckigen Klammern</title>
+
+   <para>
+    Auf Eleemente eines Arrays kann durch Verwendung der Syntax 
+    <literal>array[Schlüssel]</literal> zugegriffen werden.
+   </para>
+
+   <example>
+    <title>Zugriff auf Array-Elemente</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = array(
+    "foo" => "bar",
+    42    => 24,
+    "multi" => array(
+         "dimensional" => array(
+             "array" => "foo"
+         )
+    )
+);
+
+var_dump($array["foo"]);
+var_dump($array[42]);
+var_dump($array["multi"]["dimensional"]["array"]);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+string(3) "bar"
+int(24)
+string(3) "foo"
+]]>
+    </screen>
+   </example>
+
+   <note>
+    <para>
+     Sowohl eckige als auch geschweifte Klammern können verwendet werden, um auf
+     die Elemente eines Arrays zuzugreifen (z.B. werden im obigen Beispiel
+     <literal>$array[43]</literal> und <literal>array{42}</literal> auf das gleiche 
+     Element zugreifen).
+    </para>
+   </note>
+
+   <para>
+    Seit PHP 5.4 ist es möglich ein Array aus dem Rückgabewert eines Funktion
+    direkt zu dereferenzieren. Vorher war dies nur über temporäre Variablen
+    möglich.
+   </para>
+
+   <para>
+    Seit PHP 5.5 ist es möglich ein Array-Literal zu dereferenzieren.
+   </para>
+
+   <example>
+    <title>Array-Dereferenzierung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function getArray() {
+    return array(1, 2, 3);
+}
+
+// seit PHP 5.4
+$secondElement = getArray()[1];
+
+// vorher
+$tmp = getArray();
+$secondElement = $tmp[1];
+
+// oder
+list(, $secondElement) = getArray();
+?>
+]]>
+    </programlisting>
+   </example>
+
+   <note>
+    <para>
+      Der Versuch auf einen nicht definierten Arrayschlüssel zuzugreifen
+      ist gleichwertig zum Zugriff jeder anderen undefinierten Variable:
+      Ein Fehler der Stufe <constant>E_NOTICE</constant> wird ausgegeben
+      und das Ergebnis ist &null;.
+    </para>
+   </note>
+  </sect3>
+
   <sect3 xml:id="language.types.array.syntax.modifying">
-   <title>Creating/modifying with square bracket syntax</title>
+   <title>Anlegen/Ändern mit eckigen Klammern</title>
 
    <para>
-    An existing <type>array</type> can be modified by explicitly setting values
-    in it.
+    Ein bestehendes <type>Array</type> kann verändert werden, indem man
+    explizit Werte darin setzt.
    </para>
 
    <para>
-    This is done by assigning values to the <type>array</type>, specifying the
-    key in brackets. The key can also be omitted, resulting in an empty pair of
-    brackets (<literal>[]</literal>).
+    Dies wird getan, indem man Werte dem <type>Array</type> zuweist und dabei
+    den Schlüssel in eckigen Klammern angibt. Der Schlüssel kann dabei weggelassen
+    werden, woraus ein leeres Klammernpaar resultiert (<literal>[]</literal>).
    </para>
-   
+
    <synopsis>
-$arr[<replaceable>key</replaceable>] = <replaceable>value</replaceable>;
-$arr[] = <replaceable>value</replaceable>;
-// <replaceable>key</replaceable> may be an <type>integer</type> or <type>string</type>
-// <replaceable>value</replaceable> may be any value of any type</synopsis>
-   
+$arr[<replaceable>Schlüssel</replaceable>] = <replaceable>Wert</replaceable>;
+$arr[] = <replaceable>Wert</replaceable>;
+// <replaceable>Schlüssel</replaceable> kann ein <type>Integer</type> oder <type>String</type> sein
+// <replaceable>Wert</replaceable> kann einen beliebigen Typen haben</synopsis>
+
    <para>
-    If <varname>$arr</varname> doesn't exist yet, it will be created, so this is
-    also an alternative way to create an <type>array</type>. To change a certain
-    value, assign a new value to that element using its key. To remove a
-    key/value pair, call the <function>unset</function> function on it.
+    Falls <varname>$arr</varname> noch nicht existiert wird es erzeugt, dies ist
+    also eine alternative Methode, um ein <type>Array</type> zu erzeugen. Dieses 
+    Vorgehen wird jedoch nicht empfohlen, da falls <varname>$arr</varname> bereits
+    einen Wert enthält (z.B. ein <type>String</type> aus einer Requestvariablen)
+    bleibt dieser Wert bestehen und <literal>[]</literal> kann tatsächlich für den
+    <link linkend="language.types.string.substr">String-Zugriffs-Operator</link>
+    stehen. Es ist immer besser eine Variable durch direkte Zuweisung zu initialisieren.
+   </para>
+
+   <para>
+    Um einen bestimmten Wert zu ändern, kann man einen Wert zum Element anhand dessen
+    Schlüssel zuweisen. Um ein Schlüssel-Wert-Paar zu entfernen, kann man die Funktion
+    <function>unset</function> darauf anwenden.
    </para>
 
    <informalexample>
@@ -162,15 +406,16 @@ $arr[] = <replaceable>value</replaceable>;
 <?php
 $arr = array(5 => 1, 12 => 2);
 
-$arr[] = 56;    // This is the same as $arr[13] = 56;
-                // at this point of the script
+$arr[] = 56;    // Dies ist das selbe wie $arr[13] = 56;
+                // an dieser Stelle im Programmablauf
 
-$arr["x"] = 42; // This adds a new element to
-                // the array with key "x"
-                
-unset($arr[5]); // This removes the element from the array
+$arr["x"] = 42; // Dies fügt ein neues Element zum Array
+                // mit dem Schlüssel "x" hinzu
 
-unset($arr);    // This deletes the whole array
+unset($arr[5]); // Dies entfernt das Element aus dem
+                // Array
+
+unset($arr);    // Dies löscht das gesamte Array
 ?>
 ]]> 
     </programlisting>
@@ -178,18 +423,19 @@ unset($arr);    // This deletes the whole array
 
    <note>
     <para>
-     As mentioned above, if no key is specified, the maximum of the existing
-     <type>integer</type> indices is taken, and the new key will be that maximum
-     value plus 1. If no <type>integer</type> indices exist yet, the key will
-     be <literal>0</literal> (zero). If a key that already has a value is
-     specified, that value will be overwritten.
+     Wie vorher bereits erwähnt wird das Maximum der bestehenden Schlüssel vom 
+     Typ <type>Integer</type> verwendet, wenn kein Schlüssel angegeben ist, und der
+     neue Schlüssel wird das Maximum plus 1 sein (aber mindestens 0). Wenn noch kein
+     <type>Integer</type>-Schlüssel existiert wird der schlüssel <literal>0</literal>
+     (Null) verwendet.
     </para>
 
     <para>
-     Note that the maximum integer key used for this <emphasis>need not
-     currently exist in the <type>array</type></emphasis>. It need only have
-     existed in the <type>array</type> at some time since the last time the
-     <type>array</type> was re-indexed. The following example illustrates:
+     Beachten Sie, dass der Maximalwert der Integer-Schlüssel dafür
+     <emphasis>aktuell nicht im <type>Array</type> existieren muss</emphasis>.
+     Er muss nur zu einem vorherigen Zeitpunkt im <type>Array</type>
+     existiert haben seitdem das <type>Array</type> zuletzt neu
+     indiziert wurde. Das folgende Beispiel erläutert dies:
     </para>
 
     <informalexample>
@@ -200,17 +446,18 @@ unset($arr);    // This deletes the whole array
 $array = array(1, 2, 3, 4, 5);
 print_r($array);
 
-// Now delete every item, but leave the array itself intact:
+// Nun wird jeder Wert gelöscht, aber das Array selbst bleibt bestehen
 foreach ($array as $i => $value) {
     unset($array[$i]);
 }
 print_r($array);
 
-// Append an item (note that the new key is 5, instead of 0).
+// Ein Element wird hinzugefügt
+// (Beachten Sie, dass der neue Schlüssel 5 ist statt 0)
 $array[] = 6;
 print_r($array);
 
-// Re-index:
+// Neue Indizierung
 $array = array_values($array);
 $array[] = 7;
 print_r($array);
@@ -248,38 +495,40 @@ Array
 
   </sect3>
  </sect2><!-- end syntax -->
- 
+
  <sect2 xml:id="language.types.array.useful-funcs">
-  <title>Useful functions</title>
+  <title>Nützliche Funktionen</title>
 
   <para>
-   There are quite a few useful functions for working with arrays. See the
-   <link linkend="ref.array">array functions</link> section.
+   Es gibt einige nützliche Funktionen für die Arbeit mit Arrays, die
+   im Abschnitt <link linkend="ref.array">Array-Funktionen</link>
+   nachgeschlagen werden können.
   </para>
 
   <note>
    <para>
-    The <function>unset</function> function allows removing keys from an
-    <type>array</type>. Be aware that the array will <emphasis>not</emphasis> be
-    reindexed. If a true "remove and shift" behavior is desired, the
-    <type>array</type> can be reindexed using the
-    <function>array_values</function> function.
+    Die Funktion <function>unset</function> erlaubt es Schlüssel aus einem
+    <type>Array</type> zu entfernen. Beachten Sie dabei, dass das Array
+    <emphasis>nicht</emphasis> neu indiziert wird. Falls ein echtes Verhalten
+    von "entfernen und verschieben" gewünscht ist, dann kann das
+    <type>Array</type> mittels <function>array_values</function> neu
+    indiziert werden.
    </para>
-   
+
    <informalexample>
     <programlisting role="php">
 <![CDATA[
 <?php
 $a = array(1 => 'one', 2 => 'two', 3 => 'three');
 unset($a[2]);
-/* will produce an array that would have been defined as
+/* dies wird ein Array erzeugen, dass wie folgt definiert wäre
    $a = array(1 => 'one', 3 => 'three');
-   and NOT
+   und nicht so
    $a = array(1 => 'one', 2 =>'three');
 */
 
 $b = array_values($a);
-// Now $b is array(0 => 'one', 1 =>'three')
+// Nun ist $b array(0 => 'one', 1 =>'three')
 ?>
 ]]>
     </programlisting>
@@ -287,23 +536,22 @@ $b = array_values($a);
   </note> 
 
   <para>
-   The <link linkend="control-structures.foreach">foreach</link> control
-   structure exists specifically for <type>array</type>s. It provides an easy
-   way to traverse an <type>array</type>.
+   Die Kontrollstruktur &foreach; existiert speziell für <type>Array</type>s. 
+   Sie bietet eine einfache Möglichkeit, ein <type>Array</type> zu durchlaufen.
   </para>
  </sect2>
- 
+
  <sect2 xml:id="language.types.array.donts">
-  <title>Array do's and don'ts</title>
+  <title>Do's und Dont's für Arrays</title>
 
   <sect3 xml:id="language.types.array.foo-bar">
-   <title>Why is <literal>$foo[bar]</literal> wrong?</title>
+   <title>Wieso ist <literal>$foo[bar]</literal> falsch?</title>
 
    <para>
-    Always use quotes around a string literal array index. For example,
-    <literal>$foo['bar']</literal> is correct, while
-    <literal>$foo[bar]</literal> is not. But why? It is common to encounter this
-    kind of syntax in old scripts:
+    Verwenden Sie immer Anführungszeichen um ein Zeichenkettenliteral des Index
+    eines Arrays. Beispilsweise ist <literal>$foo['bar']</literal> richtig,
+    <literal>$foo[bar]</literal> hingegen nicht. Aber wieso nicht? Es ist 
+    üblich die folgende Schreibweise in alten Skripten zu finden:
    </para>
 
    <informalexample>
@@ -317,25 +565,28 @@ echo $foo[bar];
 ]]>
     </programlisting>
    </informalexample>
-   
+
    <para>
-    This is wrong, but it works. The reason is that this code has an undefined
-    constant (bar) rather than a <type>string</type> ('bar' - notice the
-    quotes). PHP may in future define constants which, unfortunately for such
-    code, have the same name. It works because PHP automatically converts a
-    <emphasis>bare string</emphasis> (an unquoted <type>string</type> which does
-    not correspond to any known symbol) into a <type>string</type> which
-    contains the bare <type>string</type>. For instance, if there is no defined 
-    constant named <constant>bar</constant>, then PHP will substitute in the
-    <type>string</type> <literal>'bar'</literal> and use that.
+    Dies ist falsch, funktioniert aber. Der Grund dafür ist, dass dieser Code
+    eine undefinierte Konstante (bar) anstatt eines <type>String</type> 
+    verwendet ('bar' - beachten Sie die Anführungszeichen).
+    PHP kann zukünftig Konstanten definieren die zum Leidwesen dieses Codes
+    den gleichen Namen haben könnten. Dies funktioniert, da PHP automatisch
+    einen <emphasis>nackten String</emphasis> (ein <type>String</type> ohne
+    Anführungszeichen welcher nicht einem bekannten Symbol entspricht) in einen
+    <type>String</type> umwandelt, welcher den nackten <type>String</type>
+    enthält. Beispielsweise wird, wenn keine Konstante namens 
+    <constant>bar</constant> definiert ist, PHP diese automatisch durch
+    den <type>String</type> <literal>'bar'</literal> ersetzen und verwenden.
    </para>
 
    <note>
     <simpara>
-     This does not mean to <emphasis>always</emphasis> quote the key. Do not
-     quote keys which are <link linkend="language.constants">constants</link> or
-     <link linkend="language.variables">variables</link>, as this will prevent
-     PHP from interpreting them.
+     Dies bedeutet nicht, dass man den Schlüssel <emphasis>immer</emphasis> in
+     Anführungszeichen schreiben muss. Schreiben Sie keine Schlüssel in
+     Anführungszeichen, welche <link linkend="language.constants">Konstanten</link>
+     oder <link linkend="language.variables">Variablen</link> sind, da dies PHP
+     daran hindern wird diese zu interpretieren.
     </simpara>
 
     <informalexample>
@@ -345,15 +596,15 @@ echo $foo[bar];
 error_reporting(E_ALL);
 ini_set('display_errors', true);
 ini_set('html_errors', false);
-// Simple array:
+// Simples Array:
 $array = array(1, 2);
 $count = count($array);
 for ($i = 0; $i < $count; $i++) {
-    echo "\nChecking $i: \n";
-    echo "Bad: " . $array['$i'] . "\n";
-    echo "Good: " . $array[$i] . "\n";
-    echo "Bad: {$array['$i']}\n";
-    echo "Good: {$array[$i]}\n";
+    echo "\nPrüfe $i: \n";
+    echo "Schlecht: " . $array['$i'] . "\n";
+    echo "Gut: " . $array[$i] . "\n";
+    echo "Schlecht: {$array['$i']}\n";
+    echo "Gut: {$array[$i]}\n";
 }
 ?>
 ]]>
@@ -362,72 +613,72 @@ for ($i = 0; $i < $count; $i++) {
     &example.outputs;
     <screen>
 <![CDATA[
-Checking 0: 
+Prüfe 0: 
 Notice: Undefined index:  $i in /path/to/script.html on line 9
-Bad: 
-Good: 1
+Schlecht: 
+Gut: 1
 Notice: Undefined index:  $i in /path/to/script.html on line 11
-Bad: 
-Good: 1
+Schlecht: 
+Gut: 1
 
-Checking 1: 
+Prüfe 1: 
 Notice: Undefined index:  $i in /path/to/script.html on line 9
-Bad: 
-Good: 2
+Schlecht: 
+Gut: 2
 Notice: Undefined index:  $i in /path/to/script.html on line 11
-Bad: 
-Good: 2
+Schlecht: 
+Gut: 2
 ]]>        
     </screen>
    </note>
 
    <para>
-    More examples to demonstrate this behaviour:
+    Weitere Beispiele zur Erläuterung dieses Verhaltens:
    </para>
 
    <informalexample>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Show all errors
+// Alle Fehler anzeigen
 error_reporting(E_ALL);
 
 $arr = array('fruit' => 'apple', 'veggie' => 'carrot');
 
-// Correct
+// Korrekt
 print $arr['fruit'];  // apple
 print $arr['veggie']; // carrot
 
-// Incorrect.  This works but also throws a PHP error of level E_NOTICE because
-// of an undefined constant named fruit
+// Inkorrekt. Dies Funktioniert, aber PHP wirft einen Fehler der Stufe
+// E_NOTICE, da eine undefinierte Konstante namens fruit verwendet wird
 // 
 // Notice: Use of undefined constant fruit - assumed 'fruit' in...
 print $arr[fruit];    // apple
 
-// This defines a constant to demonstrate what's going on.  The value 'veggie'
-// is assigned to a constant named fruit.
+// Dies definiert eine Konstante, um darzustellen was hier passiert. Der Wert
+// 'veggie' wird einer Konstanten namens fruit zugewiesen
 define('fruit', 'veggie');
 
-// Notice the difference now
+// Beachten Sie nun den Unterschied
 print $arr['fruit'];  // apple
 print $arr[fruit];    // carrot
 
-// The following is okay, as it's inside a string. Constants are not looked for
-// within strings, so no E_NOTICE occurs here
+// Hier ist es in Ordnung, da dies innerhalb eines String ist. Innerhalb eines
+// Strings wird nicht nach Konstanten gesucht, weshalb kein E_NOTICE auftritt
 print "Hello $arr[fruit]";      // Hello apple
 
-// With one exception: braces surrounding arrays within strings allows constants
-// to be interpreted
+// Mit einer Ausnahme: Klammern um ein Array sorgen dafür, dass Konstanten
+// interpretiert werden
 print "Hello {$arr[fruit]}";    // Hello carrot
 print "Hello {$arr['fruit']}";  // Hello apple
 
-// This will not work, and will result in a parse error, such as:
+// Dies wird nicht funktionieren und zu einem Parser Fehler führen:
 // Parse error: parse error, expecting T_STRING' or T_VARIABLE' or T_NUM_STRING'
-// This of course applies to using superglobals in strings as well
+// Dies gilt natürlich ebenso für superglobale Werte innerhalb von Strings
 print "Hello $arr['fruit']";
 print "Hello $_GET['foo']";
 
-// Concatenation is another option
+// Konkatenation ist eine weitere Möglichkeit
 print "Hello " . $arr['fruit']; // Hello apple
 ?>
 ]]>
@@ -435,19 +686,18 @@ print "Hello " . $arr['fruit']; // Hello apple
    </informalexample>
 
    <para>
-    When <link linkend="ini.error-reporting">error_reporting</link> is set to
-    show <constant>E_NOTICE</constant> level errors (by setting it to
-    <constant>E_ALL</constant>, for example), such uses will become immediately
-    visible. By default,
-    <link linkend="ini.error-reporting">error_reporting</link> is set not to
-    show notices.
+    Wenn <link linkend="ini.error-reporting">error_reporting</link> so eingestellt
+    wird, dass Fehler der Stufe <constant>E_NOTICE</constant> angezeigt werden
+    (indem man es auf <constant>E_ALL</constant> stellt), so wird diese Verwendung
+    sofort sichtbar. Standardmäßig ist 
+    <link linkend="ini.error-reporting">error_reporting</link> nicht entsprechend
+    eingestellt, um solche Hinweise zu zeigen.
    </para>
 
    <para>
-    As stated in the <link linkend="language.types.array.syntax">syntax</link>
-    section, what's inside the square brackets ('<literal>[</literal>' and
-    '<literal>]</literal>') must be an expression. This means that code like
-    this works:
+    Wie im Anschnitt zur <link linkend="language.types.array.syntax">Syntax</link>
+    gezeigt muss der Inhalt der eckigen Klammern '<literal>[</literal>' und
+    '<literal>]</literal>') ein Ausdruck sein. Das bedeutet dass folgendes funktioniert:
    </para>
 
    <informalexample>
@@ -459,64 +709,64 @@ echo $arr[somefunc($bar)];
 ]]>
     </programlisting>
    </informalexample>
-   
+
    <para>
-    This is an example of using a function return value as the array index. PHP
-    also knows about constants:
+    Dieses Beispiel zeigt, wie der Rückgabewert einer Funktion als Arrayindex verwendet
+    wird. PHP kann auch Konstanten auflösen:
    </para>
 
    <informalexample>
     <programlisting role="php">
 <![CDATA[
 <?php
-$error_descriptions[E_ERROR]   = "A fatal error has occured";
+$error_descriptions[E_ERROR]   = "A fatal error has occurred";
 $error_descriptions[E_WARNING] = "PHP issued a warning";
 $error_descriptions[E_NOTICE]  = "This is just an informal notice";
 ?>
 ]]>
     </programlisting>
    </informalexample>
-   
+
    <para>
-    Note that <literal>E_ERROR</literal> is also a valid identifier, just like
-    <literal>bar</literal> in the first example. But the last example is in fact
-    the same as writing:
+    Beachten Sie, dass <constant>E_ERROR</constant> ein gültiger Bezeichner ist,
+    genau wie <literal>bar</literal> im ersten Beispiel. Das vorherige Beispiel ist
+    gleichbedeutend mit:
    </para>
-  
+
    <informalexample>
     <programlisting role="php">
 <![CDATA[
 <?php
-$error_descriptions[1] = "A fatal error has occured";
+$error_descriptions[1] = "A fatal error has occurred";
 $error_descriptions[2] = "PHP issued a warning";
 $error_descriptions[8] = "This is just an informal notice";
 ?>
 ]]>
     </programlisting>
    </informalexample>
-   
+
    <para>
-    because <literal>E_ERROR</literal> equals <literal>1</literal>, etc.
+    da <constant>E_ERROR</constant> gleich <literal>1</literal> ist usw.
    </para>
 
    <sect4 xml:id="language.types.array.foo-bar.why">
-    <title>So why is it bad then?</title>
+    <title>Wieso ist es also schlecht?</title>
 
     <para>
-     At some point in the future, the PHP team might want to add another
-     constant or keyword, or a constant in other code may interfere. For
-     example, it is already wrong to use the words <literal>empty</literal> and
-     <literal>default</literal> this way, since they are
-     <link linkend="reserved">reserved keywords</link>.
+     Irgendwann in der Zukunft könnte das PHP-Team eine weitere Konstante
+     oder ein Schlüsselwort hinzufügen oder eine Kostante in anderem Code
+     könnte Einfluss nehmen. Es ist beispielsweise bereits falsch die Wörter
+     <literal>empty</literal> oder <literal>default</literal> so zu schreiben,
+     da dies <link linkend="reserved">reservierte Schlüsselwörter</link> sind.
     </para>
 
     <note>
      <simpara>
-      To reiterate, inside a double-quoted <type>string</type>, it's valid to
-      not surround array indexes with quotes so <literal>"$foo[bar]"</literal>
-      is valid. See the above examples for details on why as well as the section
-      on <link linkend="language.types.string.parsing">variable parsing in
-      strings</link>.
+      Zur Wiederholung: innerhalb eines <type>String</type> in doppelten 
+      Anführungszeichen ist es korrekt einen Arrayschlüssel ohne Anführungszeichen
+      zu schreiben wie <literal>"$foo[bar]"</literal>. Die obigen Beispiele 
+      erklären dies ebenso wie der Abschnitt zum <link 
+      linkend="language.types.string.parsing">Parsen von Variablen in Strings</link>.
      </simpara>
     </note>
 
@@ -525,25 +775,27 @@ $error_descriptions[8] = "This is just an informal notice";
  </sect2>
 
  <sect2 xml:id="language.types.array.casting">
-  <title>Converting to array</title>
-  
+  <title>Konvertierung zu Array</title>
+
   <para>
-   For any of the types: <type>integer</type>, <type>float</type>,
-   <type>string</type>, <type>boolean</type> and <type>resource</type>,
-   converting a value to an <type>array</type> results in an array with a single
-   element with index zero and the value of the scalar which was converted. In
-   other words, <literal>(array)$scalarValue</literal> is exactly the same as
+   Für jeden der Typen <type>Integer</type>, <type>Float</type>,
+   <type>String</type>, <type>Boolean</type> und <type>Resource</type>
+   führt eine Konvertierung eines Wertes in ein <type>Array</type> zu einem
+   Array mit einem einzigen Wert mit dem Index Null und dem Wert des
+   Skalaren der konvertiert wurde. Anders ausgedrückt ist 
+   <literal>(array)$scalarValue</literal> exakt identisch mit
    <literal>array($scalarValue)</literal>.
   </para>
-  
+
   <para>
-   If an <type>object</type> is converted to an <type>array</type>, the result
-   is an <type>array</type> whose elements are the <type>object</type>'s
-   properties. The keys are the member variable names, with a few notable
-   exceptions: private variables have the class name prepended to the variable
-   name; protected variables have a '*' prepended to the variable name. These
-   prepended values have null bytes on either side. This can result in some
-   unexpected behaviour:
+   Wenn ein <type>Object</type> in ein <type>Array</type> konvertiert wird, so
+   ist das Ergebnis ein <type>Array</type> dessen werte die Eigenschaften des
+   <type>Object</type> sind. Die Schlüssel sind die Namen der Eigenschaften
+   des Objektes mit einigen Ausnahmen: Eigenschaften mit Ganzzahl-Namen
+   sind nicht zugreifbar, privaten Variablen wird der Name der Klasse 
+   vorangestellt und protected Variablen wird ein '*' dem Namen der Variablen
+   vorangestellt. Diese vorangestellten Werte haben Null-Bytes auf beiden Seiten.
+   Dies kann zu unerwartetem Verhalten führen:
   </para>
 
   <informalexample>
@@ -552,12 +804,12 @@ $error_descriptions[8] = "This is just an informal notice";
 <?php
 
 class A {
-    private $A; // This will become '\0A\0A'
+    private $A; // Dies wird zu '\0A\0A'
 }
 
 class B extends A {
-    private $A; // This will become '\0B\0A'
-    public $AA; // This will become 'AA'
+    private $A; // Dies wird zu '\0B\0A'
+    public $AA; // Dies wird zu 'AA'
 }
 
 var_dump((array) new B());
@@ -567,94 +819,103 @@ var_dump((array) new B());
   </informalexample>
 
   <para>
-   The above will appear to have two keys named 'AA', although one of them is
-   actually named '\0A\0A'.
+   Im obigen Beispiel scheint es zwei Schlüssel namens 'AA' zu geben, obwohl
+   einer davon eigentlich '\0A\0A' ist.
   </para>
-  
+
   <para>
-   Converting &null; to an <type>array</type> results in an empty
-   <type>array</type>.
+   Die Konvertierung von &null; in ein <type>Array</type> führt zu einem
+   leeren <type>Array</type>.
   </para>
  </sect2>
 
  <sect2 xml:id="language.types.array.comparing">
-  <title>Comparing</title>
+  <title>Vergleiche</title>
 
   <para>
-   It is possible to compare arrays with the <function>array_diff</function>
-   function and with
-   <link linkend="language.operators.array">array operators</link>.
+   Es ist möglich Arrays mit der Funktion <function>array_diff</function>
+   und mit 
+   <link linkend="language.operators.array">Array-Operatoren</link>
+   zu vergleichen.
   </para>
  </sect2>
 
  <sect2 xml:id="language.types.array.examples">
-  <title>Examples</title>
+  <title>Beispiele</title>
 
   <para>
-   The array type in PHP is very versatile. Here are some examples:
+   Der Array-Typ in PHP ist sehr vielseitig. Hier sind einige Beispiele:
   </para>
 
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
-// this
+// This:
 $a = array( 'color' => 'red',
             'taste' => 'sweet',
             'shape' => 'round',
             'name'  => 'apple',
-                       4        // key will be 0
+            4        // Schlüssel wird 0 sein
           );
 
-// is completely equivalent with
+$b = array('a', 'b', 'c');
+
+// . . .ist komplett gleichbedeutend mit:
+$a = array();
 $a['color'] = 'red';
 $a['taste'] = 'sweet';
 $a['shape'] = 'round';
 $a['name']  = 'apple';
-$a[]        = 4;        // key will be 0
+$a[]        = 4;        // Schlüssel wird 0 sein
 
+$b = array();
 $b[] = 'a';
 $b[] = 'b';
 $b[] = 'c';
-// will result in the array array(0 => 'a' , 1 => 'b' , 2 => 'c'),
-// or simply array('a', 'b', 'c')
+
+// Nachdem der obige Code ausgeführt wurde wird $a das Array
+// array('color' => 'red', 'taste' => 'sweet', 'shape' => 'round', 
+// 'name' => 'apple', 0 => 4) sein und $b wird das Array
+// array(0 => 'a', 1 => 'b', 2 => 'c') oder einfacher array('a', 'b', 'c')
+// sein
 ?>
 ]]>
    </programlisting>
   </informalexample>
 
   <example>
-   <title>Using array()</title>
+   <title>Benutzung von array()</title>
    <programlisting role="php">
 <![CDATA[
 <?php
-// Array as (property-)map
+// Array als Map von Eigenschaften
 $map = array( 'version'    => 4,
               'OS'         => 'Linux',
               'lang'       => 'english',
               'short_tags' => true
             );
-            
-// strictly numerical keys
+
+// Streng numerische Schlüssel
 $array = array( 7,
                 8,
                 0,
                 156,
                 -10
               );
-// this is the same as array(0 => 7, 1 => 8, ...)
+// das ist gleichbedeutend mit array(0 => 7, 1 => 8, ...)
 
-$switching = array(         10, // key = 0
+$switching = array(         10, // Schlüssel = 0
                     5    =>  6,
                     3    =>  7, 
                     'a'  =>  4,
-                            11, // key = 6 (maximum of integer-indices was 5)
-                    '8'  =>  2, // key = 8 (integer!)
-                    '02' => 77, // key = '02'
-                    0    => 12  // the value 10 will be overwritten by 12
+                            11, // Schlüssel = 6 (Maximum der Integer-Schlüssel war 5)
+                    '8'  =>  2, // Schlüssel = 8 (Integer!)
+                    '02' => 77, // Schlüssel = '02'
+                    0    => 12  // Der Wert 10 wird mit 12 überschrieben
                   );
-                  
-// empty array
+
+// Leeres array
 $empty = array();         
 ?>
 ]]>
@@ -690,14 +951,14 @@ Do you like yellow?
 ]]>
    </screen>
   </example>
-  
+
   <para>
-   Changing the values of the <type>array</type> directly is possible since PHP
-   5 by passing them by reference. Before that, a workaround is necessary:
+   Die Veränderung der Werte eines <type>Array</type> ist seit PHP mit der 
+   Übergabe als Referenz direkt möglich. Vorher war ein Workaround notwendig:
   </para>
 
   <example xml:id="language.types.array.examples.changeloop">
-   <title>Collection</title>
+   <title>Elemente in der Schleife verändern</title>
    <programlisting role="php">
 <![CDATA[
 <?php
@@ -705,10 +966,10 @@ Do you like yellow?
 foreach ($colors as &$color) {
     $color = strtoupper($color);
 }
-unset($color); /* ensure that following writes to
-$color will not modify the last array element */
+unset($color); /* Sicherstellen, dass nachfolgende
+Zugriffe auf $color nicht das letzte Element ändern */
 
-// Workaround for older versions
+// Workaround für ältere Versionen
 foreach ($colors as $key => $color) {
     $colors[$key] = strtoupper($color);
 }
@@ -732,11 +993,11 @@ Array
   </example>
 
   <para>
-   This example creates a one-based array.
+   Dieses Beispiel erzeugt ein Array mit erstem Schlüsse 1
   </para>
 
   <example>
-   <title>One-based index</title>
+   <title>1-basierte Indizes</title>
    <programlisting role="php">
 <![CDATA[
 <?php
@@ -759,11 +1020,11 @@ Array
   </example>
 
   <example>
-   <title>Filling an array</title>
+   <title>Ein Array befüllen</title>
    <programlisting role="php">
 <![CDATA[
 <?php
-// fill an array with all items from a directory
+// Dies füllt ein Array mit allen Einträgen eines Verzeichnisses
 $handle = opendir('.');
 while (false !== ($file = readdir($handle))) {
     $files[] = $file;
@@ -775,14 +1036,15 @@ closedir($handle);
   </example>
 
   <para>
-   <type>Array</type>s are ordered. The order can be changed using various
-   sorting functions. See the <link linkend="ref.array">array functions</link>
-   section for more information. The <function>count</function> function can be
-   used to count the number of items in an <type>array</type>.
+   <type>Array</type>s sind sortiert. Die Reihenfolge kann durch verschiedene
+   Sortierfunktionen verändert werden. Siehe <link linkend="ref.array">
+   Array-Funktionen</link> für mehr Informationen. Die Funktion
+   <function>count</function> kann herangezogen werden, um die Anzahl
+   der Elemente eines <type>Array</type> zu ermitteln.
   </para>
 
   <example>
-   <title>Sorting an array</title>
+   <title>Ein Array sortieren</title>
    <programlisting role="php">
 <![CDATA[
 <?php
@@ -794,13 +1056,13 @@ print_r($files);
   </example>
 
   <para>
-   Because the value of an <type>array</type> can be anything, it can also be
-   another <type>array</type>. This enables the creation of recursive and
-   multi-dimensional <type>array</type>s.
+   Da die Werte eines <type>Array</type> beliebig sein können, können diese
+   auch andere <type>Array</type>s sein. Dies ermöglicht die Erzeugung von
+   rekursiven und mehrdimensionalen <type>Array</type>s.
   </para>
 
   <example>
-   <title>Recursive and multi-dimensional arrays</title>
+   <title>Rekursive und mehrdimensionale Arrays</title>
    <programlisting role="php">
 <![CDATA[
 <?php
@@ -821,12 +1083,12 @@ $fruits = array ( "fruits"  => array ( "a" => "orange",
                                      )
                 );
 
-// Some examples to address values in the array above 
+// Einige Beispiele um auf Werde in den obigen Beispielen zuzugreifen
 echo $fruits["holes"][5];    // prints "second"
 echo $fruits["fruits"]["a"]; // prints "orange"
 unset($fruits["holes"][0]);  // remove "first"
 
-// Create a new multi-dimensional array
+// Ein neues mehrdimensionales Array erzeugen
 $juices["apple"]["green"] = "good"; 
 ?>
 ]]>
@@ -834,11 +1096,10 @@ $juices["apple"]["green"] = "good";
   </example>
 
   <para>
-   <type>Array</type> assignment always involves value copying. It also means
-   that the internal <type>array</type> pointer used by
-   <function>current</function> and similar functions is reset. Use the
-   <link linkend="language.operators">reference operator</link> to copy an
-   <type>array</type> by reference.
+   Zuweisung von <type>Array</type>s zu Variablen involviert immer eine
+   Kopie der Werte. Verwenden Sie den <link linkend="language.operators">
+   Referez-Operator</link> um eine Kopie einer Referenz auf ein
+   <type>Array</type> zu erzeugen.
   </para>
 
   <informalexample>
@@ -847,11 +1108,11 @@ $juices["apple"]["green"] = "good";
 <?php
 $arr1 = array(2, 3);
 $arr2 = $arr1;
-$arr2[] = 4; // $arr2 is changed,
-             // $arr1 is still array(2, 3)
-             
+$arr2[] = 4; // $arr2 ist geändert,
+             // $arr1 ist weiterhin array(2, 3)
+
 $arr3 = &$arr1;
-$arr3[] = 4; // now $arr1 and $arr3 are the same
+$arr3[] = 4; // nun sind $arr1 und $arr3 identisch
 ?>
 ]]>
    </programlisting>
