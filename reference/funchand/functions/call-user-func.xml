@@ -1,34 +1,246 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.call-user-func" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>call_user_func</refname>
-    <refpurpose>Aufruf einer benutzerdefinierten Funktion</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Description</title>
-     <methodsynopsis>
-      <type>mixed</type><methodname>call_user_func</methodname>
-      <methodparam><type>string</type><parameter>function_name</parameter></methodparam>
-      <methodparam choice="opt"><type>mixed</type><parameter>parameter</parameter></methodparam>
-      <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Ruft die Funktion mit Namen <parameter>function_name</parameter>
-     mit den Parametern <parameter>parameters</parameter> auf.
-     <informalexample>
-      <programlisting role="php">
-function friseur ($type) {
-    print "Sie möchten einen $type-Kopf, kein Problem&lt;br>";
+<!-- EN-Revision: 324122 Maintainer: simp Status: ready -->
+
+<refentry xml:id="function.call-user-func" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>call_user_func</refname>
+  <refpurpose>Aufruf der Callback-Funktion die als erster Parameter übergeben wurde</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>mixed</type><methodname>call_user_func</methodname>
+   <methodparam><type>callable</type><parameter>callback</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>parameter</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Ruft die Funktion <parameter>Callback</parameter> die als erster Parameter übergeben
+   wurde auf und über gibt dieser alle weiteren Parameter als Argumente.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>callback</parameter></term>
+     <listitem>
+      <para>
+       Das aufzurufende <type>callable</type>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>parameter</parameter></term>
+     <listitem>
+      <para>
+       Null oder mehr Parameter, die an die Callback-Funktion
+       übergeben werden sollen
+      </para>
+      <note>
+       <para>
+        Beachten Sie, dass die Parameter von <function>call_user_func</function>
+        nicht als Referenzen übergeben werden.
+        <example>
+         <title><function>call_user_func</function>-Beispiel und Referenzen</title>
+         <programlisting role="php">
+<![CDATA[
+<?php
+error_reporting(E_ALL);
+function increment(&$var)
+{
+    $var++;
 }
-call_user_func ('friseur', "Bubi");
-call_user_func ('friseur', "Pilz");
-      </programlisting>
-     </informalexample>
-    </para>
-   </refsect1>
-  </refentry>
+
+$a = 0;
+call_user_func('increment', $a);
+echo $a."\n";
+
+call_user_func_array('increment', array(&$a)); // Die kann vor PHP 5.3 verwendet werden
+echo $a."\n";
+?>
+]]>
+         </programlisting>
+         &example.outputs;
+         <screen>
+<![CDATA[
+0
+1
+]]>
+         </screen>
+        </example>
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt den Rückgabewert des Callbacks zurück oder im Fehlerfall &false;
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Die Interpretation von objektorientierten Schlüsselwörtern wie 
+        <literal>parent</literal> oder <literal>self</literal> hat sich geändert.
+        In früheren Versionen hat ein Aufruf davon mit einem Doppel-Doppelpunkt
+        eine Warnung der Stufe <constant>E_STRICT</constant> hervorgerufen, weil
+        diese als statisch interpretiert wurden.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>call_user_func</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function friseur($type)
+{
+    echo "Sie möchten einen $type-Kopf, kein Problem\n";
+}
+call_user_func('friseur', "Bubi");
+call_user_func('friseur', "Pilz");
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Sie möchten einen Bubi-Kopf, kein Problem
+Sie möchten einen Pilz-Kopf, kein Problem
+]]>
+    </screen>
+   </example>
+   <example>
+    <title><function>call_user_func</function> mit Namespacenamen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+namespace Foobar;
+
+class Foo {
+    static public function test() {
+        print "Hello world!\n";
+    }
+}
+
+call_user_func(__NAMESPACE__ .'\Foo::test'); // Seit PHP 5.3.0
+call_user_func(array(__NAMESPACE__ .'\Foo', 'test')); // Seit PHP 5.3.0
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Hello world!
+Hello world!
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Verwenden einer Klassenmethode mit <function>call_user_func</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class myclass {
+    static function say_hello()
+    {
+        echo "Hello!\n";
+    }
+}
+
+$classname = "myclass";
+
+call_user_func(array($classname, 'say_hello'));
+call_user_func($classname .'::say_hello'); // Seit 5.2.3
+
+$myobject = new myclass();
+
+call_user_func(array($myobject, 'say_hello'));
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Hello!
+Hello!
+Hello!
+]]>
+    </screen>   
+   </example>
+   <example>
+    <title>Verwendung von Lambdafunktionen mit <function>call_user_func</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+call_user_func(function($arg) { print "[$arg]\n"; }, 'test'); /* Seit PHP 5.3.0 */
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+[test]
+]]>
+    </screen>   
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  &note.func-callback-exceptions;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>call_user_func_array</function></member>
+    <member><function>is_callable</function></member>
+    <member>&seealso.callback;</member>
+    <member><methodname>ReflectionFunction::invoke</methodname></member>
+    <member><methodname>ReflectionMethod::invoke</methodname></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

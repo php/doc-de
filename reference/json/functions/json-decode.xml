@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 291072 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 333677 Maintainer: simp Status: ready -->
+<!-- Credits: sammywg -->
 
 <refentry xml:id="function.json-decode" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -15,7 +16,8 @@
    <methodparam><type>string</type><parameter>json</parameter></methodparam>
    <methodparam choice="opt"><type>bool</type><parameter>assoc</parameter><initializer>false</initializer></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>depth</parameter><initializer>512</initializer></methodparam>
-  </methodsynopsis>
+   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>0</initializer></methodparam>
+  </methodsynopsis>e
   <para>
    Konvertiert eine JSON-kodierte Zeichenkette in eine PHP-Variable.
   </para>
@@ -29,8 +31,12 @@
      <term><parameter>json</parameter></term>
      <listitem>
       <para>
-       Der zu dekodierende <parameter>json</parameter>-<type>String</type>.
+       Der zu dekodierende <parameter>json</parameter>-<type>String</type> (in UTF-8-Kodierung).
       </para>
+      <para>
+       Diese Funktion arbeitet nur mit in UTF-8 kodierten Strings.
+      </para>
+      &json.implementation.superset;
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -50,6 +56,17 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term><parameter>options</parameter></term>
+     <listitem>
+      <para>
+       Bitmaske mit JSOn-Dekodieroptionen. Derzeit ist nur
+       <constant>JSON_BIGINT_AS_STRING</constant>
+       unterstützt (standatdmäßig werden große Ganzzahlen
+       in Fließkommazahlen umgewandelt).
+      </para>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
  </refsect1>
@@ -59,11 +76,11 @@
   <para>
    Gibt den Wert von <parameter>json</parameter> im passenden PHP-Typ zurück.
    Die Werte <literal>true</literal>, <literal>false</literal> und
-   <literal>null</literal> werden (unabhängig von Groß-/Kleinschreibung)
-   entsprechend als &true;, &false; und &null; zurückgegeben. &null; wird
-   zurückgegeben, wenn der Parameter <parameter>json</parameter> nicht dekodiert
-   werden kann oder wenn die dekodierten Daten tiefer verschachtelt sind, als es
-   der Parameter für Verschachtelungstiefe erlaubt.
+   <literal>null</literal> werden entsprechend als &true;, &false; und &null; 
+   zurückgegeben. &null; wird zurückgegeben, wenn der Parameter 
+   <parameter>json</parameter> nicht dekodiert werden kann oder wenn die 
+   dekodierten Daten tiefer verschachtelt sind, als es der Parameter für 
+   Verschachtelungstiefe erlaubt.
   </para>
  </refsect1>
 
@@ -105,7 +122,14 @@ array(5) {
     </screen>
    </example>
    <example>
-    <title>Ein weiteres Beispiel</title>
+    <title>Zugriff auf ungültige Objekteigenschaften</title>
+    <simpara>
+     Auf Elemente von Objekten die Zeichen enthalten, welche gemäß 
+     den Namenskonventionen von PHP nicht gültig sind (z.B. der 
+     Bindestrich), kann durch ein Umschließen des Namens mit 
+     geschweiften Klammern und einfachen Anführungszeichen
+     zugegriffen werden.
+    </simpara>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -166,17 +190,18 @@ $json = json_encode(
 );
 
 // Errordefinitionen
-$json_errors = array(
-    JSON_ERROR_NONE => 'Es ist kein Fehler aufgetreten',
-    JSON_ERROR_DEPTH => 'Die maximale Stacktiefe wurde erreicht',
-    JSON_ERROR_CTRL_CHAR => 'Steuerzeichenfehler, möglicherweise fehlerhaft kodiert',
-    JSON_ERROR_SYNTAX => 'Syntaxfehler',
-);
+$constants = get_defined_constants(true);
+$json_errors = array();
+foreach ($constants["json"] as $name => $value) {
+    if (!strncmp($name, "JSON_ERROR_", 11)) {
+        $json_errors[$value] = $name;
+    }
+}
 
 // Zeige die Fehler für unterschiedliche Verschachtelungstiefen
-foreach(range(4, 3, -1) as $depth) {
+foreach (range(4, 3, -1) as $depth) {
     var_dump(json_decode($json, true, $depth));
-    echo 'Letzter Fehler : ', $json_errors[json_last_error()], PHP_EOL, PHP_EOL;
+    echo 'Letzter Fehler: ', $json_errors[json_last_error()], PHP_EOL, PHP_EOL;
 }
 ?>
 ]]>
@@ -203,10 +228,37 @@ array(1) {
     }
   }
 }
-Letzter Fehler : Es ist kein Fehler aufgetreten
+Letzter Fehler : JSON_ERROR_NONE
 
 NULL
-Letzter Fehler : Die maximale Stacktiefe wurde erreicht
+Letzter Fehler : JSON_ERROR_DEPTH
+]]>
+    </screen>
+   </example>
+   <example>
+    <title><function>json_decode</function> von großen Ganzzahlen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$json = '{"number": 12345678901234567890}';
+
+var_dump(json_decode($json));
+var_dump(json_decode($json, false, 512, JSON_BIGINT_AS_STRING));
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+object(stdClass)#1 (1) {
+  ["number"]=>
+  float(1.2345678901235E+19)
+}
+object(stdClass)#1 (1) {
+  ["number"]=>
+  string(20) "12345678901234567890"
+}
 ]]>
     </screen>
    </example>
@@ -241,6 +293,21 @@ Letzter Fehler : Die maximale Stacktiefe wurde erreicht
      </thead>
      <tbody>
       <row>
+       <entry>5.6.0</entry>
+       <entry>
+        Ungültige nicht kleingeschriebene Varianten von
+        <literal>true</literal>, <literal>false</literal> und 
+        <literal>null</literal> literals sind nicht weiter gültige
+        Eingaben und werden eine Warnung hervorrufen.
+       </entry>
+      </row>
+      <row>
+       <entry>5.4.0</entry>
+       <entry>
+        Der Parameter <parameter>options</parameter> wurde hinzugefügt.
+       </entry>
+      </row>
+      <row>
        <entry>5.3.0</entry>
        <entry>Der optionale Parameter <parameter>depth</parameter> wurde
         hinzugefügt. Die Standardrekursionstiefe wurde von 128 auf 512
@@ -249,6 +316,12 @@ Letzter Fehler : Die maximale Stacktiefe wurde erreicht
       <row>
        <entry>5.2.3</entry>
        <entry>Die Verschachtelungsgrenze wurde von 20 auf 128 angehoben.</entry>
+      </row>
+      <row>
+       <entry>5.2.1</entry>
+       <entry>
+        Unterstützung für JSOn-Dekodierung der Basistypen wurde hinzugefügt.
+       </entry>
       </row>
      </tbody>
     </tgroup>
