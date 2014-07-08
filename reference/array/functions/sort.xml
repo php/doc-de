@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 299468 Maintainer: wiesemann Status: ready -->
-<!-- Rev-Revision: 1.28 Reviewer: sammywg -->
-<!-- CREDITS: tom -->
+<!-- EN-Revision: 330420 Maintainer: simp Status: ready -->
+<!-- CREDITS: tom, sammywg, wiesemann -->
 
 <refentry xml:id="function.sort" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -61,8 +60,7 @@
         <listitem>
          <simpara><constant>SORT_LOCALE_STRING</constant> - vergleiche
          Einträge als Strings, basierend auf den aktuellen Locale-Einstellungen.
-         Wurde in PHP 4.4.0 und 5.0.2 hinzugefügt. Es wird die
-         System-Locale benutzt, die mittels <function>setlocale</function>
+         Es wird die System-Locale benutzt, die mittels <function>setlocale</function>
          geändert werden kann.
          <!-- FIXME PHP_6
          Vor PHP 6 wird die
@@ -70,6 +68,21 @@
          geändert werden kann. Seit PHP 6 müssen Sie die
          <function>i18n_loc_set_default</function>-Funktion benutzen.
          -->
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara><constant>SORT_NATURAL</constant> - vergleicht mittels einem 
+          Sortieralgorithmus für "natürlicher Reihenfolge" ähnlich zu
+          <function>natsort</function>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>SORT_FLAG_CASE</constant> - kann kombiniert werden
+          (bitweises OR) mit
+          <constant>SORT_STRING</constant> oder
+          <constant>SORT_NATURAL</constant> um Strings unabhängig von Groß- 
+          und Kleinschreibung zu sortieren
          </simpara>
         </listitem>
        </itemizedlist>
@@ -86,6 +99,37 @@
    &return.success;
   </para>
  </refsect1>
+ 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>5.4.0</entry>
+      <entry>
+       Unterstützung für <constant>SORT_NATURAL</constant> und
+       <constant>SORT_FLAG_CASE</constant> als <parameter>sort_flags</parameter>
+       hinzugefügt
+      </entry>
+     </row>
+     <row>
+      <entry>5.0.2</entry>
+      <entry>
+       <constant>SORT_LOCALE_STRING</constant> hinzugefügt
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+ 
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -118,6 +162,39 @@ fruits[3] = Zitrone
   <para>
    Die Früchte wurden in alphabetischer Reihenfolge sortiert.
   </para>
+  <para>
+   <example>
+    <title><function>sort</function>-Beispiel mit natürlicher Sortierung
+    ohne Beachtung der Groß- und Kleinschreibung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$fruits = array(
+    "Orange1", "orange2", "Orange3", "orange20"
+);
+sort($fruits, SORT_NATURAL | SORT_FLAG_CASE);
+foreach ($fruits as $key => $val) {
+    echo "fruits[" . $key . "] = " . $val . "\n";
+}
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+fruits[0] = Orange1
+fruits[1] = orange2
+fruits[2] = Orange3
+fruits[3] = orange20
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Die Früchte wurden wie durch <function>natcasesort</function> sortiert.
+  </para>
  </refsect1>
  
  <refsect1 role="notes">
@@ -128,6 +205,9 @@ fruits[3] = Zitrone
     Wie die meisten PHP-Sortierfunktionen benutzt
     <function>sort</function> eine Implementierung von
     <link xlink:href="&url.wiki.quicksort;">Quicksort</link>.
+    Das Pivotelement wird aus der Mitte der Partition gewählt, was zu optimaler
+    Laufzeit für bereits sortierte Arrays führt. Das ist jedoch ein 
+    Implementierungsdetail auf dass Sie sich nicht verlassen sollten.
    </simpara>
   </note>
   <warning>
