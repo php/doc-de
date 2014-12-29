@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: working -->
-<!-- Credits: tom -->
+<!-- EN-Revision: 335191 Maintainer: hholzgra Status: working -->
+<!-- Credits: tom, updated to fix build by theseer -->
 
  <chapter xml:id="language.functions" xmlns="http://docbook.org/ns/docbook">
   <title>Funktionen</title>
@@ -397,18 +397,171 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
     <title>Variable Anzahl von Parametern</title>
 
     <simpara>
-     Beginnend mit PHP 4 wird eine variable Anzahl von Parametern in
-     benutzerdefinierten Funktionen unterstützt. Das Handling dieser Parameter
-     fällt mittels der Funktionen <function>func_num_args</function>,
-     <function>func_get_arg</function> und
-     <function>func_get_args</function> sehr leicht.
+     PHP unterstützt eine variable Anzahl an Parametern für benutzerdefinierte
+     Funktionen. Dies wird seit PHP 5.6 durch das Token <literal>...</literal>
+     umgesetzt. Für ältere Versionen von PHP stehen die Funktionen 
+     <function>func_num_args</function>, <function>func_get_arg</function>, und
+     <function>func_get_args</function> bereit.
     </simpara>
 
-    <simpara>
-     Es ist keine spezielle Syntax erforderlich. Die Parameter können
-     wie gehabt explizit in den Funktionsdeklarationen angegeben
-     werden und werden sich wie gewohnt verhalten.
-    </simpara>
+    <sect3 xml:id="functions.variable-arg-list.new">
+     <title><literal>...</literal> in PHP 5.6+</title>
+
+     <para>
+      Ab PHP 5.6 kann eine Liste von Parametern das Token <literal>...</literal>
+      enthalten um anzugeben, dass die Funktion eine variable Anzahl von
+      Paramtern akzeptiert. Die zusätzlichen Werte werden als array übergeben.
+      Zum Beispiel:
+      <example>
+       <title>Verwendung von <literal>...</literal> für den Zugriff auf
+       variable Parameter</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+function sum(...$numbers) {
+    $acc = 0;
+    foreach ($numbers as $n) {
+        $acc += $n;
+    }
+    return $acc;
+}
+
+echo sum(1, 2, 3, 4);
+?>
+]]>
+       </programlisting>
+       &example.outputs;
+       <screen>
+<![CDATA[
+10
+]]>
+       </screen>
+      </example>
+     </para>
+
+     <para>
+      Das Token <literal>...</literal> kann ebenfalls dazu verwendet werden, um
+      ein <type>array</type> oder <classname>Traversable</classname> Objekt als
+      Liste von Parametern zu übergeben:
+      <example>
+       <title>Verwendung von <literal>...</literal> zur Übergabe einer Parameterliste</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+function add($a, $b) {
+    return $a + $b;
+}
+
+echo add(...[1, 2])."\n";
+
+$a = [1, 2];
+echo add(...$a);
+?>
+]]>
+       </programlisting>
+       &example.outputs;
+       <screen>
+<![CDATA[
+3
+3
+]]>
+       </screen>
+      </example>
+     </para>
+
+     <para>
+      Die Definition von regulären, positionierten Parametern vor dem <literal>...</literal>
+      ist natürlich weiterhin möglich. In einem solchen Fall werden dann nur die
+      zusätzlichen Werte, die zu keinem positionierten Parameter gehören, in
+      das durch <literal>...</literal> erzeugte array übernommen.
+     </para>
+
+     <para>
+      Es ist zudem ebenfalls möglich dem <literal>...</literal> Token eine
+      <link linkend="language.oop5.typehinting">Typangabe</link> voran zu
+      stellen. Ist dies der Fall, müssen alle Werte, die für <literal>...</literal>
+      relevant sind, vom entsprechenden Typ sein.
+      
+      <example>
+       <title>Variable Paramter mit Vorgabe des Typs</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+function total_intervals($unit, DateInterval ...$intervals) {
+    $time = 0;
+    foreach ($intervals as $interval) {
+        $time += $interval->$unit;
+    }
+    return $time;
+}
+
+$a = new DateInterval('P1D');
+$b = new DateInterval('P2D');
+echo total_intervals('d', $a, $b).' days';
+
+// Dieser Aufruf wird scheitern, da null keine Instanz von DateInterval ist
+echo total_intervals('d', null);
+?>
+]]>
+       </programlisting>
+       &example.outputs;
+       <screen>
+<![CDATA[
+3 days
+Catchable fatal error: Argument 2 passed to total_intervals() must be an instance of DateInterval, null given, called in - on line 14 and defined in - on line 2
+]]>
+       </screen>
+      </example>
+     </para>
+
+     <para>
+      Durch ein voran gestelltes <literal>&amp;</literal> ist auch die Übergabe
+      <link linkend="functions.arguments.by-reference">als Referenz</link>
+      möglich.
+     </para>
+    </sect3>
+
+    <sect3 xml:id="functions.variable-arg-list.old">
+     <title>Ältere Versionen von PHP</title>
+
+     <para>
+      Eine spezielle Syntax ist zur Definition von variablen Paramtern nicht
+      notwendig. Um auf die übergebenen Werte zugreifen zu können, stehen
+      die Funktionen <function>func_num_args</function>,
+      <function>func_get_arg</function> und <function>func_get_args</function>
+      bereit.
+     </para>
+
+     <para>
+      Das erste Beispiel von weiter oben würde in PHP 5.5 und früher so
+      umgesetzt werden können:
+      
+      <example>
+       <title>Zugriff auf variable Parameter in PHP 5.5 und früher</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+function sum() {
+    $acc = 0;
+    foreach (func_get_args() as $n) {
+        $acc += $n;
+    }
+    return $acc;
+}
+
+echo sum(1, 2, 3, 4);
+?>
+]]>
+       </programlisting>
+       &example.outputs;
+       <screen>
+<![CDATA[
+10
+]]>
+       </screen>
+      </example>
+     </para>
+    </sect3>
 
    </sect2>
 
