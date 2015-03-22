@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- splitted from ./de/functions/image.xml, last change in rev 1.2 -->
-<!-- last change to 'getimagesize' in en/ tree in rev 1.36 -->
-<!-- EN-Revision: 288721 Maintainer: jaenecke Status: ready -->
-<!-- OLD-Revision: 1.26/EN.1.36 -->
+<!-- EN-Revision: 334592 Maintainer: simp Status: ready -->
+<!-- Credits: jaenecke -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.getimagesize">
  <refnamediv>
   <refname>getimagesize</refname>
@@ -18,12 +16,11 @@
   </methodsynopsis>
   <para>
    Die Funktion <function>getimagesize</function> ermittelt die Dimensionen der  
-   übergebenen Grafik-Datei. 
-   Es werden die Ausmaße in Abhängigkeit vom Grafik-Typ sowie die Höhe und Breite
-   als <emphasis>ein</emphasis> String zurückgegeben. Dieser kann innerhalb eines 
-   regulären <acronym>HTML</acronym> <tag>IMG</tag>-Tags verwendet werden. 
-   Ausserdem wird der entsprechende <acronym>HTTP</acronym> Content-Type 
-   zurückgegeben.
+   übergebenen Grafik-Datei und gibt diese zusammen mit dem Dateityp und einem
+   String aus <literal>Breite</literal> und <literal>Höhe</literal> zurück, der
+   innerhalb eines regulären <acronym>HTML</acronym> <tag>IMG</tag>-Tags verwendet
+   werden kann. Außerdem wird der entsprechende <acronym>HTTP</acronym>
+   Content-Type zurückgegeben.
   </para>
   <para>
    <function>getimagesize</function> kann im Parameter <parameter>imageinfo</parameter>
@@ -31,12 +28,12 @@
   </para>
   <note>
    <simpara>
-    Beachten Sie daß JPC und JP2 aus Komponenten mit verschiedener Farbtiefe bestehen
+    Beachten Sie, dass JPC und JP2 aus Komponenten mit verschiedener Farbtiefe bestehen
     können. In diesem Fall entspricht der Wert für "bits" dem höchsten gefundenen
     Wert.
-    Des weiteren können JP2-Dateien mehrere JPEG 2000 Codestreams enthalten. In 
-    diesem Fall wird <function>getimagesize</function> Werte entsprechend des
-    ersten gefundenen Codestreams zurückgeben.
+    Des Weiteren können JP2-Dateien mehrere JPEG 2000 Codestreams enthalten. In 
+    diesem Fall gibt <function>getimagesize</function> die Werte des
+    ersten gefundenen Codestreams zurück.
    </simpara>
   </note>
   <note>
@@ -57,7 +54,7 @@
       <para>
        Die zu überprüfende Datei. Dabei kann es sich um eine lokale Datei oder, 
        eine entsprechende Konfiguration vorausgesetzt, um eine entfernte Datei
-       handeln die über einen unterstützen Stream gelesen wird. 
+       handeln, die über einen unterstützten Stream gelesen wird. 
       </para>
      </listitem>
     </varlistentry>
@@ -84,7 +81,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt ein Array mit fünf Elementen zurück.
+   Gibt ein Array mit bis zu sieben Elementen zurück. Nicht alle Bildtypen
+   enthalten die Elemente <literal>channels</literal> und <literal>bits</literal>.
   </para>
   <para>
    Index 0 und 1 enthalten Breite respektive Höhe der Grafik.
@@ -93,24 +91,25 @@
    <para>
     Einige Formate enthalten keine oder mehrere Grafiken. In diesen Fällen ist 
     <function>getimagesize</function> möglicherweise nicht in der Lage, die
-    Dimensionen zu ermitteln; der Rückgabewert für Breite und Höhe in ist in
+    Dimensionen zu ermitteln; der Rückgabewert für Breite und Höhe ist in
     diesen Fällen 0.
    </para>
   </note>
   <para>
-   Index 2 ist eine der <literal>IMAGETYPE_XXX</literal>-Konstanten entsprechend 
-   des Typs der Grafik.
+   Index 2 ist eine der <link linkend="image.constants">IMAGETYPE_XXX-Konstanten</link> 
+   entsprechend des Typs der Grafik.
   </para>
   <para>
    Index 3 ist eine Zeichenkette mit dem Attributen Breite und Höhe in der Form
-   <literal>height="yyy" width="xxx"</literal> zur Verwendung in einem IMG-Tag.
+   <literal>height="yyy" width="xxx"</literal> zur Verwendung in einem 
+   <acronym>IMG</acronym>-Tag.
   </para>
   <para>
-   <literal>mime</literal> entspricht dem MIME-Type der Grafik. Diese Information
+   <literal>mime</literal> entspricht dem MIME-Typ der Grafik. Diese Information
    kann zur Auslieferung von Grafiken mit dem entsprechenden HTTP 
    <literal>Content-type</literal>-Header dienen.
    <example>
-    <title>getimagesize() und MIME-Type</title>
+    <title>getimagesize() und MIME-Typ</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -131,9 +130,14 @@ if ($size && $fp) {
   <para>
    <literal>channels</literal> hat für RGB-Grafiken den Wert 3, für CMYK den
    Wert 4.
-   <literal>bits</literal> entspricht der Anzahl der Bits pro Farbe. Allerdings
-   kann diese Angabe für einige Formate irreführend sein. <acronym>GIF</acronym>
-   nutzt immer drei Kanäle pro Pixel, aber die Anzahl der Bits pro Pixel kann 
+  </para>
+  <para>
+   <literal>bits</literal> entspricht der Anzahl der Bits pro Farbe. 
+  </para>
+  <para>
+   Für einige Bildformate kann die Angebe von <literal>channels</literal> und
+   <literal>bits</literal> irreführend sein. Beispielsweise nutzt <acronym>GIF</acronym>
+   immer drei Kanäle pro Pixel, aber die Anzahl der Bits pro Pixel kann 
    für ein animiertes <acronym>GIF</acronym> mit einer globalen Farbtabelle
    nicht errechnet werden.
   </para>
@@ -146,10 +150,10 @@ if ($size && $fp) {
   &reftitle.errors;
   <para>
    Wenn ein Zugriff auf die mit <parameter>filename</parameter> angegebene
-   Grafik nicht möglich ist oder es sich um keine valide Grafik handelt wird ein
-   Fehler vom Typ <constant>E_WARNING</constant> generiert.
-   Bei einem Lesefehler wird ein Fehler vom Typ <constant>E_NOTICE</constant>
-   erzeugt.
+   Grafik nicht möglich ist, wird <function>getimagesize</function> einen 
+   Fehler der Stufe <constant>E_WARNING</constant> generieren. 
+   Bei einem Lesefehler wird <function>getimagesize</function> einen Fehler 
+   der Stufe <constant>E_NOTICE</constant> hervorrufen.
   </para>
  </refsect1>
 
@@ -168,7 +172,7 @@ if ($size && $fp) {
       <row>
        <entry>5.3.0</entry>
        <entry>
-        Unterstützung für Icons
+        Unterstützung für Icons hinzugefügt.
        </entry>
       </row>
       <row>
@@ -202,12 +206,6 @@ if ($size && $fp) {
       <row>
        <entry>4.3.0</entry>
        <entry>
-        <literal>mime</literal> wurde hinzugefügt.
-       </entry>
-      </row>
-      <row>
-       <entry>4.3.0</entry>
-       <entry>
         Unterstützung für <acronym>SWC</acronym> wurde hinzugefügt.
        </entry>
       </row>
@@ -220,14 +218,8 @@ if ($size && $fp) {
       <row>
        <entry>4.0.6</entry>
        <entry>
-        Support for <acronym>BMP</acronym> and <acronym>PSD</acronym> was
-        added.
-       </entry>
-      </row>
-      <row>
-       <entry>4.0.5</entry>
-       <entry>
-        Unterstützung für URLs wurde hinzugefügt.
+        Unterstützung für <acronym>BMP</acronym> und <acronym>PSD</acronym>
+        wurde hinzugefügt.
        </entry>
       </row>
      </tbody>
@@ -240,7 +232,7 @@ if ($size && $fp) {
   &reftitle.examples;
   <para>
    <example>
-    <title>getimagesize (Datei)</title>
+    <title><function>getimagesize</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -257,7 +249,7 @@ echo "<img src=\"img/flag.jpg\" $attr alt=\"getimagesize() example\" />";
 <?php
 $size = getimagesize("http://www.example.com/gifs/logo.gif");
 
-// Sonderzeichen im Dateinamen müssen entsprechend kodiert werden
+// if the file name has space in it, encode it properly
 $size = getimagesize("http://www.example.com/gifs/lo%20go.gif");
 
 ?>
@@ -265,7 +257,7 @@ $size = getimagesize("http://www.example.com/gifs/lo%20go.gif");
     </programlisting>
    </example>
    <example>
-    <title>getimagesize() gibt IPTC zurück</title>
+    <title>getimagesize() mit Rückgabe von IPTC</title>
     <programlisting role="php">
 <![CDATA[
 <?php
