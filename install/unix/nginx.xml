@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 335022 Maintainer: POli Bahn Status: ready -->
+<!-- Reviewed: no -->
+
+<sect1 xml:id="install.unix.nginx" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Nginx 1.4.x auf Unix Systemen</title>
+
+ <para>
+  Diese Dokumentation deckt die Installation und Konfiguration von PHP mit
+  PHP-FPM für ein Nginx 1.4.x HTTP Server ab.
+ </para>
+
+ <para>
+  Diese Anleitung setzt voraus, dass Sie Nginx aus dem Quelltext erstellt haben
+  und dadurch alle Binaries haben und die Konfigurations Dateien in 
+  <literal>/usr/local/nginx</literal> abgelegt sind. Wenn dies nicht der Fall ist 
+  und Sie Nginx über eine andere Quelle bezogen haben, dann
+  sehen Sie bitte unter <link xlink:href="&url.nginx;">Nginx Wiki</link> nach,
+  um dieses Manual für Ihre Installation zu übersetzen.
+ </para>
+
+ <para>
+  Diese Anleitung wird die Basics der Konfiguration eines Nginx Servers abdecken, 
+  um PHP Applikationen auszuführen und unter Port 80 bereitzustellen. Eine Studie
+  der Nginx und PHP-FPM Dokumentation ist Voraussetzung für eine optimale Installation,
+  die auch über den Umfang dieser Dokumentation hinaus geht.
+ </para>
+
+ <para>
+  Hinweis: In dieser Dokumentation wurden Versionsnummern durchgehend mit 
+  einem 'x' ersetzt. Dies stellt sicher, dass die Dokumentation auch für künftige 
+  Versionen richtig bleibt. Bitte ersetzen Sie diese soweit notwendig mit Ihrer 
+  entstprechenden Version.
+ </para>
+
+ <orderedlist>
+  <listitem>
+   <para>
+    Voraussetzung ist, dass Sie im Nginx Wiki die 
+    <link xlink:href="&url.nginx.wiki.install;">Installation</link>s Seite
+    besuchen, um Nginx für Ihr System zu erhalten und zu installieren.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Erhalten und entpacken der PHP-Quelle:
+  </para>
+
+   <example xml:id="install.unix.nginx.extract.php">
+    <screen>
+<![CDATA[
+tar zxf php-x.x.x
+]]>
+    </screen>
+   </example>
+  </listitem>
+
+  <listitem>
+   <para>
+    Konfigurieren und erstellen von PHP. Dies ist die Stelle, an der Sie
+    Ihre PHP Installation individuell mit verschiedenen Optionen anpassen.
+    Sowas wie: welche Erweiterung (extension) aktiviert (enabled) wird.
+    Führen Sie ./configure --help für eine Liste der verfügbaren Optionen aus.
+    In unserem Beispiel werden wir eine einfache Konfiguration mit PHP-FPM and MySQL
+    Unterstützung durchführen.
+   </para>
+
+   <example xml:id="install.unix.nginx.build.php">
+    <screen>
+<![CDATA[
+cd ../php-x.x.x
+./configure --enable-fpm --with-mysql
+make
+sudo make install
+]]>
+    </screen>
+   </example>
+  </listitem>
+
+  <listitem>
+   <para>
+    Erhalten und verschieben von Konfigurationsdateien an die richtige Stelle
+   </para>
+
+   <example xml:id="install.unix.nginx.configure.php">
+    <screen>
+<![CDATA[
+cp php.ini-development /usr/local/php/php.ini
+cp /usr/local/etc/php-fpm.conf.default /usr/local/etc/php-fpm.conf
+cp sapi/fpm/php-fpm /usr/local/bin
+]]>
+    </screen>
+   </example>
+  </listitem>
+
+  <listitem>
+   <para>
+    Es ist wichtig, dass wir Nginx daran hindern Anfragen an das PHP-FPM Backend
+    zu leiten, wenn die Datei nicht existiert. Dies erlaubt uns willkürliche Skript 
+    Eingaben (script injection) zu verhindern.
+   </para>
+   <para>
+    Wir können dies durch eine Einstellung beheben, indem wir innerhalb unserer php.ini Datei
+    die <link linkend="ini.cgi.fix-pathinfo">cgi.fix_pathinfo</link>
+    Direktive auf <literal>0</literal> setzen.
+   </para>
+   <para>
+    Einlesen der php.ini:
+   </para>
+
+   <example xml:id="install.unix.nginx.configure.ini">
+    <screen>
+<![CDATA[
+vim /usr/local/php/php.ini
+]]>
+    </screen>
+   </example>
+
+   <para>
+    Positionieren auf <literal>cgi.fix_pathinfo=</literal> und wie folgt modifizieren:
+   </para>
+
+   <example xml:id="install.unix.nginx.configure.pathinfo">
+    <screen>
+<![CDATA[
+cgi.fix_pathinfo=0
+]]>
+    </screen>
+   </example>
+  </listitem>
+
+  <listitem>
+   <para>
+    php-fpm.conf muss angepasst werden, damit php-fpm als User www-data
+    und Gruppe www-data ausgeführt wird, bevor wir es Service starten können:
+   </para>
+
+   <example xml:id="install.unix.nginx.modify.phpfpm">
+    <screen>
+<![CDATA[
+vim /usr/local/etc/php-fpm.conf
+]]>
+    </screen>
+   </example>
+
+   <para>
+    Finden und modifizieren Sie folgendes:
+   </para>
+
+   <example xml:id="install.unix.nginx.modify.phpfpm.usergroup">
+    <screen>
+<![CDATA[
+; Unix user/group of processes
+; Note: The user is mandatory. If the group is not set, the default user's group
+;       will be used.
+user = www-data
+group = www-data
+]]>
+    </screen>
+   </example>
+
+   <para>
+    Der php-fpm Service kann wie folgt gestartet werden:
+   </para>
+
+   <example xml:id="install.unix.nginx.start.phpfpm">
+    <screen>
+<![CDATA[
+/usr/local/bin/php-fpm
+]]>
+    </screen>
+   </example>
+
+   <para>
+    Diese Anleitung wird nicht weiter auf die php-fpm Konfiguration eingehen. Wenn Sie
+    weiteres Interesse an der php-fpm Konfiguration haben, dann ziehen Sie bitte die 
+    entsprechende Dokumentation heran.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Nginx muss jetzt konfiguriert werden, um PHP Applikationen ablaufen zu lassen:
+   </para>
+
+   <example xml:id="install.unix.nginx.configure.nginx">
+    <programlisting>
+<![CDATA[
+vim /usr/local/nginx/conf/nginx.conf
+]]>
+    </programlisting>
+   </example>
+
+   <para>
+    Modifizieren Sie den Bereich voreingestellte Positionen, um zu gewährleisten,
+    dass .php Dateien verarbeitet werden:
+   </para>
+
+   <example xml:id="install.unix.nginx.configure.nginx.location">
+    <programlisting role="nginx-conf">
+<![CDATA[
+location / {
+    root   html;
+    index  index.php index.html index.htm;
+}
+]]>
+    </programlisting>
+   </example>
+
+   <para>
+    Der nächste Schritt soll sicherstellen, dass .php Dateien an
+    des PHP-FPM Backend geleitet werden. Sternen Sie die kommentierten
+    Bereich aus und geben Sie folgendes ein:
+   </para>
+
+   <example xml:id="install.unix.nginx.configure.nginx.php">
+    <programlisting role="nginx-conf">
+<![CDATA[
+location ~* \.php$ {
+    fastcgi_index   index.php;
+    fastcgi_pass    127.0.0.1:9000;
+    include         fastcgi_params;
+    fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+    fastcgi_param   SCRIPT_NAME        $fastcgi_script_name;
+}
+]]>
+    </programlisting>
+   </example>
+
+   <para>
+    Neustart von Nginx.
+   </para>
+
+   <example xml:id="install.unix.nginx.restart.nginx">
+    <screen>
+<![CDATA[
+sudo /usr/local/nginx/sbin/nginx -s stop
+sudo /usr/local/nginx/sbin/nginx
+]]>
+    </screen>
+   </example>
+  </listitem>
+
+  <listitem>
+   <para>
+    Erstellen einer Test Datei
+   </para>
+
+   <example xml:id="install.unix.nginx.test.nginx.php">
+    <screen>
+<![CDATA[
+rm /usr/local/nginx/html/index.html
+echo "<?php phpinfo(); ?>" >> /usr/local/nginx/html/index.php
+]]>
+    </screen>
+   </example>
+
+   <para>
+    Nun navigieren Sie zu http://localhost. Die Funktion phpinfo() sollte nun angezeigt werden.
+   </para>
+  </listitem>
+ </orderedlist>
+
+ <para>
+  Folgen Sie den obigen Schritten und Sie werden ein laufenden Nginx Web-Server
+  mit Unterstützung für PHP als ein <literal>SAPI</literal> Modul erhalten.
+  Natürlich sind noch viel mehr Konfigurations-Einstellungen für Nginx und PHP verfügbar.
+  Für weitere Informationen geben Sie <command>./configure --help</command> im entsprechenden
+  Quellpfad ein.
+ </para>
+
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
