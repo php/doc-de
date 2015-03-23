@@ -1,154 +1,263 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.create-function" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>create_function</refname>
-    <refpurpose>
-     Erzeugen einer anonymen / temporären (Lambda-Stil) Funktion
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>string</type><methodname>create_function</methodname>
-      <methodparam><type>string</type><parameter>args</parameter></methodparam>
-      <methodparam><type>string</type><parameter>code</parameter></methodparam>
-     </methodsynopsis>
+<!-- EN-Revision: 331556 Maintainer: simp Status: ready -->
+<refentry xml:id="function.create-function" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>create_function</refname>
+  <refpurpose>Erzeugen einer anonymen (Lambda-Stil) Funktion</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>string</type><methodname>create_function</methodname>
+   <methodparam><type>string</type><parameter>args</parameter></methodparam>
+   <methodparam><type>string</type><parameter>code</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Erzeugt eine anonyme Funktion anhand der übergebenen Parameter und
+   gibt einen eindeutigen Namen für diese zurück. 
+  </para>
+  <caution>
+   <para>
+    Diese Funktion führt intern <function>eval</function> aus und hat daher die
+    gleichen Sicherietsprobleme die <function>eval</function> hat. Außerdem zeigt
+    diese Funktion schlechtes Verhalten in anbetracht von Ausführungsgeschwindigkeit
+    und Speicherverbrauch.
+     </para>
+     <para>
+      Wenn Sie PHP 5.3.0 oder neuer einsetzen sollten Sie stattdessen
+      die nativ vorhandenen <link linkend="functions.anonymous">anonymen
+      Funktionen</link> verwenden.
+     </para>
+    </caution>
+   </refsect1>
+   <refsect1 role="parameters">
+    &reftitle.parameters;
     <para>
-     Erzeugt eine anonyme Funktion an Hand der übergebenen Parameter und
-     gibt einen eindeutigen Namen für diese zurück. Normalerweise sind
-     die <parameter>args</parameter> als mit "'" begrenzte Strings zu
-     übergeben. Dies gilt auch für <parameter>code</parameter>. Dadurch
-     werden die Variablen vor dem Parsen geschützt. Falls sie """
-     verwenden, müssen sie die Variablen-Namen "escapen", wie z.B. 
-     <literal>\$avar</literal>.
+     Normalerweise werden die Parameter als mit einfachen Anführungszeichen 
+     begrenzte Strings übergeben. Der Grund für die Verwendung von einfachen 
+     Anführungszeichen ist der Schutz der Variablen vor dem Parsen. Falls sie 
+     doppelte Anführungszeichen verwenden, müssen sie die Variablen-Namen 
+     escapen, wie z.B. <literal>\$avar</literal>.
+     <variablelist>
+      <varlistentry>
+       <term><parameter>args</parameter></term>
+       <listitem>
+        <para>
+         Die Funktionsparameter.
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><parameter>code</parameter></term>
+       <listitem>
+        <para>
+         Der Code der Funktion.
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
     </para>
+   </refsect1>
+   
+   <refsect1 role="returnvalues">
+    &reftitle.returnvalues;
     <para>
-     Dieser Befehl kann z.B. verwendet werden, um eine Funktion an Hand
-     von Informationen zu erzeugen, die erst zur Laufzeit vorliegen.
+     Gibt einen eindeutigen Funktionsnamen als String oder &false; 
+     im Fehlerfall zurück.
+    </para>
+   </refsect1>
+   
+   <refsect1 role="examples">
+    &reftitle.examples;
+    <para>
      <example>
       <title>
-       Erzeugen einer anonymen / temporären Funktion per
-       <function>create_function</function>:
+       Erzeugen einer anonymen Funktion per <function>create_function</function>
       </title>
+      <para>
+       Dieser Befehl kann z.B. verwendet werden, um eine Funktion anhand
+       von Informationen zu erzeugen, die erst zur Laufzeit vorliegen.
+      </para>
       <programlisting role="php">
-$newfunc = create_function('$a,$b','return "ln($a) + ln($b) = ".log($a * $b);');
-echo "Neue Temp-Funktion: $newfunc\n";
-echo $newfunc(2,M_E)."\n";
+<![CDATA[
+<?php
+$newfunc = create_function('$a,$b', 'return "ln($a) + ln($b) = " . log($a * $b);');
+echo "Neue anonyme Funktion: $newfunc\n";
+echo $newfunc(2, M_E) . "\n";
 // Ausgabe:
-// Neue Temp-Funktion: lambda_1
+// Neue anonyme Funktion: lambda_1
 // ln(2) + ln(2.718281828459) = 1.6931471805599
-      </programlisting>
-     </example>
-     Sie können auch eine allgemeine Handhabungs-Funktion erstellen, die
-     einen mehr oder weniger große Anzahl an Operationen mit einer Liste
-     von Parametern durchführt.
-     <example>
-      <title>
-       Beispiel zum o.a. Verwendungszweck:
-      </title>
-      <programlisting role="php">
-function process($var1, $var2, $farr) {
-    for ($f=0; $f &lt; count($farr); $f++)
-        echo $farr[$f]($var1,$var2)."\n";
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   Sie können auch eine allgemeine Handler-Funktion erstellen, die
+   einen mehr oder weniger große Anzahl an Operationen mit einer Liste
+   von Parametern durchführt:
+  </para>
+  <para>
+   <example>
+    <title>
+     Erzeugung einer generellen Bearbeitungsfunktion mit <function>create_function</function>
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function process($var1, $var2, $farr)
+{
+    foreach ($farr as $f) {
+        echo $f($var1, $var2) . "\n";
+    }
 }
 
-// Erzeugung eines Bündels an mathematischen Funktionen
-$f1 = 'if ($a &gt;=0) {return "b*a^2 = ".$b*sqrt($a);} else {return false;}';
+// Nun erzeugen wir eine Sammlung von mathematischen Funktionen
+$f1 = 'if ($a >=0) {return "b*a^2 = ".$b*sqrt($a);} else {return false;}';
 $f2 = "return \"min(b^2+a, a^2,b) = \".min(\$a*\$a+\$b,\$b*\$b+\$a);";
-$f3 = 'if ($a &gt; 0 &amp;&amp; $b != 0) {return "ln(a)/b = ".log($a)/$b;} else {return false;}';
+$f3 = 'if ($a > 0 && $b != 0) {return "ln(a)/b = ".log($a)/$b; } else { return false; }';
 $farr = array(
-    create_function('$x,$y', 'return "als trig: ".(sin($x) + $x*cos($y));'),
-    create_function('$x,$y', 'return "als Hypotenuse: ".sqrt($x*$x + $y*$y);'),
+    create_function('$x,$y', 'return "etwas Trigonometrie: ".(sin($x) + $x*cos($y));'),
+    create_function('$x,$y', 'return "eine Hypotenuse: ".sqrt($x*$x + $y*$y);'),
     create_function('$a,$b', $f1),
     create_function('$a,$b', $f2),
     create_function('$a,$b', $f3)
     );
 
-echo "\nGebrauch des ersten Arrays der anonymen Funktionen\n";
+echo "\nWir benutzen nun das erste Array mit anonymen Funktionen\n";
 echo "Parameter: 2.3445, M_PI\n";
 process(2.3445, M_PI, $farr);
 
-// Erzeugung eines Bündels an String-Behandlungs-Routinen
+// Nun erzeugen wir eine Sammlung von Funktionen zur Bearbeitung von Zeichenketten
 $garr = array(
-    create_function('$b, $a','if (strncmp ($a, $b, 3) == 0) return "** \"$a\" '.
-        'und \"$b\"\n** Sieht für mich gleich aus! (ansehen der ersten 3 Zeichen)";'),
-    create_function('$a, $b','; return "CRCs: ".crc32($a)." , ".crc32(b);'),
-    create_function('$a, $b','; return "ähnlich(a, b) = ".similar_text($a, $b, &amp;$p)."($p%)";')
+    create_function('$b,$a', 'if (strncmp($a, $b, 3) == 0) return "** \"$a\" '.
+    'und \"$b\"\n** Sehen für mich ähnlich aus! (unter Betrachtung der ersten 3 Zeichen)";'),
+    create_function('$a,$b', '; return "CRCs: " . crc32($a) . ", ".crc32($b);'),
+    create_function('$a,$b', '; return "similar(a,b) = " . similar_text($a, $b, &$p) . "($p%)";')
     );
-echo "\nGebrauch des zweiten Arrays der anonymen Funktionen\n";
+echo "\nWir benutzen nun das zweite Array mit anonymen Funktionen\n";
 process("Twas brilling and the slithy toves", "Twas the night", $garr);
+?>
+]]>
       </programlisting>
-     </example>
-     wenn sie nun den o.a Code ausführen lassen, wird folgendes
-     ausgegeben :
-     <informalexample>
-      <programlisting>
-Gebrauch des ersten Arrays der anonymen Funktionen
+      &example.outputs;
+      <screen>
+<![CDATA[
+Wir benutzen nun das erste Array mit anonymen Funktionen
 Parameter: 2.3445, M_PI
-als trig: -1.6291725057799
-als Hypotenuse: 3.9199852871011
+etwas Trigonometrie: -1.6291725057799
+eine Hypotenuse: 3.9199852871011
 b*a^2 = 4.8103313314525
 min(b^2+a, a^2,b) = 8.6382729035898
-ln(a/b) = 0.27122299212594
+ln(a)/b = 0.27122299212594
 
-Gebrauch des zweiten Arrays der anonymen Funktionen
+Wir benutzen nun das zweite Array mit anonymen Funktionen
 ** "Twas the night" und "Twas brilling and the slithy toves"
-** Sieht für mich gleich aus! (ansehen der ersten 3 Zeichen)
-CRCs: -725381282 , 1908338681
-ähnlich(a,b) = 11(45.833333333333%)
+** Sehen für mich ähnlich aus! (unter Betrachtung der ersten 3 Zeichen)
+CRCs: -725381282, 342550513
+similar(a,b) = 11(45.833333333333%)
+]]>
+      </screen>
+   </example>
+  </para>
+  <para>
+   Aber wahrscheinlich liegt der häufigste Anwendungsfall für Funktionen im
+   Lambda-Stil (anonym) bei den Callback-Funktionen, also z.B. beim
+   Gebrauch von <function>array_walk</function> oder
+   <function>usort</function>.
+  </para>
+  <para>
+   <example>
+    <title>Gebrauch der anonymen Funktionen als Callback-Funktion</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$av = array("the ", "a ", "that ", "this ");
+array_walk($av, create_function('&$v,$k', '$v = $v . "mango";'));
+print_r($av);
+?>
+]]>
       </programlisting>
-     </informalexample>
-     Möglicherweise liegt der häufigste Anwendungsfall für Funktionen im
-     Lambda-Stil (anonym) bei den Callback-Funktionen, also z.B. beim
-     Gebrauch von <function>array_walk</function> oder
-     <function>usort</function>.
-     <example>
-      <title>
-       Gebrauch der anonymen Funktionen als Callback-Funktion:
-      </title>
+      &example.outputs;
+      <screen>
+<![CDATA[
+Array
+(
+  [0] => the mango
+  [1] => a mango
+  [2] => that mango
+  [3] => this mango
+)
+]]>
+      </screen>
+      <para>
+       Ein Array con Zeichenketten sortiert von der kürzesten zur längsten
+      </para>
       <programlisting role="php">
-$av = array("der ","ein ","dieser ","jener ");
-array_walk($av, create_function('&amp;$v,$k','$v = $v."Zug";'));
-print_r($av);  // mit PHP3 benutzen sie bitte var_dump()
-// Ausgaben:
-// Array
-// (
-//     [0] =&gt; der Zug
-//     [1] =&gt; ein Zug
-//     [2] =&gt; dieser Zug
-//     [3] =&gt; jener Zug
-// )
+<![CDATA[
+<?php
 
-// Ein Array aus Strings nach Länge geordnet
-$sv = array("kurz","länger","noch länger","dieser ist am längsten");
+$sv = array("small", "larger", "a big string", "it is a string thing");
 print_r($sv);
-// Ausgaben:
-// Array
-// (
-//     [0] =&gt; kurz
-//     [1] =&gt; länger
-//     [2] =&gt; noch länger
-//     [3] =&gt; dieser ist am längsten
-// )
 
-// Sortierung von lang nach kurz
+?>
+]]>
+      </programlisting>
+      &example.outputs;
+      <screen>
+<![CDATA[
+Array
+(
+  [0] => small
+  [1] => larger
+  [2] => a big string
+  [3] => it is a string thing
+)
+]]>
+      </screen>
+      <para>
+       Sortiert von der Längsten zur Kürzesten
+      </para>
+      <programlisting role="php">
+<![CDATA[
+<?php
+
 usort($sv, create_function('$a,$b','return strlen($b) - strlen($a);'));
 print_r($sv);
-// Ausgabe:
-// Array
-// (
-//     [0] =&gt; dieser ist am längsten
-//     [1] =&gt; noch länger
-//     [2] =&gt; länger
-//     [3] =&gt; kurz
-// )
+
+?>
+]]>
       </programlisting>
-     </example>
+      &example.outputs;
+      <screen>
+<![CDATA[
+Array
+(
+  [0] => it is a string thing
+  [1] => a big string
+  [2] => larger
+  [3] => small
+)
+]]>
+      </screen>
+   </example>
+  </para>
+   </refsect1>
+   
+   <refsect1 role="seealso">
+    &reftitle.seealso;
+    <para>
+     <simplelist>
+      <member><link linkend="functions.anonymous">Anonyme Funktionen</link></member>
+     </simplelist>
     </para>
    </refsect1>
-  </refentry>
+   
+</refentry>
+
+
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
