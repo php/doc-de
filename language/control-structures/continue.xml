@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 312947 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 336196 Maintainer: sammywg Status: ready -->
 
 <sect1 xml:id="control-structures.continue" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title><literal>continue</literal></title>
@@ -12,22 +12,21 @@
  </simpara>
  <note>
   <simpara>
-   Beachten Sie, dass in PHP das <link
+   In PHP wird das <link
    linkend="control-structures.switch">switch</link>-Statement im Sinne von
-   <literal>continue</literal> als Schleifenstruktur betrachtet wird.
+   <literal>continue</literal> als Schleifenstruktur betrachtet.
+   <literal>continue</literal> verhält sich wie <literal>break</literal>
+   (wenn keine Argumente übergeben werden). Falls sich ein <literal>switch</literal>
+   innerhalb einer Schleife befindet, wird <literal>continue 2</literal> mit der
+   nächsten Iteration der äußeren Schleife fortsetzen.
   </simpara>
  </note>
  <simpara>
   <literal>continue</literal> akzeptiert ein optionales numerisches Argument,
   das angibt, wie viele Ebenen umschließender Schleifen bis zu ihrem Ende
-  übersprungen werden sollen.
+  übersprungen werden sollen. Die Voreinstellung ist <literal>1</literal>,
+  so dass zum Ende der aktuellen Schleife gesprungen wird.
  </simpara>
- <note>
-  <para>
-   <literal>continue 0;</literal> und <literal>continue 1;</literal> sind
-   äquivalent zu <literal>continue;</literal>.
-  </para>
- </note>
  <para>
   <informalexample>
    <programlisting role="php">
@@ -56,16 +55,16 @@ while ($i++ < 5) {
 ?>
 ]]>
    </programlisting>
-   </informalexample>
-  </para>
-  <para>
-   Das Weglassen des Semikolons nach <literal>continue</literal> kann zu
-   unerwarteten Ergebnissen führen. Hier ist ein Beispiel, das zeigt, was Sie
-   nicht tun sollten.
-  </para>
-  <para>
-   <informalexample>
-    <programlisting role="php">
+  </informalexample>
+ </para>
+ <para>
+  Das Weglassen des Semikolons nach <literal>continue</literal> kann zu
+  unerwarteten Ergebnissen führen. Hier ist ein Beispiel, das zeigt, was Sie
+  nicht tun sollten.
+ </para>
+ <para>
+  <informalexample>
+   <programlisting role="php">
 <![CDATA[
 <?php
 for ($i = 0; $i < 5; ++$i) {
@@ -75,35 +74,41 @@ for ($i = 0; $i < 5; ++$i) {
 }
 ?>
 ]]>
-    </programlisting>
-    <para>
-     Man könnte meinen, die Ausgabe wäre:
-    </para>
-    <screen>
+   </programlisting>
+   <para>
+    Man könnte meinen, die Ausgabe wäre:
+   </para>
+   <screen>
 <![CDATA[
 0
 1
 3
 4
 ]]>
-    </screen>
-    <para>
-     aber das Skript gibt in Wirklichkeit ...
-    </para>
-    <screen>
+   </screen>
+   <para>
+    aber in PHP Versionen vor 5.4.0 gibt das Skript in Wirklichkeit ...
+   </para>
+   <screen>
 <![CDATA[
 2
 ]]>
-    </screen>
+   </screen>
+   <para>
+    ... aus, da <literal>continue print "$i\n";</literal> als ein Ausdruck
+    ausgewertet wird, und <function>print</function> somit nur aufgerufen wird,
+    wenn <literal>$i == 2</literal> ist. (Der Rückgabewert von
+    <function>print</function> wird an
+    <literal>continue</literal> als numerisches Argument übergeben.)
+   </para>
+   <note>
     <para>
-     ... aus, da <literal>continue print "$i\n";</literal> als ein Ausdruck
-     ausgeführt wird und <function>print</function> somit nur aufgerufen wird,
-     wenn <literal>$i == 2</literal> ist. (Der Rückgabewert von
-     <function>print</function>, welcher immer 1 ist, wird an
-     <literal>continue</literal> als numerische Argument übergeben.)
+     Von PHP 5.4.0 an erzeugt das obige Beispiel einen
+     <constant>E_COMPILE_ERROR</constant> Fehler.
     </para>
-   </informalexample>
-  </para>
+   </note>
+  </informalexample>
+ </para>
 </sect1>
 
 
