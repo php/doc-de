@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 318176 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 335457 Maintainer: sammywg Status: ready -->
  <chapter xml:id="language.constants" xmlns="http://docbook.org/ns/docbook">
   <title>Konstanten</title>
 
@@ -70,8 +70,10 @@ define("__FOO__", "irgendwas");
     definiert, kann eine Konstane weder verändert noch gelöscht werden.
    </simpara>
    <simpara>
-    Konstanten können nur skalare Daten (<type>boolean</type>,
+    Vor PHP 5.6 können Konstanten nur skalare Daten (<type>boolean</type>,
     <type>integer</type>, <type>float</type> und <type>string</type>) enthalten.
+    Von PHP 5.6 an ist es möglich eine Konstante als skalaren Ausdruck zu
+    definieren, und es ist ebenfalls möglich eine <type>Array</type> Konstante zu definieren.
     Es ist möglich, Konstanten vom Typ <type>resource</type> zu definieren,
     dies sollte allerdings vermieden werden, da es zu unerwarteten Ergebnissen
     führen kann.
@@ -116,7 +118,7 @@ define("__FOO__", "irgendwas");
      </listitem>
      <listitem>
       <simpara>
-       Konstanten können nur über die Funktion <function>define</function>
+       Vor PHP 5.3 können Konstanten nur über die Funktion <function>define</function>
        definiert werden, nicht durch einfache Zuweisung;
       </simpara>
      </listitem>
@@ -134,7 +136,10 @@ define("__FOO__", "irgendwas");
      </listitem>
      <listitem>
       <simpara>
-       Konstanten können nur skalare Werte haben.
+       Konstanten können nur skalare Werte haben, oder skalare oder Array-Werte
+       in PHP 5.6 und später. In konstanten skalaren Ausdrücken können Arrays
+       verwendet werden (z.B. <literal>const FOO = array(1, 2, 3)[0];</literal>),
+       aber das Endergebnis muss ein skalarer Wert sein.
       </simpara>
      </listitem>
     </itemizedlist>
@@ -163,9 +168,14 @@ echo Konstante;     // Ausgabe: "Konstante" und eine Notice.
 <![CDATA[
 <?php
 // Funktioniert seit PHP 5.3.0
-const CONSTANT = 'Hallo Welt';
+const KONSTANTE = 'Hallo Welt';
 
-echo CONSTANT;
+echo KONSTANTE;
+
+// Funktioniert seit PHP 5.6.0
+const ANDERE_KONSTANTE = KONSTANTE . '; Ade Welt';
+
+echo ANDERE_KONSTANTE;
 ?>
 ]]>
      </programlisting>
@@ -177,8 +187,9 @@ echo CONSTANT;
      Im Gegensatz zu Konstanten, welche mit <function>define</function>
      ersellt werden, müssen über <literal>const</literal> definierte Konstanten
      im Top-Level Scope erstellt werden, weil sie zur Compile Zeit definiert
-     werden. Das heißt, dass sie nicht innerhalb von Funktionen, Schleifen oder
-     <literal>if</literal> Statements definiert werden können.
+     werden. Das heißt, dass sie nicht innerhalb von Funktionen, Schleifen,
+     <literal>if</literal> Statements oder <literal>try</literal>/<literal>catch</literal>
+     Blöcken definiert werden können.
     </para>
    </note>
 
@@ -201,7 +212,7 @@ echo CONSTANT;
    </simpara>
 
    <para>
-    Es gibt sieben magische Konstanten, die, abhängig davon, wo sie eingesetzt
+    Es gibt acht magische Konstanten, die, abhängig davon, wo sie eingesetzt
     werden, einen unterschiedlichen Wert haben. Zum Beispiel hängt
     der Wert der Konstanten <constant>__LINE__</constant> davon ab, in welcher
     Zeile ihres Skripts Sie diese Konstante verwenden. Diese besonderen
@@ -218,76 +229,63 @@ echo CONSTANT;
        </row>
       </thead>
       <tbody>
-       <row>
+       <row xml:id="constant.line">
         <entry><constant>__LINE__</constant></entry>
         <entry>
          Die aktuelle Zeilennummer einer Datei.
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.file">
         <entry><constant>__FILE__</constant></entry>
         <entry>
-         Der vollständige Pfad- und Dateiname einer Datei. Wird diese Konstante
+         Der vollständige Pfad- und Dateiname einer Datei wobei Symlinks
+         aufgelöst wurden. Wird diese Konstante
          innerhalb einer nachgeladenen Datei verwendet, wird der Name
          dieser eingebundenen Datei zurückgegeben.
-         Seit PHP 4.0.2 enthält <constant>__FILE__</constant> immer einen
-         absoluten Pfad mit aufgelösten Symlinks, während in älteren Versionen unter
-         Umständen ein relativer Pfad enthalten sein kann.
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.dir">
         <entry><constant>__DIR__</constant></entry>
         <entry>Der Name des Verzeichnisses, in dem sich die Datei befindet. Wird
          die Konstante innerhalb eines Includes verwendet, wird das Verzeichnis
          der eingebundenen Datei zurückgegeben. Dies entspricht dem Verhalten
          von <literal>dirname(__FILE__)</literal>. Der Verzeichnisname hat keinen
          beendenden Schrägstrich, sofern es sich nicht um das Rootverzeichnis
-         handelt. (Hinzugefügt in PHP 5.3.0)
+         handelt.
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.function">
         <entry><constant>__FUNCTION__</constant></entry>
         <entry>
-         Der Name der Funktion. (Hinzugefügt in PHP 4.3.0.) Mit PHP 5 enthält
-         diese Konstante den Namen der Funktion, wie dieser deklariert wurde
-         (Beachtung der Groß- und Kleinschreibung). In PHP 4 wird der Wert
-         immer in Kleinschrift ausgegeben.
+         Der Name der Funktion.
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.class">
         <entry><constant>__CLASS__</constant></entry>
         <entry>
-         Der Name einer Klasse. (Hinzugefügt in PHP 4.3.0.) Mit PHP 5 enthält
-         diese Konstante den Namen der Klasse, wie dieser deklariert wurde
-         (Beachtung der Groß- und Kleinschreibung). In PHP 4 wird der Wert
-         immer in Kleinschrift ausgegeben. Der Klassenname enthält auch den Namen
+         Der Name einer Klasse. Der Klassenname enthält auch den Namen
          des Namespaces in dem er deklariert wurde (z.B. <literal>Foo\Bar</literal>).
          __CLASS__ kann seit PHP 5.4 auch in Traits verwendet werden, in welchem Fall
          Name der Klasse welche den Trait verwendet zurückgegeben wird.
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.trait">
         <entry><constant>__TRAIT__</constant></entry>
         <entry>
-         Der Trait Name, wie er definiert wurde (unter Beachtung der Groß-
-         und Kleinschreibung). (Hinzugefügt in PHP 5.4.0) Enthält auch den
+         Der Trait Name. Dieser enthält auch den
          Namespace in welchem der Trait definiert wurde (z.B. <literal>Foo\Bar</literal>).
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.method">
         <entry><constant>__METHOD__</constant></entry>
         <entry>
-         Der Name einer Klassenmethode. (Hinzugefügt in PHP 5.0.0.) Der
-         Methodenname wird genauso zurückgegeben, wie er deklariert wurde
-         (Beachtung der Groß- und Kleinschreibung).
+         Der Name der Klassenmethode.
         </entry>
        </row>
-       <row>
+       <row xml:id="constant.namespace">
         <entry><constant>__NAMESPACE__</constant></entry>
         <entry>
-         Der Name des aktuellen Namespace (Beachtung der Groß- und
-         Kleinschreibung). Diese Konstante wird zum Kompilierungszeitpunkt
-         definiert. (Hinzugefügt in PHP 5.3.0)
+         Der Name des aktuellen Namespace.
         </entry>
        </row>
       </tbody>
@@ -301,6 +299,65 @@ echo CONSTANT;
     <function>file_exists</function>&listendand;
     <function>function_exists</function>.
    </para>
+
+   <sect2 xml:id="language.constants.predefined.changelog">
+    &reftitle.changelog;
+
+    <para>
+     <informaltable>
+      <tgroup cols="2">
+       <thead>
+        <row>
+         <entry>&Version;</entry>
+         <entry>&Description;</entry>
+        </row>
+       </thead>
+       <tbody>
+        <row>
+         <entry>5.4.0</entry>
+         <entry>
+          <constant>__TRAIT__</constant> Konstante hinzugefügt
+         </entry>
+        </row>
+        <row>
+         <entry>5.3.0</entry>
+         <entry>
+          <constant>__DIR__</constant> und <constant>__NAMESPACE__</constant> Konstanten hinzugefügt
+         </entry>
+        </row>
+        <row>
+         <entry>5.0.0</entry>
+         <entry>
+          <constant>__METHOD__</constant> Konstante hinzugefügt
+         </entry>
+        </row>
+        <row>
+         <entry>5.0.0</entry>
+         <entry>
+          Vor dieser Version waren die Werte von manchen "magischen" Konstanten
+          immer in Kleinschreibung. Diese sind nun allesamt in der Groß-/Kleinschreibung,
+          in der sie deklariert wurden.
+         </entry>
+        </row>
+        <row>
+         <entry>4.3.0</entry>
+         <entry>
+          <constant>__FUNCTION__</constant> und <constant>__CLASS__</constant> Konstanten hinzugefügt
+         </entry>
+        </row>
+        <row>
+         <entry>4.0.2</entry>
+         <entry>
+          <constant>__FILE__</constant> enthält immer einen absoluten Pfad, wobei
+          Symlinks aufgelöst wurden, wohingegen es in älteren Versionen unter
+          Umständen einen relativen Pfad enthielt
+         </entry>
+        </row>
+       </tbody>
+      </tgroup>
+     </informaltable>
+    </para>
+   </sect2>
   </sect1>
  </chapter>
 
