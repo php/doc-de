@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 322134 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 333259 Maintainer: hholzgra Status: ready -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.decon" xmlns="http://docbook.org/ns/docbook">
   <title>Konstruktoren und Destruktoren</title>
@@ -9,7 +9,7 @@
    <title>Konstruktor</title>
    <methodsynopsis xml:id="object.construct">
     <type>void</type><methodname>__construct</methodname>
-    <methodparam choice="opt"><type>mixed</type><parameter>args</parameter></methodparam>
+    <methodparam choice="opt"><type>mixed</type><parameter>args</parameter><initializer>""</initializer></methodparam>
     <methodparam choice="opt"><parameter>...</parameter></methodparam>
    </methodsynopsis>
    <para>
@@ -23,7 +23,9 @@
      Konstruktoren von Vaterklassen werden nicht implizit aufgerufen, wenn die
      Kindklasse einen Konstruktor definiert. Um einen Vaterkonstruktor zu benutzen
      ist ein Aufruf von <function>parent::__construct</function> innerhalb des 
-     Kindkonstruktors notwendig.
+     Kindkonstruktors notwendig. Falls das Kind keinen Konstruktor definiert,
+     dann kann er von der Vaterklasse genau wie eine normale Klassenmethode
+     geerbt werden (falls er nicht als privat deklariert wurde).
     </simpara>
    </note>
    <example>
@@ -44,15 +46,27 @@ class SubClass extends BaseClass {
    }
 }
 
+class OtherSubClass extends BaseClass {
+    // erbt den Konstruktor von BaseClass
+}
+
+// In BaseClass constructor
 $obj = new BaseClass();
+
+// In BaseClass constructor
+// In SubClass constructor
 $obj = new SubClass();
+
+// In BaseClass constructor
+$obj = new OtherSubClass();
 ?> 
 ]]>
     </programlisting>
    </example>
    <para>
     Aus Gründen der Abwärtskompatibilität sucht PHP 5, falls die Klasse keine
-    <link linkend="object.construct">__construct()</link> Methode besitzt, nach einem
+    <link linkend="object.construct">__construct()</link> Methode besitzt,
+    und die Klasse keine von einer Elternklasse geerbt hat, nach einem
     Konstruktur des alten Stils, d.h. einer Methode mit dem selben Namen wie die Klasse.
     Der einzige Fall in dem somit Kompatibilitätsprobleme auftreten können, ist wenn
     die Klasse eine Methode <link linkend="object.construct">__construct()</link> definiert,
@@ -124,7 +138,8 @@ $obj = new MyDestructableClass();
     Wie Konstruktoren auch, werden Vaterdestruktoren nicht implizit durch die
     Engine aufgerufen. Um einen Vaterdestruktor zu benutzen muss man
     explizit die Funktion <function>parent::__destruct</function> in der
-    Destruktorimplementierung aufrufen
+    Destruktorimplementierung aufrufen. Ebenso wie Konstruktoren kann eine Kindklasse
+    den Destruktor des Vaters erben, falls sie keinen eigenen implementiert.
    </para>
    <para>
     Der Destruktor wird aufgerufen, wenn das Script mittels <function>exit</function>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: hholzgra  Status: ready -->
+<!-- EN-Revision: 305233 Maintainer: hholzgra  Status: ready -->
  <sect1 xml:id="language.oop5.late-static-bindings" xmlns="http://docbook.org/ns/docbook">
   <title>Späte statische Bindung</title>
   <para>
@@ -10,9 +10,27 @@
   </para>
 
   <para>
+   Genauer gesagt funktioniert späte statische Bindung durch das Speichern der
+   Klasse, die im letzten "nicht weiterleitenden Aufruf" angegeben wurde.
+   Im Fall von statischen Methodenaufrufen, ist dies die explizit angegebene Klasse
+   (üblicherweise diejenige auf der linken Seite des
+   <link linkend="language.oop5.paamayim-nekudotayim"><literal>::</literal></link>
+   Operators); im Fall von nicht statischen Methodenaufrufen, ist es die Klasse
+   des Objekts. Ein "weiterleitender Aufruf" ist ein statischer, der durch
+   <literal>self::</literal>, <literal>parent::</literal>, <literal>static::</literal>,
+   oder, in der Klassenhierarchie nach oben gehend, durch
+   <function>forward_static_call</function>, eingeleitet wurde.
+   <!-- technically, static:: may be non forwarding, but it's irrelevant -->
+
+   Die Funktion <function>get_called_class</function> kann benutzt werden,
+   um eine Zeichenkette mit dem Namen der aufgerufenen Klasse abzufragen,
+   und <literal>static::</literal> führt ihren Geltungsbereich ein.
+  </para>
+
+  <para>
    Diese Funktionalität wurde in Hinblick auf die interne Perspektive als
    "späte statische Bindung" benannt. "Späte Bindung" bezieht sich auf die
-   Tatsache, dass <literal>static::</literal> nicht mehr über die Klasse, in der
+   Tatsache, dass <literal>static::</literal> nicht über die Klasse, in der
    die aufgerufene Methode definiert ist, aufgelöst wird, stattdessen wird
    diese mit Hilfe von Laufzeitinformationen bestimmt.
 
@@ -109,11 +127,12 @@ B
    </example>
    <note>
     <para>
-     In statischen Methoden verhält sich <literal>static::</literal> nicht
-     wie <literal>$this</literal>! <literal>$this</literal> folgt den
-     Vererbungsregeln, während <literal>static::</literal> dies nicht tut.
-     Dieser Unterschied wird später in diesem Abschnitt noch genauer
-     beschrieben.
+     In nicht statischen Kontexten ist die aufgerufene Klasse die Klasse des
+     Objekt-Exemplars. Da <literal>$this-></literal> versucht private Methoden
+     im gleichen Geltungsbereich aufzurufen, kann die Verwendung von
+     <literal>static::</literal> andere Ergebnisse liefern. Ein weiterer
+     Unterschied ist, dass <literal>static::</literal> sich nur auf statische
+     Eigenschaften beziehen kann.
     </para>
    </note>
    <example>
@@ -121,40 +140,43 @@ B
     <programlisting role="php">
 <![CDATA[
 <?php
-class TestChild extends TestParent {
-    public function __construct() {
-        static::who();
+class A {
+    private function foo() {
+        echo "Erfolg!\n";
     }
-
     public function test() {
-        $o = new TestParent();
-    }
-
-    public static function who() {
-        echo __CLASS__."\n";
+        $this->foo();
+        static::foo();
     }
 }
 
-class TestParent {
-    public function __construct() {
-        static::who();
-    }
+class B extends A {
+   /* foo() wird nach B kopiert, weshalb ihr Geltungsbreich immer noch A ist,
+    * und der Aufruf wird erfolgreich sein */
+}
 
-    public static function who() {
-        echo __CLASS__."\n";
+class C extends A {
+    private function foo() {
+        /* ursprüngliche Methode wird ersetzt; der Geltungsbereich der neuen ist C */
     }
 }
-$o = new TestChild;
-$o->test();
 
+$b = new B();
+$b->test();
+$c = new C();
+$c->test();   //scheitert
 ?>
 ]]>
     </programlisting>
     &example.outputs;
     <screen>
 <![CDATA[
-TestChild
-TestParent
+Erfolg!
+Erfolg!
+Erfolg!
+
+
+Fatal error:  Call to private method C::foo() from context 'A' in /tmp/test.php on line 9
 ]]>
     </screen>
    </example>
@@ -211,50 +233,6 @@ C
      </screen>
     </example>
    </note>
-  </sect2>
-  <sect2 xml:id="language.oop5.late-static-bindings.edge-cases">
-   <title>Sonderfälle</title>
-   <para>
-    Es gibt in PHP viele verschiedene Wege den Aufruf einer Methode
-    auszulösen. Da bei später statischer Bindung die Auflösung von
-    Aufrufen auf Laufzeitinformationen beruht, kann sie in speziellen
-    Fällen zu unerwarteten Ergebnissen führen.
-   </para>
-   <example>
-    <title>Späte statische Bindung in 'magischen' Methoden</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-class A {
-
-   protected static function who() {
-        echo __CLASS__."\n";
-   }
-
-   public function __get($var) {
-       return static::who();
-   }
-}
-
-class B extends A {
-
-   protected static function who() {
-        echo __CLASS__."\n";
-   }
-}
-
-$b = new B;
-$b->foo;
-?>
-]]>
-    </programlisting>
-    &example.outputs;
-    <screen>
-<![CDATA[
-B
-]]>
-    </screen>
-   </example>
   </sect2>
  </sect1>
 <!-- Keep this comment at the end of the file
