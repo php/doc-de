@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 317502 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 333548 Maintainer: samesch Status: ready -->
 
 <appendix xml:id="session.examples" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  &reftitle.examples;
  <section xml:id="session.examples.basic">
   <title>Grundlegende Anwendung</title>
-  <note>
-   <para>
-    Ab PHP 4.1.0 steht <varname>$_SESSION</varname> genau wie
-    <varname>$_POST</varname>, <varname>$_GET</varname>,
-    <varname>$_REQUEST</varname> und so weiter, als globale Variable zur
-    Verfügung. Im Gegensatz zu <varname>$HTTP_SESSION_VARS</varname> ist
-    <varname>$_SESSION</varname> immer global. Deshalb brauchen Sie für
-    <varname>$_SESSION</varname> nicht das Schlüsselwort <link
-    linkend="language.variables.scope"><command>global</command></link> zu
-    verwenden. Bitte beachten Sie, dass in dieser Dokumentation nun überall
-    <varname>$_SESSION</varname> verwendet wird. Sie können
-    <varname>$_SESSION</varname> durch <varname>$HTTP_SESSION_VARS</varname>
-    ersetzen, wenn Sie Letzteres bevorzugen. Beachten Sie auch, dass Sie Ihre
-    Session mit <function>session_start</function> starten müssen, bevor
-    <varname>$_SESSION</varname> zur Verfügung steht.
-   </para>
-   <para>
-    Für die Schlüssel des assoziativen <varname>$_SESSION</varname>-Arrays
-    gelten die selben Beschränkungen, wie für die Bezeichnungen von regulären
-    Variablen in PHP, d.h. sie dürfen nicht mit einer Zahl, sondern müssen mit
-    einem Buchstaben oder Unterstrich beginnen. Um weitere Details zu
-    erhalten, siehe Abschnitt <link
-    linkend="language.variables">Variablen</link>.
-   </para>
-  </note>
-
   <para>
-   Falls <link linkend="ini.register-globals">register_globals</link>
-   deaktiviert ist, können nur Bestandteile des globalen assoziativen Arrays
-   <varname>$_SESSION</varname> als Session-Variablen registriert werden.
-   Wiederhergestellte Session-Variablen stehen nur im Array
-   <varname>$_SESSION</varname> zur Verfügung.
+   Sessions bieten eine einfache Möglichkeit, Daten für individuelle Benutzer
+   unter einer eindeutigen Session-ID zu speichern. Sie können verwendet
+   werden, damit Daten zwischen Seitenanforderungen bestehen bleiben.
+   Session-IDs werden in der Regel über Session-Cookies an den Browser
+   gesendet und die ID wird verwendet, um vorhandene Sessiondaten abzurufen.
+   Das Fehlen einer ID oder eines Session-Cookies veranlasst PHP, eine neue
+   Session zu erstellen und eine neue Session-ID zu erzeugen.
   </para>
   <para>
-   Aus Gründen der Verbesserung der Sicherheit und der Lesbarkeit des Codes
-   wird die Verwendung von <varname>$_SESSION</varname> (oder
-   <varname>$HTTP_SESSION_VARS</varname> bei PHP 4.0.6 oder niedriger)
-   empfohlen. Mit <varname>$_SESSION</varname> werden die Funktionen
-   <function>session_register</function>,
-   <function>session_unregister</function> und
-   <function>session_is_registered</function> nicht benötigt. Auf die
-   Session-Variablen kann wie auf jede normale Variable zugegriffen werden.
+   Sessions folgen einem einfachen Ablauf. Wenn eine Session gestartet wird,
+   ruft PHP entweder eine vorhandene Session unter Verwendung einer
+   (normalerweise von einem Session-Cookie) übergebenen ID ab oder erzeugt
+   eine neue Session, falls keine keine Session-ID übergeben wurde. Nachdem
+   die Session gestartet wurde, füllt PHP die
+   <varname>$_SESSION</varname>-Superglobale mit allen Sessiondaten. Am Ende
+   des Skripts nimmt PHP automatisch den Inhalt der
+   <varname>$_SESSION</varname>-Superglobalen, serialisiert ihn und verwendet
+   Session-Speicherfunktion um ihn zu speichern.
+  </para>
+  <para>
+   Standardmäßig verwendet PHP die interne
+   <parameter>files</parameter>-Speicherroutine, die mittels <link
+   linkend="ini.session.save-handler">session.save_handler</link> festgelegt
+   ist. Diese speichert die Sessiondaten auf dem Server an der mit der
+   Konfigurationsanweisung <link
+   linkend="ini.session.save-path">session.save_path</link> angegebenen
+   Stelle.
+  </para>
+  <para>
+   Sessions können über die Funktion <function>session_start</function>
+   gestartet werden. Falls die Konfigurationsanweisung <link
+   linkend="ini.session.auto-start">session.auto_start</link> auf
+   <parameter>1</parameter> gesetzt ist, wird eine Session automatisch zu
+   Beginn einer Anfrage gestartet.
+  </para>
+  <para>
+   Sessions werden normalerweise automatisch geschlossen, wenn PHP am Ende
+   eines Skripts ist, können aber über
+   <function>session_write_close</function> auch manuell geschlossen werden.
+  </para>
+  <para>
    <example>
     <title>
      Registrierung einer Variablen mit <varname>$_SESSION</varname>.
@@ -56,7 +56,6 @@
 <![CDATA[
 <?php
 session_start();
-// Verwenden Sie bei PHP 4.0.6 oder niedriger $HTTP_SESSION_VARS
 if (!isset($_SESSION['zaehler'])) {
   $_SESSION['zaehler'] = 0;
 } else {
@@ -69,14 +68,12 @@ if (!isset($_SESSION['zaehler'])) {
    <example>
     <title>
      Aufheben der Registrierung einer Variablen mit
-     <varname>$_SESSION</varname> und deaktiviertem <link
-     linkend="ini.register-globals">register_globals</link>.
+     <varname>$_SESSION</varname>.
     </title>
     <programlisting role="php">
 <![CDATA[
 <?php
 session_start();
-// Verwenden Sie bei PHP 4.0.6 oder niedriger $HTTP_SESSION_VARS
 unset($_SESSION['zaehler']);
 ?>
 ]]>
@@ -100,46 +97,33 @@ unset($_SESSION['zaehler']);
     zurückzuführen.
    </para>
   </warning>
-  <para>
-   Wenn <link linkend="ini.register-globals">register_globals</link> aktiviert
-   ist, kann jede globalen Variable als Session-Variable registriert werden.
-   Beim Neustart einer Session werden diese Variablen als entsprechende
-   globale Variablen wiederhergestellt. Da PHP wissen muss, welche globalen
-   Variablen als Session-Variablen registriert sind, muss der Benutzer
-   Variablen mit der Funktion <function>session_register</function>
-   registrieren. Sie können das vermeiden, indem Sie einfach Einträge in
-   <varname>$_SESSION</varname> setzen.
-   <caution>
-    <para>
-     Verwenden Sie nicht <function>session_register</function>,
-     <function>session_is_registered</function> und
-     <function>session_unregister</function>, wenn Sie
-     <varname>$_SESSION</varname> vor PHP 4.3.0 verwenden und <link
-     linkend="ini.register-globals">register_globals</link> deaktiviert ist.
-     Es ist sowohl aus Sicherheitsgründen als auch wegen der Performance
-     empfehlenswert, <link
-     linkend="ini.register-globals">register_globals</link> zu deaktivieren.
-    </para>
-   </caution>
-  </para>
-  <para>
-   Wenn <link linkend="ini.register-globals">register_globals</link> aktiviert
-   ist, dann referenzieren die globalen Variablen und die Einträge von
-   <varname>$_SESSION</varname> automatisch die selben Werte, die in der
-   vorherigen Instanz der Session registriert wurden. Falls die Variable
-   mittels <varname>$_SESSION</varname> registriert wird, steht die globale
-   Variable allerdings erst ab der nächsten Anfrage zur Verfügung.
-  </para>
-  <para>
-   Es gibt einen Fehler in PHP 4.2.3 und früheren Versionen. Wenn Sie eine
-   neue Session-Variable mittels <function>session_register</function>
-   registrieren, referenzieren der Eintrag im globalen Bereich und der
-   <varname>$_SESSION</varname>-Eintrag bis zum nächsten
-   <function>session_start</function> nicht den selben Wert. D.h. eine
-   Änderung an der neu registrierten globalen Variablen wird nicht vom
-   <varname>$_SESSION</varname>-Eintrag widergespiegelt. Dies wurde in PHP
-   4.3.0 korrigiert.
-  </para>
+  <warning>
+   <para>
+    register_globals überschreibt im globalen Namensraum Variablen, deren
+    Namen mit denen von Sessionvariablen übereinstimmen. Für Details siehe
+    <link linkend="security.globals">Verwendung von Register Globals</link>.
+   </para>
+  </warning>
+  <note>
+   <para>
+    Bei dateibasierten Sessions (der Standard in PHP) wird die Sessiondatei
+    gesperrt, wenn eine Session über <function>session_start</function> oder
+    implizit über <link
+    linkend="ini.session.auto-start">session.auto_start</link> geöffnet wurde.
+    Einmal gesperrt, kann solange kein anderes Skript auf die selbe
+    Sessiondatei zugreifen, bis die Session durch Beenden des ersten Skripts
+    oder durch den Aufruf von <function>session_write_close</function>
+    geschlossen wurde.
+   </para>
+   <para>
+    Dies ist wahrscheinlich ein Problem auf Websites, die verstärkt AJAX
+    verwenden und mehrere gleichzeitige Zugriffe haben. Der einfachste Weg,
+    damit umzugehen ist, <function>session_write_close</function> möglichst
+    früh im Skript aufzurufen, sobald alle nötigen Änderungen an der Session
+    vorgenommen wurden. Alternativ könnte ein Session-Backend verwendet
+    werden, das gleichzeitige Zugriffe unterstützt.
+   </para>
+  </note>
  </section>
 
  <section xml:id="session.idpassing">
@@ -182,12 +166,12 @@ unset($_SESSION['zaehler']);
    </note>
   </para>
   <para>
-   Alternativ können Sie die Konstante <constant>SID</constant> verwenden, die
-   definiert ist, nachdem die Session gestartet wurde. Falls der Client kein
-   geeignetes Session-Cookie gesendet hat, hat sie die Form
+   Alternativ kann die Konstante <constant>SID</constant> verwendet werden,
+   die definiert ist, nachdem die Session gestartet wurde. Falls der Client
+   kein geeignetes Session-Cookie gesendet hat, hat sie die Form
    <literal>session_name=session_id</literal>. Andernfalls wird sie zu einer
-   leeren Zeichenkette erweitert. Aus diesem Grund können Sie sie
-   bedingungslos in URLs einbetten.
+   leeren Zeichenkette erweitert. Aus diesem Grund kann sie bedingungslos in
+   URLs eingebettet werden.
   </para>
   <para>
    Das folgende Beispiel demonstriert, wie eine Variable registriert wird und
@@ -202,9 +186,9 @@ unset($_SESSION['zaehler']);
 session_start();
 
 if (empty($_SESSION['zaehler'])) {
-  $_SESSION['zaehler'] = 1;
+    $_SESSION['zaehler'] = 1;
 } else {
-  $_SESSION['zaehler']++;
+    $_SESSION['zaehler']++;
 }
 ?>
 
@@ -245,10 +229,64 @@ Hier gehts
  <section xml:id="session.customhandler">
   <title>Individuelle Session-Routinen</title>
   <para>
-   Wenn Sie die Speicherung in einer Datenbank oder irgendeine andere Art der
-   Speicherung realisieren wollen, können Sie
-   <function>session_set_save_handler</function> verwenden, um eine Reihe von
-   benutzerdefinierten Speicherfunktionen zu erzeugen.
+   Wenn die Speicherung in einer Datenbank oder irgendeine andere Art der
+   Speicherung realisiert werden soll, kann
+   <function>session_set_save_handler</function> verwendet werden, um eine
+   Reihe von benutzerdefinierten Speicherfunktionen zu erstellen. Ab PHP 5.4.0
+   können mit dem <classname>SessionHandlerInterface</classname>
+   Session-Routinen erstellt werden oder interne PHP-Routinen durch Beerbung
+   von <classname>SessionHandler</classname> erweitert werden.
+  </para>
+  <para>
+   Die in <function>session_set_save_handler</function> definierten
+   Callback-Funktionen sind Methoden, die von PHP während des Lebenszyklus
+   einer Session aufgerufen werden: <parameter>open</parameter>,
+   <parameter>read</parameter>, <parameter>write</parameter> und
+   <parameter>close</parameter> und für Verwaltungsaufgaben:
+   <parameter>destroy</parameter> um eine Session zu löschen und
+   <parameter>gc</parameter> für die regelmäßige Speicherbereinigung.
+  </para>
+  <para>
+   Deshalb benötigt PHP immer Session-Speicherroutinen. Der Standard ist
+   normalerweise die interne 'files'-Speicherroutine. Eine benutzerdefinierte
+   Speicherroutine kann mittels <function>session_set_save_handler</function>
+   erstellt werden. Alternative interne Speicherroutinen werden auch von
+   PHP-Erweiterungen, wie z.B. <parameter>sqlite</parameter>,
+   <parameter>memcache</parameter> und <parameter>memcached</parameter> zur
+   Verfügung gestellt und können mittels <link
+   linkend="ini.session.save-handler">session.save_handler</link> festgelegt
+   werden.
+  </para>
+  <para>
+   Wenn die Session beginnt, ruft PHP intern die
+   <parameter>open</parameter>-Routine, gefolgt vom
+   <parameter>read</parameter>-Callback auf, der eine verschlüsselte
+   Zeichenkette genau so zurückgeben sollte, wie sie ursprünglich für die
+   Speicherung übergeben wurde. Nachdem der
+   <parameter>read</parameter>-Callback die verschlüsselte Zeichenkette
+   zurückgegeben hat, wird sie von PHP entschlüsselt und die
+   <varname>$_SESSION</varname>-Superglobale mit dem resultierenden Array
+   gefüllt.
+  </para>
+  <para>
+   Wenn das PHP-Skript endet (oder wenn
+   <function>session_write_close</function> aufgerufen wird), wird die
+   <varname>$_SESSION</varname>-Superglobale intern verschlüsselt und zusammen
+   mit der Session-ID an den <parameter>write</parameter>-Callback übergeben.
+   Nach dem <parameter>write</parameter>-Callback ruft PHP intern den
+   <parameter>close</parameter>-Callback auf.
+  </para>
+  <para>
+   Wenn eine Session gelöscht werden soll, ruft PHP die
+   <parameter>destroy</parameter>-Routine mit der Session-ID auf.
+  </para>
+  <para>
+   Von Zeit zu Zeit ruft PHP den <parameter>gc</parameter>-Callback auf, um
+   Sessions zu löschen, die entsprechend ihrer eingestellten maximalen
+   Lebensdauer abgelaufen sind. Diese Routine sollte alle gespeicherten
+   Datensätze löschen, auf die länger als die in
+   <parameter>$lifetime</parameter> festgelegte Zeitspanne nicht mehr
+   zugegriffen wurde.
   </para>
  </section>
 </appendix>
