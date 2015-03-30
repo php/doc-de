@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 292734 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 336073 Maintainer: sammywg Status: ready -->
 
 <phpdoc:exceptionref xml:id="class.errorexception"
  xmlns="http://docbook.org/ns/docbook"
@@ -48,6 +48,9 @@
      <varname linkend="errorexception.props.severity">severity</varname>
     </fieldsynopsis>
 
+    <classsynopsisinfo role="comment">&InheritedProperties;</classsynopsisinfo>
+    <xi:include xpointer="xmlns(db=http://docbook.org/ns/docbook) xpointer(id('exception.synopsis')/descendant::db:fieldsynopsis)" />
+
     <classsynopsisinfo role="comment">&Methods;</classsynopsisinfo>
     <xi:include xpointer="xmlns(db=http://docbook.org/ns/docbook) xpointer(id('class.errorexception')/db:refentry/db:refsect1[@role='description']/descendant::db:constructorsynopsis[1])" />
     <xi:include xpointer="xmlns(db=http://docbook.org/ns/docbook) xpointer(id('class.errorexception')/db:refentry/db:refsect1[@role='description']/descendant::db:methodsynopsis[1])" />
@@ -82,8 +85,12 @@
      <programlisting role="php">
 <![CDATA[
 <?php
-function exception_error_handler($errno, $errstr, $errfile, $errline ) {
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+function exception_error_handler($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        // Dieser Fehlercode ist nicht in error_reporting enthalten
+        return;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
 }
 set_error_handler("exception_error_handler");
 
@@ -95,12 +102,12 @@ strpos();
      &example.outputs.similar;
      <screen>
 <![CDATA[
-Fatal error: Uncaught exception 'ErrorException' with message 'Wrong parameter count for strpos()' in /home/bjori/tmp/ex.php:8
+Fatal error: Uncaught exception 'ErrorException' with message 'strpos() expects at least 2 parameters, 0 given' in /home/bjori/tmp/ex.php:12
 Stack trace:
-#0 [internal function]: exception_error_handler(2, 'Wrong parameter...', '/home/bjori/php...', 8, Array)
-#1 /home/bjori/php/cleandocs/test.php(8): strpos()
+#0 [internal function]: exception_error_handler(2, 'strpos() expect...', '/home/bjori/php...', 12, Array)
+#1 /home/bjori/php/cleandocs/test.php(12): strpos()
 #2 {main}
-  thrown in /home/bjori/tmp/ex.php on line 8
+  thrown in /home/bjori/tmp/ex.php on line 12
 ]]>
      </screen>
     </example><!-- }}} -->
