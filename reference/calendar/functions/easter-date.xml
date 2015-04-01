@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 298915 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 334605 Maintainer: hholzgra Status: ready -->
   <refentry xml:id="function.easter-date" xmlns="http://docbook.org/ns/docbook">
    <refnamediv>
     <refname>easter_date</refname>
@@ -13,7 +13,7 @@
     &reftitle.description;
      <methodsynopsis>
       <type>int</type><methodname>easter_date</methodname>
-      <methodparam choice="opt"><type>int</type><parameter>year</parameter></methodparam>
+      <methodparam choice="opt"><type>int</type><parameter>year</parameter><initializer>date("Y")</initializer></methodparam>
      </methodsynopsis>
     <para>
      Diese Funktion liefert den Unix-Timestamp (in Sekunden seit 1970)
@@ -51,7 +51,8 @@
      <term><parameter>year</parameter></term>
      <listitem>
       <para>
-       Das Jahr als Zahl zwischen 1970 und 2037
+       Das Jahr als Zahl zwischen 1970 und 2037. Wenn nicht angegeben, wird das
+       aktuelle Jahr gemäß der lokalen Zeit verwendet.
       </para>
      </listitem>
     </varlistentry>  
@@ -63,32 +64,6 @@
   &reftitle.returnvalues;
   <para>
    Das Osterdatum als Unix Timestamp.
-  </para>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Seit 4.3.0</entry>
-       <entry>
-        Der Parameter <parameter>year</parameter> ist nun
-        optional und wird mit dem aktuellen Jahr entsprechend
-        der lokalen Zeit vorbelegt wenn nicht angegeben.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
   </para>
  </refsect1>
 
@@ -110,6 +85,55 @@ echo date("M-d-Y", easter_date(2001));        // Apr-15-2001
     </programlisting>
    </example>
   </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    <function>easter_date</function> verlässt sich auf die Zeitfunktionen der C Bibliothek
+    des Systems anstatt die internen Datums- und Zeitfunktionen von PHP zu verwenden.
+    Infolgedessen verwendet <function>easter_date</function> die <literal>TZ</literal>
+    Umgebungsvariable um die Zeitzone zu bestimmen, in der sie arbeiten soll,
+    anstatt PHPs <link linkend="ini.date.timezone">default time zone</link> zu
+    verwenden, was unerwartetes Verhalten zur Folge haben kann, wenn diese
+    Funktion in Verbindung mit anderen Datumsfunktionen in PHP verwendet wird.
+   </para>
+   <para>
+    Als Workaround kann <function>easter_days</function> mit
+    <classname>DateTime</classname> und <classname>DateInterval</classname>
+    verwendet werden, um den Beginn von Ostern in Ihrer PHP Zeitzone wie folgt zu berechnen:
+   </para>
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function get_easter_datetime($year) {
+    $base = new DateTime("$year-03-21");
+    $days = easter_days($year);
+
+    return $base->add(new DateInterval("P{$days}D"));
+}
+
+foreach (range(2012, 2015) as $year) {
+    printf("Ostern %d ist am %s\n",
+           $year,
+           get_easter_datetime($year)->format('j.n.'));
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Ostern 2012 ist am 8.4.
+Ostern 2013 ist am 31.3.
+Ostern 2014 ist am 20.4.
+Ostern 2015 ist am 5.4.
+]]>
+    </screen>
+   </informalexample>
+  </note>
  </refsect1>
 
  <refsect1 role="seealso">
