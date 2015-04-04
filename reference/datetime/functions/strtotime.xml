@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 312829 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 334621 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.strtotime" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -14,7 +14,7 @@
   <methodsynopsis>
    <type>int</type><methodname>strtotime</methodname>
    <methodparam><type>string</type><parameter>time</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>now</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>now</parameter><initializer>time()</initializer></methodparam>
   </methodsynopsis>
   <simpara>
    Diese Funktion erwartet einen String mit einem Datum im Englischen
@@ -25,12 +25,11 @@
    übergeben wurde, ausgewertet.
   </simpara>
   <para>
-   Die Funktion verwendet, sofern diese verfügbar ist, die
-   <envar>TZ</envar>-Umgebungsvariable um den Timestamp zu berechnen. Seit
-   PHP 5.1.0 gibt es einfachere Wege, die zu verwendende Zeitzone festzulegen,
-   die mit allen Datums- und Zeitfunktionen verwendet werden soll.
-   Ausführlichere Erklärungen dazu finden Sie auf der
-   <function>date_default_timezone_get</function>-Manualseite.
+   Jeder Parameter dieser Funktion verwendet die Standard-Zeitzone, es sei denn
+   eine Zeitzone wird in diesem Parameter angegeben. Es ist darauf zu achten,
+   nicht etwa verschiedene Zeitzonen je Parameter zu verwenden, außer wenn das
+   beabsichtigt ist. Die verschiedenen Möglichkeiten die Standard-Zeitzone zu
+   definieren sind <function>date_default_timezone_get</function> zu entnehmen.
   </para>
  </refsect1>
 
@@ -84,6 +83,17 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Vor PHP 5.3.0 wurden relative Zeitformate wie
+        <literal>this week</literal>, <literal>previous week</literal>,
+        <literal>last week</literal> und <literal>next week</literal>, die dem
+        <parameter>time</parameter> Argument von <function>strtotime</function>
+        übergeben wurden, als 7-Tages-Zeitraum anstatt eines Wochenzeitraums von
+        <literal>Monday</literal> bis <literal>Sunday</literal> interpretiert.
+       </entry>
+      </row>
       <row>
        <entry>5.3.0</entry>
        <entry>
@@ -193,14 +203,16 @@ if (($timestamp = strtotime($str)) === false) {
     Der gültige Bereich eines Timestamp liegt typischerweise zwischen
     Fri, 13 Dec 1901 20:45:54 UTC und Tue, 19 Jan 2038 03:14:07 UTC.
     (Das sind die Datumsangaben, die dem minimalen und maximalen Wert eines
-    vorzeichenbehafteten 32-bit Integer entsprechen.) Zusätzlich
+    vorzeichenbehafteten 32-bit Integer entsprechen.)
+   </para>
+   <para>
+    Vor PHP 5.1.0
     unterstützen nicht alle Plattformen negative Werte eines Timestamps,
     deshalb könnte der Wertebereich eines Datums durch den Beginn der Unix
     Epoche begrenzt sein. Das bedeutet, dass z.B. Zeitangaben vor dem
     1. Januar 1970 auf Windowssystemen, einigen
     Linuxdistributionen und einigen anderen Betriebssytemen nicht
-    funktionieren. Die PHP-Versionen 5.1.0 und neuer heben diese Beschränkung
-    auf.
+    funktionieren.
    </para>
    <para>
     Für 64 Bit Versionen von PHP ist der gültige Bereich für Timestamps
@@ -223,12 +235,21 @@ if (($timestamp = strtotime($str)) === false) {
     <methodname>DateTime::createFromFormat</methodname> verwendet werden.
    </para>
   </note>
+  <note>
+   <para>
+    Die Verwendung dieser Funktion für mathematische Berechnungen ist nicht
+    zu empfehlen. Es ist besser <methodname>DateTime::add</methodname> und
+    <methodname>DateTime::sub</methodname> in PHP 5.3 und neuer, oder
+    <methodname>DateTime::modify</methodname> in PHP 5.2 zu verwenden.
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><link linkend="datetime.formats">Date and Time Formats</link></member>
     <member><methodname>DateTime::createFromFormat</methodname></member>
     <member><function>checkdate</function></member>
     <member><function>strptime</function></member>
