@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 334468 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.is-subclass-of" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>is_subclass_of</refname>
@@ -12,6 +12,7 @@
    <type>bool</type><methodname>is_subclass_of</methodname>
    <methodparam><type>mixed</type><parameter>object</parameter></methodparam>
    <methodparam><type>string</type><parameter>class_name</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>allow_string</parameter><initializer>&true;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Diese Funktion prüft ob das Objekt <parameter>objekt</parameter>
@@ -26,7 +27,8 @@
      <term><parameter>object</parameter></term>
      <listitem>
       <para>
-       Ein Klassenname oder eine Objektinstanz
+       Ein Klassenname oder eine Objektinstanz. Es wird kein Fehler generiert,
+       wenn die Klasse nicht existiert.
       </para>
      </listitem>
     </varlistentry>
@@ -35,6 +37,16 @@
      <listitem>
       <para>
        Ein Klassenname
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>allow_string</parameter></term>
+     <listitem>
+      <para>
+       Wenn dieser Parameter false ist, ist ein Zeichenketten-Klassenname als
+       <parameter>object</parameter> nicht erlaubt. Dies verhindert ebenso den
+       Aufruf vom Autoloader, wenn die Klasse nicht existiert.
       </para>
      </listitem>
     </varlistentry>
@@ -61,6 +73,19 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.3.9</entry>
+       <entry>
+        <parameter>allow_string</parameter> Parameter hinzugefügt
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.7</entry>
+       <entry>
+        <parameter>class_name</parameter> kann nun auch der Name eines
+        Interfaces sein
+       </entry>
+      </row>
       <row>
        <entry>5.0.3</entry>
        <entry>
@@ -130,7 +155,64 @@ Ja, WidgetFactory_Child ist eine Unterklasse von WidgetFactory
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title>Verwendung von <function>is_subclass_of</function> mit einem Interface</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Definition des Interface
+interface MyInterface
+{
+  public function MyFunction();
+}
+
+// Definition der Klassenimplementierung des Interface
+class MyClass implements MyInterface
+{
+  public function MyFunction()
+  {
+    return "MyClass implementiert MyInterface!";
+  }
+}
+
+// Objekt-Erzeugung
+$my_object = new MyClass;
+
+// Funktioniert seit 5.3.7
+
+// Prüfung unter Verwendung des Objektexemplars der Klasse
+if (is_subclass_of($my_object, 'MyInterface')) {
+  echo "Ja, \$my_object ist eine Unterklasse von MyInterface\n";
+} else {
+  echo "Nein, \$my_object ist keine Unterklasse von MyInterface\n";
+}
+
+// Prüfung unter Verwendung des Klassennamens als Zeichenkette
+if (is_subclass_of('MyClass', 'MyInterface')) {
+  echo "Ja, MyClass ist eine Unterklasse von MyInterface\n";
+} else {
+  echo "Nein, MyClass ist keine Unterklasse von MyInterface\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Ja, $my_object ist eine Unterklasse von MyInterface
+Ja, MyClass ist eine Unterklasse von MyInterface
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  &note.uses-autoload;
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -138,6 +220,7 @@ Ja, WidgetFactory_Child ist eine Unterklasse von WidgetFactory
     <member><function>get_class</function></member>
     <member><function>get_parent_class</function></member>
     <member><function>is_a</function></member>
+    <member><function>class_parents</function></member>
    </simplelist>
   </para>
  </refsect1>
