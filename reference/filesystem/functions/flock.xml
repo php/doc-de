@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 301386 Maintainer: khp Status: ready -->
+<!-- EN-Revision: 335862 Maintainer: khp Status: ready -->
 <refentry xml:id="function.flock" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>flock</refname>
@@ -30,7 +30,7 @@
    (was bedeutet, dass alle zugreifenden Programme das gleiche Sperrverfahren
    nutzen müssen, oder die Sperre wird nicht wirken). Standardmäßig wird diese
    Funktion blockieren, bis die angefragte Sperre erlangt wurde; dies kann
-   (auf nicht-Windows Systemen) mit der <constant>LOCK_NB</constant> Option,
+   mit der <constant>LOCK_NB</constant> Option,
    dokumentiert unten, gesteuert werden.
   </para>
  </refsect1>
@@ -74,8 +74,7 @@
       <para>
        Man kann auch <constant>LOCK_NB</constant> als Bitmaske zu einer der
        obigen Operationen hinzufügen, falls man nicht möchte,
-       dass <function>flock</function> während der Sperrens blockiert (wird
-       nicht unter Windows unterstützt).
+       dass <function>flock</function> während der Sperrens blockiert.
       </para>
      </listitem>
     </varlistentry>
@@ -83,7 +82,7 @@
      <term><parameter>wouldblock</parameter></term>
      <listitem>
       <para>
-       Das optionale dritte Argument ist auf &true; gesetzt, falls das Sperren
+       Das optionale dritte Argument ist auf 1 gesetzt, falls das Sperren
        blockierte (EWOULDBLOCK Fehler Nummer). (wird nicht unter Windows
        unterstützt)
       </para>
@@ -120,15 +119,6 @@
         ausgeführt werden.
        </entry>
       </row>
-      <row>
-       <entry>4.0.1</entry>
-       <entry>
-        Die <literal>LOCK_XXX</literal> Konstanten wurden hinzugefügt. Zuvor
-        mussten sie 1 für <constant>LOCK_SH</constant>, 2 für
-        <constant>LOCK_EX</constant>, 3 für <constant>LOCK_UN</constant> und
-        4 für <constant>LOCK_NB</constant> nutzen.
-       </entry>
-      </row>
      </tbody>
     </tgroup>
    </informaltable>
@@ -149,6 +139,7 @@ $fp = fopen("/tmp/lock.txt", "r+");
 if (flock($fp, LOCK_EX)) { // exklusive Sperre
     ftruncate($fp, 0); // kürze Datei
     fwrite($fp, "Write something here\n");
+    fflush($fp); // leere Ausgabepuffer bevor die Sperre frei gegeben wird
     flock($fp, LOCK_UN); // Gib Sperre frei
 } else {
     echo "Konnte Sperre nicht erhalten!";
