@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 334621 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.set-error-handler" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -12,7 +12,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>set_error_handler</methodname>
-   <methodparam><type>callback</type><parameter>error_handler</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>error_handler</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>error_types</parameter><initializer>E_ALL | E_STRICT</initializer></methodparam>
   </methodsynopsis>
   <para>
@@ -28,7 +28,8 @@
   </para>
   <para>
    Vergessen Sie bei der Implementation auf keinen Fall, dass auf diese Weise
-   die standardmäßige PHP-Fehlerbehandlung vollkommen umgangen wird! Die
+   die standardmäßige PHP-Fehlerbehandlung für die durch <parameter>error_types</parameter> angegebenen
+   Fehlertypen vollkommen umgangen wird, außer wenn die Callback-Funktion &false; zurück gibt. Die
    Einstellungen der Funktion <function>error_reporting</function> haben keine
    Auswirkung, und Ihre eigene Fehlerbehandlungsroutine wird ohne Rücksicht
    darauf aufgerufen. Sie können jedoch immer noch den aktuellen Wert von <link
@@ -68,17 +69,14 @@
      <term><parameter>error_handler</parameter></term>
      <listitem>
       <para>
-       Die benutzerdefinierte Funktion erwartet notwendig zwei Parameter: den
-       Fehlercode und eine Zeichenkette, die den Fehler beschreibt. Zudem gibt
-       es drei optionale Parameter, die übergeben werden können: der Name der
-       Datei, in der der Fehler auftrat, die Nummer der Zeile, in der der
-       Fehler auftrat, und der Kontext, in welchem der Fehler auftrat (ein
-       Array, das auf die Stelle in der aktiven Symboltabelle verweist, wo der
-       Fehler auftrat). Die Funktion lässt sich wie folgt darstellen:
+       Ein Callback mit der folgenden Signatur. &null; kann statt dessen
+       übergeben werden, um diesen Handler auf seinen Standardwert zurück zu
+       setzen. Statt eines Funktionsnamens, kann ein Array, das eine
+       Objektreferenz und einen Methodennamen enthält, bereit gestellt werden.
       </para>
       <para>
        <methodsynopsis>
-        <methodname><replaceable>handler</replaceable></methodname>
+        <type>bool</type><methodname><replaceable>handler</replaceable></methodname>
         <methodparam><type>int</type><parameter>errno</parameter></methodparam>
         <methodparam><type>string</type><parameter>errstr</parameter></methodparam>
         <methodparam choice="opt"><type>string</type><parameter>errfile</parameter></methodparam>
@@ -190,32 +188,16 @@
      </thead>
      <tbody>
       <row>
+       <entry>5.5.0</entry>
+       <entry>
+        <parameter>error_handler</parameter> akzeptiert nun &null;.
+       </entry>
+      </row>
+      <row>
        <entry>5.2.0</entry>
        <entry>
         Die Fehlerbehandlung muss &false; zurückgeben, um
         <varname>$php_errormsg</varname> zu füllen.
-       </entry>
-      </row>
-      <row>
-       <entry>5.0.0</entry>
-       <entry>
-        Der Parameter <parameter>error_types</parameter> wurde hinzugefügt.
-       </entry>
-      </row>
-      <row>
-       <entry>4.3.0</entry>
-       <entry>
-        Anstelle eines Funktionsnamens kann auch ein Array, das eine Referenz
-        auf ein Objekt und einen Methodennamen enthält, als
-        <parameter>error_handler</parameter> übergeben werden.
-       </entry>
-      </row>
-      <row>
-       <entry>4.0.2</entry>
-       <entry>
-        Drei optionale Parameter für die Benutzerfunktion
-        <parameter>error_handler</parameter> hinzugefügt: den Dateinamen,
-        die Zeilennummer und den Kontext.
        </entry>
       </row>
      </tbody>
@@ -241,6 +223,11 @@
 // Fehlerbehandlungsfunktion
 function myErrorHandler($fehlercode, $fehlertext, $fehlerdatei, $fehlerzeile)
 {
+    if (!(error_reporting() & $fehlercode)) {
+        // Dieser Fehlercode ist nicht in error_reporting enthalten
+        return;
+    }
+
     switch ($fehlercode) {
     case E_USER_ERROR:
         echo "<b>Mein FEHLER</b> [$fehlercode] $fehlertext<br />\n";
