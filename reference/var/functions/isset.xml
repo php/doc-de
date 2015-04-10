@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 311886 Maintainer: fa Status: ready -->
+<!-- EN-Revision: 322174 Maintainer: fa Status: ready -->
 <refentry xml:id="function.isset" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>isset</refname>
@@ -61,6 +61,33 @@
   <para>
    Gibt &true; zurück, wenn <parameter>var</parameter> existiert und einen von
    &null; verschiedenen Wert hat, andernfalls &false;.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.4.0</entry>
+       <entry>
+        <para>
+         Die Prüfung nicht numerischer Zeichenketten-Offsets gibt nun &false;
+         zurück.
+        </para>
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
   </para>
  </refsect1>
 
@@ -132,6 +159,48 @@ var_dump(isset($a['cake']['a']['b']));  // FALSE
     </programlisting>
    </informalexample>
   </para>
+  <example>
+   <title><function>isset</function> und Zeichenketten-Offsets</title>
+   <para>
+    PHP 5.4 ändert das Verhalten von <function>isset</function>, wenn
+    Zeichenketten-Offsets übergeben werden.
+   </para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$expected_array_got_string = 'einstring';
+var_dump(isset($expected_array_got_string['ein_schluessel']));
+var_dump(isset($expected_array_got_string[0]));
+var_dump(isset($expected_array_got_string['0']));
+var_dump(isset($expected_array_got_string[0.5]));
+var_dump(isset($expected_array_got_string['0.5']));
+var_dump(isset($expected_array_got_string['0 Mostel']));
+?>
+]]>
+   </programlisting>
+   &example.outputs.53;
+   <screen>
+<![CDATA[
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+]]>
+   </screen>
+   &example.outputs.54;
+   <screen>
+<![CDATA[
+bool(false)
+bool(true)
+bool(true)
+bool(true)
+bool(false)
+bool(false)
+]]>
+   </screen>
+  </example>
  </refsect1>
 
  <refsect1 role="notes">
@@ -148,7 +217,7 @@ var_dump(isset($a['cake']['a']['b']));  // FALSE
   <note>
    <para>
     Bei Aufruf von <function>isset</function> auf nicht-öffentliche Objekteigenschaten
-    wird die überladene Methode <link linkend="language.oop5.overloading.members">__isset</link>
+    wird die überladene Methode <link linkend="object.isset">__isset</link>
     aufgerufen, falls deklariert.
    </para>
   </note>
@@ -159,7 +228,7 @@ var_dump(isset($a['cake']['a']['b']));  // FALSE
   <para>
    <simplelist>
     <member><function>empty</function></member>
-    <member><link linkend="language.oop5.overloading.members">__isset</link></member>
+    <member><link linkend="object.isset">__isset</link></member>
     <member><function>unset</function></member>
     <member><function>defined</function></member>
     <member><link linkend="types.comparisons">die Tabelle zum Typenvergleich</link></member>
