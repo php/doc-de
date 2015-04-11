@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 331015 Maintainer: sammywg Status: ready -->
 
-<refentry xml:id="function.parse-url" xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="function.parse-url" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>parse_url</refname>
   <refpurpose>Analysiert eine URL und gibt ihre Bestandteile zurück</refpurpose>
@@ -48,12 +48,14 @@
      <listitem>
       <para>
        Geben Sie einen der folgenden Parameter an, um nur einen spezifischen
-       Teil des URL als <type>String</type> zu erhalten:
-       <constant>PHP_URL_SCHEME</constant>,
+       Teil des URL als <type>String</type> (außer wenn
+       <constant>PHP_URL_PORT</constant> angegeben wird, in welchem Fall der
+       Rückgabewert ein <type>Integer</type> ist) zu erhalten:
+       Geben Sie entweder <constant>PHP_URL_SCHEME</constant>,
        <constant>PHP_URL_HOST</constant>, <constant>PHP_URL_PORT</constant>,
        <constant>PHP_URL_USER</constant>, <constant>PHP_URL_PASS</constant>,
        <constant>PHP_URL_PATH</constant>, <constant>PHP_URL_QUERY</constant>
-       oder <constant>PHP_URL_FRAGMENT</constant>.
+       oder <constant>PHP_URL_FRAGMENT</constant> an.
       </para>
      </listitem>
     </varlistentry>
@@ -65,9 +67,12 @@
   &reftitle.returnvalues;
   <para>
    Bei sehr fehlerhaften URLs kann <function>parse_url</function> &false;
-   zurückgeben und wirft <constant>E_WARNING</constant>. Andernfalls wird
-   ein assoziatives Array zurückgegeben, dessen Bestandteile sich wie folgt
-   zusammensetzen können (mindestens ein Bestandteil liegt vor):
+   zurückgeben.
+  </para>
+  <para>
+   Wird der <parameter>component</parameter> Parameter ausgelassen, wird ein
+   assoziatives <type>Array</type> zurückgegeben. Mindestens ein Bestandteil liegt
+   im Array vor. Mögliche Schlüssel in diesem Array sind:
    <itemizedlist>
     <listitem>
      <simpara>
@@ -114,8 +119,10 @@
    </itemizedlist>
   </para>
   <para>
-   Ist der Parameter <parameter>component</parameter> angegeben, wird ein
-   <type>String</type> anstelle des normalen <type>Array</type> zurückgegeben.
+   Ist der Parameter <parameter>component</parameter> angegeben, gibt
+   <function>parse_url</function> ein
+   <type>String</type> (oder ein <type>Integer</type>, im Fall von
+   <constant>PHP_URL_PORT</constant>) anstelle des normalen <type>Array</type> zurück.
   </para>
  </refsect1>
 
@@ -133,12 +140,19 @@
      </thead>
      <tbody>
       <row>
-       <entry>5.1.2</entry>
-       <entry><parameter>component</parameter>-Parameter hinzugefügt</entry>
+       <entry>5.4.7</entry>
+       <entry>
+        <emphasis>Host</emphasis>-Erkennung bei fehlendem <emphasis>Schema</emphasis>
+        und führendem Komponententrenner korrigiert.
+       </entry>
       </row>
       <row>
        <entry>5.3.3</entry>
        <entry><constant>E_WARNING</constant> für fehlerhafte URLs entfernt.</entry>
+      </row>
+      <row>
+       <entry>5.1.2</entry>
+       <entry><parameter>component</parameter>-Parameter hinzugefügt</entry>
       </row>
      </tbody>
     </tgroup>
@@ -180,6 +194,34 @@ Array
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title>Ein <function>parse_url</function>-Beispiel mit fehlendem Schema</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$url = '//www.example.com/path?googleguy=googley';
+
+// Vor 5.4.7 wurde der Pfad als "//www.example.com/path" angezeigt
+var_dump(parse_url($url));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(3) {
+  ["host"]=>
+  string(15) "www.example.com"
+  ["path"]=>
+  string(5) "/path"
+  ["query"]=>
+  string(17) "googleguy=googley"
+}
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
@@ -209,6 +251,7 @@ Array
     <member><function>http_build_url</function></member>
     <member><function>dirname</function></member>
     <member><function>basename</function></member>
+    <member><link xlink:href="&url.rfc;3986">RFC 3986</link></member>
    </simplelist>
   </para>
  </refsect1>
