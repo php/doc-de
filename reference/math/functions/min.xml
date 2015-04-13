@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 334683 Maintainer: sammywg Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.min">
  <refnamediv>
   <refname>min</refname>
@@ -16,7 +16,7 @@
     <type>mixed</type><methodname>min</methodname>
     <methodparam><type>mixed</type><parameter>value1</parameter></methodparam>
     <methodparam><type>mixed</type><parameter>value2</parameter></methodparam>
-    <methodparam choice="opt"><type>mixed</type><parameter>value3...</parameter></methodparam>
+    <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
    </methodsynopsis>
   <para>
    Ist der erste und einzige Parameter ein Array, gibt <function>min</function>
@@ -25,13 +25,13 @@
   </para>
   <note>
    <para>
-    PHP evaluiert nicht-numerische <type>string</type>-Daten zu <literal>0</literal>,
-    wenn sie mit einem <type>integer</type>-Wert verglichen werden, gibt aber
-    trotzdem die Zeichenkette zurück, wenn sie den numerisch niedrigsten Wert hat.
-    Werden mehrere Argumente zu <literal>0</literal> evaluiert, gibt
-    <function>min</function> den niedrigstwertigen alphanumerischen String zurück,
-    wenn mehrere Zeichenketten übergeben wurden, andernfalls den numerischen
-    Wert <literal>0</literal>.
+    Werte unterschiedlicher Typen werden unter Verwendung der
+    <link linkend="language.operators.comparison">Standard-Vergleichsregeln</link>
+    verglichen. Zum Beispiel wird ein nicht-numerischer <type>String</type> mit
+    einem <type>Integer</type> verglichen als ob er <literal>0</literal> wäre,
+    aber mehrere <type>String</type>-Werte werden alphanumerisch verglichen.
+    Der tatsächlich zurückgegebene Wert ist vom ursprünglichen Typ ohne
+    angewandte Konvertierung.
    </para>
   </note>
  </refsect1>
@@ -47,13 +47,43 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term><parameter>value1</parameter></term>
+     <listitem>
+      <para>
+       Ein <link linkend="language.operators.comparison">vergleichbarer</link>
+       Wert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>value2</parameter></term>
+     <listitem>
+      <para>
+       Ein <link linkend="language.operators.comparison">vergleichbarer</link>
+       Wert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>...</parameter></term>
+     <listitem>
+      <para>
+       Ein <link linkend="language.operators.comparison">vergleichbarer</link>
+       Wert.
+      </para>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
  </refsect1>
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   <function>min</function> liefert den numerisch kleinsten Parameterwert zurück.
+   <function>max</function> liefert den gemäß den Standard-Vergleichen als
+   "kleinsten" angesehenen Parameter-Wert zurück. Evaluieren mehrere Werte
+   unterschiedlichen Typs als gleich (z.B. <literal>0</literal> und
+   <literal>'abc'</literal>), wird der zuerst übergebene zurückgegeben.
   </para>
  </refsect1>
  <refsect1 role="examples">
@@ -67,17 +97,33 @@
 echo min(2, 3, 1, 6, 7);  // 1
 echo min(array(2, 4, 5)); // 2
 
+// Die Zeichenkette 'hallo' wird wie 0 behandelt, wenn sie mit einem Int verglichen wird
+// Da die beiden Werte gleich sind, bestimmt die Reihenfolge der Übergabe das Ergebnis
 echo min(0, 'hello');     // 0
 echo min('hello', 0);     // hello
+
+// Hier vergleichen wir -1 < 0, so dass -1 der kleinste Wert ist
 echo min('hello', -1);    // -1
 
-// Bei multiplen Arrays vergleicht min von links nach rechts,
+// Bei mehreren Arrays unterschiedlicher Länge, gibt min das kürzeste zurück
+$val = min(array(2, 2, 2), array(1, 1, 1, 1)); // array(2, 2, 2)
+
+// Mehrere Arrays gleicher Länge werden von links nach rechts verglichen,
 // daher ist in unserem Beispiel 2 == 2, aber 4 < 5
 $val = min(array(2, 4, 8), array(2, 5, 1)); // array(2, 4, 8)
 
-// Sind ein Array und ein Nicht-Array-Parameter gegeben, wird
-// das Array niemals zurückgegeben, da es als größer betrachtet wird
+// Sind ein Array und ein Nicht-Array-Parameter gegeben, wird nie das Array zurückgegeben,
+// da Vergleiche Arrays als größer behandeln als alle anderen Werte
 $val = min('string', array(2, 5, 7), 42);   // string
+
+// Ist ein Argument NULL oder ein Boole'scher Wert, wird es mit anderen Werten
+// unter Verwendung der Regel FALSE < TRUE verglichen, ohne Rücksicht auf die anderen beteiligten Typen
+// In den folgenden Beispielen wird -10 im Vergleich wie TRUE behandelt
+$val = min(-10, FALSE, 10); // FALSE
+$val = min(-10, NULL, 10);  // NULL
+
+// Andererseits wird 0 wie FALSE behandelt, so dass es "kleiner" ist als TRUE
+$val = min(0, TRUE); // 0
 ?>
 ]]>
     </programlisting>

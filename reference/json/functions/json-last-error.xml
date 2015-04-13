@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 331633 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.json-last-error" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -15,7 +15,7 @@
    <void />
   </methodsynopsis>
   <para>
-   Gibt (sofern vorhanden) den letzten Fehler zurück, der beim letzten Parsen
+   Gibt (sofern vorhanden) den letzten Fehler zurück, der beim letzten Kodieren/Dekodieren
    von JSON aufgetreten ist.
   </para>
  </refsect1>
@@ -37,24 +37,59 @@
      <row>
       <entry>Konstante</entry>
       <entry>Bedeutung</entry>
+      <entry>Verfügbarkeit</entry>
      </row>
     </thead>
     <tbody>
      <row>
       <entry><constant>JSON_ERROR_NONE</constant></entry>
       <entry>Kein Fehler aufgetreten.</entry>
+      <entry></entry>
      </row>
      <row>
       <entry><constant>JSON_ERROR_DEPTH</constant></entry>
       <entry>Die maximale Stacktiefe wurde überschritten.</entry>
+      <entry></entry>
+     </row>
+     <row>
+      <entry><constant>JSON_ERROR_STATE_MISMATCH</constant></entry>
+      <entry>Ungültiges oder missgestaltetes JSON</entry>
+      <entry></entry>
      </row>
      <row>
       <entry><constant>JSON_ERROR_CTRL_CHAR</constant></entry>
       <entry>Steuerzeichenfehler, möglicherweise unkorrekt kodiert.</entry>
+      <entry></entry>
      </row>
      <row>
       <entry><constant>JSON_ERROR_SYNTAX</constant></entry>
       <entry>Syntaxfehler.</entry>
+      <entry></entry>
+     </row>
+     <row>
+      <entry><constant>JSON_ERROR_UTF8</constant></entry>
+      <entry>Missgestaltete UTF-8 Zeichen, möglicherweise fehlerhaft kodiert</entry>
+      <entry>PHP 5.3.3</entry>
+     </row>
+     <row>
+      <entry><constant>JSON_ERROR_RECURSION</constant></entry>
+      <entry>Eine oder mehrere rekursive Referenzen im zu kodierenden Wert</entry>
+      <entry>PHP 5.5.0</entry>
+     </row>
+     <row>
+      <entry><constant>JSON_ERROR_INF_OR_NAN</constant></entry>
+      <entry>
+       Eine oder mehrere
+       <link linkend="language.types.float.nan"><constant>NAN</constant></link>
+       oder <link linkend="function.is-infinite"><constant>INF</constant></link>
+       Werte im zu kodierenden Wert
+      </entry>
+      <entry>PHP 5.5.0</entry>
+     </row>
+     <row>
+      <entry><constant>JSON_ERROR_UNSUPPORTED_TYPE</constant></entry>
+      <entry>Ein Wert eines Typs, der nicht kodiert werden kann, wurde übergeben</entry>
+      <entry>PHP 5.5.0</entry>
      </row>
     </tbody>
    </tgroup>
@@ -77,28 +112,35 @@ $json[] = '{"Organisation": "PHP-Dokumentationsteam"}';
 $json[] = "{'Organisation': 'PHP-Dokumentationsteam'}";
 
 
-foreach($json as $string)
-{
- echo 'Dekodiere: ' . $string;
- json_decode($string);
+foreach($json as $string) {
+    echo 'Dekodiere: ' . $string;
+    json_decode($string);
 
- switch(json_last_error())
- {
-  case JSON_ERROR_DEPTH:
-   echo ' - Maximale Stacktiefe überschritten';
-  break;
-  case JSON_ERROR_CTRL_CHAR:
-   echo ' - Unerwartetes Steuerzeichen gefunden';
-  break;
-  case JSON_ERROR_SYNTAX:
-   echo ' - Syntaxfehler, ungültiges JSON';
-  break;
-  case JSON_ERROR_NONE:
-   echo ' - Keine Fehler';
-  break;
- }
+    switch(json_last_error()) {
+        case JSON_ERROR_NONE:
+            echo ' - Keine Fehler';
+        break;
+        case JSON_ERROR_DEPTH:
+            echo ' - Maximale Stacktiefe überschritten';
+        break;
+        case JSON_ERROR_STATE_MISMATCH:
+            echo ' - Unterlauf oder Nichtübereinstimmung der Modi';
+        break;
+        case JSON_ERROR_CTRL_CHAR:
+            echo ' - Unerwartetes Steuerzeichen gefunden';
+        break;
+        case JSON_ERROR_SYNTAX:
+            echo ' - Syntaxfehler, ungültiges JSON';
+        break;
+        case JSON_ERROR_UTF8:
+            echo ' - Missgestaltete UTF-8 Zeichen, möglicherweise fehlerhaft kodiert';
+        break;
+        default:
+            echo ' - Unbekannter Fehler';
+        break;
+    }
 
- echo PHP_EOL;
+    echo PHP_EOL;
 }
 ?>
 ]]>
@@ -112,13 +154,40 @@ Decoding: {'Organisation': 'PHP-Dokumentationsteam'} - Syntaxfehler, ungültiges
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title><function>json_last_error</function> mit <function>json_encode</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Eine ungültige UTF8 Sequenz
+$text = "\xB1\x31";
+
+$json  = json_encode($text);
+$error = json_last_error();
+
+var_dump($json, $error === JSON_ERROR_UTF8);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+string(4) "null"
+bool(true)
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>json_last_error_msg</function></member>
     <member><function>json_decode</function></member>
+    <member><function>json_encode</function></member>
    </simplelist>
   </para>
  </refsect1>

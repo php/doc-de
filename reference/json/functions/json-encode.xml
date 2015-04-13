@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 331410 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 336513 Maintainer: simp Status: ready -->
 <!-- Credits: sammywg -->
 
 <refentry xml:id="function.json-encode" xmlns="http://docbook.org/ns/docbook">
@@ -52,9 +52,10 @@
        <constant>JSON_PRETTY_PRINT</constant>,
        <constant>JSON_UNESCAPED_SLASHES</constant>,
        <constant>JSON_FORCE_OBJECT</constant>,
+       <constant>JSON_PRESERVE_ZERO_FRACTION</constant>,
        <constant>JSON_UNESCAPED_UNICODE</constant>.
-       Das Verhalten dieser Konstanten ist auf der Seite 
-       <link linkend="json.constants">Die JSON Konstanten</link> 
+       Das Verhalten dieser Konstanten ist auf der Seite über die
+       <link linkend="json.constants">JSON Konstanten</link>
        beschrieben.
       </para>
      </listitem>
@@ -91,6 +92,12 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.6.6</entry>
+       <entry>
+        Die <constant>JSON_PRESERVE_ZERO_FRACTION</constant> <parameter>option</parameter> wurde hinzugefügt.
+       </entry>
+      </row>
       <row>
        <entry>5.5.0</entry>
        <entry>
@@ -200,6 +207,52 @@ Assoziative Arrays werden immer als Objekt ausgegeben: {"foo":"bar","baz":"long"
     </screen>
    </example>
    <example>
+    <title>JSON_NUMERIC_CHECK-Option-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+echo "Zeichenketten, die Zahlen repräsentieren, die automatisch in Zahlen gewandelt wurden".PHP_EOL;
+$numbers = array('+123123', '-123123', '1.2e3', '0.00001');
+var_dump(
+ $numbers,
+ json_encode($numbers, JSON_NUMERIC_CHECK)
+);
+echo "Zeichenketten, die unsachgemäß formartierte Zahlen enthalten".PHP_EOL;
+$strings = array('+a33123456789', 'a123');
+var_dump(
+ $strings,
+ json_encode($strings, JSON_NUMERIC_CHECK)
+);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Zeichenketten, die Zahlen repräsentieren, die automatisch in Zahlen gewandelt wurden
+array(4) {
+  [0]=>
+  string(7) "+123123"
+  [1]=>
+  string(7) "-123123"
+  [2]=>
+  string(5) "1.2e3"
+  [3]=>
+  string(7) "0.00001"
+}
+string(28) "[123123,-123123,1200,1.0e-5]"
+Zeichenketten, die unsachgemäß formartierte Zahlen enthalten
+array(2) {
+  [0]=>
+  string(13) "+a33123456789"
+  [1]=>
+  string(4) "a123"
+}
+string(24) "["+a33123456789","a123"]"
+]]>
+    </screen>
+   </example>
+   <example>
     <title>Beispiel für sequentielle und nicht sequentielle Arrays</title>
     <programlisting role="php">
 <![CDATA[
@@ -270,6 +323,24 @@ string(33) "{"0":"foo","2":"baz","3":"blong"}"
     </screen>
    </example>
   </para>
+   <example>
+    <title><constant>JSON_PRESERVE_ZERO_FRACTION</constant>-Option-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+var_dump(json_encode(12.0, JSON_PRESERVE_ZERO_FRACTION));
+var_dump(json_encode(12.0));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+string(4) "12.0"
+string(2) "12"
+]]>
+    </screen>
+   </example>
  </refsect1>
  
  <refsect1 role="notes">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 334683 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.max">
  <refnamediv>
@@ -18,7 +18,7 @@
    <type>mixed</type><methodname>max</methodname>
    <methodparam><type>mixed</type><parameter>value1</parameter></methodparam>
    <methodparam><type>mixed</type><parameter>value2</parameter></methodparam>
-   <methodparam choice="opt"><type>mixed</type><parameter>value3...</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
   </methodsynopsis>
   <para>
    Ist der erste und einzige Parameter ist ein Array, gibt <function>max</function>
@@ -27,12 +27,13 @@
   </para>
   <note>
    <para>
-    PHP evaluiert nicht-numerische <type>string</type>-Daten zu <literal>0</literal>,
-    wenn sie mit einem <type>integer</type>-Wert verglichen werden, gibt aber
-    trotzdem die Zeichenkette zurück, wenn sie den numerisch höheren Wert hat.
-    Werden mehrere Argumente zu <literal>0</literal> evaluiert, gibt
-    <function>max</function> den numerischen Wert <literal>0</literal>, sofern
-    er übergeben wurde, andernfalls den alphabetisch höchstwertigen String.
+    Werte unterschiedlicher Typen werden unter Verwendung der
+    <link linkend="language.operators.comparison">Standard-Vergleichsregeln</link>
+    verglichen. Zum Beispiel wird ein nicht-numerischer <type>String</type> mit
+    einem <type>Integer</type> verglichen als ob er <literal>0</literal> wäre,
+    aber mehrere <type>String</type>-Werte werden alphanumerisch verglichen.
+    Der tatsächlich zurückgegebene Wert ist vom ursprünglichen Typ ohne
+    angewandte Konvertierung.
    </para>
   </note>
  </refsect1>
@@ -49,6 +50,33 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term><parameter>value1</parameter></term>
+     <listitem>
+      <para>
+       Ein <link linkend="language.operators.comparison">vergleichbarer</link>
+       Wert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>value2</parameter></term>
+     <listitem>
+      <para>
+       Ein <link linkend="language.operators.comparison">vergleichbarer</link>
+       Wert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>...</parameter></term>
+     <listitem>
+      <para>
+       Ein <link linkend="language.operators.comparison">vergleichbarer</link>
+       Wert.
+      </para>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
  </refsect1>
@@ -56,7 +84,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   <function>max</function> liefert den numerisch größten Parameterwert zurück.
+   <function>max</function> liefert den gemäß den Standard-Vergleichen als
+   "größten" angesehenen Parameter-Wert zurück. Evaluieren mehrere Werte
+   unterschiedlichen Typs als gleich (z.B. <literal>0</literal> und
+   <literal>'abc'</literal>), wird der zuerst übergebene zurückgegeben.
   </para>
  </refsect1>
 
@@ -68,20 +99,36 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-echo max(1, 3, 5, 6, 7);  // 7
+echo max(2, 3, 1, 6, 7);  // 7
 echo max(array(2, 4, 5)); // 5
 
-echo max(0, 'hello');     // 0
-echo max('hello', 0);     // hello
-echo max(-1, 'hello');    // hello
+// Die Zeichenkette 'hallo' wird wie 0 behandelt, wenn sie mit einem Int verglichen wird
+// Da die beiden Werte gleich sind, bestimmt die Reihenfolge der Übergabe das Ergebnis
+echo max(0, 'hallo');     // 0
+echo max('hallo', 0);     // hallo
 
-// Bei multiplen Arrays vergleicht max von links nach rechts,
-// daher ist in unserem Beispiel 2 == 2, aber 4 < 5
-$val = max(array(2, 4, 8), array(2, 5, 7)); // array(2, 5, 7)
+// Hier vergleichen wir -1 < 0, so dass 'hallo' der größte Wert ist
+echo max('hallo', -1);    // hallo
 
-// Sind ein Array und ein Nicht-Array-Parameter gegeben, wird immer
-// das Array als größerer Wert angesehen
+// Bei mehreren Arrays unterschiedlicher Länge, gibt max das längste zurück
+$val = max(array(2, 2, 2), array(1, 1, 1, 1)); // array(1, 1, 1, 1)
+
+// Mehrere Arrays gleicher Länge werden von links nach rechts verglichen,
+// daher ist in unserem Beispiel 2 == 2, aber 5 > 4
+$val = max(array(2, 4, 8), array(2, 5, 1)); // array(2, 5, 1)
+
+// Sind ein Array und ein Nicht-Array-Parameter gegeben, wird das Array zurückgegeben,
+// da Vergleiche Arrays als größer behandeln als alle anderen Werte
 $val = max('string', array(2, 5, 7), 42);   // array(2, 5, 7)
+
+// Ist ein Argument NULL oder ein Boole'scher Wert, wird es mit anderen Werten
+// unter Verwendung der Regel FALSE < TRUE verglichen, ohne Rücksicht auf die anderen beteiligten Typen
+// In den folgenden Beispielen wird -10 im Vergleich wie TRUE behandelt
+$val = max(-10, FALSE); // -10
+$val = max(-10, FALSE); // -10
+
+// Andererseits wird 0 wie FALSE behandelt, so dass es "kleiner" ist als TRUE
+$val = max(0, TRUE); // TRUE
 ?>
 ]]>
     </programlisting>
