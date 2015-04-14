@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 313913 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 325889 Maintainer: hholzgra Status: ready -->
 <!-- Credits: tom -->
   <chapter xml:id="security.database" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
    <title>Datenbank - Sicherheit</title>
@@ -117,28 +117,32 @@
      Im Fall von wirklich versteckten Daten, wenn deren unverfälschte
      Repräsentation nicht nötig ist (z.B. keine Anzeige), ist hashing ebenfalls
      überlegenswert. Das bekannte Beispiel für Hashing ist das Speichern des
-     MD5 hash eines Passwortes in einer Datenbank, anstatt des Passwortes selbst.
-     Siehe auch <function>crypt</function> und <function>md5</function>.
+     kryptographischen Hashs eines Passwortes in einer Datenbank, anstatt des Passwortes selbst.
+     Siehe auch <function>crypt</function>.
     </simpara>
     <example>
      <title>Verwenden eines hashed Passwortfeldes</title>
      <programlisting role="php">
 <![CDATA[
 // Speichern des Passwort hash
+// $random_chars z.B. unter Verwendung von /dev/random abgerufen
 $query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
-            pg_escape_string($username), md5($password));
+            pg_escape_string($username),
+            pg_escape_string(crypt($password, '$2a$07$' . $random_chars . '$')));
 $result = pg_query($connection, $query);
 
 // Afragen, ob der User das richtige Passwort übermittelt hat
-$query = sprintf("SELECT 1 FROM users WHERE name='%s' AND pwd='%s';",
-            pg_escape_string($username), md5($password));
-$result = pg_query($connection, $query);
+$query = sprintf("SELECT pwd FROM users WHERE name='%s';",
+            pg_escape_string($username));
+$row = pg_fetch_assoc(pg_query($connection, $query));
 
-if (pg_num_rows($result) > 0) {
-    echo "Welcome, $username!";
+if ($row && crypt($password, $row['pwd']) == $row['pwd']) {
+    echo 'Willkommen, ' . htmlspecialchars($username) . '!';
 } else {
-    echo "Authentication failed for $username.";
+    echo 'Authentifikation für ' . htmlspecialchars($username) . ' fehlgeschlagen.';
 }
+
+?>
 ]]>
      </programlisting>
     </example>
@@ -236,8 +240,7 @@ FLUSH PRIVILEGES;
       <programlisting role="php">
 <![CDATA[
 $query  = "SELECT id, name, inserted, size FROM products
-                  WHERE size = '$size'
-                  ORDER BY $order LIMIT $limit, $offset;";
+           WHERE size = '$size'";
 $result = odbc_exec($conn, $query);
 ]]>
       </programlisting>
@@ -280,19 +283,19 @@ $query = "UPDATE usertable SET pwd='$pwd' WHERE uid='$uid';";
       </programlisting>
      </example>
      Aber ein böswilliger Benutzer übermittelt den Wert
-     <literal>' or uid like'%admin%'; --</literal> zu <varname>$uid</varname>,
+     <literal>' or uid like'%admin%</literal> zu <varname>$uid</varname>,
      um das Administrator Passwort zu ändern, oder setzt einfach
-     <varname>$pwd</varname> auf <literal>"hehehe', admin='yes', trusted=100
-     "</literal> (mit dem hinteren Leerzeichen), um mehr Rechte zu erhalten.
+     <varname>$pwd</varname> auf <literal>hehehe', trusted=100, admin='yes</literal>, um mehr Rechte zu erhalten.
      Dann wird die Abfrage verdreht:
      <informalexample>
       <programlisting role="php">
 <![CDATA[
-// $uid == ' or uid like'%admin%'; --
-$query = "UPDATE usertable SET pwd='...' WHERE uid='' or uid like '%admin%'; --";
+// $uid: ' or uid like '%admin%
+$query = "UPDATE usertable SET pwd='...' WHERE uid='' or uid like '%admin%';";
 
-// $pwd == "hehehe', admin='yes', trusted=100 "
-$query = "UPDATE usertable SET pwd='hehehe', admin='yes', trusted=100 WHERE ...;"
+// $pwd: hehehe', trusted=100, admin='yes
+$query = "UPDATE usertable SET pwd='hehehe', trusted=100, admin='yes' WHERE
+...;";
 ]]>
       </programlisting>
      </informalexample>
@@ -316,8 +319,8 @@ $result = mssql_query($query);
       <programlisting role="php">
 <![CDATA[
 $query  = "SELECT * FROM products
-                    WHERE id LIKE '%a%'
-                    exec master..xp_cmdshell 'net user test testpass /ADD'--";
+           WHERE id LIKE '%a%'
+           exec master..xp_cmdshell 'net user test testpass /ADD' --%'";
 $result = mssql_query($query);
 ]]>
       </programlisting>
@@ -384,6 +387,14 @@ $result = mssql_query($query);
       </listitem>
       <listitem>
        <simpara>
+        Verwenden Sie Prepared Statements mit gebundenden Variablen. Sie werden
+        von <link linkend="pdo.prepared-statements">PDO</link>,
+        <link linkend="mysqli.quickstart.prepared-statements">MySQLi</link>
+        und anderen Bibliotheken angeboten.
+       </simpara>
+      </listitem>
+      <listitem>
+       <simpara>
         Prüfen Sie, ob der gegebene Input dem erwarteten Datentyp entspricht.
         <acronym>PHP</acronym> bietet eine große Auswahl an Funktionen zum Validieren des Input,
         von den einfachsten unter <link
@@ -397,7 +408,7 @@ $result = mssql_query($query);
       <listitem>
        <para>
         Wenn die Applikation numerischen Input erwartet, erwägen Sie die Prüfung
-        der Daten mit <function>is_numeric</function>, oder die Änderung des
+        der Daten mit <function>ctype_digit</function>, oder die Änderung des
         Typs mit <function>settype</function>, oder verwenden Sie die numerische
         Repräsentation mittels <function>sprintf</function>.
         <example>
@@ -417,16 +428,15 @@ $query = sprintf("SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET %d
       </listitem>
       <listitem>
        <simpara>
-        Escapen Sie jede nicht numerische Benutzereingabe, welcher zur Datenbank
+        Unterstützt der Datenbank-Layer das Binden von Variablen nicht, so
+        maskieren Sie jede nicht numerische Benutzereingabe, welche zur Datenbank
         weitergereicht werden soll mit der jeweiligen datenbankspezifischen
         Escape-Funktion (z.B. <function>mysql_real_escape_string</function>,
-        <function>sqlite_escape_string</function> usw.). Wenn keine
-        datenbankspezifischen Escapemechanismen existieren können in der
-        Regel (je nach Datenbanktyp) auch die Funktion <function>addslashes</function>
-        und <function>addcslashes</function> von Nutzen sein. Siehe auch <link
-        linkend="security.database.storage">das erste Beispiel</link>. Wie
-        dieses Beispiel zeigt, sind in den statischen Teil der Abfrage
-        eingebrachten Escapes nicht genug, und können leicht gehacked werden.
+        <function>sqlite_escape_string</function> usw.). Generische Funktionen
+        wie <function>addslashes</function> sind nur in einer sehr spezifischen
+        Umgebung nüztlich (z.B. MySQL mit einem Single Byte Zeichensatz bei
+        deaktiviertem <varname>NO_BACKSLASH_ESCAPES</varname>), so dass es
+        besser ist diese zu vermeiden.
        </simpara>
       </listitem>
       <listitem>
