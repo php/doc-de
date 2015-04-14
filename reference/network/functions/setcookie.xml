@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 312787 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 330583 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.setcookie" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -52,7 +52,7 @@
    Sie daher statt dessen die Null (<emphasis>0</emphasis>).
   </para>
   <para>
-   <link xlink:href="&url.rfc;2109">RFC 2109</link> liefert die normative
+   <link xlink:href="&url.rfc;6265">RFC 6265</link> liefert die normative
    Referenz wie die jeweiligen <function>setcookie</function> Parameter
    interpretiert werden.
    <variablelist>
@@ -121,14 +121,16 @@
      <term><parameter>domain</parameter></term>
      <listitem>
       <para>
-       Die Domain, der das Cookie zur Verfügung steht. Um das Cookie für alle
-       Subdomains von example.com (inklusive example.com selbst) verfügbar zu
-       machen, setzen Sie es auf <literal>'.example.com'</literal>. Einige
-       Browser lassen auch Cookies ohne ein vorangesetztes <literal>.</literal>
-       zu, die <link xlink:href="&url.rfc;2109">RFC 2109</link> Spezifikation
-       erfordert dies jedoch. Ein Setzen auf <literal>www.example.com</literal>
-       oder <literal>.www.example.com</literal> macht das Cookie nur in der
-       Subdomain <literal>www</literal> verfügbar.
+       Die Domain, der das Cookie zur Verfügung steht. Wird die Domain auf
+       <literal>'www.example.com'</literal> gesetzt, ist das Cookie in der
+       <literal>www</literal> Subdomain und in höheren Subdomains verfügbar.
+       Cookies die in einer niedrigeren Subdomain verfügbar sind, wie
+       <literal>'example.com'</literal>, sind in höheren Subdomains verfügbar,
+       wie <literal>'www.example.com'</literal>.
+       Ältere Browser, die noch immer das veraltete
+       <link xlink:href="&url.rfc;2109">RFC 2109</link> implementieren, können
+       ein führendes <literal>.</literal> benötigen, um alle Subdomains
+       abzudecken.
       </para>
      </listitem>
     </varlistentry>
@@ -188,7 +190,7 @@ $value = 'irgendetwas von irgendwo';
 
 setcookie("TestCookie", $value);
 setcookie("TestCookie", $value, time()+3600);  /* verfällt in 1 Stunde */
-setcookie("TestCookie", $value, time()+3600, "/~rasmus/", ".example.com", 1);
+setcookie("TestCookie", $value, time()+3600, "/~rasmus/", "example.com", 1);
 ?>
 ]]>
     </programlisting>
@@ -234,7 +236,7 @@ print_r($_COOKIE);
 <?php
 // Setzen des Verfalls-Zeitpunktes auf 1 Stunde in der Vergangenheit
 setcookie ("TestCookie", "", time() - 3600);
-setcookie ("TestCookie", "", time() - 3600, "/~rasmus/", ".example.com", 1);
+setcookie ("TestCookie", "", time() - 3600, "/~rasmus/", "example.com", 1);
 ?>
 ]]>
     </programlisting>
@@ -293,6 +295,13 @@ one : cookieone
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.5.0</entry>
+       <entry>
+        Ein Max-Age Attribut ist nun im Set-Cookie Header, der an den Client
+        gesendet wird, enthalten.
+       </entry>
+      </row>
       <row>
        <entry>5.2.0</entry>
        <entry>
@@ -387,9 +396,8 @@ one : cookieone
     <member><function>header</function></member>
     <member><function>setrawcookie</function></member>
     <member><link linkend="features.cookies">Cookies</link></member>
-    <member><link xlink:href="&spec.cookies;">Netscapes ursprüngliche Cookie Spezifikation</link></member>
+    <member><link xlink:href="&url.rfc;6265">RFC 6265</link></member>
     <member><link xlink:href="&url.rfc;2109">RFC 2109</link></member>
-    <member><link xlink:href="&url.rfc;2965">RFC 2965</link></member>
    </simplelist>
   </para>
  </refsect1>
