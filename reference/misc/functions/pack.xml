@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 283823 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 335075 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.pack" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pack</refname>
@@ -30,14 +30,6 @@
    <function>unpack</function> hat, wogegen die Funktion
    <function>pack</function> bei vorzeichenlosen und vorzeichenbehafteten
    Format-Codes dasselbe Ergebnis liefert.
-  </para>
-  <para>
-   Beachten sie auch, dass PHP <type>Ganzzahl</type>werte intern als
-   vorzeichenbehaftete Werte speichert, deren Größe vom Maschinentyp abhängig
-   ist. Wenn Sie PHP einen vorzeichenlosen Ganzzahlwert geben, der für diese
-   Art der Speicherung zu groß ist, wird er in eine
-   <type>Gleitkommazahl</type> umgewandelt, was oft zu unerwünschten
-   Ergebnissen führt.
   </para>
  </refsect1>
 
@@ -162,6 +154,30 @@
            </entry>
           </row>
           <row>
+           <entry>q</entry>
+           <entry>
+            vorzeichenbehafteter Long-Long-Typ (immer 64 bit, maschinenabhängig)
+           </entry>
+          </row>
+          <row>
+           <entry>Q</entry>
+           <entry>
+            vorzeichenloser Long-Long-Typ (immer 64 bit, maschinenabhängig)
+           </entry>
+          </row>
+          <row>
+           <entry>J</entry>
+           <entry>
+            vorzeichenloser Long-Long-Typ (immer 64 bit, Byte-Folge Big Endian)
+           </entry>
+          </row>
+          <row>
+           <entry>P</entry>
+           <entry>
+            vorzeichenloser Long-Long-Typ (immer 64 bit, Byte-Folge Little Endian)
+           </entry>
+          </row>
+          <row>
            <entry>f</entry>
            <entry>
             Gleitkommazahl (maschinenabhängige Größe und Wiedergabe)
@@ -178,6 +194,10 @@
           <row>
            <entry>X</entry>
            <entry>geht in der Zeichenkette ein Byte rückwärts</entry>
+          </row>
+          <row>
+           <entry>Z</entry>
+           <entry>NUL-aufgefüllte Zeichenkette (neu in PHP 5.5)</entry>
           </row>
           <row>
            <entry>@</entry>
@@ -207,6 +227,38 @@
   </para>
  </refsect1>
 
+ <refsect1 role="changelog"><!-- {{{ -->
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.6.3</entry>
+       <entry>
+        Die "q", "Q", "J" und "P" Codes wurden hinzugefügt, um die Arbeit mit
+        64-bit Zahlen zu ermöglichen.
+       </entry>
+      </row>
+      <row>
+       <entry>5.5.0</entry>
+       <entry>
+        Der "Z" Code mit equivalenter Funktionsweise wie "a" wurde zwecks
+        Perl-Kompatibilität hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1><!-- }}} -->
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -225,6 +277,38 @@ $binaerdaten = pack("nvc*", 0x1234, 0x5678, 65, 66);
     </para>
    </example>
   </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <caution>
+   <para>
+    Es ist zu beachten, dass PHP <type>integer</type> Werte intern als
+    vorzeichenbehaftete Werte einer maschinenabhängigen Größe speichert (C-Typ
+    <literal>long</literal>). Integer-Literale und Operationen die Zahlen
+    außerhalb der Grenzen des <type>integer</type>-Typs ergeben, werden als
+    <type>float</type> gespeichert. Wenn diese Floats als Integer gepackt
+    werden, werden sie zuerst in den Integer-Typ gewandelt. Dies kann u.U. ein
+    nicht erwünschtes Byte-Muster ergeben.
+   </para>
+   <para>
+    Der wichtigste Fall ist das Packen vorzeichenloser Zahlen, die als
+    <type>integer</type>-Typ darstellbar wären, wenn dieser vorzeichenlos wäre.
+    Auf Systemen wo der <type>integer</type>-Typ 32 bit groß ist, resultiert die
+    Umwandlung üblicherweise im selben Byte-Muster wie wenn der
+    <type>integer</type> vorzeichenlos wäre (allerdings ist das auf
+    implementierungsspezifische Konvertierungen von vorzeichenlosen in
+    vorzeichenbehaftete Zahlen gemäß dem C-Standard angewiesen). Auf Systemen wo
+    der <type>integer</type>-Typ 64 bit groß ist, hat <type>float</type>
+    vermutlich keine Mantisse, die groß genug ist, um den Wert ohne
+    Genauigkeitsverlust zu speichern. Haben diese Systeme ebenfalls einen
+    nativen 64-bit C <literal>int</literal>-Typ (die meisten UNIX-artigen
+    Systeme haben das nicht), dann ist die einzige Möglichkeit das
+    <literal>I</literal>-Packformat auf den oberen Bereich zu nutzen, negative
+    <type>integer</type> Werte mit der gleichen Byte-Darstellung wie die
+    gewünschten vorzeichenlosen Werte zu erzeugen.
+   </para>
+  </caution>
  </refsect1>
 
  <refsect1 role="seealso">

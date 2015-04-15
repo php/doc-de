@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 321375 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.eval" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>eval</refname>
@@ -11,28 +11,24 @@
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>eval</methodname>
-   <methodparam><type>string</type><parameter>code_str</parameter></methodparam>
+   <methodparam><type>string</type><parameter>code</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Wertet die in <parameter>code_str</parameter> enthaltene Zeichenkette als
-   PHP-Code aus. Abgesehen von anderen Zwecken kann dies nützlich sein, um
-   Code für eine spätere Ausführung im Textfeld einer Datenbank zu speichern.
+   Wertet die in <parameter>code</parameter> enthaltene Zeichenkette als
+   PHP aus.
   </para>
-  <para>
-   Beim Gebrauch von <function>eval</function> gilt es einige Faktoren zu
-   beachten. Die übergebene Zeichenkette muss gültigen PHP-Code enthalten,
-   einschließlich solcher Dinge wie Anweisungen mit einem Semikolon
-   abzuschließen, damit der Parser nicht in der Zeile nach dem
-   <function>eval</function> abbricht, und des richtigen Setzens des
-   Escape-Zeichens in <parameter>code_str</parameter>. Um HTML-Ausgabe und
-   PHP-Code zu mischen, können Sie zum Verlassen des PHP-Codes das schließende
-   PHP-Tag verwenden.
-  </para>
-  <para>
-   Beachten Sie, dass die innerhalb von <function>eval</function>
-   vorgenommenen Variablen-Zuweisungen nach Abarbeitung auch im Hauptskript
-   ihre Gültigkeit behalten.
-  </para>
+  <caution>
+   <para>
+    Das <function>eval</function>-Sprachkonstrukt ist
+    <emphasis>sehr gefährlich</emphasis>, weil es die Ausführung von beliebigem
+    PHP-Code erlaubt.
+    <emphasis>Seine Verwendung wird daher nicht empfohlen.</emphasis>
+    Wenn sorgfältig überprüft wurde, dass es keine andere Möglichkeit gibt als
+    dieses Konstrukt zu verwenden, ist besonders darauf zu achten
+    <emphasis>keine von Nutzern bereit gestellten Daten zu übergeben</emphasis>
+    ohne diese zuvor ordnungsgemäß zu validieren.
+   </para>
+  </caution>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -40,17 +36,36 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>code_str</parameter></term>
+     <term><parameter>code</parameter></term>
      <listitem>
       <para>
-       Die Code-Zeichenkette, die ausgewertet werden soll.
-       <parameter>code_str</parameter> darf keine <link
-       linkend="language.basic-syntax.phpmode">öffnenden PHP-Tags</link>
-       enthalten.
+       Gültiger PHP-Code, der ausgewertet werden soll.
       </para>
       <para>
-       Eine <literal>return</literal>-Anweisung beendet die Auswertung der
-       Zeichenkette sofort.
+       Der Code darf nicht in öffnende und schließende
+       <link linkend="language.basic-syntax.phpmode">PHP-Tags</link>
+       eingeschlossen sein, d.h. <literal>'echo "Hi!";'</literal> muss anstelle
+       von <literal>'&lt;? echo "Hi!"; &gt;'</literal> übergeben werden.
+       Es ist dennoch möglich den PHP-Modus durch die entsprechenden PHP-Tags zu
+       verlassen und wieder zu betreten, z.B.
+       <literal>'echo "Im PHP-Modus!"; ?&gt;Im HTML-Modus!&lt;? echo "Wieder im PHP-Modus!";'</literal>.
+      </para>
+      <para>
+       Abgesehen davon muss der übergebene Code gültiges PHP sein. Das
+       beinhaltet, dass alle Anweisungen ordnungsgemäß mit einem Strichpunkt
+       terminiert sein müssen. <literal>'echo "Hi!"'</literal>, zum Beispiel,
+       verursacht einen Parse-Fehler, wohingegen
+       <literal>'echo "Hi!";'</literal> funktioniert.
+      </para>
+      <para>
+       Eine <literal>return</literal>-Anweisung beendet die Auswertung des
+       Codes sofort.
+      </para>
+      <para>
+       Der Code wird im Geltungsbereich des <function>eval</function>
+       aufrufenden Codes ausgeführt. Daher bleiben sämtliche Variablen, die im
+       <function>eval</function> Aufruf definiert oder geändert werden, nach
+       dessen Ende sichtbar.
       </para>
      </listitem>
     </varlistentry>
