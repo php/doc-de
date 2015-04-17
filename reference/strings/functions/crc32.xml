@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 326796 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.crc32">
  <refnamediv>
@@ -27,6 +27,47 @@
    der nicht vorzeichenbehafteten ("unsigned") CRC32-Prüfsumme zu
    erhalten.
   </para>
+  <warning>
+   <simpara>
+    Da der Datentyp Integer von PHP vorzeichenbehaftet ("signed") ist,
+    resultieren viele Prüfsummen auf 32bit Plattformen in negativen
+    Integer-Werten. In 64bit Installationen sind jedoch alle
+    <function>crc32</function>-Ergebnisse positive Ganzzahlen.
+   </simpara>
+   <simpara>
+    Daher ist die "%u" Typangabe von <function>sprintf</function> oder
+    <function>printf</function> nötig, um die Stringrepräsentation der
+    vorzeichenlosen <function>crc32</function> Prüfsumme im Dezimalformat zu
+    erhalten.
+   </simpara>
+   <simpara>
+    Für die hexadezimale Repräsentation der Prüfsumme kann entweder
+    die "%x" Typangabe von <function>sprintf</function> oder <function>printf</function>
+    oder die <function>dechex</function> Umwandlungsfunktion verwendet werden;
+    beide sorgen für die Konvertierung des <function>crc32</function>
+    Ergebnisses in eine vorzeichenlose Ganzzahl.
+   </simpara>
+   <simpara>
+    Es wurde in Erwägung gezogen, auch in 64bit Installationen negative
+    Ganzzahlen für höhere Ergebniswerte zurückzugeben, aber das hätte die
+    Hexadezimalumwandlung ruiniert, da dann negative Ganzzahlen ein zusätzliches
+    0xFFFFFFFF######## Offset erhielten. Da die hexadezimale Repräsentation der
+    meist verbreitete Anwendungsfall scheint, wurde entschieden das nicht zu
+    tun, auch wenn es direkte dezimale Vergleiche in etwa 50% der Fälle
+    ruiniert, wenn von 32bit auf 64bit gewechselt wird.
+   </simpara>
+   <simpara>
+    Die Funktion eine Ganzzahl zurückgeben zu lassen, war im Nachhinein gesehen
+    möglicherweise nicht die beste Idee, und gleich einen Hex-String
+    zurückzugeben (wie z.B. <function>md5</function>) könnte gleich zu Anfang
+    ein besserer Plan gewesen sein.
+   </simpara>
+   <simpara>
+    Für eine portablere Lösung ist das generische <function>hash</function> in
+    Erwägung zu ziehen. <code>hash("crc32b", $str)</code> liefert die gleiche
+    Zeichenkette wie <code>dechex(crc32($str))</code>.
+   </simpara>
+  </warning>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -77,6 +118,7 @@ printf("%u\n", $pruefsumme);
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>hash</function></member>
     <member><function>md5</function></member>
     <member><function>sha1</function></member>
    </simplelist>

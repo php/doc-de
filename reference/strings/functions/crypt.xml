@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 326912 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 336026 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink"  xmlns="http://docbook.org/ns/docbook" xml:id="function.crypt">
  <refnamediv>
@@ -19,6 +19,21 @@
    <function>crypt</function> gibt einen Hash-String zurück, der unter
    Verwendung des <abbrev>DES</abbrev>-basierenden Unix-Standard-Hashingalgorithmus
    oder einem anderen auf ihrem System verfügbaren Algorithmus erstellt wurde.
+  </para>
+  <para>
+   Der <parameter>salt</parameter>-Parameter ist optional. Allerdings erzeugt
+   <function>crypt</function> ohne das <parameter>salt</parameter> ein schwaches
+   Passwort. PHP 5.6 und neuer erzeugen einen E_NOTICE Fehler, wenn der
+   Parameter nicht angegeben wird. Es ist darauf zu achten ein ausreichend
+   starkes salt für bessere Sicherheit anzugeben.
+  </para>
+  <para>
+   <function>password_hash</function> verwendet einen starken Hash, erzeugt ein
+   starkes Salt, und wendet eine angemessene Anzahl von Runden automatisch an.
+   <function>password_hash</function> ist ein einfacher
+   <function>crypt</function>-Wrapper und kompatibel zu bestehenden
+   Passwort-Hashes. Die Verwendung von <function>password_hash</function> wird
+   empfohlen.
   </para>
   <para>
    Einige Betriebssysteme unterstützen mehr als eine Methode zum Hashen. So wird
@@ -118,6 +133,13 @@
       <para>
        Die zu hashende Zeichenkette.
       </para>
+      <caution>
+       <para>
+        Die Verwendung des <constant>CRYPT_BLOWFISH</constant>-Algorithmus hat
+        zur Folge, dass der <parameter>str</parameter>-Parameter auf eine Länge
+        von maximal 72 Zeichen gekürzt wird.
+       </para>
+      </caution>
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -143,6 +165,15 @@
    Gibt die gehashte Zeichenkette zurück oder im Fehlerfall eine Zeichenkette,
    die kürzer ist als 13 Zeichen und garantiert ist, nicht dem Salt zu entsprechen.
   </para>
+  <warning>
+   <simpara>
+    Wenn Passwörter überprüft werden, sollte eine
+    Zeichenkettenvergleichsfunktion, die nicht anfällig für Rechenzeitangriffe
+    ist, verwendet werden um die Ausgabe von <function>crypt</function> mit dem
+    zuvor bekannten Hash zu vergleichen. Ab PHP 5.6 steht
+    <function>hash_equals</function> zu diesem Zweck zur Verfügung.
+   </simpara>
+  </warning>
  </refsect1>
 
  <refsect1 role="changelog">
@@ -157,6 +188,31 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>5.6.5</entry>
+       <entry>
+        Wird die Fehlerzeichenkette "*0" als <parameter>salt</parameter>
+        angegeben, wird nun aus Konsistenz mit anderen Crypt-Implementierungen
+        "*1" zurückgegeben. Vor dieser Version hat PHP 5.6 fälschlicherweise
+        einen DES Hash zurückgegeben.
+       </entry>
+      </row>
+      <row>
+       <entry>5.6.0</entry>
+       <entry>
+        Erzeugt eine E_NOTICE Sicherheitswarnung, wenn
+        <parameter>salt</parameter> ausgelassen wird.
+       </entry>
+      </row>
+      <row>
+       <entry>5.5.21</entry>
+       <entry>
+        Wird die Fehlerzeichenkette "*0" als <parameter>salt</parameter>
+        angegeben, wird nun aus Konsistenz mit anderen Crypt-Implementierungen
+        "*1" zurückgegeben. Vor dieser Version hat PHP 5.5 fälschlicherweise
+        einen DES Hash zurückgegeben.
+       </entry>
+      </row>
       <row>
        <entry>5.3.7</entry>
        <entry>
@@ -297,6 +353,8 @@ SHA-512:      $6$rounds=5000$usesomesillystri$D4IrlXatmP7rx3P3InaxBeoomnAihCKRVQ
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>hash_equals</function></member>
+    <member><function>password_hash</function></member>
     <member><function>md5</function></member>
     <member>Die <link linkend="ref.mcrypt">Mcrypt</link>-Erweiterung</member>
     <member>Lesen Sie die Man-Pages ihres Unix-Systems, wenn Sie weitere

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 313279 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 336416 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.sprintf">
  <refnamediv>
@@ -81,11 +81,13 @@
         <listitem>
          <simpara>
           Eine optionale <emphasis>Genauigkeitsangabe</emphasis> in der Form
-          eines Punktes ('.') gefolgt von einem optionalen Dezimalstring. Dieser
+          eines Punktes (<literal>.</literal>) gefolgt von einem optionalen Dezimalstring. Dieser
           drückt aus, wieviele Dezimalstellen für Fließkommazahlen ausgegeben
           werden sollten. Wenn Sie diese Angabe auf einen String anwenden,
           fungiert sie als Grenzpunkt, der die maximale Zeichenzahl der
-          ausgegebenen Zeichenkette bestimmt.
+          ausgegebenen Zeichenkette bestimmt. Zusätzlich kann optional das
+          Zeichen, das zum Auffüllen einer Zahl verwendet werden soll, zwischen
+          dem Punkt und der Ziffer angegeben werden.
          </simpara>
         </listitem>
         <listitem>
@@ -124,11 +126,6 @@
             dass ein großes E verwendet wird (z.B. 1.2E+2).
            </member>
            <member>
-            <literal>u</literal> - das Argument wird als Integer
-            angesehen und ein positiver vorzeichenloser Dezimalwert (unsigned
-            integer) ausgegeben.
-           </member>
-           <member>
             <literal>f</literal> - das Argument wird als float angesehen und
             entsprechend der Einstellungen in den locales als Fließkommazahl
             ausgegeben.
@@ -156,6 +153,11 @@
             und auch als solcher ausgegeben.
            </member>
            <member>
+            <literal>u</literal> - das Argument wird als Integer
+            angesehen und ein positiver vorzeichenloser Dezimalwert (unsigned
+            integer) ausgegeben.
+           </member>
+           <member>
             <literal>x</literal> - das Argument wird als Integer
             angesehen und als Hexadezimalwert ausgegeben (mit
             Kleinbuchstaben).
@@ -171,6 +173,56 @@
        </orderedlist>
       </para>
       <para>
+       Variablen werden in einen für die Typangabe passenden Typ konvertiert:
+       <table xml:id="sprintf.coercion">
+        <title>Typ-Behandlung</title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Typ</entry>
+           <entry>Typangaben</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><literal>string</literal></entry>
+           <entry><literal>s</literal></entry>
+          </row>
+          <row>
+           <entry><literal>integer</literal></entry>
+           <entry>
+            <literal>d</literal>,
+            <literal>u</literal>,
+            <literal>c</literal>,
+            <literal>o</literal>,
+            <literal>x</literal>,
+            <literal>X</literal>,
+            <literal>b</literal>
+           </entry>
+          </row>
+          <row>
+           <entry><literal>double</literal></entry>
+           <entry>
+            <literal>g</literal>,
+            <literal>G</literal>,
+            <literal>e</literal>,
+            <literal>E</literal>,
+            <literal>f</literal>,
+            <literal>F</literal>
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
+      <warning>
+       <para>
+        Der Versuch der Verwendung einer Kombination von Stringtyp- und
+        Längenangaben bei Zeichensätzen, die mehr als ein Byte pro Zeichen
+        benötigen, kann zu unerwarteten Ergebnissen führen
+       </para>
+      </warning>
+      <para>
        Der Formatstring unterstützt nummerierte Argumente und kann daher auch
        ihre Position bestimmen (argument numbering/swapping). Hier ein Beispiel:
        <example>
@@ -182,7 +234,7 @@ $anzahl = 5;
 $ort    = 'Baum';
 
 $format = 'Es sind %d Affen auf dem %s';
-printf($format, $anzahl, $ort);
+echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
         </programlisting>
@@ -197,7 +249,7 @@ printf($format, $anzahl, $ort);
 <![CDATA[
 <?php
 $format = 'Der %s enthält %d Affen';
-printf($format, $anzahl, $ort);
+echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
         </programlisting>
@@ -213,7 +265,7 @@ printf($format, $anzahl, $ort);
 <![CDATA[
 <?php
 $format = 'Der %2$s enthält %1$d Affen';
-printf($format, $anzahl, $ort);
+echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
         </programlisting>
@@ -227,7 +279,7 @@ printf($format, $anzahl, $ort);
 <?php
 $format = 'Der %2$s enthält %1$d Affen.
            %1$d Affen sind ziemlich viel für einen %2$s.';
-printf($format, $anzahl, $ort);
+echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
         </programlisting>
@@ -237,12 +289,30 @@ printf($format, $anzahl, $ort);
        direkt nach dem Prozentzeichen (<literal>%</literal>) folgen, vor
        jeglichen anderen Angaben, wie im Beispiel unten zu sehen ist.
        <example>
+        <title>Angabe von Füllzeichen</title>
+        <programlisting role="php">
+         <![CDATA[
+<?php
+echo sprintf("%'.9d\n", 123);
+echo sprintf("%'.09d\n", 123);
+?>
+]]>
+        </programlisting>
+        &example.outputs;
+        <screen>
+         <![CDATA[
+......123
+000000123
+]]>
+        </screen>
+       </example>
+       <example>
         <title>Positionstausch mit weiteren Spezifikatoren</title>
         <programlisting role="php">
 <![CDATA[
 <?php
 $format= 'Der %2$s enthält %1$04d Affen';
-printf($format, $anzahl, $ort);
+echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
         </programlisting>
@@ -254,6 +324,18 @@ Der Baum enthält 0005 Affen.
         </screen>
        </example>
       </para>
+      <note>
+       <para>
+        Der Versuch der Verwendung einer Positionsangabe, die größer als
+        <constant>PHP_INT_MAX</constant> ist, hat zur Folge, dass
+        <function>sprintf</function> Warnungen erzeugt.
+       </para>
+      </note>
+      <warning>
+       <para>
+        Die <literal>c</literal>-Typangabe ignoriert Füllzeichen und Längenangabe
+       </para>
+      </warning>
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -279,30 +361,6 @@ Der Baum enthält 0005 Affen.
   <para>
    Gibt eine an Hand des Formatierungs-Strings <parameter>format</parameter>
    gebildete Zeichenkette zurück.
-  </para>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>4.0.6</entry>
-       <entry>
-        Unterstützung für Argument numbering/swapping hinzugefügt.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
   </para>
  </refsect1>
 
