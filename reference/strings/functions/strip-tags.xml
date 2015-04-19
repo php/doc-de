@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 310078 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 335964 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.strip-tags">
  <refnamediv>
@@ -16,7 +16,7 @@
    <methodparam choice="opt"><type>string</type><parameter>allowable_tags</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Diese Funktion versucht, einen String zurückzugeben, der die um alle NUL
+   Diese Funktion versucht, einen String zurückzugeben, der die um alle NULL
    Bytes, HTML- und PHP-Tags reduzierte Version von <parameter>str</parameter>
    darstellt.
    Sie verwendet die gleiche Engine zum Entfernen der Tags wie
@@ -56,10 +56,26 @@
          <function>strip_tags</function> sieht als Tag eine von Groß- und
          Kleinschreibung unabhängige Zeichenkette
          zwischen<literal>&lt;</literal> und dem ersten Leerzeichen
-         oder <literal>&gt;</literal>. Dies bedeutet, dass
-         <literal>strip_tags("&lt;br/&gt;", "&lt;br&gt;")</literal> eine leere
-         Zeichenkette zurückgibt.
+         oder <literal>&gt;</literal>.
        </para>
+      </note>
+      <note>
+       <para>
+        In PHP 5.3.4 und neuer muss auch der selbst-schließende XHTML Tag
+        angegeben werden, um diesen aus <parameter>str</parameter> zu entfernen.
+        Um zum Beispiel sowohl <literal>&lt;br;&gt;</literal> als auch
+        <literal>&lt;br/&gt;</literal> zu entfernen, sollte folgendes verwendet
+        werden:
+       </para>
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+strip_tags($input, '<br><br/>');
+?>
+]]>
+        </programlisting>
+       </informalexample>
       </note>
      </listitem>
     </varlistentry>
@@ -87,15 +103,17 @@
      </thead>
      <tbody>
       <row>
-       <entry>5.0.0</entry>
+       <entry>5.3.4</entry>
        <entry>
-        Die Funktion <function>strip_tags</function> ist jetzt Binary safe.
+        <function>strip_tags</function> entfernt nicht länger selbst-schließende
+        XHTML Tags, außer wenn der selbst-schließende XHTML Tag ebenfalls im
+        <parameter>allowable_tags</parameter> angegeben wird.
        </entry>
       </row>
       <row>
-       <entry>4.3.0</entry>
+       <entry>5.0.0</entry>
        <entry>
-        HTML-Kommentare werden ab jetzt immer entfernt.
+        Die Funktion <function>strip_tags</function> ist jetzt Binary safe.
        </entry>
       </row>
      </tbody>
@@ -150,6 +168,13 @@ Test-Absatz. Anderer Text
     von anderen Usern gesehen werden soll.
    </para>
   </warning>
+  <note>
+   <para>
+    Tagnamen im Eingabe-HTML, die länger als 1023 Bytes sind, werden behandelt
+    als ob sie ungültig seien, unabhängig vom
+    <parameter>allowable_tags</parameter> Parameter.
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="seealso">
