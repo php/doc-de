@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 331596 Maintainer: simp Status: ready -->
+<!-- Reviewed: no -->
+
+<sect1 xml:id="control-structures.foreach" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title><literal>foreach</literal></title>
+ <?phpdoc print-version-for="foreach"?>
+ <para>
+  Das <literal>foreach</literal>-Konstrukt bietet eine einfache Möglichkeit
+  über Arrays zu iterieren. <literal>foreach</literal> arbeitet nur mit
+  Arrays und Objekten zusammen und gibt beim Versuch es mit einer
+  Variablen mit einem anderen Datentypen oder einer nicht initialisierten
+  Variablen zu benutzen einen Fehler ausgeben. Es gibt zwei
+  Schreibweisen:
+  <informalexample>
+   <programlisting>
+<![CDATA[
+foreach (array_expression as $value)
+    statement
+foreach (array_expression as $key => $value)
+    statement
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <simpara>
+  Die erste Form durchläuft das in 
+  <literal>array_expression</literal> angegebene Array. 
+  Bei jedem Durchlauf wird der Wert des aktuellen Elementes der
+  Variable <literal>$value</literal> zugewiesen und der interne
+  Array-Zeiger um eins erhöht (womit im nächsten Durchlauf das
+  nächste Element betrachtet wird).
+ </simpara>
+ <simpara>
+  Die zweite Form schreibt zusätzlich den Schlüssel des aktuellen
+  Elementes in jedem Durchlauf in die Variable <literal>$key</literal>.
+ </simpara>
+ <simpara>
+  Es ist möglich, die 
+  <link linkend="language.oop5.iterations">Objektiteration anzupassen</link>.
+ </simpara>
+ <para>
+  <note>
+   <para>
+    Zu Beginn der Ausführung setzt <literal>foreach</literal> den
+    internen Arrayzeiger automatisch auf das erste Element des
+    Arrays zurück. Das bedeutet, dass es nicht notwendig ist vor
+    einr <literal>foreach</literal>-Schleife <function>reset</function>
+    aufzurufen.
+   </para>
+   <para>
+    Da <literal>foreach</literal> sich auf den internen Arrayzeiger 
+    verlässt kann es zu unerwartetem Verhalten führen, wenn dieser
+    innerhalb der Schleife verändert wird.
+   </para>
+  </note>
+ </para>
+ <para>
+  Um Arrayelemente innerhalb der Schleife direkt verändern zu können, muss
+  dem Variablennamen <literal>$value</literal> ein &amp; vorangestellt
+  werden. In diesem Fall wird dieser Variablen eine 
+  <link linkend="language.references">Referenz</link> zugewiesen.
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$arr = array(1, 2, 3, 4);
+foreach ($arr as &$value) {
+    $value = $value * 2;
+}
+// $arr ist nun array(2, 4, 6, 8)
+unset($value); // Entferne die Referenz auf das letzte Element
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  Eine Referenz auf <literal>$value</literal> ist nur dann möglich, wenn
+  das Array referenzierbar ist (d.h. es ist eine Variable). Der folgende
+  Code wird nicht funktionieren:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+foreach (array(1, 2, 3, 4) as &$value) {
+    $value = $value * 2;
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <warning>
+  <para>
+   Die Referenz von <literal>$value</literal> und das letzte Arrayelement
+   bestehen auch nach dem letzten Durchlauf von <literal>foreach</literal>.
+   Es wird empfohlen, diese mittels <function>unset</function> zu
+   zerstören.
+  </para>
+ </warning>
+ <para>
+  <note>
+   <para>
+    <literal>foreach</literal> unterstützt die Fehlerunterdrückung
+    mittels '@' nicht.
+   </para>
+  </note>
+ </para>
+ <para>
+  Eventuell haben Sie bemerkt, dass folgendes identisch funktioniert:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$arr = array("eins", "zwei", "drei");
+reset($arr);
+while (list(, $value) = each($arr)) {
+    echo "Wert: $value<br />\n";
+}
+
+foreach ($arr as $value) {
+    echo "Wert: $value<br />\n";
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  Das Folgende ist ebenfalls funktional identisch:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$arr = array("eins", "zwei", "drei");
+reset($arr);
+while (list($key, $value) = each($arr)) {
+    echo "Schlüssel: $key; Wert: $value<br />\n";
+}
+
+foreach ($arr as $key => $value) {
+    echo "Schlüssel: $key; Wert: $value<br />\n";
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  Einige weitere Beispiele die die Nutzung demonstrieren:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* foreach Beispiel 1: Nur Werte */
+
+$a = array(1, 2, 3, 17);
+
+foreach ($a as $v) {
+    echo "Aktueller Wert von \$a: $v.\n";
+}
+
+/* foreach Beispiel 2: Werte (mit Schreibweise für Zugriff zur Veranschaulichung) */
+
+$a = array(1, 2, 3, 17);
+
+$i = 0; /* nur zur Veranschaulichung */
+
+foreach ($a as $v) {
+    echo "\$a[$i] => $v.\n";
+    $i++;
+}
+
+/* foreach Beispiel 3: Schlüssel und Wert */
+
+$a = array(
+    "eins" => 1,
+    "zwei" => 2,
+    "drei" => 3,
+    "siebzehn" => 17
+);
+
+foreach ($a as $k => $v) {
+    echo "\$a[$k] => $v.\n";
+}
+
+/* foreach Beispiel 4: Mehrdimensionale Arrays */
+$a = array();
+$a[0][0] = "a";
+$a[0][1] = "b";
+$a[1][0] = "y";
+$a[1][1] = "z";
+
+foreach ($a as $v1) {
+    foreach ($v1 as $v2) {
+        echo "$v2\n";
+    }
+}
+
+/* foreach Beispiel 5: Dynamische Arrays */
+
+foreach (array(1, 2, 3, 4, 5) as $v) {
+    echo "$v\n";
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+
+ <sect2 xml:id="control-structures.foreach.list">
+  <title>Entpacken verschachtelter Arrays mit list()</title>
+  <?phpdoc print-version-for="foreach.list"?>
+
+  <para>
+   PHP 5.5 hat die Fähigkeit hinzugefügt über Arrays von Arrays zu iterieren
+   und dabei die verschachtelten Arrays in Schleifenvariablen zu entpacken,
+   indem man ein <function>list</function> als Wert angibt.
+  </para>
+
+  <para>
+   For example:
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = [
+    [1, 2],
+    [3, 4],
+];
+
+foreach ($array as list($a, $b)) {
+    // $a enthält das erste Element des verschachtelten Arrays
+    // und $b enthält das zweite Element
+    echo "A: $a; B: $b\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+A: 1; B: 2
+A: 3; B: 4
+]]>
+    </screen>
+   </informalexample>
+  </para>
+
+  <para>
+   Es können auch weniger Elemente in <function>list</function> angegeben
+   werden als das verschachtelte Array enthält. In diesem Fall werden übrige
+   Werte im Array ignoriert:
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = [
+    [1, 2],
+    [3, 4],
+];
+
+foreach ($array as list($a)) {
+    // Beachten Sie, dass es hier kein $b gibt.
+    echo "$a\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+1
+3
+]]>
+    </screen>
+   </informalexample>
+  </para>
+
+  <para>
+   Gibt es nicht ausreichend Elemente im Array, um <function>list</function> 
+   zu füllen, wird eine Notice erzeugt.
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = [
+    [1, 2],
+    [3, 4],
+];
+
+foreach ($array as list($a, $b, $c)) {
+    echo "A: $a; B: $b; C: $c\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+
+Notice: Undefined offset: 2 in example.php on line 7
+A: 1; B: 2; C: 
+
+Notice: Undefined offset: 2 in example.php on line 7
+A: 3; B: 4; C: 
+]]>
+    </screen>
+   </informalexample>
+  </para>
+ </sect2>
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
