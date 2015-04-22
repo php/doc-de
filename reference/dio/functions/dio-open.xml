@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 297028 Maintainer: hholzgra Status: ready -->
 <!-- Credits: georg -->
 <refentry xml:id="function.dio-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>dio_open</refname>
   <refpurpose>
-   Öffnet eine Datei mit den angegebenen Rechten
+   Öffnet eine Datei (falls nötig, wird diese erzeugt) auf einem niedrigeren
+   Level als es die C-Bibliotheks Ein-/Ausgabe-Stream-Funktionen erlauben.
   </refpurpose>
  </refnamediv>
  <refsect1 role="description">
@@ -30,7 +31,7 @@
      <term><parameter>filename</parameter></term>
      <listitem>
       <para>
-       Die zu öffnende Datei.
+       Der Pfadname der zu öffnenden Datei.
       </para>
      </listitem>
     </varlistentry>
@@ -38,36 +39,63 @@
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Der Parameter <parameter>flags</parameter> kann eine Kombination
-       der folgenden Flags enthalten:
+       Der Parameter <parameter>flags</parameter> ist ein bitweise ODER
+       verknüpfter Wert bestehend aus Flags der folgende Liste. Dieser Wert
+       <emphasis>muss</emphasis> entweder <constant>O_RDONLY</constant>,
+       <constant>O_WRONLY</constant>, oder <constant>O_RDWR</constant>
+       enthalten. Zusätzlich kann er eine beliebige Kombination der anderen
+       Flags dieser Liste enthalten.
        <itemizedlist>
         <listitem>
          <para>
-          O_CREAT - erzeugt die Datei, falls diese nicht existiert
+          <constant>O_RDONLY</constant> - öffnet die Datei zum Lesezugriff.
          </para>
         </listitem>
         <listitem>
          <para>
-          O_EXCL - in Kombination mit <constant>O_CREAT</constant>
-          wird ein Fehler (-1) zurückgegeben, wenn die Datei bereits existiert
+          <constant>O_WRONLY</constant> - öffnet die Datei zum Schreibzugriff.
          </para>
         </listitem>
         <listitem>
          <para>
-          O_TRUNC - falls die Datei bereits existiert, und sie für
+          <constant>O_RDWR</constant> - öffnet die Datei zum Lesen und Schreiben.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>O_CREAT</constant> - erzeugt die Datei, falls diese nicht existiert
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>O_EXCL</constant> - wird sowohl <constant>O_CREAT</constant>
+          als auch <constant>O_EXCL</constant> angegeben und die Datei existiert
+          bereits, schlägt <function>dio_open</function> fehl.
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>O_TRUNC</constant> - falls die Datei bereits existiert, und sie für
           Schreibzugriff geöffnet wird, wird diese auf die Grösse 0
           zurückgesetzt
          </para>
         </listitem>
         <listitem>
          <para>
-          O_APPEND - setzt den Zeiger für Schreiboperationen an das Ende
+          <constant>O_APPEND</constant> - setzt den Zeiger für Schreiboperationen an das Ende
           der Datei
          </para>
         </listitem>
         <listitem>
          <para>
-          O_NONBLOCK - Setzt den Modus auf "nonblocking"
+          <constant>O_NONBLOCK</constant> - Setzt den Modus auf "nonblocking"
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant>O_NOCTTY</constant> - hält das Betriebssystem davon ab,
+          die geöffnete Datei als Prozess steuerndes Terminal zuzuweisen,
+          wenn eine TTY Gerätedatei geöffnet wird.
          </para>
         </listitem>
        </itemizedlist>
@@ -79,24 +107,15 @@
      <listitem>
       <para>
        Wenn <parameter>flags</parameter> das Flag <constant>O_CREAT</constant>
-       enthält <parameter>mode</parameter> die Dateizugriffsrechte.
-       <itemizedlist>
-        <listitem>
-         <para>
-          O_RDONLY - öffnet die Datei für Lesezugriff
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          O_WRONLY - öffnet die Datei für Schreibzugriff
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          O_RDWR - öffnet die Datei für Schreib- und Lesezugriff
-         </para>
-        </listitem>
-       </itemizedlist>
+       enthält, setzt <parameter>mode</parameter> die Dateizugriffsrechte.
+       <parameter>mode</parameter> wird für die korrekte Ausführung benötigt,
+       wenn <constant>O_CREAT</constant> in <parameter>flags</parameter>
+       angegeben wird, und wird ansonsten ignoriert.
+      </para>
+      <para>
+       Die tatsächlichen Dateizugriffsrechte, die der erzeugten Datei zugewiesen
+       werden, werden von der <emphasis>umask</emphasis> Einstellung des
+       Prozesses wie üblich beeinflusst.
       </para>
      </listitem>
     </varlistentry>
