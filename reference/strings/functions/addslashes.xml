@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 324587 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 334702 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.addslashes">
  <refnamediv>
@@ -20,25 +20,33 @@
    ist z.B. für Datenbankabfragen wichtig. Die behandelten Zeichen
    sind das einfache und das doppelte Anführungszeichen
    (<literal>'</literal> und <literal>"</literal>), der Backslash
-   selbst (<literal>\</literal>) sowie NUL (das Null-Byte).
+   selbst (<literal>\</literal>) sowie NUL (das &null;-Byte).
   </para>
   <para>
    Ein Beispiel für die Verwendung von <function>addslashes</function>
-   ist das Schreiben von Daten in eine Datenbank. Möchte man zum Beispiel
-   einen Namen wie <literal>O'reilly</literal> in ein Datenbankfeld schreiben,
-   muss er maskiert sein. Es wird dringend empfohlen, die datenbankspezifische
+   ist das Schreiben von Daten in eine Zeichenkette, die von PHP ausgewertet wird. Ist zum Beispiel
+   ein Name wie <literal>O'reilly</literal> in $str gespeichert,
+   muss $str maskiert werden (z.B. eval("echo '".addslashes($str)."';"); ).
+  </para>
+  <para>
+   Um Datenbank-Parameter zu maskieren, sollte aus Sicherheitsgründen eine datenbankspezifische
    Escapefunktion zu verwenden (z.B.
    <function>mysqli_real_escape_string</function> für MySQL oder
-   <function>pg_escape_string</function> für PostgreSQL). Sollte für das
-   von Ihnen verwendete DBMS keine spezielle Escape-Funktion existieren und sollte
-   dieses DBMS <literal>\</literal> verwenden, um Sonderzeichen zu maskieren,
-   können Sie ersatzweise diese Funktion verwenden. Dies ist ausschließlich
-   für das Einfügen von Daten in eine Datenbank notwendig, der zusätzliche
-   <literal>\</literal> wird nicht wirklich eingefügt.
-   Ist die PHP-Direktive <link
-   linkend="ini.magic-quotes-sybase">magic_quotes_sybase</link> den Wert
-   <literal>on</literal>, wird ein <literal>'</literal> anstelle des
-   Backslashes mit einem weiteren <literal>'</literal> maskiert.
+   <function>pg_escape_literal</function>, <function>pg_escape_string</function> für PostgreSQL).
+   DBMSe haben unterschiedliche Maskierungsspezifikationen für Bezeichner (z.B.
+   Tabellennamen, Feldnamen) und Parameter. Manche DBMSe wie PostgreSQL bieten
+   eine Funktion zum Maskieren von Bezeichnern,
+   <function>pg_escape_identifier</function>, aber nicht alle DBMSe bieten eine
+   solche Bezeichnermaskierungs API. Ist dies der Fall, ist die ordnungsgemäße
+   Maskierungsmethode dem Datenbank-System-Handbuch zu entnehmen.
+  </para>
+  <para>
+   Verfügt das DBMS über keine Maskierungsfunktion und das DBMS verwendet
+   <literal>\</literal> um Sonderzeichen zu maskieren, können Sie u.U. diese
+   Funktion nur verwenden, wenn diese Maskierungsmethode angemessen für Ihre
+   Datenbank ist. Bitte beachten Sie, dass die Verwendung von
+   <function>addslashes</function> zum Maskieren von Datenbank-Parametern bei
+   den meisten Datenbanken Sicherheitsprobleme verursachen kann.
   </para>
   <para>
    Die PHP-Direktive <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>
@@ -84,9 +92,9 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$str = "Ist dein Name wirklich O'reilly?";
+$str = "Ist dein Name wirklich O'Reilly?";
 
-// Ausgabe: Ist dein Name wirklich O\'reilly?
+// Ausgabe: Ist dein Name wirklich O\'Reilly?
 echo addslashes($str);
 ?>
 ]]>
