@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 313193 Maintainer: fa Status: ready -->
+<!-- EN-Revision: 329077 Maintainer: fa Status: ready -->
 
 <chapter xml:id="pdo.error-handling" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Fehler und Fehlerbehandlung</title>
@@ -91,6 +91,51 @@ try {
 ?>
 ]]>
    </programlisting>
+  </example>
+ </para>
+ <note>
+  <para>
+   <function>PDO::__construct</function> wirft immer eine
+   <classname>PDOException</classname> wenn die Verbindung fehlschlägt
+   unabhängig davon welcher <constant>PDO::ATTR_ERRMODE</constant> gerade
+   eingestellt ist. Nicht abgefangene Exceptions sind fatal.
+  </para>
+ </note>
+ <para>
+  <example>
+   <title>Erzeugen eines PDO Exemplars und setzen des Fehlermodus per Konstruktor</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$dsn = 'mysql:dbname=test;host=127.0.0.1';
+$user = 'googleguy';
+$password = 'googleguy';
+
+/*
+    Die Verwendung von try/catch um den Konstruktor ist berechtigt, auch wenn
+    wir ERRMODE auf WARNING setzen, da PDO::__construct immer eine PDOException
+    auslöst, wenn die Verbindung fehlschlägt.
+*/
+try {
+    $dbh = new PDO($dsn, $user, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING));
+} catch (PDOException $e) {
+    echo 'Verbindung fehlgeschlagen: ' . $e->getMessage();
+    exit;
+}
+
+// Dies wird PDO veranlassen einen Fehler der Stufe E_WARNING anstelle einer
+// Exception auszulösen (falls die Tabelle nicht existiert)
+$dbh->query("SELECT wrongcolumn FROM wrongtable");
+?>
+]]>
+   </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Warning: PDO::query(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'test.wrongtable' doesn't exist in
+/tmp/pdo_test.php on line 18
+]]>
+    </screen>
   </example>
  </para>
 </chapter>
