@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: conni Status: ready -->
+<!-- EN-Revision: 331237 Maintainer: conni Status: ready -->
 <refentry xml:id="function.pg-query-params" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_query_params</refname>
@@ -31,7 +31,9 @@
   </para>
   <para>
     Falls irgendwelche Parameter übergeben wurden, werden diese in
-    <parameter>query</parameter> als $1, $2 usw. referenziert. Im Array
+    <parameter>query</parameter> als $1, $2 usw. referenziert. Der gleiche
+    Parameter darf mehrmals in <parameter>query</parameter> auftauchen; in
+    diesem Fall wird der selbe Wert verwendet. Im Array
     <parameter>params</parameter> werden die aktuellen Parameterwerte
     übergeben. Der Wert &null; in diesem Array repräsentiert den SQL-Wert
     <literal>NULL</literal>.     
@@ -71,6 +73,15 @@
        getrennt, sind nicht zulässig). Falls Parameter übergeben werden,
        werden sie als $1, $2, ... referenziert.
       </para>
+      <para>
+       Anwenderdaten sollten immer als Parameter übergeben werden, und nicht in
+       die Abfragezeichenkette interpoliert werden, wo sie mögliche <link
+       linkend="security.database.sql-injection">SQL-Injection</link>
+       Angriffsvektoren bilden und Bugs einführen, wenn die zu behandelnden
+       Daten Anführungszeichen enthalten. Wenn aus irgendeinem Grund Parameter
+       nicht verwendet werden können, ist sicherzustellen, dass Werte <link
+       linkend="function.pg-escape-string">ordnungsgemäß maskiert</link> sind.
+      </para>
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -82,6 +93,12 @@
         Die Anzahl der Elemente dieses Arrays muss mit der Anzahl der
         Platzhalter übereinstimmen.
       </para>
+      <para>
+       Werte, die für <literal>bytea</literal> Felder vorgesehen sind, werden
+       nicht als Parameter unterstützt. Statt dessen sind
+       <function>pg_escape_bytea</function> oder die Funktionen für große
+       Objekte zu verwenden.
+      </para>
      </listitem>
     </varlistentry>
    </variablelist>
@@ -91,7 +108,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-    Bei Erfolg wird eine Ergebniskennung zurückgegeben, ansonsten &false;.
+    Bei Erfolg wird eine Ergebniskennung zurückgegeben. &return.falseforfailure;
   </para>
  </refsect1>
  

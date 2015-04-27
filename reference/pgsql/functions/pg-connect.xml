@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: conni Status: ready -->
+<!-- EN-Revision: 334633 Maintainer: conni Status: ready -->
 <refentry xml:id="function.pg-connect" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_connect</refname>
@@ -56,13 +56,17 @@
       <para>
        Diese Schlüsselwörter für die Parameter werden aktuell erkannt:
        <parameter>host</parameter>, <parameter>hostaddr</parameter>,
-    <parameter>port</parameter>, <parameter>dbname</parameter>,
+    <parameter>port</parameter>, <parameter>dbname</parameter> (standardmäßig der Wert von <parameter>user</parameter>),
     <parameter>user</parameter>, <parameter>password</parameter>,
     <parameter>connect_timeout</parameter>, <parameter>options</parameter>,
     <parameter>tty</parameter> (wird ignoriert), <parameter>sslmode</parameter>,
        <parameter>requiressl</parameter> (zugunsten von <parameter>sslmode</parameter> ausgemustert) und
        <parameter>service</parameter>.  Welche dieser Parameter zur
     Verfügung stehen, ist von Ihrer PostgreSQL-Version abhängig.
+      </para>
+      <para>
+       Der <parameter>options</parameter> Parameter kann verwendet werden, um
+       vom Server auszuführende Kommandozeilenparameter zu setzen.
       </para>
      </listitem>
     </varlistentry>
@@ -75,6 +79,12 @@
     <parameter>connection_string</parameter> identisch zu der aktuell
     geöffneten Verbindung ist.
       </para>
+      <para>
+       Ist <constant>PGSQL_CONNECT_ASYNC</constant> angegeben, dann wird die
+       Verbindung asynchron hergestellt. Der Zustand der Verbindung kann dann
+       per <function>pg_connect_poll</function> oder
+       <function>pg_connection_status</function> überprüft werden.
+      </para>
      </listitem>
     </varlistentry>
    </variablelist>
@@ -86,6 +96,32 @@
   <para>
    Bei Erfolg wird eine PostgreSQL-Verbindungskennung zurückgegeben
    oder &false; bei einem Fehler.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.6.0</entry>
+       <entry>
+        Unterstützung für die Übergabe der
+        <constant>PGSQL_CONNECT_ASYNC</constant> Konstante als
+        <parameter>connect_type</parameter> wurde hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
   </para>
  </refsect1>
 
@@ -113,6 +149,10 @@ $dbconn4 = pg_connect($conn_string);
 //Verbindungsaufbau zu einer Datenbank namens "test" auf dem Host
 //"sheep" mit dem Benutzernamen "lamb" und dem Passwort "bar"
 ?>
+
+$dbconn5 = pg_connect("host=localhost options='--client_encoding=UTF8'");
+// Verbindungsaufbau zu einer Datenbank auf dem Host "localhost" mit Setzen
+// des Kommandozeilenparameters, der die Zeichenkodierung UTF-8 angibt
 ]]>
     </programlisting>
    </example>
