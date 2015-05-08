@@ -1,35 +1,58 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 331477 Maintainer: cmb Status: ready -->
 <!-- CREDITS: tom -->
-  <refentry xml:id="function.list" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>list</refname>
-    <refpurpose>Weist Variablen zu, als wären sie ein Array</refpurpose>
-   </refnamediv>
-   <refsect1 role="description">
-    &reftitle.description;
-    <methodsynopsis>
-     <type>array</type><methodname>list</methodname>
-     <methodparam><type>mixed</type><parameter>varname</parameter></methodparam>
-     <methodparam rep="repeat"><type>mixed</type><parameter>...</parameter></methodparam>
-    </methodsynopsis>
-    <para>
-     Wie <function>array</function> ist auch dies keine wirkliche
-     Funktion, sondern ein Sprachkonstrukt. <function>list</function>
-     wird verwendet, um eine Liste von Variablen innerhalb einer
-     Operation zuzuweisen.
-    </para>
-    <note>
-     <para>
-      <function>list</function> funktioniert nur bei numerischen Arrays und
-      basiert auf der Annahme, dass die numerischen Indizes bei 0 beginnen.
-     </para>
-    </note>
-    <para>
-     <example>
-      <title><function>list</function></title>
-      <programlisting role="php">
+
+<refentry xml:id="function.list" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>list</refname>
+  <refpurpose>Weist Variablen zu, als wären sie ein Array</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>list</methodname>
+   <methodparam><type>mixed</type><parameter>var1</parameter></methodparam>
+   <methodparam rep="repeat" choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Wie <function>array</function> ist auch dies keine wirkliche
+   Funktion, sondern ein Sprachkonstrukt. <function>list</function>
+   wird verwendet, um eine Liste von Variablen mit einer
+   Operation zuzuweisen.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>var1</parameter></term>
+     <listitem>
+      <para>
+       Eine Variable.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt das zugewiesene Array zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>list</function> Beispiele</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 
@@ -47,15 +70,18 @@ echo "$drink hat $power.\n";
 list( , , $power) = $info;
 echo "Ich brauche $power!\n";
 
+// list() funktioniert nicht mit Zeichenketten
+list($bar) = "abcde";
+var_dump($bar); // NULL
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <para>
-     <example>
-      <title><function>list</function></title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Eine Beispielverwendung von <function>list</function></title>
+    <programlisting role="php">
 <![CDATA[
 <table>
  <tr>
@@ -65,8 +91,8 @@ echo "Ich brauche $power!\n";
 
 <?php
 
-$result = mysql_query ("SELECT id, name, salary FROM employees",$conn);
-while (list ($id, $name, $salary) = mysql_fetch_row ($result)) {
+$result = $pdo->query("SELECT id, name, salary FROM employees");
+while (list($id, $name, $salary) = $result->fetch(PDO::FETCH_NUM)) {
     echo " <tr>\n".
          "  <td><a href=\"info.php?id=$id\">$name</a></td>\n".
          "  <td>$salary</td>\n".
@@ -77,28 +103,40 @@ while (list ($id, $name, $salary) = mysql_fetch_row ($result)) {
 
 </table>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <warning>
-     <para>
-      <function>list</function> weist die Werte von rechts beginnend zu.
-      Wenn Sie einfache Variablen benutzen, brauchen Sie sich nicht darum
-      zu kümmern. Wenn Sie jedoch Arrays mit Indizes verwenden, erwarten Sie
-      gewöhnlich die Reihenfolge der Indizes in dem Array genau so, wie Sie
-      sie in <function>list</function> geschrieben haben (von links nach
-      rechts), was jedoch nicht der Fall ist. Es wird in der umgekehrten
-      Reihenfolge zugewiesen.
-     </para>
-    </warning>
-    <para>
-     <example>
-      <title><function>list</function> mit Array Indizes verwenden</title>
-      <programlisting role="php">
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Verschachtelte <function>list</function> verwenden</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 
-$info = array('coffee', 'brown', 'caffeine');
+list($a, list($b, $c)) = array(1, array(2, 3));
+
+var_dump($a, $b, $c);
+
+?>
+]]>
+    </programlisting>
+    <screen>
+<![CDATA[
+int(1)
+int(2)
+int(3)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>list</function> mit Array Indizes verwenden</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$info = array('Kaffee', 'braun', 'Koffein');
 
 list($a[0], $a[1], $a[2]) = $info;
 
@@ -106,31 +144,67 @@ var_dump($a);
 
 ?>
 ]]>
-      </programlisting>
-      <para>
-       Die Ausgabe (Beachten Sie die Reihenfolge der Elemente, verglichen mit
-       der in <function>list</function> eingetragenen Reihenfolge):
-      </para>
-      <screen>
+    </programlisting>
+    <para>
+     Erzeugt folgende Ausgabe (beachten Sie die Reihenfolge der Elemente verglichen mit
+     der in <function>list</function> eingetragenen Reihenfolge):
+    </para>
+    <screen>
 <![CDATA[
 array(3) {
   [2]=>
-  string(8) "caffeine"
+  string(7) "Koffein"
   [1]=>
-  string(5) "brown"
+  string(5) "braun"
   [0]=>
-  string(6) "coffee"
+  string(6) "Kaffee"
 }
 ]]>
-      </screen>
-     </example>
-    </para>
-    <para>
-     Siehe auch <function>each</function>, <function>array</function>
-     und <function>extract</function>.
-    </para>
-   </refsect1>
-  </refentry>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <warning>
+   <para>
+    <function>list</function> weist die Werte von rechts beginnend zu.
+    Wenn Sie einfache Variablen benutzen, brauchen Sie sich nicht darum
+    zu kümmern. Wenn Sie jedoch Arrays mit Indizes verwenden, erwarten Sie
+    gewöhnlich die Reihenfolge der Indizes in dem Array genau so, wie Sie
+    sie in <function>list</function> geschrieben haben (von links nach
+    rechts), was jedoch nicht der Fall ist. Es wird in der umgekehrten
+    Reihenfolge zugewiesen.
+   </para>
+  </warning>
+  <warning>
+   <para>
+    Die Veränderung des Array während der Ausführung von
+    <function>list</function> (z.B. durch <literal>list($a, $b) = $b</literal>),
+    hat undefiniertes Verhalten zur Folge.
+   </para>
+  </warning>
+  <note>
+   <para>
+    <function>list</function> funktioniert nur bei numerischen Arrays und
+    basiert auf der Annahme, dass die numerischen Indizes bei 0 beginnen.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>each</function></member>
+    <member><function>array</function></member>
+    <member><function>extract</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
