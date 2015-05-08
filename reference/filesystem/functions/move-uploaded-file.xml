@@ -1,65 +1,133 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.move-uploaded-file" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>move_uploaded_file</refname>
-    <refpurpose>Verschiebt eine hochgeladene Datei an einen neuen Ort</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>move_uploaded_file</methodname>
-      <methodparam><type>string</type><parameter>filename</parameter></methodparam>
-      <methodparam><type>string</type><parameter>destination</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Diese Funktion prüft, ob die mit <parameter>filename</parameter>
-     bezeichnete Datei eine gültige Upload-Datei ist (d.h., dass sie
-     mittels PHP's HTTP POST Upload-Mechanismus upgeloaded wurde).
-     Ist die Datei gültig, wird sie zum in 
-     <parameter>destination</parameter> bezeichneten Dateinamen 
-     verschoben.
-    </para>
-    <para>
-     Wenn <parameter>filename</parameter> keine gültige Datei ist, wird
-     keine Aktion ausgeführt, und 
-     <function>move_uploaded_file</function> gibt
-     &false; zurück.
-    </para>
-    <para>
-     Wenn <parameter>filename</parameter> eine gültige Datei ist, jedoch
-     aus irgendeinem Grund nicht verschoben werden kann, wird keine 
-     Aktion ausgeführt, und <function>move_uploaded_file</function>
-     gibt &false; zurück. Zusätzlich wird eine Warnung 
-     ausgegeben.
-    </para>
-    <para>
-     Diese Prüfung ist speziell dort interessant, wo irgendeine Aktion mit 
-     upgeloadeten Dateien deren Inhalt dem User zugänglich machen könnte 
-     (oder auch anderen Usern auf dem selben System).
-    </para>
-    &note.sm.uidcheck;
-    <note>
-     <para>
-      <function>move_uploaded_file</function> ist von den normalen &safemode; 
-      UID-Einschränkungen nicht betroffen. Dies ist nicht unsicher, da
-      <function>move_uploaded_file</function> nur mit via PHP hochgeladenen
-      Dateien arbeitet.
-     </para>
-    </note>
-    <warning>
-     <para>
-      Sollte die Zieldatei bereits existieren, wird sie überschrieben.
-     </para>
-    </warning>
-    <para>
-     Siehe auch <function>is_uploaded_file</function>, und das Kapitel
-     <link linkend="features.file-upload">Steuerung von Dateiuploads</link>
-     für ein einfaches Anwendungsbeispiel.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- EN-Revision: 310222 Maintainer: cmb Status: ready -->
+
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.move-uploaded-file">
+ <refnamediv>
+  <refname>move_uploaded_file</refname>
+  <refpurpose>Verschiebt eine hochgeladene Datei an einen neuen Ort</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>move_uploaded_file</methodname>
+   <methodparam><type>string</type><parameter>filename</parameter></methodparam>
+   <methodparam><type>string</type><parameter>destination</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Diese Funktion prüft, dass die mit <parameter>filename</parameter>
+   bezeichnete Datei eine gültige Upload-Datei ist (d.h., dass sie
+   mittels PHP's HTTP POST Upload-Mechanismus hochgeladen wurde).
+   Ist die Datei gültig, wird sie zum in
+   <parameter>destination</parameter> bezeichneten Dateinamen
+   verschoben.
+  </para>
+  <para>
+   Diese Art der Prüfung ist besonders wichtig, wo irgendeine Aktion mit
+   hochgeladenen Dateien deren Inhalt dem User zugänglich machen könnte,
+   oder gar anderen Usern auf dem selben System.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>filename</parameter></term>
+     <listitem>
+      <para>
+       Der Dateiname der hochgeladenen Datei.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>destination</parameter></term>
+     <listitem>
+      <para>
+       Das Ziel der zu verschiebenden Datei.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt bei Erfolg &true; zurück.
+  </para>
+  <para>
+   Ist <parameter>filename</parameter> keine gültige Datei, wird keine Aktion
+   ausgeführt, und <function>move_uploaded_file</function> gibt &false; zurück.
+  </para>
+  <para>
+   Ist <parameter>filename</parameter> eine gültige Datei, jedoch
+   aus irgendeinem Grund nicht verschoben werden kann, wird keine
+   Aktion ausgeführt, und <function>move_uploaded_file</function>
+   gibt &false; zurück. Zusätzlich wird eine Warnung
+   ausgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Hochladen mehrerer Dateien</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$uploads_dir = '/uploads';
+foreach ($_FILES["pictures"]["error"] as $key => $error) {
+    if ($error == UPLOAD_ERR_OK) {
+        $tmp_name = $_FILES["pictures"]["tmp_name"][$key];
+        $name = $_FILES["pictures"]["name"][$key];
+        move_uploaded_file($tmp_name, "$uploads_dir/$name");
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    <function>move_uploaded_file</function> berücksichtigt sowohl &safemode; wie
+    auch <link linkend="ini.open-basedir">open_basedir</link>. Allerdings werden
+    die Beschränkungen nur auf den <parameter>destination</parameter> Pfad
+    angewandt, um das Verschieben von hochgeladenen Dateien zu erlauben, bei
+    denen sich <parameter>filename</parameter> mit den Beschränkungen im
+    Konflikt befinden könnte. <function>move_uploaded_file</function>
+    gewährleistet die Sicherheit dieser Operation dadurch, dass nur diejenigen
+    Dateien verschoben werden dürfen, die mit PHP hochgeladen wurden.
+   </para>
+  </note>
+  <warning>
+   <para>
+    Existiert die Zieldatei bereits, wird sie überschrieben.
+   </para>
+  </warning>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>is_uploaded_file</function></member>
+    <member><function>rename</function></member>
+    <member>See <link linkend="features.file-upload">Handling file uploads</link> for a simple usage example</member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

@@ -1,42 +1,138 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.readfile" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>readfile</refname>
-    <refpurpose>Gibt eine Datei aus</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>readfile</methodname>
-      <methodparam><type>string</type><parameter>filename</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>use_include_path</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Liest den Inhalt einer Datei und schreibt ihn in den Ausgabepuffer.
-    </para>
-    <para>
-     Gibt die Anzahl der gelesenen Bytes einer Datei zurück. Wenn ein Fehler
-     auftritt wird &false; zurückgegeben und eine Fehlermeldung wird auf
-     der Standardausgabe ausgegeben. Die Ausgabe einer Fehlermeldung
-     kann durch Voranstellen eines '@' verhindert werden (@readfile).
-    </para>
-    &tip.fopen-wrapper;
-    <para>
-     Sie können optional den zweiten Parameter benutzen und diesen
-     auf '1' setzen, wenn Sie auch im <link
-     linkend="ini.include-path">include_path</link> nach der Datei
-     suchen möchten.
-    </para>
-    <para>
-     Siehe auch <function>fpassthru</function>,
-     <function>file</function>, <function>fopen</function>,
-     <function>include</function>, <function>require</function>,
-     <function>virtual</function> und <xref linkend="wrappers"/>.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- EN-Revision: 334234 Maintainer: cmb Status: ready -->
+
+<refentry xml:id="function.readfile" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>readfile</refname>
+  <refpurpose>Gibt eine Datei aus</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>readfile</methodname>
+   <methodparam><type>string</type><parameter>filename</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>use_include_path</parameter><initializer>false</initializer></methodparam>
+   <methodparam choice="opt"><type>resource</type><parameter>context</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Liest den Inhalt einer Datei und schreibt ihn in den Ausgabepuffer.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>filename</parameter></term>
+     <listitem>
+      <para>
+       Der Name der Datei, die gelesen werden soll.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>use_include_path</parameter></term>
+     <listitem>
+      <para>
+       Sie können optional den zweiten Parameter benutzen und diesen
+       auf &true; setzen, wenn Sie auch im <link
+       linkend="ini.include-path">include_path</link> nach der Datei
+       suchen möchten.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>context</parameter></term>
+     <listitem>
+      <para>
+       Eine Stream-Kontext <type>resource</type>.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt die Anzahl der gelesenen Bytes einer Datei zurück. Wenn ein Fehler
+   auftritt wird &false; zurückgegeben und, außer wenn die Funktion als
+   @<function>readfile</function> aufgerufen wurde, wird eine Fehlermeldung
+   ausgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Einen Download unter Verwendung von <function>readfile</function> erzwingen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$file = 'monkey.gif';
+
+if (file_exists($file)) {
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename='.basename($file));
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize($file));
+    readfile($file);
+    exit;
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <mediaobject>
+     <alt>Öffnen/Speichern Dialog</alt>
+     <imageobject>
+      <imagedata fileref="en/reference/filesystem/figures/readfile.png"/>
+     </imageobject>
+    </mediaobject>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    <function>readfile</function> weist für sich allein keine Speicherprobleme
+    auf, selbst wenn große Dateien gesendet werden. Wenn Sie auf einen
+    out-of-memory Fehler treffen, stellen Sie mit
+    <function>ob_get_level</function> sicher, dass die Ausgabepufferung
+    deaktiviert ist.
+   </para>
+  </note>
+  &tip.fopen-wrapper;
+  &note.context-support;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>fpassthru</function></member>
+    <member><function>file</function></member>
+    <member><function>fopen</function></member>
+    <member><function>include</function></member>
+    <member><function>require</function></member>
+    <member><function>virtual</function></member>
+    <member><function>file_get_contents</function></member>
+    <member><xref linkend="wrappers"/></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

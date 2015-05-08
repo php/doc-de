@@ -1,55 +1,153 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.fwrite" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>fwrite</refname>
-    <refpurpose>Schreibt Binärdaten in eine Datei</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>fwrite</methodname>
-      <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
-      <methodparam><type>string</type><parameter>string</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
-     </methodsynopsis>
-    <simpara>
-     <function>fwrite</function> schreibt den Inhalt einer
-     Zeichenkette <parameter>string</parameter> in die Datei, auf
-     welche der Dateizeiger <parameter>handle</parameter> zeigt. Wenn der
-     <parameter>length</parameter> Parameter gegeben ist, wird das
-     Schreiben nach <parameter>length</parameter> Bytes beendet, oder
-     wenn das Dateiende (EOF) erreicht ist. Je nachdem was eher
-     eintritt.
-    </simpara>
-    <simpara>
-     <function>fwrite</function> gibt bei Erfolg die Anzahl der
-     geschriebenen Bytes zurück, andernfalls &false;.
-    </simpara>
-    <simpara>
-     Sollte der <parameter>length</parameter> Parameter gesetzt sein, so ist zu
-     beachten, dass die <link linkend="ini.magic-quotes-runtime">magic_quotes_runtime</link>
-     Konfigurations-Option ignoriert wird und somit keine Schrägstriche mehr
-     von der Zeichenkette <parameter>string</parameter> entfernt werden.
-    </simpara>
-    <note>
-     <para>
-      Auf Systemen, welche zwischen Binär- und Textdateien (z.B. Windows)
-      unterscheiden, muss die Datei mit 'b' im <function>fopen</function>
-      Mode-Parameter geöffnet werden.
-     </para>
-    </note>
-    <para>
-     <example>
-      <title>Ein einfaches Beispiel für fwrite</title>
-      <programlisting role="php">
+<!-- EN-Revision: 297028 Maintainer: cmb Status: ready -->
+
+<refentry xml:id="function.fwrite" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>fwrite</refname>
+  <refpurpose>Binär-sicheres Dateischreiben</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>fwrite</methodname>
+   <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
+   <methodparam><type>string</type><parameter>string</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
+  </methodsynopsis>
+  <simpara>
+   <function>fwrite</function> schreibt den Inhalt der
+   Zeichenkette <parameter>string</parameter> in die Datei, auf
+   welche der Dateizeiger <parameter>handle</parameter> zeigt.
+  </simpara>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>handle</parameter></term>
+     <listitem>
+      &fs.file.pointer;
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>string</parameter></term>
+     <listitem>
+      <para>
+       Die zu schreibende Zeichenkette.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>length</parameter></term>
+     <listitem>
+      <para>
+       Wenn der <parameter>length</parameter> Parameter angegeben wird, wird das
+       Schreiben nach <parameter>length</parameter> Bytes beendet, oder wenn das
+       Ende von <parameter>string</parameter> erreicht ist, je nachdem was eher
+       eintritt.
+      </para>
+      <para>
+       Sollte der <parameter>length</parameter> Parameter gesetzt sein, so ist zu
+       beachten, dass die <link linkend="ini.magic-quotes-runtime">magic_quotes_runtime</link>
+       Konfigurations-Option ignoriert wird und somit keine Schrägstriche mehr
+       von der Zeichenkette <parameter>string</parameter> entfernt werden.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <simpara>
+   <function>fwrite</function> gibt die Anzahl der
+   geschriebenen Bytes zurück, oder &false; bei einem Fehler.
+  </simpara>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Das Schreiben in einen Netzwerkstream kann enden, bevor die gesamte
+    Zeichenkette geschrieben wurde. Der Rückgabewert von
+    <function>fwrite</function> kann wie folgt überprüft werden:
+    <programlisting role="php">
+<![CDATA[
+<?php
+function fwrite_stream($fp, $string) {
+    for ($written = 0; $written < strlen($string); $written += $fwrite) {
+        $fwrite = fwrite($fp, substr($string, $written));
+        if ($fwrite === false) {
+            return $written;
+        }
+    }
+    return $written;
+}
+?>
+]]>
+    </programlisting>
+   </para>
+  </note>
+
+  <note>
+   <para>
+    Auf Systemen, welche zwischen Binär- und Textdateien (z.B. Windows)
+    unterscheiden, muss die Datei mit 'b' im <function>fopen</function>
+    Mode-Parameter geöffnet werden.
+   </para>
+  </note>
+  <note>
+   <para>
+    Wurde <parameter>handle</parameter> mit <function>fopen</function> im
+    Anfügemodus geöffnet, ist das Schreiben mit <function>fwrite</function>
+    atomar (außer wenn die Länge von <parameter>string</parameter> die
+    Blockgröße des Dateisystems auf manchen Systemen überschreitet, und so lange
+    sich die Datei in einem lokalen Dateisystem befindet). D.h. es besteht keine
+    Notwendigkeit eine Ressource mit <function>flock</function> vor dem Aufruf
+    von <function>fwrite</function> zu sperren; alle Daten werden ohne
+    Unterbrechung geschrieben.
+   </para>
+  </note>
+  <note>
+   <para>
+    Wird zweimalig in den Dateizeiger geschrieben, werden die Daten an das
+    Ende des Dateiinhalts angehängt:
+        <programlisting role="php">
+<![CDATA[
+<?php
+$fp = fopen('data.txt', 'w');
+fwrite($fp, '1');
+fwrite($fp, '23');
+fclose($fp);
+
+// der Inhalt von 'data.txt' ist nun 123 and nicht 23!
+?>
+]]>
+        </programlisting>
+   </para>
+  </note>
+ </refsect1>
+
+
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Ein einfaches Beispiel für fwrite</title>
+    <programlisting role="php">
 <![CDATA[      
 <?php
 $filename = 'test.txt';
-$somecontent = "Füge dies Datei hinzu\n";
+$somecontent = "Füge dies der Datei hinzu\n";
 
-// Sichergehen, dass die Datei existiert und beschreibbar ist
+// Sichergehen, dass die Datei existiert und beschreibbar ist.
 if (is_writable($filename)) {
 
     // Wir öffnen $filename im "Anhänge" - Modus.
@@ -75,16 +173,25 @@ if (is_writable($filename)) {
 }
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-    <simpara>
-     Siehe auch <function>fread</function>,
-     <function>fopen</function>, <function>fsockopen</function>,
-     <function>popen</function> und <function>fputs</function>.
-    </simpara>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>fread</function></member>
+    <member><function>fopen</function></member>
+    <member><function>fsockopen</function></member>
+    <member><function>popen</function></member>
+    <member><function>file_get_contents</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
