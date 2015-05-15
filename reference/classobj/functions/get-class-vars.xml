@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 334605 Maintainer: cmb Status: ready -->
+<!-- CREDITS: hholzgra -->
+
 <refentry xml:id="function.get-class-vars" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>get_class_vars</refname>
   <refpurpose>Liefert die Vorgabeeigenschaften einer Klasse</refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
@@ -13,10 +16,10 @@
    <methodparam><type>string</type><parameter>class_name</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Liefert die bei der Definition einer Klasse vorgegebenen
-   Eigenschaftsvariablen zurück.
+   Liefert die Vorgabeeigenschaften der angegebenen Klasse.
   </para>
  </refsect1>
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -25,21 +28,24 @@
      <term><parameter>class_name</parameter></term>
      <listitem>
       <para>
-       Der Name der gewünschten Klasse
+       Der Klassenname
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert ein assoziatives Array mit den Namen und Defaultwerten
-   der öffentlichen Eigenschaftsvariablen einer Klasse. Die Arrayeinträge
+   Liefert ein assoziatives Array von deklarierten Eigenschaften, die im aktuellen
+   Geltungsbereich sichtbar sind, mit ihren Vorgabewerten. Die Arrayeinträge
    haben dabei die Form <literal>varname => value</literal>.
+   Im Fehlerfall wird &false; zurückgegeben.
   </para>
  </refsect1>
+
  <refsect1 role="changelog">
   &reftitle.changelog;
   <para>
@@ -53,10 +59,26 @@
      </thead>
      <tbody>
       <row>
-       <entry>Prior to 4.2.0</entry>
+       <entry>5.0.3</entry>
        <entry>
-        Nicht initialisierte Eigenschaften werden nun auch von
-        <function>get_class_vars</function> zurückgegeben
+        <function>get_class_vars</function> gibt nur diejenigen Eigenschaften
+        zurück, auf die aus dem aktuellen Geltungsbereich zugegriffen werden
+        kann.
+       </entry>
+      </row>
+      <row>
+       <entry>5.0.2</entry>
+       <entry>
+        Der Aufruf von <function>get_class_vars</function> zeigt nun alle
+        Eigenschaften als ein Array, im Gegensatz zu früherem Verhalten, wo
+        geschützten und privaten Eigenschaften Null-Bytes vorangestellt waren.
+       </entry>
+      </row>
+      <row>
+       <entry>5.0.1</entry>
+       <entry>
+        Der Aufruf von <function>get_class_vars</function> liefert nun alle
+        Eigenschaften, so wie wenn ein Objekt zu einem Array konvertiert wird.
        </entry>
       </row>
      </tbody>
@@ -116,7 +138,54 @@ var3 : 100
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title><function>get_class_vars</function> und geltungsbereichsabhängiges Verhalten</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function format($array)
+{
+    return implode('|', array_keys($array)) . "\r\n";
+}
+
+class TestCase
+{
+    public $a    = 1;
+    protected $b = 2;
+    private $c   = 3;
+
+    public static function expose()
+    {
+        echo format(get_class_vars(__CLASS__));
+    }
+}
+
+TestCase::expose();
+echo format(get_class_vars('TestCase'));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+// 5.0.0
+a| * b| TestCase c
+a| * b| TestCase c
+
+// 5.0.1 - 5.0.2
+a|b|c
+a|b|c
+
+// 5.0.3 +
+a|b|c
+a
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -126,6 +195,7 @@ var3 : 100
    </simplelist>
   </para>
  </refsect1>
+
 </refentry>
 
 <!-- Keep this comment at the end of the file
