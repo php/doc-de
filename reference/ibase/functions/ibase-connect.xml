@@ -1,88 +1,180 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.ibase-connect" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ibase_connect</refname>
-    <refpurpose>
-     Öffnet eine Verbindung zu einer InterBase-Datenbank
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung:</title>
-     <methodsynopsis>
-      <type>int</type><methodname>ibase_connect</methodname>
-      <methodparam><type>string</type><parameter>database</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>username</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>password</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>charset</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>buffers</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>dialect</parameter></methodparam>
-      <methodparam choice="opt"><type>string</type><parameter>role</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Stellt eine Verbindung zu einem InterBase-Server her. Das
-     <parameter>database</parameter>-Argument muss ein gültiger Pfad
-     zu einer bestehenden Datenbank des Servers sein. Ist der DB-Server
-     nicht lokal, muss ihm - in Abhängigkeit vom benutzten Protokoll -
-     ein 'hostname:' (bei TCP/IP), '//hostname/' (bei NetBEUI) oder 
-     'hostname@' (bei IPX/SPX) vorangestellt werden. Die Parameter
-     <parameter>username</parameter> und <parameter>password</parameter>
-     können auch über die PHP-Konfigurations-Anweisungen 
-     ibase.default_user und ibase.default_password gesetzt werden.
-     <parameter>Charset</parameter> ist der reguläre Zeichensatz der
-     Datenbank. Mit <parameter>buffers</parameter> geben sie die Anzahl
-     der Datenbank-Cache-Buffer (serverseitig) an. Ist der Wert 0 oder
-     nicht angegeben, benutzt der Server seine Default-Werte. Mittels
-     <parameter>dialect</parameter> bestimmen sie den Default-Wert des
-     anzuwendenden SQL-Dialekts für alle Anweisungen während einer 
-     Datenbank-Verbindung (default ist der Client-seitig höchst
-     verfügbare Dialekt).
-    </para>
-    <para>
-     Wenn <function>ibase_connect</function> mit den selben Argumenten
-     erneut aufgerufen wird, wird keine neue Verbindung hergestellt,
-     sondern die ID der bereits geöffneten Verbindung zurück gegeben.
-     Die Verbindung zum InterBase-Server wird am Ende des jeweiligen
-     Skripts automatisch beendet, es sei denn, es wird vorher die
-     Funktion <function>ibase_close</function> aufgerufen.
-     <example>
-      <title><function>ibase_connect</function>-Beispiel:</title>
-      <programlisting role="php">
-&lt;?php
-    $dbh = ibase_connect ($host, $username, $password);
-    $stmt = 'SELECT * FROM tblname';
-    $sth = ibase_query ($dbh, $stmt);
-    while ($row = ibase_fetch_object ($sth)) {
-        print $row->email . "\n";
-    }
-    ibase_close ($dbh);
+<!-- EN-Revision: 327663 Maintainer: cmb Status: ready -->
+
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.ibase-connect">
+ <refnamediv>
+  <refname>ibase_connect</refname>
+  <refpurpose>Öffnet eine Verbindung zu einer Datenbank</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>ibase_connect</methodname>
+   <methodparam choice="opt"><type>string</type><parameter>database</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>username</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>password</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>charset</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>buffers</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>dialect</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>role</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>sync</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Stellt eine Verbindung zu einem Firebird/InterBase-Server her.
+  </para>
+  <para>
+   Wenn <function>ibase_connect</function> mit den selben Argumenten
+   erneut aufgerufen wird, wird keine neue Verbindung hergestellt,
+   sondern die ID der bereits geöffneten Verbindung zurück gegeben.
+   Die Verbindung zum InterBase-Server wird am Ende des jeweiligen
+   Skripts automatisch beendet, es sei denn, es wird vorher die
+   Funktion <function>ibase_close</function> aufgerufen.
+  </para>
+
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>database</parameter></term>
+     <listitem>
+      <para>
+       Das <parameter>database</parameter>-Argument muss ein gültiger Pfad zu
+       einer bestehenden Datenbank des Servers sein. Ist der DB-Server nicht
+       lokal, muss ihm - in Abhängigkeit vom benutzten Protokoll - ein
+       'hostname:' (bei TCP/IP) oder '//hostname/' (bei NetBEUI) vorangestellt
+       werden.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>username</parameter></term>
+     <listitem>
+      <para>
+       Der Benutzername. Kann mit der <literal>ibase.default_user</literal>
+       &php.ini; Direktive festgelegt werden.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>password</parameter></term>
+     <listitem>
+      <para>
+       Das Passwort für <parameter>username</parameter>. Kann mit der
+       <literal>ibase.default_password</literal> &php.ini; Direktive festegelegt
+       werden.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>charset</parameter></term>
+     <listitem>
+      <para>
+       <parameter>charset</parameter> ist der reguläre Zeichensatz der
+       Datenbank.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>buffers</parameter></term>
+     <listitem>
+      <para>
+       Mit <parameter>buffers</parameter> geben sie die Anzahl
+       der Datenbank-Cache-Buffer (serverseitig) an. Ist der Wert 0 oder
+       nicht angegeben, benutzt der Server seine Default-Werte.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>dialect</parameter></term>
+     <listitem>
+      <para>
+       Mittels
+       <parameter>dialect</parameter> bestimmen sie den Default-Wert des
+       anzuwendenden SQL-Dialekts für alle Anweisungen während einer
+       Datenbank-Verbindung (default ist der Client-seitig höchst
+       verfügbare Dialekt).
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>role</parameter></term>
+     <listitem>
+      <para>
+       Wirkt nur unter InterBase 5 und höher.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>sync</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt bei Erfolg eine Firebird/Interbase Verbindungs-ID zurück, oder &false;
+   im Fehlerfall.
+  </para>
+ </refsect1>
+
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <para>
+   Erhalten Sie Fehlermeldungen wie "arithmetic exception, numeric overflow, or
+   string truncation. Cannot transliterate character between character sets"
+   (diese treten auf, wenn Sie Zeichen mit Akzent verwenden), wenn Sie diese
+   Funktion und <function>ibase_query</function> verwenden, müssen Sie den
+   Zeichensatz (d.h. ISO8859_1 oder Ihren aktuellen Zeichensatz) einstellen.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>ibase_connect</function>-Beispiel:</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$host = 'localhost:/pfad/zu/ihrer.gdb';
+
+$dbh = ibase_connect($host, $username, $password);
+$stmt = 'SELECT * FROM tblname';
+$sth = ibase_query($dbh, $stmt);
+while ($row = ibase_fetch_object($sth)) {
+    echo $row->email, "\n";
+}
+ibase_free_result($sth);
+ibase_close($dbh);
 ?>
-      </programlisting>
-     </example>
-    </para>
-    <note>
-     <para>
-      <parameter>Buffers</parameter> existiert seit PHP4-RC2.
-     </para>
-    </note>
-    <note>
-     <para>
-      <parameter>Dialect</parameter> wurde in PHP4-RC2 hinzugefügt.
-       Er funktioniert ab der InterBase-Version 6.
-     </para>
-    </note>
-    <note>
-     <para>
-      <parameter>Role</parameter> existiert seit PHP4-RC2. Er
-      funktioniert ab der InterBase-Version 5.
-     </para>
-    </note>
-    <para>
-     Siehe auch: <function>ibase_pconnect</function>.
-    </para>
-   </refsect1>
-  </refentry>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ibase_pconnect</function></member>
+    <member><function>ibase_close</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
