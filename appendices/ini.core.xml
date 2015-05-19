@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 325214 Maintainer: nikic Status: ready -->
+<!-- EN-Revision: 336606 Maintainer: nikic Status: ready -->
 
 <section xml:id="ini.core" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Beschreibung der &php.ini;-Direktiven des Sprachkerns</title>
@@ -13,6 +13,13 @@
   Konfiguration von Sessions auf den <link linkend="session.configuration"
   >Session-Handbuchseiten</link> gefunden werden.
  </para>
+ <note>
+  <para>
+   Die Voreinstellungen, die hier aufgeführt werden, gelten, wenn &php.ini;
+   nicht geladen wurde. Die Werte für die Produktions- und
+   Entwicklungs-&php.ini; können anders sein.
+  </para>
+ </note>
  
  <section xml:id="ini.sect.httpd-options">
   <title>Httpd-Optionen</title>
@@ -61,8 +68,8 @@
       <row>
        <entry><link linkend="ini.short-open-tag">short_open_tag</link></entry>
        <entry>"1"</entry>
-       <entry>PHP_INI_ALL</entry>
-       <entry>PHP_INI_ALL in PHP &lt;= 4.0.0. PHP_INI_PERDIR in PHP &lt; 5.3.0</entry>
+       <entry>PHP_INI_PERDIR</entry>
+       <entry>PHP_INI_ALL in PHP &lt;= 4.0.0. PHP_INI_PERDIR in PHP &gt;= 4.0.1.</entry>
       </row>
       <row>
        <entry><link linkend="ini.asp-tags">asp_tags</link></entry>
@@ -97,7 +104,7 @@
       <row>
        <entry><link linkend="ini.disable-functions">disable_functions</link></entry>
        <entry>""</entry>
-       <entry>Nur &php.ini;</entry>
+       <entry>Nur PHP_INI_SYSTEM</entry>
        <entry>Verfügbar seit PHP 4.0.1.</entry>
       </row>
       <row>
@@ -131,6 +138,12 @@
        <entry>Verfügbar seit PHP 5.4.0.</entry>
       </row>
       <row>
+       <entry><link linkend="ini.zend.detect-unicode">zend.detect-unicode</link></entry>
+       <entry>NULL</entry>
+       <entry>PHP_INI_ALL</entry>
+       <entry>Verfügbar seit PHP 5.4.0</entry>
+      </row>
+      <row>
        <entry><link linkend="ini.zend.signal-check">zend.signal_check</link></entry>
        <entry>"0"</entry>
        <entry>PHP_INI_SYSTEM</entry>
@@ -143,10 +156,14 @@
        <entry>Verfügbar seit PHP 5.0.0. Entfernt ab PHP 5.3.0</entry>
       </row>
       <row>
-       <entry><link linkend="ini.detect-unicode">detect_unicode</link></entry>
+       <entry>detect_unicode</entry>
        <entry>"1"</entry>
        <entry>PHP_INI_ALL</entry>
-       <entry>Verfügbar seit PHP 5.1.0. &removed.php.future;</entry>
+       <entry>
+        Verfügbar seit PHP 5.1.0. Umbenannt zu <link
+        linkend="ini.zend.detect-unicode">zend.detect-unicode</link> ab PHP
+        5.4.0.
+       </entry>
       </row>
      </tbody>
     </tgroup>
@@ -198,6 +215,27 @@
        &lt;%= $value %&gt;. Weitere Informationen finden Sie hier:
        <link linkend="language.basic-syntax.phpmode">Den HTML-Bereich der Datei verlassen</link>.
       </simpara>
+      <para>
+       <table>
+        <title>Changelog für <literal>asp_tags</literal></title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>&Version;</entry>
+           <entry>&Description;</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>7.0.0</entry>
+           <entry>
+            Von PHP entfernt.
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
      </listitem>
     </varlistentry>
     
@@ -315,12 +353,22 @@
       <para>
        Bestimmt, ob PHP die Tatsache, dass es auf dem Server installiert
        ist, über einen Header bekannt geben darf (z.B. X-Powered-By: PHP/5.3.7).
-       Weiterhin wird dadurch kontrolliert, ob das PHP-Logo durch das Anhängen
+       Vor PHP 5.5.0 wurde weiterhin dadurch kontrolliert, ob das PHP-Logo durch das Anhängen
        eines speziellen URL-Segments erreichbar ist (z.B.
        <link xlink:href="&url.php;?=PHPE9568F34-D428-11d2-A769-00AA001ACF42">&url.php;?=PHPE9568F34-D428-11d2-A769-00AA001ACF42</link>).
-       Dies beeinflusst die Ausgabe von <function>phpinfo</function>, da bei
-       Ausgeschalteter Option das PHP-Logo und die Credits nicht angezeigt werden.
+       Dies beeinflusste die Ausgabe von <function>phpinfo</function>, da bei
+       ausgeschalteter Option das PHP-Logo und die Credits nicht angezeigt würden.
       </para>
+      <note>
+       <para>
+        Ab PHP 5.5.0 wurden diese GUIDs und die Funktion
+        <function>php_logo_guid</function> entfernt, und die GUIDs durch
+        Data-URIs ersetzt. Daher kann nicht länger auf das PHP-Logo durch
+        Anhängen der GUID an die URL zugegriffen werden. Entsprechend wird das
+        Setzen von <parameter>expose_php</parameter> auf Off die Anzeige des
+        PHP-Logos in <function>phpinfo</function> nicht beeinflussen.
+       </para>
+      </note>
       <para>
        Weitere Informationen unter <function>php_logo_guid</function> und <function>phpcredits</function>.
       </para>
@@ -408,7 +456,11 @@
      </term>
      <listitem>
       <para>
-       Erlaubt das Parsen von Source Code Dateien in Multibyte Encodings.
+       Erlaubt das Parsen von Source Code Dateien in Multibyte Encodings. Die
+       Aktivierung von zend.multibyte ist erforderlich um Zeichenkodierungen wie
+       SJIS, BIG5, usw. zu verwenden, die besondere Zeichen in multibyte
+       Zeichenkettendaten enthalten. ISO-8859-1 kompatible Kodierungen wie
+       UTF-8, EUC, usw. erfordern diese Option nicht.
       </para>
      </listitem>
     </varlistentry>
@@ -422,24 +474,14 @@
       <para>
        Dieser Wert wird benutzt, sofern keine
        <link linkend="control-structures.declare.encoding">declare(encoding=...)</link>
-       Direktive am Anfang des Skriptes genutzt wird.
+       Direktive am Anfang des Skriptes genutzt wird. Wird eine ISO-8859-1
+       inkompatible Kodierung verwendet, müssen sowohl zend.multibyte als auch
+       zend.script_encoding verwendet werden.
       </para>
      </listitem>
     </varlistentry>
     
-    <varlistentry xml:id="ini.zend.signal-check">
-     <term>
-      <parameter>zend.signal_check</parameter>
-      <type>boolean</type>
-     </term>
-     <listitem>
-      <para>
-       Ob während des Shutdowns geprüft werden soll, ob Signal Handler ersetzt wurden.
-      </para>
-     </listitem>
-    </varlistentry>
-    
-    <varlistentry xml:id="ini.detect-unicode">
+    <varlistentry xml:id="ini.zend.detect-unicode">
      <term>
       <parameter>detect_unicode</parameter>
       <type>boolean</type>
@@ -451,6 +493,18 @@
        Diese Erkennung wird vorgenommen bevor
        <function>__halt_compiler</function> verarbeitet wird.
        Diese Option ist nur im Zend Multibyte Modus verfügbar.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry xml:id="ini.zend.signal-check">
+     <term>
+      <parameter>zend.signal_check</parameter>
+      <type>boolean</type>
+     </term>
+     <listitem>
+      <para>
+       Ob während des Shutdowns geprüft werden soll, ob Signal Handler ersetzt wurden.
       </para>
      </listitem>
     </varlistentry>
@@ -582,6 +636,17 @@
        sollte auf Systemen erhöht werden, auf denen PHP viele Dateien öffnet,
        um die Anzahl von Dateioperationen widerzuspiegeln.
       </para>
+      <para>
+       Die Größe stellt die Gesamtzahl von Bytes der gespeicherten
+       Pfad-Zeichenketten dar, plus die Größe der Daten, die mit dem
+       Cache-Eintrag verknüpft sind. Das bedeutet, dass der Cache größer sein
+       muss, um längere Pfade im Cache zu speichern. Dieser Wert steuert nicht
+       direkt die Anzahl der individuellen Pfade, die im Cache vorgehalten
+       werden können.
+      </para>
+      <para>
+       Die benötigte Größe für die Cache-Eintragsdaten ist systemabhängig.
+      </para>
      </listitem>
     </varlistentry>
     <varlistentry xml:id="ini.realpath-cache-ttl">
@@ -617,12 +682,6 @@
       </row>
      </thead>
      <tbody>
-      <row>
-       <entry><link linkend="ini.track-vars">track_vars</link></entry>
-       <entry>"On"</entry>
-       <entry>PHP_INI_??</entry>
-       <entry></entry>
-      </row>
       <row>
        <entry><link linkend="ini.arg-separator.output">arg_separator.output</link></entry>
        <entry>"&amp;"</entry>
@@ -669,7 +728,13 @@
        <entry><link linkend="ini.register-long-arrays">register_long_arrays</link></entry>
        <entry>"1"</entry>
        <entry>PHP_INI_PERDIR</entry>
-       <entry>Verfügbar seit PHP 5.0.0.</entry>
+       <entry>Verfügbar seit PHP 5.0.0. Missbilligt in PHP 5.3.0. Entfernt in PHP 5.4.0.</entry>
+      </row>
+      <row>
+       <entry><link linkend="ini.enable-post-data-reading">enable_post_data_reading</link></entry>
+       <entry>"1"</entry>
+       <entry>PHP_INI_PERDIR</entry>
+       <entry>Verfügbar seit PHP 5.4.0</entry>
       </row>
       <row>
        <entry><link linkend="ini.post-max-size">post_max_size</link></entry>
@@ -681,7 +746,7 @@
        <entry><link linkend="ini.gpc-order">gpc_order</link></entry>
        <entry>"GPC"</entry>
        <entry>PHP_INI_ALL</entry>
-       <entry></entry>
+       <entry>Entfernt in PHP 5.0.0.</entry>
       </row>
       <row>
        <entry><link linkend="ini.auto-prepend-file">auto_prepend_file</link></entry>
@@ -703,21 +768,15 @@
       </row>
       <row>
        <entry><link linkend="ini.default-charset">default_charset</link></entry>
-       <entry>""</entry>
+       <entry>"UTF-8"</entry>
        <entry>PHP_INI_ALL</entry>
-       <entry></entry>
+       <entry>Standardmäßig "UTF-8" in PHP &gt;= 5.6.0; leer in PHP &lt; 5.6.0.</entry>
       </row>
       <row>
        <entry><link linkend="ini.always-populate-raw-post-data">always_populate_raw_post_data</link></entry>
        <entry>"0"</entry>
        <entry>PHP_INI_PERDIR</entry>
        <entry>PHP_INI_ALL in PHP &lt;= 4.2.3. Verfügbar seit PHP 4.1.0.</entry>
-      </row>
-      <row>
-       <entry><link linkend="ini.allow-webdav-methods">allow_webdav_methods</link></entry>
-       <entry>"0"</entry>
-       <entry>PHP_INI_PERDIR</entry>
-       <entry></entry>
       </row>
      </tbody>
     </tgroup>
@@ -728,29 +787,6 @@
   
   <para>
    <variablelist>
-    <varlistentry xml:id="ini.track-vars">
-     <term>
-      <parameter>track_vars</parameter>
-      <type>boolean</type>
-     </term>
-     <listitem>
-      <para>
-       Wenn diese Option aktiviert ist, sind Umgebungs-, GET-, POST-,
-       Cookie- und Server-Variablen in den globalen assoziativen
-       Arrays
-       <varname>$_ENV</varname>,
-       <varname>$_GET</varname>,
-       <varname>$_POST</varname>,
-       <varname>$_COOKIE</varname>, und
-       <varname>$_SERVER</varname>.
-      </para>
-      <para>
-       Beachten Sie, dass seit PHP 4.0.3, <systemitem
-       role="directive">track_vars</systemitem> immer eingeschaltet ist.
-      </para>
-     </listitem>
-    </varlistentry>
-    
     <varlistentry xml:id="ini.arg-separator.output">
      <term>
       <parameter>arg_separator.output</parameter>
@@ -1033,6 +1069,36 @@
         </para>
        </note>
       </para>
+      <para>
+       <table>
+        <title>Changelog für <literal>post_max_size</literal></title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>&Version;</entry>
+           <entry>&Description;</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>5.3.4</entry>
+           <entry>
+            <parameter>post_max_size</parameter> = 0 deaktiviert die Begrenzung
+            nicht, wenn der Content-Type application/x-www-form-urlencoded oder
+            PHP nicht bekannt ist.
+           </entry>
+          </row>
+          <row>
+           <entry>5.3.2 , 5.2.12</entry>
+           <entry>
+            Erlaubt unbegrenzte POST-Größe durch Setzen von
+            <parameter>post_max_size</parameter> auf 0.
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
      </listitem>
     </varlistentry>
     
@@ -1050,7 +1116,7 @@
       </para>
       <note>
        <para>
-        Diese Option ist in PHP 4 nicht verfügbar. Benutzen Sie stattdessen
+        Diese Option wurde in PHP 5.0.0 entfernt. Benutzen Sie stattdessen
         <link linkend="ini.variables-order">variables_order</link>.
        </para>
       </note>
@@ -1122,47 +1188,107 @@
      </term>
      <listitem>
       <para>
-       Seit Version 4.0.0 gibt PHP standardmäßig immer eine Zeichen-Kodierung
-       im "Content-type:"-Header aus. Um dies zu verhindern, lassen Sie diese
-       Option leer.
+       Von PHP 5.6 an ist der Vorgabewert "UTF-8", und dieser Wert wird als
+       Standard-Zeichenkodierung für <function>htmlentities</function>,
+       <function>html_entity_decode</function> und
+       <function>htmlspecialchars</function> verwendet, wenn der
+       <parameter>encoding</parameter> Parameter ausgelassen wird. Der Wert von
+       <parameter>default_charset</parameter> wird ebenfalls verwendet, um den
+       Standard-Zeichensatz für <link linkend="book.iconv">iconv</link>
+       Funktionen festzulegen, wenn die <link
+       linkend="ini.iconv.input-encoding"><parameter>iconv.input_encoding</parameter></link>,
+       <link
+       linkend="ini.iconv.output-encoding"><parameter>iconv.output_encoding</parameter></link>
+       und <link
+       linkend="ini.iconv.internal-encoding"><parameter>iconv.internal_encoding</parameter></link>
+       Konfigurationsoptionen nicht gesetzt sind, und für <link
+       linkend="book.mbstring">mbstring</link> Funktionen, wenn die <link
+       linkend="ini.mbstring.internal-encoding"><parameter>mbstring.internal_encoding</parameter></link>,
+       <link linkend="ini.mbstring.http-input"><parameter>mbstring.http_input</parameter></link> und
+       <link linkend="ini.mbstring.http-output"><parameter>mbstring.http_output</parameter></link>
+       Konfigurationsoptionen nicht gesetzt sind.
+      </para>
+      <para>
+       Alle Versionen von PHP verwenden diesen Wert als Zeichensatz im
+       Standard-Content-Type Header, der von PHP gesendet wird, wenn der Header
+       nicht durch einen Aufruf von <function>header</function> übersteuert
+       wurde.
+      </para>
+      <para>
+       <parameter>default_charset</parameter> auf einen leeren Wert zu setzen,
+       wird nicht empfohlen.
       </para>
      </listitem>
     </varlistentry>
     
+     <varlistentry xml:id="ini.input-encoding">
+      <term>
+       <parameter>input_encoding</parameter>
+       <type>string</type>
+      </term>
+      <listitem>
+       <para>
+        Verfügbar ab PHP 5.6.0. Diese Einstellung wird für Multibyte-Module wie
+        mbstring und iconv verwenden. Standardwert ist leer.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry xml:id="ini.output-encoding">
+      <term>
+       <parameter>output_encoding</parameter>
+       <type>string</type>
+      </term>
+      <listitem>
+       <para>
+        Verfügbar ab PHP 5.6.0. Diese Einstellung wird für Multibyte-Module wie
+        mbstring und iconv verwenden. Standardwert ist leer.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry xml:id="ini.internal-encoding">
+      <term>
+       <parameter>internal_encoding</parameter>
+       <type>string</type>
+      </term>
+      <listitem>
+       <para>
+        Verfügbar ab PHP 5.6.0. Diese Einstellung wird für Multibyte-Module wie
+        mbstring und iconv verwenden. Standardwert ist leer. Falls leer, dann
+        wird <link linkend="ini.default-charset">default_charset</link>
+        verwendet.
+       </para>
+      </listitem>
+     </varlistentry>
+
     <varlistentry xml:id="ini.always-populate-raw-post-data">
      <term>
       <parameter>always_populate_raw_post_data</parameter>
-      <type>boolean</type>
+      <type>mixed</type>
      </term>
      <listitem>
       <para>
-       Bestimmt, ob die Variable <varname>$HTTP_RAW_POST_DATA</varname>
-       mit den unbehandelten POST Daten gefüllt werden soll. Andernfalls
-       wird die Variable nur mit Daten von unbekanntem MIME Typ gefüllt. 
+       Wird dies auf &true; gesetzt, wird die Variable <varname>$HTTP_RAW_POST_DATA</varname>
+       mit den unbehandelten POST Daten gefüllt. Andernfalls
+       wird die Variable nur gefüllt, wenn der MIME Typ der Daten unbekannt ist.
+      </para>
+      <para>
        Die bevorzugte Methode, um auf unbehandelte POST Daten zuzugreifen
-       ist aber <link linkend="wrappers.php">php://input</link>.
-       <varname>$HTTP_RAW_POST_DATA</varname> ist bei
+       ist <link linkend="wrappers.php">php://input</link>, und
+       <varname>$HTTP_RAW_POST_DATA</varname> ist von PHP 5.6.0 an missbilligt.
+       Das Setzen von <parameter>always_populate_raw_post_data</parameter> auf
+       <literal>-1</literal> aktiviert das neue Verhalten, das in einer
+       künftigen Version von PHP implementiert wird, wo
+       <varname>$HTTP_RAW_POST_DATA</varname> nie definiert ist.
+      </para>
+      <para>
+       Unabhängig von der Einstellung, ist <varname>$HTTP_RAW_POST_DATA</varname> bei
        <literal>enctype="multipart/form-data"</literal> nicht verfügbar.
       </para>
      </listitem>
     </varlistentry>
     
-    <varlistentry xml:id="ini.allow-webdav-methods">
-     <term>
-      <parameter>allow_webdav_methods</parameter>
-      <type>boolean</type>
-     </term>
-     <listitem>
-      <para>
-       Diese Einstellung steht nur für Versionen bis PHP 4.3.2 zur Verfügung. 
-       Bestimmt, ob WebDAV-HTTP-Requests in PHP-Skripten erlaubt sein sollen
-       (z.B. PROPFIND, PROPPATCH, MOVE, COPY, etc.). Wenn Sie die POST-Daten
-       solcher Requests erhalten wollen, müssen Sie auch <link
-       linkend="ini.always-populate-raw-post-data">
-       always_populate_raw_post_data</link> aktivieren.
-      </para>
-     </listitem>
-    </varlistentry>
    </variablelist>
   </para>
   <para>
@@ -1352,6 +1478,28 @@ include_path=".;c:\php\includes"
        schreiben, anstatt PHP zu zwingen jedes Mal den include path
        zu nutzen.
       </para>
+       <note>
+        <para>
+         Auf <literal>ENV</literal> kann in .ini Dateien ebenfalls zugegriffen
+         werden. Daher ist es möglich das Home-Verzeichnis durch
+         <literal>${LOGIN}</literal> und <literal>${USER}</literal> zu
+         referenzieren.
+        </para>
+        <para>
+         Umgebungsvariablen können zwischen verschiedenen Server APIs variieren,
+         da diese Umgebungen unterschiedlich sein können.
+        </para>
+       </note>
+       <para>
+        <example>
+         <title>include_path unter Unix unter Verwendung der ${USER} Umgebungsvariablen</title>
+         <programlisting role="php.ini">
+<![CDATA[
+include_path = ".:${USER}/pear/php"
+]]>
+         </programlisting>
+        </example>
+       </para>
      </listitem>
     </varlistentry>
     
@@ -1362,21 +1510,30 @@ include_path=".;c:\php\includes"
      </term>
      <listitem>
       <para>
-       Begrenzt die Dateien, die von PHP geöffnet werden auf einen bestimmten
+       Begrenzt die Dateien, auf die von PHP zugegriffen werden kann, auf einen bestimmten
        Ordner inklusive seiner Unterordner. Diese Direktive ist wirksam, 
        <emphasis>EGAL</emphasis>, ob Safe Mode an oder aus ist.
       </para>
       <para>
-       Wenn ein Skript versucht, eine Datei zu öffnen, zum Beispiel mit
-       <function>fopen</function> oder <function>gzopen</function>, wird
+       Wenn ein Skript versucht, auf eine Datei zuzugreifen, zum Beispiel mit
+       <function>include</function> oder <function>fopen</function>, wird
        der Ort der Datei geprüft. Wenn die Datei nicht im Verzeichnisbaum,
-       der in open_basedir angegeben ist, liegt, wird PHP die Datei nicht
-       öffnen. Alle symbolischen Verknüpfungen werden aufgelöst, sodass es
+       der in open_basedir angegeben ist, liegt, wird PHP nicht auf die Datei
+       zugreifen. Alle symbolischen Verknüpfungen werden aufgelöst, sodass es
        nicht möglich ist, diese Beschränkung mit einem Symlink zu umgehen.
        Wenn die Datei nicht existiert kann die Verknüpfung nicht aufgelöst
        werden und der Dateiname wird mit (einem aufgelösten) <option>open_basedir</option>
        verglichen.
       </para>
+       <para>
+        <option>open_basedir</option> kann sich auf mehr als nur
+        Dateisystemfunktionen auswirken; zum Beispiel ist, wenn
+        <literal>MySQL</literal> konfiguriert ist <literal>mysqlnd</literal>
+        Treiber zu verwenden, <literal>LOAD DATA INFILE</literal> von
+        <option>open_basedir</option> betroffen. Viel der erweiterten
+        Funktionalität von PHP verwendet <literal>open_basedir</literal> auf
+        diese Weise.
+       </para>
       <para>
        Der spezielle Wert <systemitem class="filesystem">.</systemitem> gibt
        an, dass das Arbeitsverzeichnes des Skriptes das Basis-Verzeichnis ist.
@@ -1491,7 +1648,7 @@ include_path=".;c:\php\includes"
      </term>
      <listitem>
       <para>
-       Absoluter Pfad zu einer dynamisch ladbaren Zend Extension (beispielsweise
+       Name einer dynamisch ladbaren Zend Extension (beispielsweise
        <link linkend="book.apd">APD</link>), welche geladen werden soll, wenn PHP startet.
       </para>
      </listitem>
@@ -1629,11 +1786,21 @@ include_path=".;c:\php\includes"
       <para>
        Bestimmt, welcher Typ von Headern benutzt werden soll, wenn
        HTTP-Antwort-Codes gesendet werden. Wenn diese Option auf 0 gesetzt
-       ist, sendet PHP einen "Status:"-Header, der von Apache und anderen
+       ist, sendet PHP einen <link xlink:href="&url.rfc;3875">RFC 3875</link> "Status:"-Header, der von Apache und anderen
        Webservern unterstützt wird. Ist sie auf 1 gesetzt, sendet PHP
        einen zu <link xlink:href="&url.rfc;2616">RFC 2616</link> konformen
-       Header. Wenn Sie diese Option nicht verstehen, lassen Sie den Wert auf 0.
+       Header.
       </para>
+       <para>
+        Ist diese Option aktiviert, und Sie führen PHP in einer CGI-Umgebung
+        (z.B. PHP-FPM) aus, sollten Sie keine üblichen RFC 2616 HTTP
+        Status-Response-Header verwenden; statt dessen sollten Sie ihre RFC 3875
+        Pendants nutzen, z.B. sollten Sie anstelle von header("HTTP/1.0 404 Not
+        found"); header("Status: 404 Not Found"); verwenden.
+       </para>
+       <para>
+        Wenn Sie diese Option nicht verstehen, lassen Sie den Wert auf 0.
+       </para>
      </listitem>
     </varlistentry>
     
@@ -1733,7 +1900,7 @@ include_path=".;c:\php\includes"
     <varlistentry xml:id="ini.file-uploads">
      <term>
       <parameter>file_uploads</parameter>
-      <type>boolean</type> oder <type>integer</type>
+      <type>boolean</type>
      </term>
      <listitem>
       <para>
@@ -1743,9 +1910,6 @@ include_path=".;c:\php\includes"
        <link linkend="ini.upload-tmp-dir">upload_tmp_dir</link> und
        <link linkend="ini.post-max-size">post_max_size</link>.
       </para>
-      
-      &ini.shorthandbytes;
-      
      </listitem>
     </varlistentry>
     
@@ -1841,10 +2005,10 @@ include_path=".;c:\php\includes"
      </term>
      <listitem>
       <para>
-       Wenn diese Option eingeschaltet wird, werden Datenbankfunktionen, die
+       Wenn diese Option eingeschaltet wird, werden Datenbankverbindungsfunktionen, die
        Standardwerte vorgeben diese Werte anstelle der angegebenen Parameter
        verwenden. Zu Informationen über Standardwerte können Sie einen Blick
-       auf die Dokumentation der Connect-Funktion der relevanten Datenbank
+       auf die Dokumentation der Verbindungsfunktion der relevanten Datenbank
        werfen.
       </para>
      </listitem>
