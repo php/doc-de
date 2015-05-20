@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 333299 Maintainer: hholzgra Status: working -->
+<!-- EN-Revision: 336788 Maintainer: cmb Status: ready -->
+
 <sect1 xml:id="control-structures.switch" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title><literal>switch</literal></title>
  <?phpdoc print-version-for="switch"?>
@@ -29,6 +30,35 @@
   </para>
  </note>
  <para>
+  <table>
+   <title>Changelog</title>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>7.0.0</entry>
+      <entry>
+       Mehrere default case Anweisungen erzeugen einen
+       <constant>E_COMPILE_ERROR</constant> Fehler.
+      </entry>
+     </row>
+     <row>
+      <entry>TBD</entry>
+      <entry>
+       Mehrere default case Anweisungen erzeugen einen
+       <constant>E_DEPRECATED</constant> Fehler.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
+ </para>
+ <para>
   Die folgenden beiden Beispiele zeigen zwei verschiedene Wege
   um das gleiche Verhalten zu erreichen. Eines benutzt eine 
   Folge von <literal>if</literal> und <literal>elseif</literal> 
@@ -40,22 +70,22 @@
 <![CDATA[
 <?php
 if ($i == 0) {
-    echo "i equals 0";
+    echo "i ist gleich 0";
 } elseif ($i == 1) {
-    echo "i equals 1";
+    echo "i ist gleich 1";
 } elseif ($i == 2) {
-    echo "i equals 2";
+    echo "i ist gleich 2";
 }
 
 switch ($i) {
     case 0:
-        echo "i equals 0";
+        echo "i ist gleich 0";
         break;
     case 1:
-        echo "i equals 1";
+        echo "i ist gleich 1";
         break;
     case 2:
-        echo "i equals 2";
+        echo "i ist gleich 2";
         break;
 }
 ?>
@@ -63,19 +93,19 @@ switch ($i) {
    </programlisting>
   </example>
   <example>
-   <title><literal>switch</literal> gestattet den Vergleich mit Strings</title>
+   <title><literal>switch</literal> gestattet die Verwendung von Strings</title>
    <programlisting role="php">
 <![CDATA[
 <?php
 switch ($i) {
-    case "apple":
-        echo "i is apple";
+    case "Apfel":
+        echo "i ist Apfel";
         break;
-    case "bar":
-        echo "i is bar";
+    case "Balken":
+        echo "i ist Balken";
         break;
-    case "cake":
-        echo "i is cake";
+    case "Kuchen":
+        echo "i ist Kuchen";
         break;
 }
 ?>
@@ -89,25 +119,25 @@ switch ($i) {
   <literal>switch</literal> Anweisung wird zeilenweise (genauer:
   Anweisung für Anweisung) ausgewertet. Zunächst einmal wird
   überhaupt kein Code ausgeführt. Erst wenn eine <literal>case</literal>
-  Anweisung gefunden wird die dem Wert des an <literal>switch</literal>
-  übergebenen Ausdrucks entspricht beginnt PHP tatsächlich die folgenden
+  Anweisung gefunden wird, die dem Wert des an <literal>switch</literal>
+  übergebenen Ausdrucks entspricht, beginnt PHP tatsächlich die folgenden
   Anweisungen auszuführen. Die Ausführung wird fortgesetzt bis das Ende
   der <literal>switch</literal> Anweisung erreicht ist oder bis PHP 
   bei der Ausführung auf eine <literal>break</literal> Anweisung stößt.
-  Wenn Sie am Ende eines <literal>case</literal> Blocks kein <literal
-  >break</literal> setzen so wird die Ausführung mit dem nächsten
-  <literal>case</literal> fortgesetzt, z.B.:
+  Wenn Sie am Ende der Anweisungsliste eines case kein <literal
+  >break</literal> setzen, so wird die Ausführung mit dem nächsten
+  case fortgesetzt, z.B.:
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
 switch ($i) {
     case 0:
-        echo "i equals 0";
+        echo "i ist gleich 0";
     case 1:
-        echo "i equals 1";
+        echo "i ist gleich 1";
     case 2:
-        echo "i equals 2";
+        echo "i ist gleich 2";
 }
 ?>
 ]]>
@@ -115,25 +145,25 @@ switch ($i) {
   </informalexample>
  </para>
  <simpara>
-  Here, if <varname>$i</varname> is equal to 0, PHP would execute all of the echo
-  statements!  If <varname>$i</varname> is equal to 1, PHP would execute the last two
-  echo statements. You would get the expected behavior ('i equals 2'
-  would be displayed) only if <varname>$i</varname> is equal to 2.  Thus,
-  it is important not to forget <literal>break</literal> statements
-  (even though you may want to avoid supplying them on purpose under
-  certain circumstances).
+  Wenn in diesem Beispiel <varname>$i</varname> gleich 0 ist, führt PHP alle
+  echo Anweisungen aus! Ist <varname>$i</varname> gleich 1, führt PHP die
+  letzten beiden echo Anweisungen aus. Sie erreichen das erwartete Verhalten
+  nur, wenn <varname>$i</varname> gleich 2 ist. Daher ist es wichtig
+  <literal>break</literal> Anweisungen nicht zu vergessen (auch wenn Sie
+  gelegentlich absichtlich darauf verzichten werden, diese unter bestimmten
+  Bedingungen anzugeben).
  </simpara>
  <simpara>
-  In a <literal>switch</literal> statement, the condition is
-  evaluated only once and the result is compared to each
-  <literal>case</literal> statement. In an <literal>elseif</literal>
-  statement, the condition is evaluated again. If your condition is
-  more complicated than a simple compare and/or is in a tight loop,
-  a <literal>switch</literal> may be faster.
+  In einer <literal>switch</literal> Anweisung wird die Bedingung nur einmal
+  ausgewertet und das Ergebnis mit jeder <literal>case</literal> Anweisung
+  verglichen. In einer <literal>elseif</literal> Anweisung wird die Bedingung
+  erneut ausgewertet. Wenn Ihre Bedingung komplizierter ist als ein einfacher
+  Vergleich, und/oder sich in einer dichten Schleife befindet, kann ein
+  <literal>switch</literal> schneller sein.
  </simpara>
  <para>
-  The statement list for a case can also be empty, which simply
-  passes control into the statement list for the next case.
+  Die Anweisungsliste eines case kann ebenso leer sein, was einfach die
+  Kontrolle an die Anweisungsliste des nächsten case übergibt.
   <informalexample>
    <programlisting role="php">
 <![CDATA[
@@ -142,10 +172,10 @@ switch ($i) {
 case 0:
 case 1:
 case 2:
-    echo "i is less than 3 but not negative";
+    echo "i ist kleiner als 3, aber nicht negativ";
     break;
 case 3:
-    echo "i is 3";
+    echo "i ist 3";
 }
 ?>
 ]]>
@@ -153,24 +183,25 @@ case 3:
   </informalexample>
  </para>
  <para>
-  A special case is the <literal>default</literal> case.  This case matches
-  anything that wasn't matched by the other cases.  For example:
+  Ein Sonderfall ist die <literal>default</literal> Klausel. Diese fängt alles
+  ab, was nicht durch eine der anderen case Klauseln behandelt wurde. Zum
+  Beispiel:
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
 switch ($i) {
     case 0:
-        echo "i equals 0";
+        echo "i ist gleich 0";
         break;
     case 1:
-        echo "i equals 1";
+        echo "i ist gleich 1";
         break;
     case 2:
-        echo "i equals 2";
+        echo "i ist gleich 2";
         break;
     default:
-       echo "i is not equal to 0, 1 or 2";
+       echo "i ist nicht gleich 0, 1 oder 2";
 }
 ?>
 ]]>
@@ -178,32 +209,32 @@ switch ($i) {
   </informalexample>
  </para>
  <para>
-  The <literal>case</literal> expression may be any expression that
-  evaluates to a simple type, that is, integer or floating-point
-  numbers and strings.  Arrays or objects cannot be used here unless
-  they are dereferenced to a simple type.
+  Der <literal>case</literal> Ausdruck kann ein beliebiger Ausdruck sein, der zu
+  einem einfachen Typen ausgewertet wird, also Ganz- oder Fließkommazahlen und
+  Zeichenketten. Arrays und Objekte können hier nicht verwendet werden, außer
+  wenn sie zu einem einfachen Typen dereferenziert werden.
  </para>
  <para>
-  The alternative syntax for control structures is supported with
-  switches. For more information, see <link
-  linkend="control-structures.alternative-syntax">Alternative syntax
-  for control structures</link>.
+  Die alternative Syntax für Kontrollstrukturen wird für switch Anweisungen
+  unterstützt. Weitere Information entnehmen Sie <link
+  linkend="control-structures.alternative-syntax">Alternative Syntax für
+  Kontrollstrukturen</link>.
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
 switch ($i):
     case 0:
-        echo "i equals 0";
+        echo "i ist gleich 0";
         break;
     case 1:
-        echo "i equals 1";
+        echo "i ist gleich 1";
         break;
     case 2:
-        echo "i equals 2";
+        echo "i ist gleich 2";
         break;
     default:
-        echo "i is not equal to 0, 1 or 2";
+        echo "i ist nicht gleich 0, 1 oder 2";
 endswitch;
 ?>
 ]]>
@@ -211,20 +242,21 @@ endswitch;
   </informalexample>
  </para>
  <para>
-  Its possible to use a semicolon instead of a colon after a case like:
+  Es ist möglich ein Semikolon anstelle eines Doppelpunkts nach einem case zu
+  verwenden, wie:
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
 switch($beer)
 {
-    case 'tuborg';
-    case 'carlsberg';
-    case 'heineken';
-        echo 'Good choice';
+    case 'Bitburger';
+    case 'Erdinger';
+    case 'Jever';
+        echo 'Gute Wahl';
     break;
     default;
-        echo 'Please make a new selection...';
+        echo 'Bitte treffen Sie eine andere Wahl...';
     break;
 }
 ?>
