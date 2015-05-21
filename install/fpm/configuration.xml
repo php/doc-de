@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 325237 Maintainer: nikic Status: ready -->
+<!-- EN-Revision: 335868 Maintainer: nikic Status: ready -->
 <!-- Credits: Jens-Andre Koch -->
 
 <sect1 xml:id="install.fpm.configuration" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Konfiguration</title>
  <para>
-  FPM verwendet die &php.ini; Syntax für die Konfigurationsdatei - <filename>php-fpm.conf</filename>.
+  FPM verwendet die &php.ini; Syntax für die Konfigurationsdatei - <filename>php-fpm.conf</filename>,
+  und Pool-Konfigurationsdateien.
  </para>
  <sect2> 
   <title>Liste globaler <filename>php-fpm.conf</filename> Direktiven</title>
@@ -31,6 +32,8 @@
      <para>
       Pfad zur error log Datei. Standardwert:
       <literal>#INSTALL_PREFIX#/log/php-fpm.log</literal>.
+      Ist der Wert "syslog", wird das Log an syslogd gesendet anstatt in eine
+      lokale Datei geschrieben zu werden.
      </para> 
     </listitem>
    </varlistentry>
@@ -46,7 +49,32 @@
      </para> 
     </listitem>
    </varlistentry>
-   <varlistentry xml:id="emergency-restart-threshold">
+   <varlistentry xml:id="syslog-facility">
+    <term>
+     <parameter>syslog.facility</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Wird verwendet, um anzugeben, welche Art von Programm die Nachricht protokolliert.
+      Standardwert: daemon.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="syslog-ident">
+    <term>
+     <parameter>syslog.ident</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Wird jeder Nachricht vorangestellt. Werden mehrere FPM-Instanzen auf dem
+      selben Server ausgeführt, können Sie den Standardwert so ändern, dass er
+      den gemeinsamen Bedürfnissen entspricht. Standardwert: php-fpm.
+     </para>
+    </listitem>
+   </varlistentry>
+    <varlistentry xml:id="emergency-restart-threshold">
     <term>
      <parameter>emergency_restart_threshold</parameter>
      <type>int</type>
@@ -88,6 +116,33 @@
      </para> 
     </listitem>
    </varlistentry>
+   <varlistentry xml:id="process-max">
+    <term>
+     <parameter>process.max</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Die Höchstanzahl von Prozessen, die FPM forken wird. Dies wurde
+      konzipiert, um die globale Prozessanzahl zu kontrollieren, wenn
+      dynamisches PM in vielen Pools verwendet wird. Mit Vorsicht zu verwenden.
+      Standardwert: 0.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="process-priority">
+    <term>
+     <parameter>process.priority</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Gibt die auf den Master-Prozess (wenn festgelegt) anzuwendende nice(2)
+      Priorität an. Der Wert kann zwischen -19 (höchste Priorität) und 20
+      (niedrigere Priorität) liegen. Standardwert: nicht gesetzt.
+     </para>
+    </listitem>
+   </varlistentry>
    <varlistentry xml:id="daemonize">
     <term>
      <parameter>daemonize</parameter>
@@ -98,6 +153,57 @@
       Schickt FPM in den Hintergrund. Setze 'no', um FPM im Vordergrund zu halten 
       und zu debuggen. Standardwert: yes.
      </para> 
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="rlimit-files-master">
+    <term>
+     <parameter>rlimit_files</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Setzt das Ressourcenlimit (rlimit) der offenen Datei-Deskiptoren für den
+      Master-Prozess. Standardwert: Setzt die Ressourcengrenze (rlimit) der
+      offenen Datei-Deskiptoren für den Master-Prozess.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="rlimit-core-master">
+    <term>
+     <parameter>rlimit_core</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Setzt das Ressourcenlimit (rlimit) der Maximalgröße einer Core-Datei für
+      den Master-Prozess. Standardwert: 0.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="events-mechanism">
+    <term>
+     <parameter>events.mechanism</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Spezifiziert den Ereignismechanismus den FPM verwendet. Die folgenden sind
+      möglich: select, poll, epoll, kqueue (*BSD), port (Solaris). Standardwert:
+      leer (Auto-Erkennung).
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="systemd-interval">
+    <term>
+     <parameter>systemd_interval</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Wenn FPM mit systemd Integration kompiliert wurde, gibt dies das Intervall
+      in Sekunden an, in dem Statusberichtsmeldungen an systemd gesendet werden.
+      0 deaktiviert dies. Standardwert: 10.
+     </para>
     </listitem>
    </varlistentry>
   </variablelist>
@@ -147,6 +253,7 @@
       FastCGI (5.2.2+). Macht nur Sinn mit einem empfangenden TCP Socket.
       Die Adressen sind durch Komma zu trennen. Wenn der Wert leer gelassen wird, 
       dann werden Verbindungen von beliebigen IP Adressen akzeptiert. Standardwert: any.
+      IPv6 Adressen sind seit 5.5.20 und 5.6.4 erlaubt.
      </para> 
     </listitem>
    </varlistentry>
@@ -160,7 +267,7 @@
       Setzt die Rechte für den Unix Socket, falls dieser verwendet wird. Unter Linux 
       müssen Lese- und Schreibrechte gesetzt werden, um Verbindungen eines Webservers zu 
       erlauben. Viele BSD-Derivate erlauben Verbindungen unabhängig von den Rechteeinstellungen.
-      Standardwert: user und group werden auf den aktuellen User gesetzt und Mode auf 0666.
+      Standardwert: user und group werden auf den aktuellen User gesetzt und Mode auf 0660.
      </para> 
     </listitem>
    </varlistentry>
@@ -183,6 +290,33 @@
     <listitem>
      <para>
       Siehe <literal>listen.owner</literal>.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="listen-acl-users">
+    <term>
+     <parameter>listen.acl_users</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Wenn POSIX Zugriffskontrolllisten unterstützt werden, können Sie diese mit
+      dieser Option einstellen. Wenn eingestellt, dann werden
+      <literal>listen.owner</literal> und <literal>listen.group</literal>
+      ignoriert. Der Wert ist eine durch Kommas getrennte Liste von
+      Benutzernamen. Seit PHP 5.6.5.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="listen-acl-groups">
+    <term>
+     <parameter>listen.acl_groups</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Siehe <literal>listen.acl_users</literal>. Der Wert ist eine durch Kommas
+      getrennte Liste von Gruppennamen. Seit PHP 5.6.5.
      </para> 
     </listitem>
    </varlistentry>
@@ -260,7 +394,7 @@
    <varlistentry xml:id="pm.start-servers">
     <term>
      <parameter>pm.start_servers</parameter>
-     <type>in</type>
+     <type>int</type>
     </term>
     <listitem>
      <para>
@@ -397,7 +531,7 @@
     </term>
     <listitem>
      <para>
-      Setzt open file descriptor rlimit. Standardwert: Systemeinstellung.
+      Setzt open file descriptor rlimit für Kind-Prozesse in diesem Pool. Standardwert: Systemeinstellung.
      </para> 
     </listitem>
    </varlistentry>
@@ -408,7 +542,7 @@
     </term>
     <listitem>
      <para>
-      Setzt max core size rlimit. Mögliche Werte: 'unlimited' oder ein Integer größer oder gleich 0. 
+      Setzt max core size rlimit für Kind-Prozesse in diesem Pool. Mögliche Werte: 'unlimited' oder ein Integer größer oder gleich 0.
       Standardwert: Systemeinstellung.
      </para> 
     </listitem>
@@ -447,13 +581,43 @@
       Umleitung von Stdout und Stderr in das allgemeine Errorlog. Wenn nicht gesetzt,
       werden Stdout und Stderr umgeleitet nach /dev/null, entsprechend der FastCGI Spezifikation.
       Standardwert: no.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="clear-env">
+    <term>
+     <parameter>clear_env</parameter>
+     <type>boolean</type>
+    </term>
+    <listitem>
+     <para>
+      Löscht die Umgebung in FPM-Arbeitern. Verhindert, dass beliebige
+      Umgebungsvariablen FPM-Arbeiterprozesse erreichen, indem die Umgebung in
+      den Arbeitern gelöscht wird, bevor die Umgebungsvariablen, die in dieser
+      Pool-Konfiguration angegeben sind, hinzugefügt werden. Seit PHP 5.4.27.
+      Standardwert: Yes.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="security-limit-extensions">
+    <term>
+     <parameter>security.limit_extensions</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Beschränkt die Dateirweiterungen des Haupt-Skripts, das FPM zu parsen erlaubt.
+      Dies kann Konfigurationsfehler auf der Webserverseite verhindern. Sie
+      sollten FPM nur auf .php Erweiterungen beschränken, um zu verhindern, dass
+      bösartige Nutzter andere Erweiterungen verwenden, um PHP Code auszuführen.
+      Standardwert: .php.
      </para> 
     </listitem>
    </varlistentry>
   </variablelist>
   <para>
    Es ist möglich, zusätzliche Umgebungsvariablen zu setzen und PHP Einstellungen eines bestimmten 
-   Pools zu verändern. Dazu sind die nachfolgenden Einstellungen in der <filename>php-fpm.conf</filename> erforderlich.
+   Pools zu verändern. Dazu sind die nachfolgenden Einstellungen in der Pool-Konfigurationsdatei erforderlich.
    <example>
     <title>Übergabe von Umgebungsvariablen und PHP Einstellungen an einen Pool</title>
     <programlisting role="ini">
@@ -483,6 +647,30 @@
   <para>
    Einstellungen die mit <literal>php_admin_value</literal> und <literal>php_admin_flag</literal>
    gemacht wurden, können nicht durch Verwendung von <function>ini_set</function> verändert werden.
+  </para>
+  <para>
+   Ab PHP 5.3.3 können PHP-Einstellungen ebenfalls im Webserver vorgenommen
+   werden.
+   <example>
+    <title>Festlegen von PHP-Einstellungen in nginx.conf</title>
+    <programlisting role="ini">
+     <![CDATA[
+set $php_value "pcre.backtrack_limit=424242";
+set $php_value "$php_value \n pcre.recursion_limit=99999";
+fastcgi_param  PHP_VALUE $php_value;
+
+fastcgi_param  PHP_ADMIN_VALUE "open_basedir=/var/www/htdocs";
+     ]]>
+    </programlisting>
+   </example>
+   <caution>
+    <para>
+     Weil diese Einstellungen an php-fpm als FastCGI Header übergeben werden,
+     sollte php-fpm nicht an eine öffentlich zugängliche Adresse gebunden sein.
+     Andernfalls könnte jeder die PHP Konfigurationsoptionen ändern. Siehe auch
+     <link linkend="listen-allowed-clients">listen.allowed_clients</link>.
+    </para>
+   </caution>
   </para>
  </sect2>
  

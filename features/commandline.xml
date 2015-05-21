@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 325214 Maintainer: nikic Status: ready -->
+<!-- EN-Revision: 334726 Maintainer: nikic Status: ready -->
 <!-- Credits: hholzgra, fa -->
 <chapter xml:id="features.commandline" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Nutzung von PHP auf der Kommandozeile</title>
@@ -11,8 +11,8 @@
   <title>Introduction</title>
   
   <para>
-   Seit PHP 4.3.0 unterstützt PHP eine &cli.sapi;. Das Hauptaugenmerk dieser
-   <acronym>SAPI</acronym> ist die Entwicklung von Kommandozeilenapplikationen.
+   Das Hauptaugenmerk der
+   &cli.sapi; ist die Entwicklung von Kommandozeilenapplikationen.
    Es gibt einige Unterschiede zwischen der &cli.sapi; und anderen <acronym>SAPI</acronym>s,
    welche in diesem Kapitel beschrieben werden. Es ist erwähnenswert, dass &cli; und
    <acronym>CGI</acronym> verschiedene <acronym>SAPI</acronym>s sind, auch wenn sie
@@ -1600,22 +1600,28 @@ php >
  <section xml:id="features.commandline.webserver">
   <title>Eingebauter Webserver</title>
   
+  <warning>
+   <para>
+    Dieser Webserver wurde entwickelt, um bei der Anwendungsentwicklung zu
+    helfen. Er kann ebenso für Testzwecke und für Anwendungsdemonstrationen
+    nützlich sein, die in kontrollierten Umgebungen ausgeführt werden. Er ist
+    nicht als voll funktioneller Webserver gedacht. Er sollte nicht in einem
+    öffentlichen Netzwerk verwendet werden.
+   </para>
+  </warning>
+
   <para>
    Seit PHP 5.4.0 bietet die &cli.sapi; einen eingebauten Webserver.
   </para>
   
   <para>
-   Dieser Webserver ist nur für Entwicklungszwecke vorgesehen, nicht
-   jedoch für den Produktiveinsatz.
+   PHP Anwendung werden nicht weiter ausgeführt, wenn eine Anfrage blockiert
+   wird.
   </para>
-  
-  <para>
+
    URI Anfragen werden von dem aktuellen Arbeitsverzeichnis ausgehend
    ausgeliefert, sofern nicht die -t Option genutzt wurde um einen expliziten
    Document Root anzugeben.
-  </para>
-  
-  <para>
    Wenn eine URI Anfrage keine Datei angibt, wird entweder index.php oder
    index.html aus dem aufgerufenen Verzeichnis zurückgegeben. Wenn beide
    Dateien nicht existieren, wird ein 404 Response Code zurückgeben.
@@ -1623,11 +1629,67 @@ php >
   
   <para>
    Wenn auf der Kommandozeile beim Starten des Webservers eine PHP-Datei
-   angegeben wird, wird diese als "Router" Skript für den Webserver verwendet.
+   angegeben wird, wird diese als "Router" Skript verwendet.
    Dieses Skript wird dann zu Beginn jedes HTTP Requests gestartet. Wenn dieses
    Skript &false; zurückgibt, dann wird die angefragte Ressource direkt
    zurückgegeben. Andernfalls wird die Ausgabe des Skripts zurückgegeben.
   </para>
+
+  <para>
+   Standard MIME-Typen werden für Dateien mit den folgenden Erweiterungen
+   zurückgegeben: .3gp, .apk, .avi, .bmp, .css, .csv, .doc, .docx, .flac, .gif,
+   .gz, .gzip, .htm, .html, .ics, .jpe, .jpeg, .jpg, .js, .kml, .kmz, .m4a,
+   .mov, .mp3, .mp4, .mpeg, .mpg, .odp, .ods, .odt, .oga, .ogg, .ogv, .pdf,
+   .pdf, .png, .pps, .pptx, .qt, .svg, .swf, .tar, .text, .tif, .txt, .wav,
+   .webm, .wmv, .xls, .xlsx, .xml, .xsl, .xsd und .zip.
+  </para>
+
+  <table>
+   <title>Changelog: Unterstützte MIME-Typen (Dateierweiterungen)</title>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>5.5.12</entry>
+      <entry>
+       .xml, .xsl und .xsd
+      </entry>
+     </row>
+     <row>
+      <entry>5.5.7</entry>
+      <entry>
+       .3gp, .apk, .avi, .bmp, .csv, .doc, .docx, .flac, .gz, .gzip,
+       .ics, .kml, .kmz, .m4a, .mp3, .mp4, .mpg, .mpeg, .mov, .odp, .ods,
+       .odt, .oga, .pdf, .pptx, .pps, .qt, .swf, .tar, .text, .tif, .wav,
+       .wmv, .xls, .xlsx und .zip
+      </entry>
+     </row>
+     <row>
+      <entry>5.5.5</entry>
+      <entry>
+       .pdf
+      </entry>
+     </row>
+     <row>
+      <entry>5.4.11</entry>
+      <entry>
+       .ogg, .ogv und .webm
+      </entry>
+     </row>
+     <row>
+      <entry>5.4.4</entry>
+      <entry>
+        .htm und .svg
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
   
   <example>
    <title>Starten des Webservers</title> 
@@ -1692,16 +1754,16 @@ Press Ctrl-C to quit
   <example>
    <title>Nutzung eines Router-Skripts</title> 
    <para>
-    Anfragen für Bilder werden diese direkt ausliefern; Anfragen für
+    In diesem Beispiel werden Anfragen für Bilder diese direkt ausliefern; Anfragen für
     HTML-Dateien, werden stattdessen "Willkommen zu PHP!" ausgeben. 
    </para>
    <programlisting role="php">
 <![CDATA[
 <?php
 // router.php
-if (preg_match('/\.(?:png|jpg|jpeg|gif)$/', $_SERVER["REQUEST_URI"]))
+if (preg_match('/\.(?:png|jpg|jpeg|gif)$/', $_SERVER["REQUEST_URI"])) {
     return false; // Liefere die angefragte Ressource direkt aus
-else { 
+} else {
     echo "<p>Willkommen zu PHP!</p>";
 }
 ?>]]>
@@ -1711,22 +1773,70 @@ else {
 $ php -S localhost:8000 router.php
 ]]>
    </programlisting>
-   <para>
-    Nach mehreren URI Anfragen, wird das Terminal etwa so aussehen:
-   </para>
-   <screen>
-<![CDATA[
-PHP 5.4.0 Development Server started at Thu Jul 21 10:53:19 2011
-Listening on localhost:8000
-Document root is /home/me/public_html
-Press Ctrl-C to quit.
-[Thu Jul 21 10:53:45 2011] ::1:55801 GET /mylogo.jpg - Request read
-[Thu Jul 21 10:53:52 2011] ::1:55803 GET /abc.html - Request read
-[Thu Jul 21 10:53:52 2011] ::1:55804 GET /favicon.ico - Request read
-]]>
-   </screen>
   </example>
-  
+
+  <example>
+   <title>Prüfung auf die Verwendung des CLI Webservers</title>
+<para>
+ Um ein Framework-Router-Skript sowohl während der Entwicklung mit dem CLI Webserver
+ als auch später mit einem Produktionswebserver zu verwenden:
+</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+// router.php
+if (php_sapi_name() == 'cli-server') {
+    /* route statische Assets und gibt false zurück */
+}
+/* weiter mit den normalen index.php Operationen */
+?>]]>
+   </programlisting>
+   <programlisting role="shell">
+<![CDATA[
+$ php -S localhost:8000 router.php
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Behandlung nicht unterstützter Dateitypen</title>
+<para>
+ Wenn Sie statische Ressourcen, deren MIME Typ vom CLI Webserver nicht behandelt
+ wird, ausliefern müssen, verwenden Sie:
+</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+// router.php
+$path = pathinfo($_SERVER["SCRIPT_FILENAME"]);
+if ($path["extension"] == "el") {
+    header("Content-Type: text/x-script.elisp");
+    readfile($_SERVER["SCRIPT_FILENAME"]);
+}
+else {
+    return FALSE;
+}
+?>]]>
+   </programlisting>
+   <programlisting role="shell">
+<![CDATA[
+$ php -S localhost:8000 router.php
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Zugriff auf den CLI Webserver von Remote-Computern</title>
+<para>
+ Sie können den Webserver wie folgt auf Port 8000 für jeden zugänglich machen:
+</para>
+   <programlisting role="shell">
+<![CDATA[
+$ php -S 0.0.0.0:8000
+]]>
+   </programlisting>
+  </example>
+
  </section>
  <!--}}}-->
  
