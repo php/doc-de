@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 320713 Maintainer: thorstenr Status: working -->
+<!-- EN-Revision: 323227 Maintainer: thorstenr Status: working -->
 <!-- Reviewed: no -->
+<!-- Based on UPGRADING version 322438. Work in progess !-->
 
 <appendix xml:id="migration54" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Migration von PHP 5.3.x auf PHP 5.4.x</title>
@@ -71,7 +72,69 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for incompatible entries -->
+     Die <link linkend="control-structures.break"><literal>break</literal></link>
+     und <link linkend="control-structures.continue"><literal>continue</literal></link>
+     Schlüsselwörter akzeptieren keine variablen Argumente mehr. Erwägen Sie eine
+     statische Konstante als Argument zu verwenden.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="features.safe-mode"><literal>Safe mode</literal></link> wird
+     nicht länger unterstützt. Jede Anwendung, die sich auf safe mode verlässt,
+     benötigt unter Umständen Anpassung bezüglich der Sicherheit.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die Salsa10 und Salsa20 Hash-Algorithmen wurden entfernt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Das Setzen der Zeitzone mit der TZ Umgebungsvariablen wird nicht länger von
+     der date Extension unterstützt. Die Extension wird nicht länger versuchen die
+     Standardzeitzone zu erraten, wenn keine eingestellt ist; statt dessen wird immer
+     auf "UTC" zurückgefallen.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>get_magic_quotes_gpc()</function> und
+     <function>get_magic_quotes_runtime()</function> geben nun immer false
+     zurück. <function>set_magic_quotes_runtime()</function> erzeugt
+     <constant>E_CORE_ERROR</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Nichtnumerische Zeichenkettenoffsets, z.B. $a['foo'], wobei $a eine
+     Zeichenkette ist, geben nun false für <function>isset()</function> und true
+     für <function>empty()</function> zurück, und erzeugen eine Warnung, wenn
+     versucht wird sie zu verwenden. Offsets der Typen double, bool und null
+     erzeugen eine Notice. Numerische Zeichenketten ($a['2']) funktionieren wie
+     bisher. Es ist zu beachten, dass Offsets wie '12.3' und '5 und ein Halb' als
+     nichtnumerisch angesehen werden, und eine Warnung erzeugen, aber aus
+     Gründen der Abwärtskompatibilität zu 12 bzw. 5 konvertiert werden.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Null, false oder leere Zeichenketten durch hinzufügen einer Eigenschaft in
+     ein Objekt zu konvertieren wird nun eine Warnung statt eines
+     <constant>E_STRICT</constant> Fehlers ausgeben.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Konvertieren von Arrays zu String wird nun eine
+     <constant>E_NOTICE</constant> Warnung verursachen.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die Schattierung von Superglobalen durch Parameternamen verursacht nun
+     einen fatalen Fehler.
     </simpara>
    </listitem>
   </itemizedlist>
@@ -83,6 +146,42 @@
    <listitem>
     <simpara>
      <link linkend="language.oop5.traits">trait</link>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     callable
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="language.oop5.traits">insteadof</link>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara>
+   Folgende Funktionen wurden von PHP entfernt:
+  </simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     define_syslog_variables()
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     import_request_variables()
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     session_is_registered(), session_register() und session_unregister()
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     mysqli_bind_param(), mysqli_bind_result(), mysqli_client_encoding(), mysqli_fetch(), mysqli_param_count(),
+     mysqli_get_metadata(), mysqli_send_long_data(), mysqli::client_encoding() und mysqli_stmt::stmt()
     </simpara>
    </listitem>
   </itemizedlist>
@@ -111,7 +210,9 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for "Changes made to Windows support" -->
+     <function>is_link</function> funktioniert nun ordnungsgemäß für
+     symbolische Links unter Windows Vista oder höher. Ältere Systeme
+     unterstützen keine symbolischen Links.
     </simpara>
    </listitem>
   </itemizedlist>
@@ -152,6 +253,33 @@
     </simpara>
    </listitem>
   </itemizedlist>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     CLI Option --rz hinzugefügt, die Information über die benannte Zend
+     Extension anzeigt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Kurzform <literal>#inisetting=value</literal> hinzugefügt, um ini Einstellungen zur Laufzeit
+     im interaktiven Readline CLI zu ändern.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Apache kompatible Funktionen für die FastCGI SAPI hinzugefügt: <function>apache_child_terminate()</function>,
+     <function>getallheaders()</function>, <function>apache_request_headers()</function>
+     und <function>apache_response_headers()</function>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     PHP-FPM : <literal>process.max</literal> Einstellung zur Steuerung der Anzahl der Prozesse,
+     die FPM forken kann, hinzugefügt
+    </simpara>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="migration54.deprecated">
@@ -177,7 +305,22 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for deprecated functions. -->
+     <function>mysql_list_dbs()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>get_magic_quotes_gpc()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>get_magic_quotes_runtime()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>mcrypt_generic_end()</function>
     </simpara>
    </listitem>
   </itemizedlist>
@@ -187,7 +330,9 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for deprecated features. -->
+     INI Einstellungen <literal>magic_quotes_gpc</literal>,
+     <literal>magic_quotes_runtime</literal> und
+     <literal>magic_quotes_sybase</literal>.
     </simpara>
    </listitem>
   </itemizedlist>
@@ -213,7 +358,8 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for "New Parameters" in PHP Core functions. -->
+     <function>scandir()</function> akzeptiert nun
+     <constant>SCANDIR_SORT_NONE</constant> als möglichen sorting_order Wert.
     </simpara>
    </listitem>
   </itemizedlist>
@@ -249,6 +395,15 @@
     </simpara>
    </listitem>
   </itemizedlist>
+  <simpara>OpenSSL:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>openssl_encrypt()</function> und <function>openssl_decrypt()</function>
+     - Nichtfüllungsoption hinzugefügt
+    </simpara>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="migration54.functions">
@@ -261,24 +416,121 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for "New Functions" in PHP Core. -->
+     <function>hex2bin()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>http_reponse_code()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>get_declared_traits()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>getimagesizefromstring()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>stream_set_chunk_size()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>socket_import_stream()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>trait_exists()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>header_register_callback()</function>
     </simpara>
    </listitem>
   </itemizedlist>
 
-  <!-- Placeholder for "New Functions" by books.
-
-  <simpara><link linkend="book.json">JSON</link>:</simpara>
+  <simpara><link linkend="book.spl">SPL:</link></simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <function>json_last_error</function>
-     - Returns the last JSON error that occurred.
+     <function>class_uses()</function>
     </simpara>
    </listitem>
   </itemizedlist>
-
-  -->
+   <simpara><link linkend="book.session">Session:</link></simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>session_status()</function>
+    </simpara>
+    <simpara>
+     <function>session_register_shutdown()</function>
+    </simpara>
+   </listitem>
+   </itemizedlist>
+   <simpara><link linkend="book.mysqli">Mysqli:</link></simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>mysqli_error_list()</function>
+    </simpara>
+    <simpara>
+     <function>mysqli_stmt_error_list()</function>
+    </simpara>
+   </listitem>
+   </itemizedlist>
+   <simpara><link linkend="book.libxml">Libxml:</link></simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>libxml_set_external_entity_loader()</function>
+    </simpara>
+   </listitem>
+   </itemizedlist>
+   <simpara><link linkend="book.ldap">LDAP:</link></simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>ldap_control_paged_results()</function>
+    </simpara>
+     <simpara>
+     <function>ldap_control_paged_results_response()</function>
+    </simpara>
+   </listitem>
+   </itemizedlist>
+   <simpara><link linkend="book.intl">Intl:</link></simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>transliterator_create()</function>
+    </simpara>
+     <simpara>
+     <function>transliterator_create_from_rules()</function>
+    </simpara>
+    <simpara>
+     <function>transliterator_create_inverse()</function>
+    </simpara>
+    <simpara>
+     <function>transliterator_get_error_code()</function>
+    </simpara>
+    <simpara>
+     <function>transliterator_get_error_message()</function>
+    </simpara>
+    <simpara>
+     <function>transliterator_list_ids()</function>
+    </simpara>
+    <simpara>
+     <function>transliterator_transliterate()</function>
+    </simpara>
+   </listitem>
+  </itemizedlist>
 
   <simpara>
    The following functions are now natively implemented, making them available
@@ -327,33 +579,34 @@
    Several new class constants were introduced in 5.4.0:
   </simpara>
 
-  <!-- Placeholder for "New Class Constants" by books. -->
-  
-  <!-- Example
-  
-  <simpara><link linkend="ref.pdo-firebird">PDO_FIREBIRD</link>:</simpara>
+  <simpara><link linkend="book.pdo">PDO</link>:</simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <constant>PDO::FB_ATTR_DATE_FORMAT</constant>
-     - Sets the format for dates.
+     <constant>PDO::MYSQL_ATTR_SSL_CA</constant>
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <constant>PDO::FB_ATTR_TIME_FORMAT</constant>
-     - Sets the format for time.
+     <constant>PDO::MYSQL_ATTR_SSL_CAPATH</constant>
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <constant>PDO::FB_ATTR_TIMESTAMP_FORMAT</constant>
-     - Sets the format for timestamps.
+     <constant>PDO::MYSQL_ATTR_SSL_CERT</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PDO::MYSQL_ATTR_SSL_CIPHER</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PDO::MYSQL_ATTR_SSL_KEY</constant>
     </simpara>
    </listitem>
   </itemizedlist>
-  
-  -->
  </section>
 
  <section xml:id="migration54.methods">
@@ -362,21 +615,74 @@
    Several new methods were introduced in 5.4.0:
   </simpara>
 
-  <!-- Placeholder for "New Class Constants" by books. -->
-  
-  <!-- Example
-  
-  <simpara><classname>Exception</classname>:</simpara>
+  <simpara><classname>XSL</classname>:</simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <function>Exception::getPrevious</function>
-     - Retrieves the previous exception.
+     <function>XsltProcessor::setSecurityPrefs()</function> und
+     <function>XsltProcessor::getSecurityPrefs()</function>
     </simpara>
    </listitem>
   </itemizedlist>
-
-  -->
+  <simpara><classname>SPL</classname>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>RegexIterator::getRegex()</function>
+     <function>SplObjectStorage::getHash()</function>
+     <function>DirectoryIterator::getExtension()</function>
+     <function>SplDoublyLinkedList::serialize()</function>
+     <function>SplDoublyLinkedList::unserialize()</function>
+     <function>SplFileInfo::getExtension()</function>
+     <function>SplFileObject::fputcsv()</function>
+     <function>SplQueue::serialize()</function>
+     <function>SplQueue::unserialize()</function>
+     <function>SplStack::serialize()</function>
+     <function>SplStack::unserialize()</function>
+     <function>SplTempFileObject::fputcsv()</function>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><classname>Reflection</classname>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>ReflectionExtension::isPersistent()</function>
+     <function>ReflectionExtension::isTemporary()</function>
+     <function>ReflectionClass::isCloneable()</function>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><classname>Closure</classname>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>Closure::bind()</function>
+     <function>Closure::bindTo()</function>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><classname>PDO_dblib</classname>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>PDO::newRowset()</function>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+ <simpara><classname>StreamWrapper</classname>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <function>StreamWrapper::stream_metadata()</function>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <function>StreamWrapper::stream_truncate()</function>
+    </simpara>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="migration54.new-extensions">
@@ -403,7 +709,8 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for "Removed Extensions". -->
+     <link linkend="book.sqlite">sqlite</link> - Es ist zu beachten, dass
+     ext/sqlite3 und ext/pdo_sqlite nicht betroffen sind
     </simpara>
    </listitem>
   </itemizedlist>
@@ -429,20 +736,25 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <classname>MySQLi_Result</classname> now implements
-     <classname>Traversable</classname>.
+     <link linkend="book.mysqli">mysqli</link> -
+     <function>mysqli_result()</function> implementiert nun <link
+     linkend="class.traversable">Traversable</link>
     </simpara>
    </listitem>
+  </itemizedlist>
+  <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for "Changes in extension behaviour, and new features". -->
-     
-     <!-- Example
-     
-     <link linkend="book.datetime">Date and Time</link>
-     - The TZ environment variable is no longer used to guess the timezone
-     
-     -->
+     <link linkend="ref.pdo-mysql">pdo_mysql</link> - Unterstützung für das
+     Verbinden mit MySQL Client Bibliotheken älter als 4.1 entfernt
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <link linkend="book.mysqlnd">mysqlnd</link> - Unterstützung für benannte Pipes
+     hinzugefügt
     </simpara>
    </listitem>
   </itemizedlist>
@@ -453,26 +765,64 @@
   <simpara>
    The following classes were introduced in PHP 5.4.0:
   </simpara>
-
-  <!-- Placeholder for "New Classes". -->
-  
-  <!-- Example
-  
-  <simpara><link linkend="book.datetime">Date/Time</link>:</simpara>
+  <simpara><link linkend="book.spl">SPL</link>:</simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <classname>DateInterval</classname>
+     <classname>CallbackFilterIterator</classname>
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <classname>DatePeriod</classname>
+     <classname>RecursiveCallbackFilterIterator</classname>
     </simpara>
    </listitem>
   </itemizedlist>
-
-  -->
+  <simpara><link linkend="book.reflection">Reflection</link>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <classname>ReflectionZendExtension</classname>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><link linkend="book.json">Json</link>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <classname>JsonSerializable</classname> Interface
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><link linkend="book.session">Session</link>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <classname>SessionHandler</classname> Interface
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><link linkend="book.snmp">Snmp</link>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <classname>SNMP</classname>
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <simpara><link linkend="book.json">Intl</link>:</simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <classname>Transliterator</classname>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <classname>Spoofchecker</classname>
+    </simpara>
+   </listitem>
+  </itemizedlist>
  </section>
 
  <section xml:id="migration54.global-constants">
@@ -482,60 +832,663 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for "New Global Constants" for PHP Core. -->
-
-     <!-- Examample
-
-     <constant>__DIR__</constant>
-
-     -->
+     <constant>CURLOPT_MAX_RECV_SPEED_LARGE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>CURLOPT_MAX_SEND_SPEED_LARGE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ENT_DISALLOWED</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ENT_HTML401</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ENT_HTML5</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ENT_SUBSTITUTE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ENT_XML1</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ENT_XHTML</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IPPROTO_IP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IPPROTO_IPV6</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IPV6_MULTICAST_HOPS</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IPV6_MULTICAST_IF</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IPV6_MULTICAST_LOOP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IP_MULTICAST_IF</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IP_MULTICAST_LOOP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IP_MULTICAST_TTL</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_BIGINT_AS_STRING</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_OBJECT_AS_ARRAY</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_PRETTY_PRINT</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_UNESCAPED_SLASHES</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_UNESCAPED_UNICODE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>LIBXML_HTML_NODEFDTD</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>LIBXML_HTML_NOIMPLIED</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>LIBXML_PEDANTIC</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>MCAST_JOIN_GROUP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>MCAST_LEAVE_GROUP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>MCAST_BLOCK_SOURCE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>MCAST_UNBLOCK_SOURCE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>MCAST_JOIN_SOURCE_GROUP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>MCAST_LEAVE_SOURCE_GROUP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>OPENSSL_CIPHER_AES_128_CBC</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>OPENSSL_CIPHER_AES_192_CBC</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>OPENSSL_CIPHER_AES_256_CBC</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>OPENSSL_RAW_DATA</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>OPENSSL_ZERO_PADDING</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_CLEAN</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_CLEANABLE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_DISABLED</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_FINAL</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_FLUSH</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_FLUSHABLE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_REMOVABLE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_STARTED</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_STDFLAGS</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_OUTPUT_HANDLER_WRITE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_QUERY_RFC1738</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_QUERY_RFC3986</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_SESSION_ACTIVE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_SESSION_DISABLED</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>PHP_SESSION_NONE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>SCANDIR_SORT_ASCENDING</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>SCANDIR_SORT_DESCENDING</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>SCANDIR_SORT_NONE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>SORT_FLAG_CASE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>SORT_NATURAL</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>STREAM_META_ACCESS</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>STREAM_META_GROUP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>STREAM_META_GROUP_NAME</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>STREAM_META_OWNER</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>STREAM_META_OWNER_NAME</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>STREAM_META_TOUCH</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>T_CALLABLE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>T_INSTEADOF</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>T_TRAIT</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>T_TRAIT_C</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ZLIB_ENCODING_DEFLATE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ZLIB_ENCODING_GZIP</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>ZLIB_ENCODING_RAW</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>U_IDNA_DOMAIN_NAME_TOO_LONG_ERROR</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_CHECK_BIDI</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_CHECK_CONTEXTJ</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_NONTRANSITIONAL_TO_ASCII</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_NONTRANSITIONAL_TO_UNICODE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>INTL_IDNA_VARIANT_2003</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>INTL_IDNA_VARIANT_UTS46</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_EMPTY_LABEL</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_LABEL_TOO_LONG</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_DOMAIN_NAME_TOO_LONG</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+   <simpara>
+     <constant>IDNA_ERROR_LEADING_HYPHEN</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_TRAILING_HYPHEN</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_HYPHEN_3_4</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_LEADING_COMBINING_MARK</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_DISALLOWED</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_PUNYCODE</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_LABEL_HAS_DOT</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_INVALID_ACE_LABEL</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_BIDI</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>IDNA_ERROR_CONTEXTJ</constant>
     </simpara>
    </listitem>
   </itemizedlist>
 
-  <!-- Placeholder for "New Global Constants" by book. -->
-
-  <!-- Examample
-
-  <simpara><link linkend="book.curl">cURL</link>:</simpara>
+  <simpara><link linkend="book.json">Json</link>:</simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <constant>CURLOPT_PROGRESSFUNCTION</constant>
+     <constant>JSON_PRETTY_PRINT</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_UNESCAPED_SLASHES</constant>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>JSON_BIGINT_AS_STRING</constant>
     </simpara>
    </listitem>
   </itemizedlist>
-
-  -->
  </section>
 
  <section xml:id="migration54.ini">
-  <title>Changes to INI file handling</title>
+  <title>Änderungen an der INI-Dateibehandlung</title>
   <simpara>
-   The following ini directives have new default values:
+   Die folgenden ini Direktiven wurden entfernt:
   </simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <!-- Placeholder for New Default Values for INI directives. -->
-     
-     <!-- Example
-     
-     <literal>session.use_only_cookies</literal> is now set to
-     <literal>"1"</literal> (enabled) by default.
-     
-     -->
+     <literal>register_globals</literal> und <literal>register_long_arrays</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>allow_call_time_pass_reference</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>define_syslog_variables</literal> und alle zugehörigen Funktionen
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>highlight.bg</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>session.bug_compat_42</literal> und <literal>session.bug_compat_warn</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>y2k_compliance</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>safe_mode</literal> und alle zugehörigen Parameter
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>zend.ze1_compatibility_mode</literal>
     </simpara>
    </listitem>
   </itemizedlist>
- </section>
-
- <section xml:id="migration54.other">
-  <title>Other changes</title>
+  <simpara>
+   Die folgenden ini Direktiven wurden hinzugefügt:
+  </simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     <constant>E_ALL</constant> now includes <constant>E_STRICT</constant>.
+     <literal>cli.pager</literal> und <literal>cli.prompt</literal> für die CLI
+     SAPI in Verbindung mit Readline im interaktiven Modus.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>max_input_vars</literal> - gibt an, wie viele GET/POST/COOKIE
+     Eingabevariablen akzeptiert werden können.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>zend.multibyte</literal> - um die neue Multibyte-Unterstützung zu
+     steuern.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>session.upload_progress.enabled</literal>, <literal>session.upload_progress.cleanup</literal>,
+     <literal>session.upload_progress.prefix</literal>, <literal>session.upload_progress.name</literal>,
+     <literal>session.upload_progress.freq</literal>, <literal>session.upload_progress.min_freq</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>enable_post_data_reading</literal> - Ist dies deaktiviert, werden
+     POST Daten nicht gelesen (und verarbeitet)
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>windows_show_crt_warning</literal>
+    </simpara>
+   </listitem>
+   </itemizedlist>
+  <simpara>
+   Die folgenden ini Direktiven wurden geändert:
+  </simpara>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <literal>default_charset</literal> ist nun standardmäßig UTF-8 anstelle von
+     ISO-8859-1.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>session.entropy_file</literal> ist nun standardmäßig /dev/random
+     oder /dev/urandom in Abhängigkeit von der Ermittlung zur Kompilierzeit.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>session.entropy_length</literal> ist nun standardmäßig 32.
+    </simpara>
+   </listitem>
+   </itemizedlist>
+ </section>
+
+ <section xml:id="migration54.other">
+  <title>Weitere Änderungen</title>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     Unterstützung für das Speichern der Upload-Fortschrittsrückmeldung in den
+     Session-Daten hinzugefügt.
+    </simpara>
+    <simpara>
+     session.entropy_file standardmäßig zu /dev/urandom oder /dev/arandom
+     geändert, wenn eines der beiden zur Kompilierzeit vorhanden war.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <constant>E_ALL</constant> beinhaltet nun <constant>E_STRICT</constant>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="book.snmp">SNMP</link> hat nun eine OOP API.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="book.openssl">OpenSSL</link> unterstützt nun AES.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="features.commandline">CLI SAPI</link> wird bei fatalen
+     Fehlern nicht länger beendet, wenn der interaktive Modus mit Readline
+     Unterstützung verwendet wird.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Fehlermeldungen des Parsers und Warnmeldungen für inkompatible Argumente in
+     Funktionsaufrufen verbessert.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="language.variables.superglobals">$_SERVER['REQUEST_TIME_FLOAT']</link>
+     wurde hinzugefügt, um Mikrosekundenpräzision zu enthalten.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     &lt;?= ist nun immer verfügbar, unabhängig von der <literal>short_open_tag</literal> Einstellung
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Unterstützung für Klassenmemberzugriff bei der Instanziierung (z.B. (new foo)-&gt;bar()) hinzugefügt
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Neue Hash-Algorithmen hinzugefügt: fnv132, fnv164, joaat
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Verkette Zeichenkettenoffsets, z.B. $a[0][0], wobei $a eine Zeichenkette ist,
+     sind nun möglich.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Arrayzugriff auf Funktionsaufrufrückgabewerte: foo()[0]
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Closures unterstützen nun Geltungsbereiche und <literal>$this</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Array-Casts von <type>SimpleXMLElement</type> enthalten nun immer alle
+     Knoten anstatt nur des ersten passenden Knotens. Alle
+     <type>SimpleXMLElement</type> Kinder werden nun immer angezeigt, wenn
+     <function>var_dump()</function>, <function>var_export()</function> und
+     <function>print_r()</function> verwendet werden.
     </simpara>
    </listitem>
   </itemizedlist>
