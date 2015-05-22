@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 288721 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 329055 Maintainer: sammywg Status: ready -->
 
 <chapter xml:id="simplexml.examples" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  &reftitle.examples;
  <section xml:id="simplexml.examples-basic">
-  <title>Einfache Anwendung</title>
+  <title>Grundlegende SimpleXML Verwendung</title>
   <para>
    Viele Beispiele in dieser Referenz benötigen einen XML-String. Anstatt
    diesen String in jedem Beispiel zu wiederholen, haben wir ihn als File
@@ -58,16 +58,27 @@ XML;
    einen String oder eine Zahl aus einem XML Dokument extrahieren will.
    <example>
     <title><literal>&lt;plot&gt;</literal> ermitteln</title>
-    <programlisting role="php"><![CDATA[
+    <programlisting role="php">
+<![CDATA[
 <?php
 include 'example.php';
 
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
-echo $xml->movie[0]->plot; // "So this language. It's like..."
+echo $movies->movie[0]->plot;
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+
+   So, this language. It's like, a programming language. Or is it a
+   scripting language? All is revealed in this thrilling horror spoof
+   of a documentary.
+
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -82,12 +93,18 @@ echo $xml->movie[0]->plot; // "So this language. It's like..."
 <?php
 include 'example.php';
 
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
-echo $xml->movie->{'great-lines'}->line; // "PHP solves all my web problems"
+echo $movies->movie->{'great-lines'}->line;
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+PHP solves all my web problems
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -102,18 +119,32 @@ echo $xml->movie->{'great-lines'}->line; // "PHP solves all my web problems"
 <?php
 include 'example.php';
 
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
-/* Für jeden <movie> Knoten geben wir ein separates <plot> aus. */
-foreach ($xml->movie as $movie) {
-   echo $movie->plot, '<br />';
+/* Für jeden <character> Knoten geben wir ein separates <name> aus. */
+foreach ($movies->movie->characters->character as $character) {
+   echo $character->name, ' played by ', $character->actor, PHP_EOL;
 }
 
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Ms. Coder played by Onlivia Actora
+Mr. Coder played by El ActÓr
+]]>
+    </screen>
    </example>
   </para>
+  <note>
+   <para>
+    Eigenschaften (<literal>$movies->movie</literal> im vorherigen Beispiel) sind
+    keine Arrays. Sie sind <link linkend="class.iterator">iterierbare</link> und
+    <link linkend="class.arrayaccess">zugreifbare</link> Objekte.
+   </para>
+  </note>
   <para>
    <example>
     <title>Attribute verwenden</title>
@@ -129,23 +160,29 @@ foreach ($xml->movie as $movie) {
 <?php
 include 'example.php';
 
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
 /* Zugriff auf die <rating> Knoten des ersten Films
  * Die Bewertungsskala wird zusätzlich ausgegeben. */
-foreach ($xml->movie[0]->rating as $rating) {
+foreach ($movies->movie[0]->rating as $rating) {
     switch((string) $rating['type']) { // Verwende Attribute als Element-Indizes
     case 'thumbs':
-        echo $rating, ' thumbs up';
+        echo $rating, ' Daumen hoch';
         break;
     case 'stars':
-        echo $rating, ' stars';
+        echo $rating, ' Sterne';
         break;
     }
 }
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+7 Daumen hoch5 Sterne
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -163,16 +200,22 @@ foreach ($xml->movie[0]->rating as $rating) {
 <?php
 include 'example.php';
 
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
-if ((string) $xml->movie->title == 'PHP: Behind the Parser') {
+if ((string) $movies->movie->title == 'PHP: Behind the Parser') {
     print 'Mein Lieblingsfilm.';
 }
 
-htmlentities((string) $xml->movie->title);
+echo htmlentities((string) $movies->movie->title);
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+My favorite movie.PHP: Behind the Parser
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -182,14 +225,23 @@ htmlentities((string) $xml->movie->title);
      Zwei SimpleXMLElements können ab PHP 5.2.0 auch dann als unterschiedlich
      betrachtet werden, wenn sie auf das gleiche Element zeigen.
     </simpara>
-    <programlisting role="php"><![CDATA[
+    <programlisting role="php">
+<![CDATA[
 <?php
-$el1 = new SimpleXMLElement($xmlstr);
-$el2 = new SimpleXMLElement($xmlstr);
-var_dump($el1 == $el2); // false ab PHP 5.2.0
+include 'example.php';
+
+$movies1 = new SimpleXMLElement($xmlstr);
+$movies2 = new SimpleXMLElement($xmlstr);
+var_dump($movies1 == $movies2); // false ab PHP 5.2.0
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+bool(false)
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -203,10 +255,11 @@ var_dump($el1 == $el2); // false ab PHP 5.2.0
 <![CDATA[
 <?php
 include 'example.php';
-$xml = new SimpleXMLElement($xmlstr);
 
-foreach ($xml->xpath('//character') as $character) {
-    echo $character->name, 'gespielt von ', $character->actor, '<br />';
+$movies = new SimpleXMLElement($xmlstr);
+
+foreach ($movies->xpath('//character') as $character) {
+    echo $character->name, ' gespielt von ', $character->actor, PHP_EOL;
 }
 ?>
 ]]>
@@ -215,6 +268,13 @@ foreach ($xml->xpath('//character') as $character) {
      '<literal>//</literal>' wird hier als Wildcard verwendet. Um absolute
      Pfadangaben zu verwenden, lassen Sie einen der Slashe weg.
     </simpara>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Ms. Coder gespielt von Onlivia Actora
+Mr. Coder gespielt von El ActÓr
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -228,19 +288,45 @@ foreach ($xml->xpath('//character') as $character) {
 <![CDATA[
 <?php
 include 'example.php';
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
-$xml->movie[0]->characters->character[0]->name = 'Miss Coder';
+$movies->movie[0]->characters->character[0]->name = 'Miss Coder';
 
-echo $xml->asXML();
+echo $movies->asXML();
 ?>
 ]]>
     </programlisting>
-    <simpara>
-     Der vorstehende Code erzeugt ein neues XML-Dokument gleich dem Original,
-     mit der Ausnahme, dass das neue XML von Ms. Coder auf Miss Coder verändert
-     wurde.
-    </simpara>
+    &example.outputs;
+    <screen>
+<![CDATA[
+<?xml version="1.0" standalone="yes"?>
+<movies>
+ <movie>
+  <title>PHP: Behind the Parser</title>
+  <characters>
+   <character>
+    <name>Miss Coder</name>
+    <actor>Onlivia Actora</actor>
+   </character>
+   <character>
+    <name>Mr. Coder</name>
+    <actor>El Act&#xD3;r</actor>
+   </character>
+  </characters>
+  <plot>
+   So, this language. It's like, a programming language. Or is it a
+   scripting language? All is revealed in this thrilling horror spoof
+   of a documentary.
+  </plot>
+  <great-lines>
+   <line>PHP solves all my web problems</line>
+  </great-lines>
+  <rating type="thumbs">7</rating>
+  <rating type="stars">5</rating>
+ </movie>
+</movies>
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -254,23 +340,50 @@ echo $xml->asXML();
 <![CDATA[
 <?php
 include 'example.php';
-$xml = new SimpleXMLElement($xmlstr);
+$movies = new SimpleXMLElement($xmlstr);
 
-$character = $xml->movie[0]->characters->addChild('character');
+$character = $movies->movie[0]->characters->addChild('character');
 $character->addChild('name', 'Mr. Parser');
 $character->addChild('actor', 'John Doe');
 
-$rating = $xml->movie[0]->addChild('rating', 'PG');
+$rating = $movies->movie[0]->addChild('rating', 'PG');
 $rating->addAttribute('type', 'mpaa');
 
-echo $xml->asXML();
+echo $movies->asXML();
 ?>
 ]]>
     </programlisting>
-    <simpara>
-     Die obige Code gibt ein XML-Dokument aus, das auf dem Original basiert,
-     aber einen neuen Charakter und ein weiteres Rating enthält.
-    </simpara>
+    &example.outputs;
+    <screen>
+<![CDATA[
+<?xml version="1.0" standalone="yes"?>
+<movies>
+ <movie>
+  <title>PHP: Behind the Parser</title>
+  <characters>
+   <character>
+    <name>Ms. Coder</name>
+    <actor>Onlivia Actora</actor>
+   </character>
+   <character>
+    <name>Mr. Coder</name>
+    <actor>El Act&#xD3;r</actor>
+   </character>
+  <character><name>Mr. Parser</name><actor>John Doe</actor></character></characters>
+  <plot>
+   So, this language. It's like, a programming language. Or is it a
+   scripting language? All is revealed in this thrilling horror spoof
+   of a documentary.
+  </plot>
+  <great-lines>
+   <line>PHP solves all my web problems</line>
+  </great-lines>
+  <rating type="thumbs">7</rating>
+  <rating type="stars">5</rating>
+ <rating type="mpaa">PG</rating></movie>
+</movies>
+]]>
+    </screen>
    </example>
   </para>
   <para>
@@ -284,19 +397,25 @@ echo $xml->asXML();
     <programlisting role="php">
 <![CDATA[
 <?php
-$dom = new domDocument;
+$dom = new DOMDocument;
 $dom->loadXML('<books><book><title>blah</title></book></books>');
 if (!$dom) {
      echo 'Fehler beim Parsen des Dokuments';
      exit;
 }
 
-$s = simplexml_import_dom($dom);
+$books = simplexml_import_dom($dom);
 
-echo $s->book[0]->title;
+echo $books->book[0]->title;
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+blah
+]]>
+    </screen>
    </example>
   </para>
  </section>
@@ -327,12 +446,13 @@ echo $s->book[0]->title;
 <?php
 libxml_use_internal_errors(true);
 $sxe = simplexml_load_string("<?xml version='1.0'><broken><xml></broken>");
-if (!$sxe) {
+if ($sxe === false) {
     echo "Laden des XML fehlgeschlagen\n";
     foreach(libxml_get_errors() as $error) {
         echo "\t", $error->message;
     }
 }
+?>
 ]]>
     </programlisting>
     &example.outputs;

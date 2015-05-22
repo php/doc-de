@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 300344 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 322881 Maintainer: samesch Status: ready -->
 <refentry xml:id="function.session-set-save-handler" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>session_set_save_handler</refname>
@@ -18,6 +18,11 @@
    <methodparam><type>callback</type><parameter>destroy</parameter></methodparam>
    <methodparam><type>callback</type><parameter>gc</parameter></methodparam>
   </methodsynopsis>
+  <methodsynopsis>
+   <type>bool</type><methodname>session_set_save_handler</methodname>
+   <methodparam><type>SessionHandlerInterface</type><parameter>sessionhandler</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>register_shutdown</parameter><initializer>true</initializer></methodparam>
+  </methodsynopsis>
   <para>
    <function>session_set_save_handler</function> setzt die benutzerdefinierten
    Session-Speicherfunktionen, die zur Speicherung und Wiederherstellung von
@@ -31,6 +36,31 @@
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
+   Diese Funktion hat zwei Prototypen.
+   <variablelist>
+    <varlistentry>
+     <term><parameter>sessionhandler</parameter></term>
+     <listitem>
+      <para>
+       Ein Exemplar einer Klasse die <interfacename>SessionHandlerInterface</interfacename>
+       implementiert, wie beispielsweise <classname>SessionHandler</classname>, das als
+       benutzerdefinierte Session-Speicherfunktion registriert werden soll.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>register_shutdown</parameter></term>
+     <listitem>
+      <para>
+       Registriert <function>session_register_shutdown</function> als eine
+       <function>register_shutdown_function</function> Funktion.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+
+   oder
+
    <variablelist>
     <varlistentry>
      <term><parameter>open</parameter></term>
@@ -193,6 +223,74 @@ session_start();
 ]]>
     </programlisting>
    </example>
+   <example>
+    <title>
+     <function>session_set_save_handler</function> mit Verwendung von
+     <classname>SessionHandler</classname>
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class MySessionHandler extends SessionHandler {
+  public function open($save_path, $sessionid)
+  {
+    global $sess_save_path;
+
+    $sess_save_path = $save_path;
+    return(true);
+  }
+  public function close()
+  {
+    return true;
+  }
+  public function read($sessionid)
+  {
+    global $sess_save_path;
+
+    $sess_file = "$sess_save_path/sess_$id";
+    return (string) @file_get_contents($sess_file);
+  }
+  public function write($sessionid, $sessiondata)
+  {
+    global $sess_save_path;
+
+    $sess_file = "$sess_save_path/sess_$id";
+    if ($fp = @fopen($sess_file, "w")) {
+      $return = fwrite($fp, $sess_data);
+      fclose($fp);
+      return $return;
+    } else {
+      return(false);
+    }
+  }
+  public function destroy($sessionid)
+  {
+    global $sess_save_path;
+
+    $sess_file = "$sess_save_path/sess_$id";
+    return(@unlink($sess_file));
+  }
+  public function gc($maxlifetime)
+  {
+    global $sess_save_path;
+
+    foreach (glob("$sess_save_path/sess_*") as $filename) {
+      if (filemtime($filename) + $maxlifetime < time()) {
+        @unlink($filename);
+      }
+    }
+    return true;
+  }
+}
+
+$handler = new MySessionHandler();
+session_set_save_handler($handler);
+
+session_start();
+?>
+]]>
+    </programlisting>
+   </example>
   </para>
  </refsect1>
 
@@ -219,6 +317,30 @@ session_start();
     früher zu schließen.
    </para>
   </warning>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>5.4.0</entry>
+      <entry>
+       <interfacename>SessionHandlerInterface</interfacename> und
+       <classname>SessionHandler</classname> zum Implementieren von
+       benutzerdefinierten Session-Speicherfunktionen hinzugefügt.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="seealso">
