@@ -1,83 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.ldap-connect" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ldap_connect</refname>
-    <refpurpose>Verbindung zu einem LDAP Server</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>resource</type><methodname>ldap_connect</methodname>
-      <methodparam choice="opt"><type>string</type><parameter>hostname
-      </parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>port</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Rückgabewert: Eine positive Verbindungs-Kennung im Erfolgsfall,
-     &false; im Fehlerfall.
-    </para>
-    <para>
-     Die <function>ldap_connect</function> Funktion stellt eine
-     Verbindung zu einem LDAP Server auf einem bestimmten<parameter>
-     hostname</parameter> und <parameter>port</parameter> her. Beide
-     Argumente sind optional. Werden keine Argumente angegeben ,
-     wird die Verbindungs-Kennung einer schon geöffneten
-     Verbindung zurückgeliefert. Wird nur der
-     <parameter>hostname</parameter> angegeben, wird für den Port der
-     Standardport 389 benutzt.
-    </para>
-    <para>
-     Bei Verwendung von OpenLDAP 2.x.x können Sie eine URL statt des
-     Hostnamens angeben. Um LDAP mit SSL-Unterstützzung zu verwenden,
-     übersetzen Sie OpenLDAP mit SSL-Unterstützung, PHP mit SSL und verwenden
-     ldaps://Hostname/ als Host Argument. Das Port Argument wird bei
-     der Verwendung von URLs nicht benutzt.
-     </para>
-     <note>
-      <simpara>
-       URL und SSL Unterstützung wurden in 4.0.4 hinzugefügt
-      </simpara>
-     </note>
-    <example>
-     <title>Verbindung zu einem LDAP server.</title>
-     <programlisting role="php">
+<!-- EN-Revision: 334592 Maintainer: simp Status: ready -->
+<refentry xml:id="function.ldap-connect" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ldap_connect</refname>
+  <refpurpose>Verbindet zu einem LDAP Server</refpurpose>
+ </refnamediv>
+ 
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>ldap_connect</methodname>
+   <methodparam choice="opt"><type>string</type><parameter>hostname</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>port</parameter><initializer>389</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Stellt eine Verbindung zu einem LDAP-Server unter einem 
+   angegebenen <parameter>Hostname</parameter> und 
+   <parameter>Port</parameter> her.
+  </para>
+ </refsect1>
+ 
+ 
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>hostname</parameter></term>
+     <listitem>
+      <para>
+       Bei Verwendung von OpenLDAP 2.x.x kann eine URL statt des
+       Hostnamens angegeben werden. Um LDAP mit SSL-Unterstützung zu 
+       verwenden, kompilieren Sie OpenLDAP mit SSL-Unterstützung, 
+       PHP mit SSL und verwenden für diesen Parameter 
+       <literal>ldaps://hostname/</literal>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>port</parameter></term>
+     <listitem>
+      <para>
+       Der Port zu dem eine Verbindung aufgebaut werden soll. 
+       Dies wird bei der Verwendung von URLs nicht benutzt.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt eine positive Verbindungs-Kennung im Erfolgsfall oder
+   &false; im Fehlerfall zurück. Wenn OpenLDAP 2.x.x verwendet wird, 
+   liefert <function>ldap_connect</function> immer eine gültige Resource
+   mit positiver Verbindungs-Kennung zurück. Die Verbindung zum LDAP-Server
+   wird noch nicht hergestellt, die Verbindung wird lediglich initialisiert.
+   Der Verbindungsaufbau erfolgt bei der nächsten Nutzung einer ladp_*
+   Funktion; Normalerweise ist dies <function>ldap_bind</function>.
+  </para>
+  <para>
+   Werden keine Argumente angegeben, wird die Verbindungs-Kennung einer 
+   bereits geöffneten Verbindung zurückgeliefert.
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Verbindung zu einem LDAP server.</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 
 // LDAP Variablen
-$ldaphost = "ldap.example.com";  // Ihr ldap servers
+$ldaphost = "ldap.example.com";  // Ihr ldap server
 $ldapport = 389;                 // Die Portnummer ihres ldap servers
 
 // Verbindung zu LDAP
-$ldapconn = ldap_connect( $ldaphost, $ldapport ) 
-          or die( "Keine Verbindung zu {$ldaphost} möglich" );
-
+$ldapconn = ldap_connect($ldaphost, $ldapport)
+    or die( "Keine Verbindung zu $ldaphost möglich" );
+    
 ?>
 ]]>
-     </programlisting>
-    </example>
-    <example>
-     <title>Sichere Verbindung zu einem LDAP server.</title>
-     <programlisting role="php">
+    </programlisting>
+   </example>
+   <example>
+    <title>Sichere Verbindung zu einem LDAP server.</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 
-/* Stellen Sie sicher, dass Sie den korrekten Host angeben,
-   an den Sie Ihr Sicherheitszertifikat übermittelt haben */
+// Stellen Sie sicher, dass Sie den korrekten Host angeben,
+// für den das Zertifikate ausgestellt wurde
 $ldaphost = "ldaps://ldap.example.com/";
 
 // Verbindung zu LDAP
 $ldapconn = ldap_connect( $ldaphost ) 
-          or die( "Keine Verbindung zu {$ldaphost} möglich" );
+    or die( "Keine Verbindung zu {$ldaphost} möglich" );
 
 ?>
 ]]>
-     </programlisting>
-    </example>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ldap_bind</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+ 
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
