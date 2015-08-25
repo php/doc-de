@@ -1,93 +1,232 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.assert" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>assert</refname>
-    <refpurpose>
-     Prüft ab, ob eine Bedingung oder Abfrage &false; ist
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>assert</methodname>
-      <methodparam><type>string|bool</type><parameter>assertion</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     <function>assert</function> überprüft den übergebenen Parameter
-     <parameter>assertion</parameter> und führt ein über die Funktion
-     <function>assert_options</function> definiertes Ereignis aus,
-     falls die in <parameter>assertion</parameter> spezifizierte Bedingung &false;
-     ist.
-    </para>
-    <para>
-     Wird der Parameter <parameter>assertion</parameter> als String
-     übergeben, so wird der String als PHP-Code interpretiert.  Der
-     Vorteil der Übergabe des Parameters
-     <parameter>assertion</parameter> als Zeichenkette liegt darin,
-     dass die ausgegebene Meldung die über
-     <parameter>assertion</parameter> übergebene Zeichenkette enthält.
-    </para>
-    <para>
-     <function>assert</function> sollte nur zum Debuggen des Codes
-     und nicht in Produktionsumgebungen verwendet werden werden, 
-     beispielsweise zur Überprüfung von Eingaben.
-    </para>
-    <para>
-     Die Optionen für die <function>assert</function> können über die
-     Funktion <function>assert_options</function> oder in den
-     Einstellungen der .ini-Datei gesetzt werden.
-    </para>
-    <para>
-     Die Funktion <function>assert_options</function> mit der
-     ASSERT_CALLBACK Direktive ermöglicht eine Funktion anzugeben, die
-     bei fehlender Überprüfung aufgerufen wird.
-    </para>
-    <para>
-     Callback-Funktionen in Zusammenhang mit
-     <function>assert</function> sind nützlich, um beispielsweise
-     automatisierte Tests durchzuführen, da die Callback-Funktion über
-     die Information verfügt, von welcher Stelle sie aufgerufen wurde.
-    </para>
-    <para>
-     Die Callback-Funktion wird mit drei Parametern aufgerufen. Der
-     erste Parameter enthält den Namen des Scripts, in dem
-     die Überprüfung statt fand, der zweite Parameter die
-     Zeilennummer, und der dritte Paramter enthält die über
-     <parameter>assertion</parameter> angegebene Bedingung.
-    </para>
-    <para>
-     <example>
-      <title>Überprüfung mit benutzerdefinierter Funktion</title>
-      <programlisting role="php">
+<!-- EN-Revision: 327439 Maintainer: cmb Status: ready -->
+
+<refentry xml:id="function.assert" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>assert</refname>
+  <refpurpose>
+   Prüft ab, ob eine Zusicherung &false; ist
+  </refpurpose>
+ </refnamediv>
+ 
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>assert</methodname>
+   <methodparam><type>mixed</type><parameter>assertion</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>description</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   <function>assert</function> überprüft den übergebenen Parameter
+   <parameter>assertion</parameter> und verfährt entsprechend,
+   falls die in <parameter>assertion</parameter> spezifizierte Bedingung &false;
+   ist.
+  </para>
+  <para>
+   Wird der Parameter <parameter>assertion</parameter> als String
+   übergeben, so wird der String als PHP-Code interpretiert.
+   Vorteile der Übergabe des Parameters
+   <parameter>assertion</parameter> als Zeichenkette sind geringerer Mehraufwand,
+   wenn die Zusicherungsprüfung deaktiviert ist, und
+   dass die ausgegebene Meldung die über
+   <parameter>assertion</parameter> übergebene Zeichenkette enthält.
+   Das bedeutet, dass bei Übergabe einer Bool'schen Bedingung an
+   <parameter>assertion</parameter>, eine solche nicht als Parameter an die
+   Zusicherungsfunktion, die möglicherweise per
+   <function>assert_options</function> Funktion definiert wurde, auftaucht; die
+   Bedingung wird vor dem Aufruf der Handler-Funktion in eine Zeichenkette
+   umgewandelt, und der Bool'sche Wert &false; wird dabei zur leeren
+   Zeichenkette konvertiert.
+  </para>
+  <para>
+   <function>assert</function> sollte nur zum Debuggen des Codes
+   verwendet werden. Es kann für Plausibilitätsprüfungen verwendet werden, um
+   auf Bedingungen zu prüfen, die immer &true; sein sollten, und die andernfalls
+   Programmierfehler anzeigen, oder um auf die Verfügbarkeit bestimmter
+   Merkmale, wie Erweiterungsfunktionen oder bestimmte Systembeschränkungen und
+   Eigenschaften, zu prüfen.
+  </para>
+  <para>
+   Zusicherungen sollten nicht für normal Laufzeitoperationen wie die
+   Überprüfung von Eingaben verwendet werden. Als Faustregel sollte der Code
+   immer korrekt funktionieren können, auch wenn die Zusicherungsüberprüfung
+   deaktiviert ist.
+  </para>
+  <para>
+   Die Optionen für die <function>assert</function> können über die Funktion
+   <function>assert_options</function> oder durch ini Settings, die in der
+   Handbuchseite dieser Funktion beschrieben werden, eingestellt werden.
+  </para>
+  <para>
+   Die Funktion <function>assert_options</function> mit der
+   <constant>ASSERT_CALLBACK</constant> Direktive ermöglicht eine Funktion anzugeben, die
+   bei fehlschlagender Überprüfung aufgerufen wird.
+  </para>
+  <para>
+   Callback-Funktionen in Zusammenhang mit
+   <function>assert</function> sind nützlich, um beispielsweise
+   automatisierte Tests durchzuführen, da die Callback-Funktion über
+   die Information verfügt, von welcher Stelle sie aufgerufen wurde.
+   Auch wenn diese Information mit anderen Methoden zugänglich ist, macht es die
+   Verwendung von Zusicherungen viel schneller und leichter!
+  </para>
+  <para>
+   Die Callback-Funktion wird mit drei Parametern aufgerufen. Der
+   erste Parameter enthält den Namen des Scripts, in dem
+   die Überprüfung statt fand, der zweite Parameter die
+   Zeilennummer, und der dritte Paramter enthält die über
+   <parameter>assertion</parameter> angegebene Bedingung
+   (wobei Literale wie 1 oder "zwei" nicht übergeben werden).
+   Nutzer von PHP 5.4.8 und höher können ebenfalls ein viertes optionales
+   Argument angeben, das die <parameter>description</parameter>, die an
+   <function>assert</function> übergeben wurde, enthält, wenn diese gesetzt
+   wurde.
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>assertion</parameter></term>
+     <listitem>
+      <para>
+       Die Zusicherung.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>description</parameter></term>
+     <listitem>
+      <para>
+       Eine optionale Beschreibung, die in der Fehlermeldung enthalten sein
+       wird, wenn die <parameter>assertion</parameter> fehlschlägt.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &false; wenn die Zusicherung nicht erfüllt ist, &true; anderfalls.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.4.8</entry>
+       <entry>
+        Der <parameter>description</parameter> Parameter wurde hinzugefügt. Die
+        <parameter>description</parameter> wird nun ebenfalls zu einer
+        Callbackfunktion im <constant>ASSERT_CALLBACK</constant> Modus als
+        viertes Argument übergeben.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Überprüfung mit benutzerdefinierter Funktion</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-// Active assert and make it quiet
-assert_options (ASSERT_ACTIVE, 1);
-assert_options (ASSERT_WARNING, 0);
-assert_options (ASSERT_QUIET_EVAL, 1);
+// Zusicherungen aktivieren und stumm schalten
+assert_options(ASSERT_ACTIVE, 1);
+assert_options(ASSERT_WARNING, 0);
+assert_options(ASSERT_QUIET_EVAL, 1);
 
-// Create a handler function
-function my_assert_handler ($file, $line, $code) {
-    echo "<hr>Assertion Failed:
-        File '$file'<br>
-        Line '$line'<br>
-        Code '$code'<br><hr>";
+// Eine Handlerfunktion erzeugen
+function my_assert_handler($file, $line, $code)
+{
+    echo "<hr>Zusicherung fehlgeschlagen:
+        Datei '$file'<br />
+        Zeile '$line'<br />
+        Code '$code'<br /><hr />";
 }
 
-// Set up the callback
-assert_options (ASSERT_CALLBACK, 'my_assert_handler');
+// Den Callback definieren
+assert_options(ASSERT_CALLBACK, 'my_assert_handler');
 
-// Make an assertion that should fail
-assert ('mysql_query ("")');
+// Eine fehlschlagende Zusicherung
+assert('mysql_query("")');
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Verwendung eines benutzerdefinierten Handlers um eine Beschreibung anzuzeigen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Zusicherungen aktivieren und stumm schalten
+assert_options(ASSERT_ACTIVE, 1);
+assert_options(ASSERT_WARNING, 0);
+assert_options(ASSERT_QUIET_EVAL, 1);
+
+// Eine Handlerfunktion erzeugen
+function my_assert_handler($file, $line, $code, $desc = null)
+{
+    echo "Zusicherung fehlgeschlagen in $file:$line: $code";
+    if ($desc) {
+        echo ": $desc";
+    }
+    echo "\n";
+}
+
+// Den Callback definieren
+assert_options(ASSERT_CALLBACK, 'my_assert_handler');
+
+// Fehlschlagende Zusicherungen
+assert('2 < 1');
+assert('2 < 1', 'Zwei ist kleiner als Eins');
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Zusicherung fehlgeschlagen in test.php:21: 2 < 1
+Zusicherung fehlgeschlagen in test.php:22: 2 < 1: Zwei ist kleiner als Eins
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>assert_options</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
