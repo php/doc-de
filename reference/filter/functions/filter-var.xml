@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 335127 Maintainer: cmb Status: ready -->
 <!-- $Revision$ -->
 <refentry xml:id="function.filter-var" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>filter_var</refname>
-  <refpurpose>Filtern einer Variablen durch einen spezifischen Filter</refpurpose>
+  <refpurpose>Filtern einer Variablen mit einem angegebenen Filter</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>filter_var</methodname>
    <methodparam><type>mixed</type><parameter>variable</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>filter</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>filter</parameter><initializer>FILTER_DEFAULT</initializer></methodparam>
    <methodparam choice="opt"><type>mixed</type><parameter>options</parameter></methodparam>
   </methodsynopsis>
 
@@ -24,26 +24,61 @@
      <term><parameter>variable</parameter></term>
      <listitem>
       <para>
-       Wert der gefiltert werden soll. Arrays werden rekursiv gefiltert.
+       Wert der gefiltert werden soll.
       </para>
      </listitem>
     </varlistentry>
-    <varlistentry>
-     <term><parameter>filter</parameter></term>
-     <listitem>
-      <para>
-       ID des zu benutzenden Filters.
-       Standard ist <constant>FILTER_SANITIZE_STRING</constant>.
-      </para>
-     </listitem>
-    </varlistentry>
+    &filter.param.filter;
     <varlistentry>
      <term><parameter>options</parameter></term>
      <listitem>
       <para>
        Assoziatives Array mit Optionen oder bitweise Disjunktion von Flags. Wenn der
-       Filter Optionen akzeptiert, können Flags auch im "flags" Feld des Arrays angegeben
+       Filter Optionen akzeptiert, können Flags im "flags" Feld des Arrays angegeben
        werden. Für "callback" Filter sollte der <type>callback</type>-Typ angegeben werden.
+       Der Callback muss den zu filternden Wert als einziges Argument akzeptieren
+       und den gefilterten/bereinigten Wert zurückgeben.
+      </para>
+      <para>
+       <programlisting role="php">
+        <![CDATA[
+<?php
+// für Filter, die Optionen zulassen, verwenden Sie dieses Format
+$options = array(
+    'options' => array(
+        'default' => 3, // Rückgabewert, falls der Filter fehlschlägt
+        // andere Optionen hier
+        'min_range' => 0
+    ),
+    'flags' => FILTER_FLAG_ALLOW_OCTAL,
+);
+$var = filter_var('0755', FILTER_VALIDATE_INT, $options);
+
+// für Filter, die nur Flags zulassen, können Sie diese direkt übergeben
+$var = filter_var('oops', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+// für Filter, die nur Flags zulassen, können Sie sie ebenfalls als Array übergeben
+$var = filter_var('oops', FILTER_VALIDATE_BOOLEAN,
+                  array('flags' => FILTER_NULL_ON_FAILURE));
+
+// Callback-Validierungsfilter
+function foo($value)
+{
+    // Erwartetes Format: Nachname, Vornamen
+    if (strpos($value, ", ") === false) return false;
+    list($surname, $givennames) = explode(", ", $value, 2);
+    $empty = (empty($surname) || empty($givennames));
+    $notstrings = (!is_string($surname) || !is_string($givennames));
+    if ($empty || $notstrings) {
+        return false;
+    } else {
+        return $value;
+    }
+}
+$var = filter_var('Doe, Jane Sue', FILTER_CALLBACK, array('options' => 'foo'));
+?>
+        ]]>
+       </programlisting>
       </para>
      </listitem>
     </varlistentry>
@@ -66,7 +101,7 @@
 <![CDATA[
 <?php
 var_dump(filter_var('bob@example.com', FILTER_VALIDATE_EMAIL));
-var_dump(filter_var('example.com', FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED));
+var_dump(filter_var('http://example.com', FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED));
 ?>
 ]]>
     </programlisting>
@@ -88,6 +123,7 @@ bool(false)
     <member><function>filter_var_array</function></member>
     <member><function>filter_input</function></member>
     <member><function>filter_input_array</function></member>
+    <member><xref linkend="filter.filters" /></member>
     <member>&seealso.callback;</member>
    </simplelist>
   </para>
