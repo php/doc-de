@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 323668 Maintainer: thorstenr Status: working -->
+<!-- EN-Revision: 338740 Maintainer: cmb Status: working -->
 <!-- Reviewed: no -->
 <!-- Based on UPGRADING version 322438. Work in progess !-->
 
@@ -10,31 +10,19 @@
   &manual.migration.seealso;
   <link linkend="migration5">5.0.x</link>,
   <link linkend="migration51">5.1.x</link>,
-  <link linkend="migration52">5.2.x</link> und
-  <link linkend="migration53">5.3.x</link>.
+  <link linkend="migration52">5.2.x</link>,
+  <link linkend="migration53">5.3.x</link> und
+  <link linkend="migration55">5.5.x</link>.
  </simpara>
 
  <section xml:id="migration54.changes">
   <title>Was hat sich in PHP 5.4.x geändert?</title>
   <simpara>
-  <!-- Placehold for "What has changed in PHP 5.4.x". -->
-
-  <!-- Current content for the 5.3.x changes
-  
-   Most improvements in PHP 5.3.x have no impact on existing code.  There are
-   a <link linkend="migration53.incompatible">few incompatibilities</link>
-   and <link linkend="migration53.new-features">new features</link> that should 
-   be considered, and code should be tested before switching PHP
-   versions in production environments.
-   
-   -->
+   Die meisten Verbesserungen in PHP 5.4.x haben keine Auswirkungen auf existierenden Code.
+   Es gibt <link linkend="migration54.incompatible">ein paar Inkompatibilitäten</link>
+   und <link linkend="migration54.new-features">neue Features</link> die beachtet werden sollten,
+   und Code sollte vor dem Wechsel der PHP Version in Produktionsumgebungen getestet werden.
   </simpara>
-  <warning>
-   <simpara>
-    Diese Liste in nicht komplett und wird bis zum finalen Release von PHP 5.4
-    noch geändert.
-   </simpara>
-  </warning>
   <simpara>
    Für Systeme, die von älteren PHP-Versionen aktualisiert werden, findet
    man die relevante Dokumentation hier:
@@ -72,32 +60,9 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     Die <link linkend="control-structures.break"><literal>break</literal></link>
-     und <link linkend="control-structures.continue"><literal>continue</literal></link>
-     Anweisungen akzeptieren keine variablen Argumente mehr, d.h. es ist nicht
-     möglich <literal>break 1 + foo() * $bar;</literal> zu schreiben. Natürlich
-     können Sie aber weiterhin statische Argumente wie <literal>break
-     2;</literal> verwenden.
-    </simpara>
-   </listitem>
-   <listitem>
-    <simpara>
      <link linkend="features.safe-mode"><literal>Safe mode</literal></link> wird
      nicht länger unterstützt. Alle Anwendungen, die sich auf safe mode verlassen,
      benötigen unter Umständen Anpassungen bezüglich der Sicherheit.
-    </simpara>
-   </listitem>
-   <listitem>
-    <simpara>
-     Die Salsa10 und Salsa20 <link linkend="book.hash">Hash-Algorithmen</link> wurden entfernt.
-    </simpara>
-   </listitem>
-   <listitem>
-    <simpara>
-     Das Setzen der Zeitzone mit der TZ Umgebungsvariablen wird nicht länger von
-     der date Extension unterstützt. Die Extension wird nicht länger versuchen die
-     Standardzeitzone zu erraten, wenn keine eingestellt ist; statt dessen wird immer
-     auf "UTC" zurückgefallen.
     </simpara>
    </listitem>
    <listitem>
@@ -108,35 +73,83 @@
     </simpara>
     <simpara>
      <function>get_magic_quotes_gpc</function> und
-     <function>get_magic_quotes_runtime</function> geben nun immer false
-     zurück. <function>set_magic_quotes_runtime</function> erzeugt
-     <constant>E_CORE_ERROR</constant>.
+     <function>get_magic_quotes_runtime</function> geben nun immer &false;
+     zurück. <function>set_magic_quotes_runtime</function> erzeugt eine Fehler der Stufe
+     <constant>E_CORE_ERROR</constant>, wenn versucht wird
+     <link linkend="security.magicquotes">Magic quotes</link> zu aktivieren.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die <link linkend="ini.register-globals">register_globals</link> und
+     <link linkend="ini.register-long-arrays">register_long_arrays</link> &php.ini; Direktiven
+     wurden entfernt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die mbstring.script_encoding Direktive wurde entfernt.
+     Statt dessen ist <link linkend="ini.zend.script-encoding">zend.script_encoding</link> zu verwenden.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="language.references.pass">Referenzübergabe zur Laufzeit</link>
+     wurde entfernt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die <link linkend="control-structures.break"><literal>break</literal></link>
+     und <link linkend="control-structures.continue"><literal>continue</literal></link>
+     Anweisungen akzeptieren keine variablen Argumente mehr, d.h. es ist nicht
+     möglich <literal>break 1 + foo() * $bar;</literal> zu schreiben.
+     Statische Argumente wie <literal>break 2;</literal> funktionieren weiterhin.
+     Als Nebeneffekt dieser Änderung sind <literal>break 0;</literal> und
+     <literal>continue 0;</literal> nicht länger erlaubt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Das Setzen der Zeitzone mit der TZ Umgebungsvariablen wird nicht länger von
+     der <link linkend="book.datetime">Datum und Uhrzeit Extension</link> unterstützt.
+     Statt dessen muss eine Zeitzone unter Verwendung der
+     <link linkend="ini.date.timezone">date.timezone</link> &php.ini; Option
+     oder der <function>date_default_timezone_set</function> Funktion angegeben werden.
+     PHP wird nicht länger versuchen die Zeitzone zu erraten, sondern wird statt dessen
+     auf "UTC" zurückfallen und eine <constant>E_WARNING</constant> erzeugen.
     </simpara>
    </listitem>
    <listitem>
     <simpara>
      Nichtnumerische Zeichenkettenoffsets, z.B. <literal>$a['foo']</literal>, wobei $a eine
      Zeichenkette ist, geben nun false für <function>isset</function> und true
-     für <function>empty</function> zurück, und erzeugen eine Warnung, wenn
+     für <function>empty</function> zurück, und erzeugen ein <constant>E_WARNING</constant>, wenn
      versucht wird, sie zu verwenden. Offsets der Typen double, bool und null
-     erzeugen eine Notice. Numerische Zeichenketten (z.B. <literal>$a['2']</literal>) funktionieren wie
+     erzeugen ein <constant>E_NOTICE</constant>. Numerische Zeichenketten (z.B. <literal>$a['2']</literal>) funktionieren wie
      bisher. Es ist zu beachten, dass Offsets wie <literal>'12.3'</literal> und <literal>'5 irgendwas'</literal> als
-     nichtnumerisch angesehen werden, und eine Warnung erzeugen, aber aus
+     nichtnumerisch angesehen werden, und ein <constant>E_WARNING</constant> erzeugen, aber aus
      Gründen der Abwärtskompatibilität zu 12 bzw. 5 konvertiert werden.
     </simpara>
-   </listitem>
-   <listitem>
     <simpara>
-     &null;, &false; oder leere Zeichenketten durch hinzufügen einer Eigenschaft in
-     ein Objekt zu konvertieren wird nun eine Warnung statt eines
-     <constant>E_STRICT</constant> Fehlers ausgeben.
+     Hinweis: der folgende Code gibt unterschiedliche Ergebnisse zurück.
+    </simpara>
+    <simpara>
+     $str='abc';var_dump(isset($str['x'])); // false unter PHP 5.4 oder später, aber true unter 5.3 oder weniger
     </simpara>
    </listitem>
    <listitem>
     <simpara>
      Konvertieren von Arrays zu String wird nun eine
-     <constant>E_NOTICE</constant> verursachen. Das Ergebnis der Umwandlung ist
+     <constant>E_NOTICE</constant> verursachen, aber das Ergebnis der Umwandlung ist
      weiterhin <literal>"Array"</literal>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     &null;, &false; oder leere Zeichenketten durch Hinzufügen einer Eigenschaft in
+     ein Objekt zu konvertieren wird nun einen Fehler der Stufe <constant>E_WARNING</constant> statt
+     <constant>E_STRICT</constant> ausgeben.
     </simpara>
    </listitem>
    <listitem>
@@ -148,6 +161,11 @@
    </listitem>
    <listitem>
     <simpara>
+     Die Salsa10 und Salsa20 <link linkend="book.hash">Hash-Algorithmen</link> wurden entfernt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
      <function>array_combine</function> gibt nun <literal>array()</literal>
      anstatt &false; zurück, wenn zwei leere Arrays als
      Parameter übergeben wurden.
@@ -155,21 +173,26 @@
    </listitem>
    <listitem>
     <simpara>
-     <link linkend="language.references.pass">Referenzübergabe zur Laufzeit</link>
-     wurde entfernt.
+     Wird <function>htmlentities</function> mit asiatischen Zeichensätzen verwendet,
+     funktioniert es wie <function>htmlspecialchars</function> - das war auch in
+     früheren PHP Versionen so, aber nun wird ein Fehler der Stufe <constant>E_STRICT</constant>
+     ausgegeben.
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     <function>htmlentities</function> now emits an <constant>E_STRICT</constant> warning when used with
-     asian character sets, as in that case <function>htmlentities</function> has (and already had before
-     this version) the same functionality as <function>htmlspecialchars</function>.
+     Der dritte Parameter von <function>ob_start</function> wurde von
+     <type>boolean</type> <parameter>erase</parameter> in <type>integer</type>
+     <parameter>flags</parameter> geändert. Es ist zu beachten, dass Code der
+     <parameter>erase</parameter> ausdrücklich auf &false; setzt, sich unter PHP 5.4 nicht länger
+     wie erwartet verhält; <link linkend="function.ob-start.flags-bc">dieses Beispiel</link>
+     zeigt wie Code geschrieben wird, der kompatibel zu PHP 5.3 und PHP 5.4 ist.
     </simpara>
    </listitem>
   </itemizedlist>
   <simpara>
-   Die folgenden Schlüsselwörter sind nun reserviert und dürfen nicht in Funktions-,
-   Klassen- usw. namen genutzt werden.
+   Die folgenden Schlüsselwörter sind nun <link linkend="reserved">reserviert</link> und dürfen nicht als Namen
+   von Funktionen, Klassen usw. genutzt werden.
   </simpara>
   <itemizedlist>
    <listitem>
@@ -179,7 +202,7 @@
    </listitem>
    <listitem>
     <simpara>
-     callable
+     <link linkend="language.types.callable">callable</link>
     </simpara>
    </listitem>
    <listitem>
@@ -194,23 +217,27 @@
   <itemizedlist>
    <listitem>
     <simpara>
-     define_syslog_variables()
+     <function>define_syslog_variables</function>
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     import_request_variables()
+     <function>import_request_variables</function>
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     session_is_registered(), session_register() und session_unregister()
+     <function>session_is_registered</function>, <function>session_register</function>
+     und <function>session_unregister</function>.
     </simpara>
    </listitem>
    <listitem>
     <simpara>
-     mysqli_bind_param(), mysqli_bind_result(), mysqli_client_encoding(), mysqli_fetch(), mysqli_param_count(),
-     mysqli_get_metadata(), mysqli_send_long_data(), mysqli::client_encoding() und mysqli_stmt::stmt()
+     Die Aliase
+     <function>mysqli_bind_param</function>, <function>mysqli_bind_result</function>,
+     <function>mysqli_client_encoding</function>, <function>mysqli_fetch</function>,
+     <function>mysqli_param_count</function>, <function>mysqli_get_metadata</function>,
+     <function>mysqli_send_long_data</function>, mysqli::client_encoding() und mysqli_stmt::stmt().
     </simpara>
    </listitem>
   </itemizedlist>
@@ -219,47 +246,84 @@
  <section xml:id="migration54.new-features">
   <title>Neue Features</title>
   <simpara>
-   PHP 5.4.0 offers a wide range of new features:
+   PHP 5.4.0 bietet eine ganze Reihe neuer Features:
   </simpara>
   <itemizedlist>
    <listitem>
     <simpara>
-     Support for <link linkend="language.oop5.traits">traits</link> has been 
-     added.
+     Unterstützung für <link linkend="language.oop5.traits">Traits</link> wurde
+     hinzugefügt.
     </simpara>
    </listitem>
-  </itemizedlist>
- </section>
-
- <section xml:id="migration54.windows">
-  <title>Changes made to Windows support</title>
-  <simpara>
-   Changes to the Windows releases:
-  </simpara>
-  <itemizedlist>
    <listitem>
     <simpara>
-     <function>is_link</function> funktioniert nun ordnungsgemäß für
-     symbolische Links unter Windows Vista oder höher. Ältere Systeme
-     unterstützen keine symbolischen Links.
+     Die kurze Array-Syntax wurde hinzugefügt, z.B. <literal>$a = [1, 2, 3, 4];</literal> oder
+     <literal>$a = ['one' => 1, 'two' => 2, 'three' => 3, 'four' => 4];</literal>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Das Dereferenzieren von Funktionen, die ein Array zurückgeben, wurde hinzugefügt, z.B. <literal>foo()[0]</literal>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <link linkend="functions.anonymous">Closures</link> unterstützen nun <literal>$this</literal>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>&lt;?=</literal> ist nun immer verfügbar, unabhängig von der
+     <link linkend="ini.short-open-tag">short_open_tag</link> &php.ini; Option.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Zugriff auf Klassenmitglieder bei der Instantiierung wurde hinzugefügt,
+     z.B. <literal>(new Foo)-&gt;bar()</literal>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>Class::{expr}()</literal> Syntax wird nun unterstützt.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Das binäre Zahlenformat wurde hinzugefügt, z.B. <literal>0b001001101</literal>.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Parser-Fehlermeldungen und Warnung wegen inkompatibler Argumente wurden verbessert.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die Session Extension kann nun den <link linkend="session.upload-progress">Upload-Fortschritt</link> von Dateien verfolgen.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Einen eingebauter <link linkend="features.commandline.webserver">Webserver im CLI-Modus</link> für die Entwicklung.
     </simpara>
    </listitem>
   </itemizedlist>
  </section>
 
  <section xml:id="migration54.sapi">
-  <title>Changes in SAPI modules</title>
+  <title>Änderungen in SAPI Modulen</title>
   <itemizedlist>
    <listitem>
     <simpara>
-     A new SAPI module named <literal>cli-server</literal> is now available.
+     Ein neues SAPI Modul namens <literal>cli-server</literal> ist nun verfügbar.
     </simpara>
    </listitem>
   </itemizedlist>
   <itemizedlist>
    <listitem>
     <simpara>
-     CLI Option --rz hinzugefügt, die Information über die benannte Zend
+     CLI Option <literal>--rz</literal> hinzugefügt, die Information über die benannte Zend
      Extension anzeigt.
     </simpara>
    </listitem>
@@ -278,8 +342,8 @@
    </listitem>
    <listitem>
     <simpara>
-     PHP-FPM : <literal>process.max</literal> Einstellung zur Steuerung der Anzahl der Prozesse,
-     die FPM forken kann, hinzugefügt
+     PHP-FPM: <literal>process.max</literal> Einstellung zur Steuerung der Anzahl der Prozesse,
+     die FPM forken kann, hinzugefügt.
     </simpara>
    </listitem>
   </itemizedlist>
@@ -287,22 +351,6 @@
 
  <section xml:id="migration54.deprecated">
   <title>Deprecated features in PHP 5.4.x</title>
-  <simpara>
-   <!-- Placeholder for "Deprecated features in PHP 5.4.x" -->
-  </simpara>
-  <simpara>
-   The following is a list of deprecated INI directives. Use of any of these INI
-   directives will cause an <constant>E_DEPRECATED</constant> error to be thrown
-   at startup.
-  </simpara>
-  <itemizedlist>
-   <listitem>
-    <simpara>
-     <literal>magic_quotes_gpc</literal>, <literal>magic_quotes_runtime</literal> und
-     <literal>magic_quotes_sybase</literal>
-    </simpara>
-   </listitem>
-  </itemizedlist>
   <simpara>
    Deprecated functions:
   </simpara>
@@ -312,34 +360,8 @@
      <function>mysql_list_dbs</function>
     </simpara>
    </listitem>
-   <listitem>
-    <simpara>
-     <function>get_magic_quotes_gpc</function>
-    </simpara>
-   </listitem>
-   <listitem>
-    <simpara>
-     <function>get_magic_quotes_runtime</function>
-    </simpara>
-   </listitem>
-   <listitem>
-    <simpara>
-     <function>mcrypt_generic_end</function>
-    </simpara>
-   </listitem>
   </itemizedlist>
  </section>
-
-<!-- Are there any undeprecated features/settings/etc. in PHP 5.4?
-
- <section xml:id="migration54.undeprecated">
-  <title>Undeprecated features in PHP 5.3.x</title>
-  <simpara>
-   The <function>is_a</function> function has been undeprecated by popular
-   request; it will no longer issue an <constant>E_STRICT</constant> error.
-  </simpara>
- </section>
--->
 
  <section xml:id="migration54.parameters">
   <title>New Parameters</title>
