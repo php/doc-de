@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 335023 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 339351 Maintainer: simp Status: ready -->
 <chapter xml:id="language.namespaces" xmlns="http://docbook.org/ns/docbook"
 version="1.1">
  <title>Namespaces</title>
@@ -22,6 +22,26 @@ version="1.1">
    <literal>/home/greg/foo.txt</literal> zu erhalten. Das gleiche Prinzip streckt sich
    auf Namespaces in der Programmierwelt aus.
   </simpara>
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.0.0</entry>
+       <entry>
+        Gruppierte use-Deklarationen hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
   <simpara>
    In der Welt von PHP wurden Namespaces entworfen, um zwei Probleme zu lösen, auf die
    die Autoren von Bibliotheken und Anwendungen stoßen, wenn sie wiederverwendbare
@@ -491,14 +511,6 @@ function funcname()
 }
 const constname = "namespaced";
 
-include 'example1.php';
-
-$a = 'classname';
-$obj = new $a; // gibt classname::__construct aus
-$b = 'funcname';
-$b(); // gibt funcname aus
-echo constant('constname'), "\n"; // gibt global aus
-
 /* Wenn man doppelte Anführungszeichen verwendet,
 muss "\\namespacename\\classname" verwendet werden */
 $a = '\namespacename\classname';
@@ -750,11 +762,11 @@ $obj = new \Another\thing; // erzeugt ein Objekt der Klasse Another\thing
 <?php
 namespace Languages;
 
-class Greenlandic
+function toGreenlandic()
 {
     use Languages\Danish;
 
-    ...
+    // ...
 }
 ?>
 ]]>
@@ -767,6 +779,39 @@ class Greenlandic
      wird <emphasis>NICHT</emphasis> die Importregeln der einbindenden Datei erben.
     </para>
    </note>
+  </sect2>
+  <sect2 xml:id="language.namespaces.importing.group">
+   <title>Gruppierte <literal>use</literal> Deklarationen</title>
+   <para>
+    Von PHP 7.0 an können Klassen, Funktionen und Konstanten, die aus dem
+    gleichen Namespace importiert werden, in einer einzigen &use.namespace;
+    Anweisung gruppiert werden.
+   </para>
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+// Pre PHP 7 Code
+use some\namespace\ClassA;
+use some\namespace\ClassB;
+use some\namespace\ClassC as C;
+
+use function some\namespace\fn_a;
+use function some\namespace\fn_b;
+use function some\namespace\fn_c;
+
+use const some\namespace\ConstA;
+use const some\namespace\ConstB;
+use const some\namespace\ConstC;
+
+// PHP 7+ Code
+use some\namespace\{ClassA, ClassB, ClassC as C};
+use function some\namespace\{fn_a, fn_b, fn_c};
+use const some\namespace\{ConstA, ConstB, ConstC};
+]]>
+    </programlisting>
+   </informalexample>
   </sect2>
  </sect1>
  <sect1 xml:id="language.namespaces.global">
@@ -1158,8 +1203,8 @@ A\B::foo();   // ruft die Methode "foo" der Klasse "B" aus dem Namespace "A\A" a
     </listitem>
     <listitem>
      <simpara>
-      <link linkend="language.namespaces.faq.nofuncconstantuse">Weder Funktionen
-       noch Konstanten können mittels <literal>use</literal> importiert werden.</link>
+      <link linkend="language.namespaces.faq.nofuncconstantuse">Vor PHP 5.6 konnten weder Funktionen
+       noch Konstanten mittels <literal>use</literal> importiert werden.</link>
      </simpara>
     </listitem>
     <listitem>
@@ -1519,11 +1564,11 @@ namespace mein\zeug\verschachtelt {
    </para>
   </sect2>
   <sect2 xml:id="language.namespaces.faq.nofuncconstantuse">
-   <title>Weder Funktionen noch Konstanten können mittels
+   <title>Vor PHP 5.6 konnten weder Funktionen noch Konstanten mittels
     <literal>use</literal> importiert werden.</title>
    <para>
-    Die einzigen Elemente, die von einem <literal>use</literal>-Ausdruck
-    beeinflusst werden, sind Namespaces und Klassenamen. Um einen langen
+    Vor PHP 5.6 sind die einzigen Elemente, die von einem <literal>use</literal>-Ausdruck
+    beeinflusst werden, Namespaces und Klassenamen. Um einen langen
     Konstanten- oder Funktionsnamen abzukürzen, kann dessen beinhaltender
     Namespace importiert werden.
     <informalexample>
@@ -1539,6 +1584,8 @@ name\func();
      ]]>
      </programlisting>
     </informalexample>
+    Von PHP 5.6 an sind Aliase und Importieren von Funktions- und Konstantennamen
+    erlaubt.
    </para>
   </sect2>
   <sect2 xml:id="language.namespaces.faq.quote">
