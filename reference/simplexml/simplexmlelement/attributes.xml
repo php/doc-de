@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 283836 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 287736 Maintainer: sammywg Status: ready -->
 
-<refentry xml:id="function.simplexml-element-xpath" xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id='simplexmlelement.attributes' xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
-  <refname>SimpleXMLElement::xpath</refname>
-  <refpurpose>Führt ein XPath Query auf XML-Daten aus</refpurpose>
+  <refname>SimpleXMLElement::attributes</refname>
+  <refpurpose>Identifiziert die Attribute eines Elements</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -13,15 +13,16 @@
   <classsynopsis>
    <ooclass><classname>SimpleXMLElement</classname></ooclass>
    <methodsynopsis>
-    <type>array</type><methodname>xpath</methodname>
-    <methodparam><type>string</type><parameter>path</parameter></methodparam>
+    <type>SimpleXMLElement</type><methodname>attributes</methodname>
+    <methodparam choice="opt"><type>string</type><parameter>ns</parameter></methodparam>
+    <methodparam choice="opt"><type>bool</type><parameter>is_prefix</parameter></methodparam>
    </methodsynopsis>
   </classsynopsis>
   <para>
-   Die <literal>xpath</literal>-Methode durchsucht den SimpleXML-Knoten nach
-   Kind-Elementen, die der <acronym>XPath</acronym>
-   <parameter>path</parameter>-Anfrage entsprechen.
+   Die Funktion liefert die Attribute und Werte, die innerhalb eines XML-Tags
+   definiert wurden.
   </para>
+  &simplexml.iteration;
  </refsect1>
 
  <refsect1 role="parameters">
@@ -29,10 +30,18 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>path</parameter></term>
+     <term><parameter>ns</parameter></term>
      <listitem>
       <para>
-       Eine XPath Pfad-Anfrage
+       Ein optionaler Namespace für das abgefragte Attribut.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>is_prefix</parameter></term>
+     <listitem>
+      <para>
+       Standardmäßig auf &false; gesetzt.
       </para>
      </listitem>
     </varlistentry>
@@ -43,8 +52,6 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Die Funktion gibt ein <type>Array</type> von SimpleXMLElement-Objekten oder
-   im Fehlerfall &false; zurück.
   </para>
  </refsect1>
 
@@ -52,36 +59,19 @@
   &reftitle.examples;
   <para>
    <example>
-    <title>Xpath</title>
+    <title>Einen XML-String auswerten</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 $string = <<<XML
-<a>
- <b>
-  <c>text</c>
-  <c>zeugs</c>
- </b>
- <d>
-  <c>code</c>
- </d>
+<a xmlns:b>
+ <foo name="one" game="lonely">1</foo>
 </a>
 XML;
 
-$xml = new SimpleXMLElement($string);
-
-/* Suche nach <a><b><c> */
-$result = $xml->xpath('/a/b/c');
-
-while(list( , $node) = each($result)) {
-    echo '/a/b/c: ',$node,"\n";
-}
-
-/* Relative Pfade funktionieren ebenfalls ... */
-$result = $xml->xpath('b/c');
-
-while(list( , $node) = each($result)) {
-    echo 'b/c: ',$node,"\n";
+$xml = simplexml_load_string($string);
+foreach($xml->foo[0]->attributes() as $a => $b) {
+    echo $a,'="',$b,"\"\n";
 }
 ?>
 ]]>
@@ -89,15 +79,10 @@ while(list( , $node) = each($result)) {
     &example.outputs;
     <screen>
 <![CDATA[
-/a/b/c: text
-/a/b/c: zeugs
-b/c: text
-b/c: zeugs
+name="one"
+game="lonely"
 ]]>
-    </screen>
-    <simpara>
-     Beachten Sie, dass beide Ergebnisse gleich sind.
-    </simpara>
+   </screen>
    </example>
   </para>
  </refsect1>
