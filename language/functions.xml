@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 337390 Maintainer: cmb Status: working -->
+<!-- EN-Revision: 339195 Maintainer: cmb Status: working -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
 
  <chapter xml:id="language.functions" xmlns="http://docbook.org/ns/docbook">
@@ -393,8 +393,8 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
     </note>
 
     <para>
-     Type declarations allow functions to require that parameters are of a
-     certain type at call time. If the given value is of the incorrect type,
+     Type declarations allow functions to require that parameters are of a certain type at call time.
+     If the given value is of the incorrect type,
      then an error is generated: in PHP 5, this will be a recoverable fatal
      error, while PHP 7 will throw a <classname>TypeError</classname>
      exception.
@@ -423,6 +423,15 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
          <entry>
           The parameter must be an &instanceof; the given class or interface
           name.
+         </entry>
+         <entry>PHP 5.0.0</entry>
+        </row>
+        <row>
+         <entry><literal>self</literal></entry>
+         <entry>
+          Der Parameter muss ein &instanceof; der selben Klasse sein für die die
+          Methode definiert ist. Dies kann nur für Klassen- und Objektmethoden
+          verwendet werden.
          </entry>
          <entry>PHP 5.0.0</entry>
         </row>
@@ -471,6 +480,34 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
        </tbody>
       </tgroup>
      </informaltable>
+     <warning>
+      <para>
+       Aliase der oben genannten skalaren Typen werden nicht unterstützt.
+       Statt dessen werden sie als Klassen- oder Schnittstellennamen angesehen.
+       Zum Beispiel erfordert die Verwendung von <literal>boolean</literal>
+       als Parameter oder Rückgabetyp ein Argument oder einen Rückgabewert, der
+       ein &instanceof; der Klasse oder Schnittstelle <literal>boolean</literal>
+       ist, anstatt vom Typ <type>bool</type>:
+      </para>
+      <para>
+       <example>
+        <programlisting role="php">
+ <![CDATA[
+ <?php
+ function test(boolean $param) {}
+ test(true);
+ ?>
+ ]]>
+        </programlisting>
+        &example.outputs;
+        <screen>
+ <![CDATA[
+ Fatal error: Uncaught TypeError: Argument 1 passed to test() must be an instance of boolean, boolean given, called in - on line 1 and defined in -:1
+ ]]>
+        </screen>
+       </example>
+      </para>
+     </warning>
     </sect3>
 
     <sect3 xml:id="functions.arguments.type-declaration.examples">
@@ -587,7 +624,9 @@ NULL
       mode, only a variable of exact type of the type declaration will be
       accepted, or a <classname>TypeError</classname> will be thrown. The
       only exception to this rule is that an <type>integer</type> may be given
-      to a function expecting a <type>float</type>.
+      to a function expecting a <type>float</type>. Function calls from within
+      internal functions will not be affected by the <literal>strict_types</literal>
+      declaration.
      </para>
 
      <para>
@@ -1379,18 +1418,18 @@ $message = 'hello';
 $example = function () {
     var_dump($message);
 };
-echo $example();
+$example();
 
 // Inherit $message
 $example = function () use ($message) {
     var_dump($message);
 };
-echo $example();
+$example();
 
 // Inherited variable's value is from when the function
 // is defined, not when called
 $message = 'world';
-echo $example();
+$example();
 
 // Reset message
 $message = 'hello';
@@ -1399,12 +1438,12 @@ $message = 'hello';
 $example = function () use (&$message) {
     var_dump($message);
 };
-echo $example();
+$example();
 
 // The changed value in the parent scope
 // is reflected inside the function call
 $message = 'world';
-echo $example();
+$example();
 
 // Closures can also accept regular arguments
 $example = function ($arg) use ($message) {
