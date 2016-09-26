@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 337865 Maintainer: POli Bahn Status: ready -->
-<!-- Reviewed: no -->
+<!-- EN-Revision: 339531 Maintainer: nobody Status: ready -->
 
 <chapter xml:id="language.generators" xmlns="http://docbook.org/ns/docbook">
  <title>Generatoren</title>
 
  <sect1 xml:id="language.generators.overview">
-  <title>Generatoren Übersicht</title>
+  <title>Generatoren-Übersicht</title>
   <?phpdoc print-version-for="generators"?>
 
   <para>
    Generatoren bieten eine einfache Möglichkeit, um einfache <link
-   linkend="language.oop5.iterations">Iterationen</link> zu erstellen, ohne
-   den Overhead oder die Komplexität zur Erstellung einer Klasse zu haben, 
-   die das <classname>Iterator</classname>-Interface implementieren.
+   linkend="language.oop5.iterations">Iteratoren</link> zu erstellen, ohne
+   den Overhead oder die Komplexität der Erstellung einer Klasse zu haben, 
+   die das <classname>Iterator</classname>-Interface implementiert.
   </para>
 
   <para>
    Ein Generator ermöglicht es Code zu schreiben, der &foreach; nutzt, um über
-   ein Set von Daten zu iterieren, ohne ein Array im Speicher zu erzeugen,
+   eine Datenmenge zu iterieren, ohne ein Array im Speicher zu erzeugen,
    was zur Überschreitung des Speicherlimits führen kann oder beträchtliche
    Prozessorzeit benötigt. Alternativ können Sie eine Generatorfunktion
    schreiben, die einer normalen <link
@@ -32,7 +31,7 @@
 
   <para>
    Ein einfaches Beispiel dazu ist, die <function>range</function>-Funktion
-   durch einen Generator neu implementieren. Die
+   durch einen Generator neu zu implementieren. Die
    Standard-<function>range</function>-Funktion generiert und liefert Arrays,
    welche jeden Wert enthalten, was große Arrays zur Folge haben kann: zum
    Beispiel hat der Aufruf <command>range(0, 1000000)</command> zur Folge,
@@ -55,7 +54,7 @@
 function xrange($start, $limit, $step = 1) {
     if ($start < $limit) {
         if ($step <= 0) {
-            throw new LogicException('Schrittweite muss +ve sein');
+            throw new LogicException('Schrittweite muss positiv sein');
         }
 
         for ($i = $start; $i <= $limit; $i += $step) {
@@ -63,7 +62,7 @@ function xrange($start, $limit, $step = 1) {
         }
     } else {
         if ($step >= 0) {
-            throw new LogicException('Schrittweite muss -ve sein');
+            throw new LogicException('Schrittweite muss negativ sein');
         }
 
         for ($i = $start; $i >= $limit; $i += $step) {
@@ -73,17 +72,17 @@ function xrange($start, $limit, $step = 1) {
 }
 
 /*
- * Hinweis: beide unteren Funktionen range() und xrange() 
+ * Hinweis: sowohl range() als auch xrange() 
  * erzeugen die gleiche Ausgabe.
  */
 
-echo 'Einstellige ungerade Zahl aus range():  ';
+echo 'Einstellige ungerade Zahlen von range():  ';
 foreach (range(1, 9, 2) as $zahl) {
     echo "$zahl ";
 }
 echo "\n";
 
-echo 'Einstellige ungerade Zahl aus xrange(): ';
+echo 'Einstellige ungerade Zahlen von xrange(): ';
 foreach (xrange(1, 9, 2) as $zahl) {
     echo "$zahl ";
 }
@@ -93,8 +92,8 @@ foreach (xrange(1, 9, 2) as $zahl) {
    &example.outputs;
    <screen>
 <![CDATA[
-Einstellige ungerade Zahl aus range():  1 3 5 7 9 
-Einstellige ungerade Zahl aus xrange(): 1 3 5 7 9 
+Einstellige ungerade Zahlen von range():  1 3 5 7 9 
+Einstellige ungerade Zahlen von xrange(): 1 3 5 7 9 
 ]]>
    </screen>
   </example>
@@ -107,14 +106,14 @@ Einstellige ungerade Zahl aus xrange(): 1 3 5 7 9
     implementiert das <classname>Iterator</classname>-Interface in gleicher
     Weise wie es ein forward-only Iterator-Objekt machen würde und stellt
     Methoden zur Verfügung, die aufgerufen werden können, um den Zustand des
-    Generators zu manipulieren, einschließlich des Sendens von Werten an ihn
+    Generators zu manipulieren, einschließlich des Sendens von Werten an,
     und der Rückgabe von Werten von ihm.
    </para>
   </sect2>
  </sect1>
 
  <sect1 xml:id="language.generators.syntax">
-  <title>Generator Syntax</title>
+  <title>Generator-Syntax</title>
 
   <para>
    Eine Generatorfunktion sieht genau so aus wie eine normale Funktion mit
@@ -123,11 +122,12 @@ Einstellige ungerade Zahl aus xrange(): 1 3 5 7 9
   </para>
 
   <para>
-   Wenn eine Generatorfunktion aufgerufen wird, wird ein Objekt zurückgegeben.
-   Wenn Sie über dieses Objekt iterieren (zum Beispiel, via
-   &foreach;-Schleife), wird PHP die Generatorfunktion so oft aufrufen, wie
-   Werte benötigt werden. Dann wird der Status des Generators gesichert,
-   sodass fortgefahren werden kann, wenn der nächste Wert benötigt wird.
+   Wenn eine Generatorfunktion aufgerufen wird, wird ein Objekt zurückgegeben,
+   über das iteriert werden kann.
+   Wenn Sie über dieses Objekt iterieren (zum Beispiel, per
+   &foreach;-Schleife), wird PHP die Generatorfunktion jedesmal aufrufen, wenn ein
+   Wert benötigt wird. Dann wird der Status des Generators gesichert,
+   so dass fortgefahren werden kann, wenn der nächste Wert benötigt wird.
   </para>
 
   <para>
@@ -154,11 +154,11 @@ Einstellige ungerade Zahl aus xrange(): 1 3 5 7 9
     das yield-Schlüsselwort wie eine return-Anweisung aus, ausser dass die
     Ausführung mit der Rückgabe nicht beendet wird, sondern yield stattdessen
     bei der Schleife über den Generator einen Wert für den Code bereitstellt
-    und solange die Ausführung der Generatorfunktion anhält.
+    und die Ausführung der Generatorfunktion anhält.
    </para>
 
    <example>
-    <title>Ein einfaches Beispiel zum abliefern (yielding) von Werten</title>
+    <title>Ein einfaches Beispiel zum liefern (yielding) von Werten</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -239,12 +239,12 @@ foreach ($generator as $wert) {
      PHP unterstützt ebenfalls assoziative Arrays, und Generatoren
      unterscheiden sich nicht davon. Als Ergänzung zum Produzieren einfacher
      Werte, wie oben gezeigt, können Sie zur gleichen Zeit auch einen
-     Schlüssel abliefern.
+     Schlüssel liefern.
     </para>
 
     <para>
      Die Syntax für das Produzieren eines Schlüssel/Wert-Paares ist sehr
-     ähnlich wie die Definition von assoziativen Arrays. Siehe unten.
+     ähnlich wie die Definition von assoziativen Arrays, wie unten gezeigt.
     </para>
 
     <example>
@@ -253,8 +253,8 @@ foreach ($generator as $wert) {
 <![CDATA[
 <?php
 /*
- * Die Eingabe sind Semikolon getrennte Felder, mit dem ersten Feld
- * welches als ID und Schlüssel genutzt wird.
+ * Die Eingabe sind Semikolon getrennte Felder, wobei das erste Feld
+ * eine ID ist, die als Schlüssel genutzt wird.
  */
 
 $eingabe = <<<'EOF'
@@ -317,7 +317,7 @@ foreach (eingabe_parser($eingabe) as $id => $felder) {
     <title>Produzieren von null-Werten</title>
 
     <para>
-     Yield kann ohne ein Argument aufgerufen werden, um einen &null;-Wert mit
+     Yield kann ohne Argument aufgerufen werden, um einen &null;-Wert mit
      einem automatischen Schlüssel zurückzugeben.
     </para>
 
@@ -353,18 +353,18 @@ array(3) {
    </sect3>
 
    <sect3 xml:id="control-structures.yield.references">
-    <title>Produzieren durch Referenzen</title>
+    <title>Produzieren als Referenz</title>
 
     <para>
-     Generatorfunktionen sind genauso in der Lage Werte durch Referenzen 
-     zurückzugeben, wie durch Werte. Dies kann in gleicher Weise erfolgen, wie
-     beim <link linkend="functions.returning-values">zurückgeben von
-     Referenzen aus Funktionen</link>: dies geschieht durch Voranstellen eines
-     kaufmännischen Unds zum Funktionsnamen.
+     Generatorfunktionen sind genauso in der Lage Werte als Referenz 
+     zurückzugeben, wie als Wert. Dies kann in gleicher Weise erfolgen, wie
+     beim <link linkend="functions.returning-values">Zurückgeben von
+     Referenzen aus Funktionen</link>: dies geschieht, indem dem Funktionsnamen
+     ein Kaufmanns-Und vorangestellt wird.
     </para>
 
     <example>
-     <title>Produzieren von Werten durch Referenzen</title>
+     <title>Produzieren von Werten als Referenz</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -397,15 +397,15 @@ foreach (generiere_referenz() as &$nummer) {
    </sect3>
 
    <sect3 xml:id="control-structures.yield.from">
-    <title>Generatordelegation via <command>yield from</command></title>
+    <title>Generatordelegation per <command>yield from</command></title>
 
     <para>
      In PHP 7 ermöglicht die Generatordelegation mittels <command>yield
      from</command>-Ausdruck Werte von einem anderen Generator,
-     <classname>Traversable</classname>-Ojekt oder <type>array</type>
-     abliefern zu lassen. Der äußere Generator liefert dann alle Werte vom
-     inneren Generator, Objekt oder Array ab, bis dieser nicht mehr gültig
-     ist und die Ausführung mit dem äußeren Generator fortfährt.
+     <classname>Traversable</classname>-Objekt oder <type>Array</type>
+     liefern zu lassen. Der äußere Generator liefert dann alle Werte vom
+     inneren Generator, Objekt oder Array, bis dies nicht mehr gültig
+     ist und die Ausführung im äußeren Generator fortfährt.
     </para>
 
     <para>
@@ -413,6 +413,64 @@ foreach (generiere_referenz() as &$nummer) {
      gibt der <command>yield from</command>-Ausdruck auch alle Werte zurück,
      die vom inneren Generator zurückgegeben werden.
     </para>
+
+    <caution>
+     <title>Speichern in ein Array (z.B. mit <function>iterator_to_array</function>)</title>
+
+      <para>
+       <command>yield from</command> setzt nicht die Schlüssel zurück. Es erhält
+       die Schlüssel, die vom <classname>Traversable</classname>-Objekt oder
+       <type>Array</type> zurückgegeben wurden. Daher können einige Werte den
+       selben Schlüssel mit einem anderen <command>yield</command> oder
+       <command>yield from</command> gemein haben, der, bei der Einfügung in ein
+       Array, vorherige Werte mit diesem Schlüssel überschreibt.
+      </para>
+
+      <para>
+       Ein üblicher Fall, für den dies relevant ist, ist
+       <function>iterator_to_array</function>, das standardmäßig ein indexiertes
+       Array zurück gibt, was zu möglicherweise unerwarteten Ergebnissen führen
+       kann. <function>iterator_to_array</function> hat einen zweiten Parameter
+       <parameter>use_keys</parameter>, der auf &false; gesetzt werden kann, um
+       alle Werte zu sammeln, während die Schlüssel, die vom
+       <classname>Generator</classname> geliefert werden, ignoriert werden.
+      </para>
+     
+      <example>
+       <title><command>yield from</command> mit <function>iterator_to_array</function></title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+function from() {
+    yield 1; // Schlüssel 0
+    yield 2; // Schlüssel 1
+    yield 3; // Schlüssel 2
+}
+function gen() {
+    yield 0; // Schlüssel 0
+    yield from from(); // Schlüssel 0-2
+    yield 4; // Schlüssel 1
+}
+// Übergib false als zweiten Parameter, um das Array [0, 1, 2, 3, 4] zu erhalten
+var_dump(iterator_to_array(gen()));
+?>
+]]>
+       </programlisting>
+       &example.outputs;
+       <screen>
+<![CDATA[
+array(3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(4)
+  [2]=>
+  int(3)
+}
+]]>
+       </screen>
+      </example>
+    </caution>
 
     <example>
      <title>Grundlegende Verwendung von <command>yield from</command></title>
@@ -503,11 +561,11 @@ echo $gen->getReturn();
   <title>Vergleich von Generatoren mit <classname>Iterator</classname>-Objekten</title>
 
   <para>
-   Die erste Verbesserung von Generatoren ist ihre Einfachheit. Viel weniger
-   überladener Code muss geschrieben werden als im Vergleich zur
+   Der Hauptvorteil von Generatoren ist deren Einfachheit. Viel weniger
+   Boilerplate-Code muss geschrieben werden als im Vergleich zur
    Implementierung einer <classname>Iterator</classname>-Klasse und der Code
-   ist generell einfacher zu lesen. Als Beispiel dienen folgende äquivalente
-   Funktion und Klasse:
+   ist generell einfacher zu lesen. Zum Beispiel sind die folgende Funktion und
+   Klasse äquivalent:
   </para>
 
   <informalexample>
@@ -529,44 +587,45 @@ function leseZeilenVonDatei($dateiName) {
 // im Gegensatz zu...
 
 class LineIterator implements Iterator {
-    protected $dateiHandle;
+class LineIterator implements Iterator {
+    protected $fileHandle;
  
-    protected $zeile;
+    protected $line;
     protected $i;
  
-    public function __construct($dateiName) {
-        if (!$this->dateiHandle = fopen($dateiName, 'r')) {
-            throw new RuntimeException('Kann Datei "' . $dateiName . '" nicht öffnen');
+    public function __construct($fileName) {
+        if (!$this->fileHandle = fopen($fileName, 'r')) {
+            throw new RuntimeException('Couldn\'t open file "' . $fileName . '"');
         }
     }
  
     public function rewind() {
-        fseek($this->dateiHandle, 0);
-        $this->zeile = fgets($this->dateiHandle);
+        fseek($this->fileHandle, 0);
+        $this->line = fgets($this->fileHandle);
         $this->i = 0;
     }
  
-    public function gueltig() {
-        return false !== $this->zeile;
+    public function valid() {
+        return false !== $this->line;
     }
  
-    public function aktuelle() {
-        return $this->zeile;
+    public function current() {
+        return $this->line;
     }
  
-    public function schluessel() {
+    public function key() {
         return $this->i;
     }
  
-    public function naechste() {
-        if (false !== $this->zeile) {
-            $this->zeile = fgets($this->dateiHandle);
+    public function next() {
+        if (false !== $this->line) {
+            $this->line = fgets($this->fileHandle);
             $this->i++;
         }
     }
  
     public function __destruct() {
-        fclose($this->dateiHandle);
+        fclose($this->fileHandle);
     }
 }
 ?>
@@ -578,10 +637,8 @@ class LineIterator implements Iterator {
    Diese Flexibilität kommt allerdings nicht ohne Preis: Generatoren sind
    forward-only-Iteratoren, und können nicht zurückgesetzt werden, wenn sie
    einmal gestartet wurden. Das heißt außerdem, dass der selbe Generator nicht
-   mehrfach iteriert werden kann: der Generator muss entweder durch einen
-   erneuten Aufruf der Funktion neu erstellt werden, oder muss durch das 
-   <link linkend="language.oop5.cloning">clone</link>-Schlüsselwort geklont
-   werden.
+   mehrfach iteriert werden kann: der Generator muss durch einen
+   erneuten Aufruf der Generator-Funktion neu erstellt werden.
   </para>
  </sect1>
 </chapter>
