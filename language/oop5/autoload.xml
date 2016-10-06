@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 327202 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 338943 Maintainer: simp Status: ready -->
 <!-- Credits: hholzgra -->
 <sect1 xml:id="language.oop5.autoload" xmlns="http://docbook.org/ns/docbook">
   <title>Autoloading</title>
@@ -11,32 +11,35 @@
    Include-Anweisungen am Anfang eines jeden Skripts (eine für jede Klasse).
   </para>
   <para>
-   In PHP 5 ist das nicht länger notwendig. Man kann eine 
-   <function>__autoload</function> Funktion
-   definieren, die automatisch aufgerufen wird, falls man versucht eine noch
-   nicht definierte Klasse oder ein nicht definiertes Interface zu benutzen.
-   Durch den Aufruf dieser Funktion erhält die Scripting Engine einen letzten 
-   Versuch, die Klasse zu laden, bevor PHP unter Ausgabe einer Fehlermeldung 
-   scheitert.
+   In PHP 5 ist das nicht länger notwendig. Die
+   <function>spl_autoload_register</function> Funktion registriert eine
+   beliebige Anzahl von Autoladern, die es ermöglichen, dass Klassen und
+   Schnittstellen automatisch geladen werden, wenn sie derzeit nicht definiert
+   sind. Durch das Registrieren von Autoladern erhält PHP einen letzten Versuch,
+   die Klasse zu laden, bevor es unter Ausgabe einer Fehlermeldung scheitert.
   </para>
   <tip>
    <para>
-    <function>spl_autoload_register</function> bietet eine flexiblere Alternative
-    zum automatischen Laden von Klassen an. Aus diesem Grund wird von der Verwendung
-    von <function>__autoload</function> abgeraten und diese Funktion könnte
-    zukünftig als veraltet gekennzeichnet oder gar entfernt werden.
+    Obwohl die <function>__autoload</function> Funktion ebenso für das
+    automatische Laden von Klassen und Schnittstellen genutzt werden kann, ist
+    es zu bevorzugen die <function>spl_autoload_register</function> Funktion zu
+    verwenden. Dies ist so, weil sie eine flexiblere Alternative darstellt (die
+    es ermöglicht eine beliebige Anzahl von Autoladern in der Anwendung zu
+    spezifizieren, wie etwa bei Fremdbibliotheken). Aus diesem Grund wird von
+    der Verwendung von <function>__autoload</function> abgeraten und diese
+    Funktion könnte zukünftig als veraltet gekennzeichnet werden.
    </para>
   </tip>
   <note>
    <para>
-    Vor der Version 5.3.0 waren Exceptions, die in einer __autoload-Funktion 
+    Vor der Version 5.3.0 waren Exceptions, die in einer <function>__autoload</function>-Funktion 
     geworfen wurden nicht in einem <link linkend="language.exceptions">Catch</link>-
-    Block fangbar und führten zu einem fatalen Fehler. Seit 5.3.0+ können 
+    Block fangbar und führten zu einem fatalen Fehler. Von PHP 5.3.0 an können 
     Exceptions, die in einer __autoload-Funktion geworfen wurden, unter der folgenden
     Bedingung in einem <link linkend="language.exceptions">Catch</link>-Block
     gefangen werden. Wenn eine selbst definierte Exception geworfen wird, so
     muss die Klasse dieser Exception bereits verfügbar sein. Die __autoload-
-    Funktion darf rekursiv verwendet werden, um diese Exceptionklasse zu laden.
+    Funktion kann diese Exceptionklasse unter Umständen laden.
    </para>
   </note>
   <note>
@@ -66,9 +69,9 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-function __autoload($class_name) {
+spl_autoload_register(function ($class_name) {
     include $class_name . '.php';
-}
+});
 
 $obj  = new MyClass1();
 $obj2 = new MyClass2(); 
@@ -86,9 +89,9 @@ $obj2 = new MyClass2();
 <![CDATA[
 <?php
 
-function __autoload($name) {
+spl_autoload_register(function ($name) {
     var_dump($name);
-}
+});
 
 class Foo implements ITest {
 }
@@ -110,10 +113,10 @@ Fatal error: Interface 'ITest' not found in ...
     <programlisting role="php">
 <![CDATA[
 <?php
-function __autoload($name) {
+spl_autoload_register(function ($name) {
     echo "Möchte $name laden.\n";
     throw new Exception("Kann $name nicht laden.");
-}
+});
 
 try {
     $obj = new NonLoadableClass();
@@ -139,10 +142,10 @@ Kann NonLoadableClass nicht laden.
     <programlisting role="php">
 <![CDATA[
 <?php
-function __autoload($name) {
+spl_autoload_register(function ($name) {
     echo "Möchte $name laden.\n";
     throw new MissingException("Kann $name nicht laden.");
-}
+});
 
 try {
     $obj = new NonLoadableClass();
@@ -170,8 +173,9 @@ Fatal error: Class 'MissingException' not found in testMissingException.php on l
     <simplelist>
      <member><function>unserialize</function></member>
      <member><link linkend="unserialize-callback-func">unserialize_callback_func</link></member>
-     <member><function>spl_autoload</function></member>
      <member><function>spl_autoload_register</function></member>
+     <member><function>spl_autoload</function></member>
+     <member><function>__autoload</function></member>
     </simplelist>
    </para>
   </simplesect>
