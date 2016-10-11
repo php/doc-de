@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 337337 Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 340033 Maintainer: cmb Status: ready -->
 <!-- CREDITS: tom -->
 
 <refentry xml:id="function.list" xmlns="http://docbook.org/ns/docbook">
@@ -22,6 +22,37 @@
    wird verwendet, um eine Liste von Variablen mit einer
    Operation zuzuweisen.
   </para>
+  <note>
+   <para>
+    <function>list</function> funktioniert nur bei numerischen Arrays und
+    basiert auf der Annahme, dass die numerischen Indizes bei 0 beginnen.
+   </para>
+  </note>
+  <warning>
+   <para>
+    In PHP 5 weist <function>list</function> die Werte von rechts beginnend zu.
+    In PHP 7 beginnt <function>list</function> von links.
+   </para>
+   <para>
+    Wenn Sie einfache Variablen benutzen, brauchen Sie sich nicht darum
+    zu kümmern. Wenn Sie jedoch Arrays mit Indizes verwenden, erwarten Sie
+    gewöhnlich die Reihenfolge der Indizes in dem Array genau so, wie Sie
+    sie in <function>list</function> geschrieben haben (von links nach
+    rechts), was jedoch in PHP 5 nicht der Fall ist. Es wird in der umgekehrten
+    Reihenfolge zugewiesen.
+   </para>
+   <para>
+    Allgemein gesagt, ist es ratsam sich nicht auf eine bestimmte Operations-Reihenfolge
+    zu verlassen, da sich diese zukünftig wieder ändern könnte.
+   </para>
+  </warning>
+  <warning>
+   <para>
+    Die Veränderung des Array während der Ausführung von
+    <function>list</function> (z.B. durch <literal>list($a, $b) = $b</literal>),
+    hat undefiniertes Verhalten zur Folge.
+   </para>
+  </warning>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -193,6 +224,20 @@ var_dump($a);
      Erzeugt folgende Ausgabe (beachten Sie die Reihenfolge der Elemente verglichen mit
      der in <function>list</function> eingetragenen Reihenfolge):
     </para>
+    &example.outputs.7;
+    <screen>
+<![CDATA[
+array(3) {
+  [0]=>
+  string(6) "Kaffee"
+  [1]=>
+  string(5) "braun"
+  [2]=>
+  string(7) "Koffein"
+}
+]]>
+    </screen>
+    &example.outputs.5;
     <screen>
 <![CDATA[
 array(3) {
@@ -207,41 +252,45 @@ array(3) {
     </screen>
    </example>
   </para>
- </refsect1>
-
- <refsect1 role="notes">
-  &reftitle.notes;
-  <warning>
-   <para>
-    In PHP 5 weist <function>list</function> die Werte von rechts beginnend zu.
-    In PHP 7 beginnt <function>list</function> von links.
-   </para>
-   <para>
-    Wenn Sie einfache Variablen benutzen, brauchen Sie sich nicht darum
-    zu kümmern. Wenn Sie jedoch Arrays mit Indizes verwenden, erwarten Sie
-    gewöhnlich die Reihenfolge der Indizes in dem Array genau so, wie Sie
-    sie in <function>list</function> geschrieben haben (von links nach
-    rechts), was jedoch in PHP 5 nicht der Fall ist. Es wird in der umgekehrten
-    Reihenfolge zugewiesen.
-   </para>
-   <para>
-    Allgemein gesagt, ist es ratsam sich nicht auf eine bestimmte Operations-Reihenfolge
-    zu verlassen, da sich diese zukünftig wieder ändern könnte.
-   </para>
-  </warning>
-  <warning>
-   <para>
-    Die Veränderung des Array während der Ausführung von
-    <function>list</function> (z.B. durch <literal>list($a, $b) = $b</literal>),
-    hat undefiniertes Verhalten zur Folge.
-   </para>
-  </warning>
-  <note>
-   <para>
-    <function>list</function> funktioniert nur bei numerischen Arrays und
-    basiert auf der Annahme, dass die numerischen Indizes bei 0 beginnen.
-   </para>
-  </note>
+  <para>
+   <example>
+    <title><function>list</function> und die Reihenfolge der Index-Definitionen</title>
+    <simpara>
+     Die Reihenfolge, in der die Indizes des von <function>list</function> zu
+     konsumierenden Arrays definiert wurden, ist irrelevant.
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$foo = array(2 => 'a', 'foo' => 'b', 0 => 'c');
+$foo[1] = 'd';
+list($x, $y, $z) = $foo;
+var_dump($foo, $x, $y, $z);
+]]>
+    </programlisting>
+    <para>
+     Erzeugt folgende Ausgabe (beachten Sie die Reihenfolge der Elemente verglichen mit
+     der in <function>list</function> eingetragenen Reihenfolge):
+    </para>
+    <screen>
+<![CDATA[
+array(4) {
+  [2]=>
+  string(1) "a"
+  ["foo"]=>
+  string(1) "b"
+  [0]=>
+  string(1) "c"
+  [1]=>
+  string(1) "d"
+}
+string(1) "c"
+string(1) "d"
+string(1) "a"
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="seealso">
