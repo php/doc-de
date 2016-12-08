@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 297028 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 341078 Maintainer: sammywg Status: ready -->
 <refentry xml:id="function.proc-nice" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>proc_nice</refname>
@@ -34,8 +34,59 @@
      <term><parameter>increment</parameter></term>
      <listitem>
       <para>
-       Der Betrag, um den die Priorität verändert wird.
+       Der neue Prioritätswert; dieser Wert ist plattformabhängig.
       </para>
+      <para>
+       Unter Unix bedeutet ein niedriger Wert, wie beispielsweise <literal>-20</literal>,
+       eine hohe Priorität, wohingegen ein positiver Wert eine niedrigere Priorität hat.
+      </para>
+      <para>
+       Unter Windows hat der <parameter>increment</parameter>-Parameter die folgende
+       Bedeutung:
+      </para>
+      <informaltable>
+       <tgroup cols="3">
+        <thead>
+         <row>
+          <entry valign="top">Prioritätsklasse</entry>
+          <entry valign="top">Mögliche Werte</entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry valign="top">Hoch</entry>
+          <entry valign="top">
+           <parameter>increment</parameter> <literal>&lt; -9</literal>
+          </entry>
+         </row>
+         <row>
+          <entry valign="top">Höher als normal</entry>
+          <entry valign="top">
+           <parameter>increment</parameter> <literal>&lt; -4</literal>
+          </entry>
+         </row>
+         <row>
+          <entry valign="top">Normal</entry>
+          <entry valign="top">
+           <parameter>increment</parameter> <literal>&lt; 5</literal> &amp; 
+           <parameter>increment</parameter> <literal>&gt; -5</literal>
+          </entry>
+         </row>
+         <row>
+          <entry valign="top">Niedriger als normal</entry>
+          <entry valign="top">
+           <parameter>increment</parameter> <literal>&gt; 5</literal>
+          </entry>
+         </row>
+         <row>
+          <entry valign="top">Niedrig</entry>
+          <entry valign="top">
+           <parameter>increment</parameter> <literal>&gt; 9</literal>
+          </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </informaltable>
      </listitem>
     </varlistentry>
    </variablelist>
@@ -52,6 +103,48 @@
   </para>
  </refsect1>
 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Verwendung von <function>proc_open</function> um die Prozesspriorität auf hoch zu setzen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// höchste Priorität
+proc_nice(-20)
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.2.0</entry>
+       <entry>
+        Diese Funktion steht nun unter Windows zur Verfügung.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
  <refsect1 role="notes">
   &reftitle.notes;
   <note>
@@ -59,8 +152,14 @@
    <para>
     <function>proc_nice</function> existiert nur, wenn Ihr System mit 'nice'
     umgehen kann. 'nice' ist verfügbar unter: SVr4, SVID EXT, AT&amp;T, X/OPEN,
-    BSD 4.3. Das bedeutet, dass <function>proc_nice</function> unter Windows
-    nicht verfügbar ist.
+    BSD 4.3.
+   </para>
+  </note>
+  <note>
+   <title>Nur für Windows</title>
+   <para>
+    <function>proc_nice</function> ändert die <emphasis>aktuelle</emphasis>
+    Prozesspriorität, selbst wenn PHP mit Threadsicherheit kompiliert wurde.
    </para>
   </note>
  </refsect1>
