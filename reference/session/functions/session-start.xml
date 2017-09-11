@@ -11,7 +11,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>session_start</methodname>
-   <void/>
+   <methodparam choice="opt"><type>array</type><parameter>options</parameter><initializer>[]</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>session_start</function> erzeugt eine Session oder nimmt die
@@ -46,6 +46,32 @@
    wichtig für eine korrekte Ausgabe. Zum Beispiel muss
    <literal>ob_gzhandler</literal> vor Beginn der Session registriert werden.
   </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <variablelist>
+   <varlistentry>
+    <term><parameter>options</parameter></term>
+    <listitem>
+     <para>
+      Als optionaler Parameter kann ein assoziatives Array mit Optionen
+      angegeben werden, das die aktuell gesetzten 
+      <link linkend="session.configuration">Sessionkonfigurationsdirektiven</link>
+      überschreibt. Die Schlüssel sollten nicht die <literal>session.</literal>-Präfixe
+      beinhalten.
+     </para>
+     <para>
+      Zusätzlich zu den normalen Konfigurationsdirektiven kann auch eine
+      In addition to the normal set of configuration directives, a
+      <literal>read_and_close</literal>-Option angegeben werden. Falls auf
+      &true; gesetzt, führt es dazu, dass die Session unmittelbar nach dem
+      Auslesen geschlossen wird. Dadurch lässt sich eine unnötige Sperre
+      vermeiden, wenn die Sessiondaten nicht verändert werden.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
 
  <refsect1 role="returnvalues">
@@ -152,6 +178,42 @@ echo '<br /><a href="seite1.php">Seite 1</a>';
     </programlisting>
    </example>
   </para>
+  
+  <refsect2>
+   <title>Optionen an <function>session_start</function> übergeben</title>
+
+   <example>
+    <title>Die Cookie-Gültigkeitsdauer überschreiben</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Einen persistenten Cookie senden, der einen Tag lang gültig ist.
+session_start([
+    'cookie_lifetime' => 86400,
+]);
+?>
+]]>
+    </programlisting>
+   </example>
+
+   <example>
+    <title>Die Session lesen und schließen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Sofern wir wissen, dass wir keine Daten zu verändern brauchen,
+// können wir die Session unmittelbar nach dem Auslesen automatisch
+// schließen, um eine Sperre für die Session zu vermeiden und andere
+// andere Seiten während der Zeit am Zugriff nicht zu behindern.
+session_start([
+    'cookie_lifetime' => 86400,
+    'read_and_close'  => true,
+]);
+]]>
+    </programlisting>
+   </example>
+  </refsect2>
+
  </refsect1>
 
  <refsect1 role="notes">
