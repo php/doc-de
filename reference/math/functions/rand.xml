@@ -25,6 +25,7 @@
    Wenn Sie z.B. einen Zufallswert zwischen 5 und 15 benötigen 
    so wäre der Aufruf dafür <literal>rand(5, 15)</literal>. 
   </simpara>
+  &caution.cryptographically-insecure;
   <note>
    <simpara>
     Auf manchen Plattformen (z.B. Windows) ist <function>getrandmax</function>
@@ -33,6 +34,9 @@
     übergeben oder besser die <function>mt_rand</function>-Funktion
     anstelle von <function>rand</function> einsetzen. 
    </simpara>
+  </note>
+  <note><simpara>Ab PHP 7.1.0 verwendet <function>rand</function> den selben Zufallszahlengenerator wie <function>mt_rand</function>. Um die Abwärtskompatibilität zu waren, erlaubt  <function>rand</function>,
+   <parameter>max</parameter> kleiner als <parameter>min</parameter> zu werden, ohne wie  <function>mt_rand</function> &false; zurückzugeben.</simpara>
   </note>
  </refsect1>
  <refsect1 role="parameters">
@@ -65,12 +69,34 @@
    (oder 0) und <parameter>max</parameter> (oder <function>getrandmax</function>, inklusive).
   </para>
  </refsect1>
-
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <link linkend="migration71.incompatible.rand-srand-aliases"><function>rand</function> wurde zu einem Alias von <function>mt_rand</function>.</link>
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>rand</function> Beispiel</title>
+    <title><function>rand</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -92,10 +118,19 @@ echo rand(5, 15);
    </example>
   </para>
  </refsect1>
+ 
  <refsect1 role="notes">
   &reftitle.notes;
-  &caution.cryptographically-insecure;
+  <warning>
+   <para>
+    Der Bereich zwischen
+    <parameter>min</parameter> und <parameter>max</parameter> muss innerhalb von <function>getrandmax</function> liegen (<parameter>max</parameter> -
+    <parameter>min</parameter>) &lt;= <function>getrandmax</function>; ansonsten wird
+    <function>rand</function> möglicherweise unsichere Zufallszahlen schlechter Qualität zurückgeben.
+   </para>
+  </warning>
  </refsect1>
+ 
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -103,6 +138,8 @@ echo rand(5, 15);
     <member><function>srand</function></member>
     <member><function>getrandmax</function></member>
     <member><function>mt_rand</function></member>
+    <member><function>random_int</function></member>
+    <member><function>random_bytes</function></member>
     <member><function>openssl_random_pseudo_bytes</function></member>
    </simplelist>
   </para>
