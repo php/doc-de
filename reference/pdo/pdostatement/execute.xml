@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 80c312be68e9c65840e11122f26bd0b29cdcea40 Maintainer: anonymous #86250 Status: ready -->
+<!-- Reviewed: no -->
+
+<refentry xml:id="pdostatement.execute" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>PDOStatement::execute</refname>
+  <refpurpose>
+   Führt ein Prepared Statement aus
+  </refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <modifier>public</modifier> <type>bool</type><methodname>PDOStatement::execute</methodname>
+   <methodparam choice="opt"><type>array</type><parameter>input_parameters</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Das <link linkend="pdo.prepared-statements">Prepared
+   Statement</link> ausführen. Falls das Prepared Statement Parameter-Marker enthält, muss entweder:
+   <itemizedlist>
+    <listitem><para><function>PDOStatement::bindParam</function> und/oder
+     <function>PDOStatement::bindValue</function> aufgerufen werden, um Variablen beziehungsweise Werte an die Parameter-Marker zu binden. 
+     Gebundene Variablen geben ihren Wert als Eingabe und ihnen wird, falls zutreffend, der Ausgabewert der zugehörigen Parameter-Marker zugewiesen
+     </para></listitem>
+    <listitem>
+     <para>oder ein Array mit Nur-Eingabe-Parameterwerten übergeben werden</para>
+    </listitem>
+   </itemizedlist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>input_parameters</parameter></term>
+     <listitem>
+      <para>
+       Ein Array mit Werten in gleicher Anzahl wie der Anzahl gebundener Parameter im auszuführenden SQL-Statement.
+       Alle Werte werden als <constant>PDO::PARAM_STR</constant> behandelt.
+      </para>
+      <para>
+       Für einen einzelnen Paramter können nicht mehrere Werte zugeordnet werden;
+       zum Beispiel ist es nicht gestattet, zwei Werte an einen einzelnen Parameter in einem IN() clause zu verwenden.
+      </para>
+      <para>
+       Mehr Werte als festgelegt zuzuordnen ist nicht möglich; wenn mehr Parameter in den
+       <parameter>input_parameters</parameter> übergeben werden, als in <methodname>PDO::prepare</methodname> definiert wurden, wird das Statement fehlschlagen und ein Fehler wird ausgegeben.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.2.0</entry>
+       <entry>
+        Die Parameternamen der <parameter>input_parameters</parameter> müssen mit den in SQL definierten übereinstimmen. Vor PHP 5.2.0 wurde das still ignoriert.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example><title>Ein Prepared Statement mit einer zugewiesener Variable und Wert ausführen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Ein Prepared Statement ausführen, in dem Variable und Wert zugewiesen werden */
+$calories = 150;
+$colour = 'gre';
+$sth = $dbh->prepare('SELECT name, colour, calories
+    FROM fruit
+    WHERE calories < :calories AND colour LIKE :colour');
+$sth->bindParam(':calories', $calories, PDO::PARAM_INT);
+$sth->bindValue(':colour', "%{$colour}%");
+$sth->execute();
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example><title>Ein Prepared Statement mit einem Array an Eingabewerten (benannte Parameter) ausführen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Ein Prepared Statement ausführen, indem ein Array an Eingabewerten übergeben wird */
+$calories = 150;
+$colour = 'red';
+$sth = $dbh->prepare('SELECT name, colour, calories
+    FROM fruit
+    WHERE calories < :calories AND colour = :colour');
+$sth->execute(array(':calories' => $calories, ':colour' => $colour));
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example><title>Ein Prepared Statement mit einem Array an Eingabewerten (Platzhalter) ausführen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Ein Prepared Statement ausführen, indem ein Array an Eingabewerten übergeben wird */
+$calories = 150;
+$colour = 'red';
+$sth = $dbh->prepare('SELECT name, colour, calories
+    FROM fruit
+    WHERE calories < ? AND colour = ?');
+$sth->execute(array($calories, $colour));
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example><title>Ein Prepared Statement mit Fragezeichen-Platzhaltern ausführen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Ein Prepared Statement durch das zuordnen von PHP-Variablen ausführen*/
+$calories = 150;
+$colour = 'red';
+$sth = $dbh->prepare('SELECT name, colour, calories
+    FROM fruit
+    WHERE calories < ? AND colour = ?');
+$sth->bindParam(1, $calories, PDO::PARAM_INT);
+$sth->bindParam(2, $colour, PDO::PARAM_STR, 12);
+$sth->execute();
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example><title>Ein Prepared Statement mit einem Array für einen IN clause ausführen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Führt ein Prepared Statement mit einem Array für einen IN clause aus */
+$params = array(1, 21, 63, 171);
+/* Erstelle einen String für die Parameter-Platzhalter gefüllt bis zur Anzahl Parameter */
+$place_holders = implode(',', array_fill(0, count($params), '?'));
+
+/*
+    Das bereitet das Statement mit genügend unbenannten Platzhaltern
+    für jeden Wert in unserem $params-Array vor. Die Werte aus dem
+    $params-Array werden dann an die Platzhalter im Prepared Statement
+    gebunden, wenn das Statement ausgeführt wird. Das ist nicht das
+    gleiche wie PDOStatement::bindParam() zu verwenden, weil dies eine
+    Referenz zur Variable benötigt. PDOStatement::execute() ordnet
+    hingegen nur die Werte zu.
+*/
+$sth = $dbh->prepare("SELECT id, name FROM contacts WHERE id IN ($place_holders)");
+$sth->execute($params);
+?>
+]]>
+   </programlisting>
+  </example>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Manche Treiber verlangen die Ausführung von <link linkend="pdostatement.closecursor">close
+    cursor</link>, bevor das nächste Statement ausgeführt wird.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>PDO::prepare</function></member>
+    <member><function>PDOStatement::bindParam</function></member>
+    <member><function>PDOStatement::fetch</function></member>
+    <member><function>PDOStatement::fetchAll</function></member>
+    <member><function>PDOStatement::fetchColumn</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
