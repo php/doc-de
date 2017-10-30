@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 82d79c66531b3a08b781ac8c89c0c2f2fe4efb8f Maintainer: cmb Status: ready -->
+<!-- EN-Revision: db1dd771e136321869b23aaf231549b9d7e46dab Maintainer: cmb Status: ready -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
 
  <chapter xml:id="language.functions" xmlns="http://docbook.org/ns/docbook">
@@ -475,6 +475,14 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
           Der Parameter muss ein <type>String</type> sein.
          </entry>
          <entry>PHP 7.0.0</entry>
+        </row>
+        <row>
+         <entry><literal>iterable</literal></entry>
+         <entry>
+          Der Parameter muss entweder ein <type>Array</type> oder ein
+          &instanceof; <classname>Traversable</classname> sein.
+         </entry>
+         <entry>PHP 7.1.0</entry>
         </row>
        </tbody>
       </tgroup>
@@ -1409,6 +1417,9 @@ $greet('PHP');
    <simpara>
     Closures können ebenfalls Variablen aus dem Eltern-Gültigkeitsbereich erben.
     Jede solche Variable muss an das <literal>use</literal>-Sprachkonstrukt übergeben werden. 
+    Von PHP 7.1 an dürfen diese Variablen keine &link.superglobals;,
+    <varname>$this</varname> oder Variablen mit dem gleichen Name wie ein
+    Paramter sein.
    </simpara>
 
    <example>
@@ -1595,14 +1606,18 @@ NULL
 <![CDATA[
 <?php
 
-new class {
+class Foo
+{
     function __construct()
     {
-        (static function() {
+        $func = static function() {
             var_dump($this);
-        })();
+        };
+        $func();
     }
 };
+new Foo();
+
 ?>
 ]]>
       </programlisting>
@@ -1623,16 +1638,19 @@ NULL
 <![CDATA[
 <?php
 
-(static function() {
+$func = static function() {
     // function body
-})->call(new StdClass);
+};
+$func = $func->bindTo(new StdClass);
+$func();
+
 ?>
 ]]>
       </programlisting>
       &example.outputs;
       <screen>
 <![CDATA[
-Warning: Cannot bind an instance to a static closure in /in/sLLS9 on line 5
+Warning: Cannot bind an instance to a static closure in %s on line %d
 ]]>
       </screen>
      </example>
@@ -1651,6 +1669,14 @@ Warning: Cannot bind an instance to a static closure in /in/sLLS9 on line 5
         </row>
        </thead>
        <tbody>
+        <row>
+         <entry>7.1.0</entry>
+         <entry>
+          Anonyme Funktionen dürfen &link.superglobals;, <varname>$this</varname>
+          und alle Variablen mit dem gleichen Namen wie Parameter nicht als freie
+          Variablen verwenden.
+         </entry>
+        </row>
         <row>
          <entry>5.4.0</entry>
          <entry>
