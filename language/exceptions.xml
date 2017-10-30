@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 336948 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 342628 Maintainer: sammywg Status: ready -->
 
  <chapter xml:id="language.exceptions" xmlns="http://docbook.org/ns/docbook">
   <title>Ausnahmebehandlung (Exception-Handling)</title>
@@ -255,6 +255,12 @@ class MyException extends Exception
     keine Behandlung mittels <function>set_exception_handler</function>
     definiert wurde.
    </para>
+   <para>
+    In PHP 7.1 und später kann ein &catch;-Block mehrere Exceptions getrennt
+    durch Pipe-Zeichen (<literal>|</literal>) angeben. Dies ist nützlich, wenn
+    unterschiedliche Exceptions von unterschiedlichen Klassenhierarchien gleich
+    behandelt werden sollen.
+   </para>
   </simplesect>
 
   <simplesect xml:id="language.exceptions.finally">
@@ -402,6 +408,39 @@ $foo->testing();
     <screen>
 <![CDATA[
 string(4) "foo!"
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Multi catch exception handling</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class MyException extends Exception { }
+
+class MyOtherException extends Exception { }
+
+class Test {
+    public function testing() {
+        try {
+            throw new MyException();
+        } catch (MyException | MyOtherException $e) {
+            var_dump(get_class($e));
+        }
+    }
+}
+
+$foo = new Test;
+$foo->testing();
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+string(11) "MyException"
 ]]>
     </screen>
    </example>
