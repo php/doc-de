@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: a9f96e8c83e989c5edca55ccb36ed9b7579d8a44 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 6a8863a5a9ad872043151b0f0df255042055fc6b Maintainer: wiesemann Status: ready -->
  <sect1 xml:id="language.oop5.visibility" xmlns="http://docbook.org/ns/docbook">
   <title>Sichtbarkeit</title>
   <para>
-   Die Sichtbarkeit einer Eigenschaft oder Methode kann definiert werden, indem
+   Die Sichtbarkeit einer Eigenschaft, Methode oder (von PHP 7.1.0 an) einer Konstante kann definiert werden, indem
    man der Deklaration eines der Schlüsselwörter <emphasis>public</emphasis>,
    <emphasis>protected</emphasis> oder <emphasis>private</emphasis> voranstellt.
    Auf public deklarierte Elemente kann von überall her zugegriffen werden.
@@ -55,8 +55,9 @@ $obj->printHello(); // Zeigt Public, Protected und Private
  */
 class MyClass2 extends MyClass
 {
-    // Wir können die public- und protected-Methoden neu deklarieren, 
-    // aber nicht die private-Methode
+    // Wir können die public- und protected-Eigenschaften neu deklarieren, 
+    // aber nicht die private
+    public $public = 'Public2';
     protected $protected = 'Protected2';
 
     function printHello()
@@ -71,7 +72,7 @@ $obj2 = new MyClass2();
 echo $obj2->public; // Funktioniert
 echo $obj2->protected; // Fataler Fehler
 echo $obj2->private; // Undefiniert
-$obj2->printHello(); // Zeigt Public, Protected2, Undefined
+$obj2->printHello(); // Zeigt Public2, Protected2, Undefined
 
 ?> 
 ]]>
@@ -179,9 +180,75 @@ class Foo extends Bar
     }
 }
 
-$myFoo = new foo();
+$myFoo = new Foo();
 $myFoo->test(); // Bar::testPrivate 
                 // Foo::testPublic
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </sect2>
+
+  <sect2 xml:id="language.oop5.visiblity-constants">
+   <title>Constant Visibility</title>
+   <para>
+    Von PHP 7.1.0 an können Klassenkonstanten als public, private, oder
+    protected definiert werden. Konstanten, die ohne eine explizite
+    Sichtbarkeitsangabe deklariert wurden, sind public.
+   </para>
+   <para>
+    <example>
+     <title>Konstantendeklaration von PHP 7.1.0 an</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+/**
+ * Definiere MyClass
+ */
+class MyClass
+{
+    // Deklariere eine öffentliche Konstante
+    public const MY_PUBLIC = 'öffentlich';
+
+    // Deklariere eine geschützte Konstante
+    protected const MY_PROTECTED = 'geschützt';
+
+    // Deklariere eine private Konstante
+    private const MY_PRIVATE = 'privat';
+
+    public function foo()
+    {
+        echo self::MY_PUBLIC;
+        echo self::MY_PROTECTED;
+        echo self::MY_PRIVATE;
+    }
+}
+
+$myclass = new MyClass();
+MyClass::MY_PUBLIC; // funktioniert
+MyClass::MY_PROTECTED; // fataler Fehler
+MyClass::MY_PRIVATE; // fataler Fehler
+$myclass->foo(); // öffentlich, geschützt und private funktioniert
+
+
+/**
+ * Definiere MyClass2
+ */
+class MyClass2 extends MyClass
+{
+    // Dies ist öffentlich
+    function foo2()
+    {
+        echo self::MY_PUBLIC;
+        echo self::MY_PROTECTED;
+        echo self::MY_PRIVATE; // fataler Fehler
+    }
+}
+
+$myclass2 = new MyClass2;
+echo MyClass2::MY_PUBLIC; // funktioniert
+$myclass2->foo2(); // öffentlich und geschützt funktioniert, aber nicht privat
 ?>
 ]]>
      </programlisting>
