@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6e6d82f0970ebfa4f3322e96efb6f9d0cc114205 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: b17ddfcfd72088a89eb436467eca87324bc9d9bd Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.unserialize" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -19,6 +19,23 @@
    <function>unserialize</function> nimmt eine einzelne Variable aus einer
    serialisierten Datenmenge und wandelt sie in einen PHP-Wert zurück.
   </simpara>
+  <warning>
+   <para>
+    Unvertrauenswürdige Benutzereingaben sollten nicht an
+    <function>unserialize</function> übergeben werden, unabhängig vom <parameter>options</parameter> Wert von <literal>allowed_classes</literal>. Die Deserialisierung kann
+    durch Objektinstanziierung und Autoloading dazu führen, dass Code geladen
+    und ausgeführt wird, und ein böswilliger Anwender kann in der Lage sein das
+    auszunutzen. Es ist ein sicheres, standardisiertes Austauschformat wie JSON
+    (per <function>json_decode</function> und <function>json_encode</function>)
+    zu verwenden, wenn serialisierte Daten an den Nutzer übergeben werden müssen.
+   </para>
+   <para>
+    Müssen extern gespeicherte serialisierte Daten unserialisiert werden, ist zu
+    erwägen <function>hash_hmac</function> zur Datenvalidierung zu verwenden. Es
+    ist sicherzustellen, dass die Daten von niemandem außer einem selbst
+    modifiziert wurden.
+   </para>
+  </warning>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -127,6 +144,16 @@
      </thead>
      <tbody>
       <row>
+       <entry>7.1.0</entry>
+       <entry>
+        Das <literal>allowed_classes</literal> Element von
+        <parameter>options</parameter>) ist nun strikt typisiert, d.h. wird
+        etwas anderes als ein <type>Array</type> oder ein <type>Boolean</type>
+        übergeben, liefert <function>unserialize</function> &false; zurück, und
+        löst ein <constant>E_WARNING</constant> aus.
+       </entry>
+      </row>
+      <row>
        <entry>7.0.0</entry>
        <entry>
         Der <parameter>options</parameter> Parameter wurde hinzugefügt.
@@ -185,7 +212,6 @@ if (!odbc_execute($stmt, $sqldata) || !odbc_fetch_into($stmt, $tmp)) {
 <?php
 $serialized_object='O:1:"a":1:{s:5:"value";s:3:"100";}';
 
-// unserialize_callback_func Direktive ist ab PHP 4.2.0 verfuegbar
 ini_set('unserialize_callback_func', 'mycallback'); // Festlegen der callback_function
 
 function mycallback($classname)
@@ -212,23 +238,15 @@ function mycallback($classname)
     <constant>E_NOTICE</constant> produziert wurde.
    </para>
   </warning>
-  <warning>
-   <para>
-    Unvertrauenswürdige Benutzereingaben sollten nicht an
-    <function>unserialize</function> übergeben werden. Die Deserialisierung kann
-    durch Objektinstanziierung und Autoloading dazu führen, dass Code geladen
-    und ausgeführt wird, und ein böswilliger Anwender kann in der Lage sein das
-    auszunutzen. Es ist ein sicheres, standardisiertes Austauschformat wie JSON
-    (per <function>json_decode</function> und <function>json_encode</function>)
-    zu verwenden, wenn serialisierte Daten an den Nutzer übergeben werden müssen.
-   </para>
-  </warning>
  </refsect1>
 
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>json_encode</function></member>
+    <member><function>json_decode</function></member>
+    <member><function>hash_hmac</function></member>
     <member><function>serialize</function></member>
     <member><link linkend="language.oop5.autoload">Autoloading von Klassen</link></member>
     <member><link linkend="unserialize-callback-func">unserialize_callback_func</link></member>
