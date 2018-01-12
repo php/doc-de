@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: a3c18bfa37d1ccefec6f7f485cb2c77d30d59d09 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: d0f5b88a939b4060cd026bc5a07cc59fd1f68ab7 Maintainer: sammywg Status: ready -->
  
 <book xml:id="book.bc" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <?phpdoc extension-membership="bundled" ?>
@@ -12,9 +12,36 @@
   &reftitle.intro;
   <para>
    Für beliebig genaue mathematische Operationen bietet PHP den Binary
-   Calculator, der Zahlen von beliebiger Länge und Genauigkeit mit bis zu 2147483647-1
-   (oder 0x7FFFFFFF-1) Stellen, die als String vorliegen, unterstützt.
+   Calculator, der Zahlen von beliebiger Länge und Genauigkeit mit bis zu <literal>2147483647</literal>
+   (oder <literal>0x7FFFFFFF</literal>) Stellen, die als String vorliegen, unterstützt,
+   falls genügend Speicherplatz vorhanden ist.
   </para>
+  <caution>
+   <para>
+    Die Übergabe von Werten vom Typ <type>float</type> an eine BCMath-Funktion,
+    die einen <type>String</type> als Operanden erwartet, funktioniert
+    möglicherweise nicht wie erwartet, aufgrund der Art wie PHP
+    <type>float</type> Werte in <type>String</type>s konvertiert, nämlich dass
+    der <type>String</type> u.U. in exponentieller Notation vorliegt (was von
+    BCMath nicht unterstützt wird), und dass der Dezimaltrenner vom Locale
+    abhängt (wohingegen BCMath immer einen Dezimalpunkt erwartet).
+   </para>
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$num1 = 0; // (string) 0 => '0'
+$num2 = -0.000005; // (string) -0.000005 => '-5.05E-6'
+echo bcadd($num1, $num2, 6); // => '0.000000'
+
+setlocale(LC_NUMERIC, 'de_DE'); // verwendet ein Dezimalkomma
+$num2 = 1.2; // (string) 1.2 => '1,2'
+echo bcsub($num1, $num2, 1); // => '0.0'
+?>
+]]>
+    </programlisting>
+   </informalexample>
+  </caution>
  </preface>
  <!-- }}} -->
  
