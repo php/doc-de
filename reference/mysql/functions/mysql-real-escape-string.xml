@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 65e697ff671608989432a6e6bf8ae8128b2be2c7 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 4aac5d83bda58b18c6a577bcf1599a9afca2d022 Maintainer: simp Status: ready -->
 <!-- Credits: sammywg -->
 
 <refentry xml:id="function.mysql-real-escape-string" xmlns="http://docbook.org/ns/docbook">
@@ -84,7 +84,15 @@
   </para>
  </refsect1>
 
- <refsect1 role="examples">
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <para>
+   Wird diese Funktion ohne MySQL-Verbindung ausgeführt, werden ebenfalls
+   PHP-Fehler der Stufe <constant>E_WARNUNG</constant> ausgelöst. Diese Funktion
+   sollte nur mit einer gültigen MySQL-Verbindung verwendet werden.
+  </para>
+ </refsect1>
+  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
@@ -103,6 +111,40 @@ $query = sprintf("SELECT * FROM users WHERE user='%s' AND password='%s'",
 ?>
 ]]>
     </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>mysql_real_escape_string</function> benötigt eine Verbindung</title>
+    <para>
+     Diese Beispiel verdeutlicht was geschieht, wenn keine MySQL-Verbindung
+     vorhanden ist, wenn diese Funktion aufgerufen wird.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Wir sind nicht mit MySQL verbunden
+
+$lastname  = "O'Reilly";
+$_lastname = mysql_real_escape_string($lastname);
+
+$query = "SELECT * FROM actors WHERE last_name = '$_lastname'";
+
+var_dump($_lastname);
+var_dump($query);
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Warning: mysql_real_escape_string(): No such file or directory in /this/test/script.php on line 5
+Warning: mysql_real_escape_string(): A link to the server could not be established in /this/test/script.php on line 5
+
+bool(false)
+string(41) "SELECT * FROM actors WHERE last_name = ''"
+]]>
+    </screen>
    </example>
   </para>
   <para>
