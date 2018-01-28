@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d78c0a4f3335f668b36ae2309350649b45486f78 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 3c249167a8cb0e1e00d48f608337e78fc50c8a6e Maintainer: wiesemann Status: ready -->
 <refentry xml:id="function.ftp-ssl-connect" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ftp_ssl_connect</refname>
@@ -15,8 +15,13 @@
    <methodparam choice="opt"><type>int</type><parameter>timeout</parameter><initializer>90</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>ftp_ssl_connect</function> öffnet eine explizite SSL-FTP-Verbindung
+   <function>ftp_ssl_connect</function> öffnet eine <emphasis>explizite</emphasis> SSL-FTP-Verbindung
    zu dem angegebenen <parameter>host</parameter>.
+   Das impliziert, dass <function>ftp_ssl_connect</function> gelingen wird,
+   selbst wenn der Server nicht für SSL-FTP konfiguriert ist, oder sein
+   Zertifikat ungültig ist. Erst wenn <function>ftp_login</function> aufgerufen
+   wird, sendet der Client das entsprechende AUTH-FTP-Kommando, so dass
+   <function>ftp_login</function> in den genannten Fällen fehlschlagen wird.
   </para>
   <note>
    <title>Warum diese Funktion eventuell nicht vorhanden ist</title>
@@ -124,6 +129,11 @@ $conn_id = ftp_ssl_connect($ftp_server);
 
 // Login mit Benutzername und Passwort
 $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+
+if (!$login_result) {
+    // PHP hat in diesem Fall bereits eine Nachricht der Stufe E_WARNING erzeugt
+    die("Login nicht möglich");
+}
 
 echo ftp_pwd($conn_id); // /
 
