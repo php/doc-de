@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8b5940cadeb4f1c8492f4a7f70743a2be807cf39 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: fe89d0109827327fefa209e29108c1b7d771fd05 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.mt-srand">
  <refnamediv>
   <refname>mt_srand</refname>
-  <refpurpose>Setzt den besseren Zufallszahlengenerator</refpurpose>
+  <refpurpose>Initialisiert den Mersenne Twister Zufallszahlengenerator</refpurpose>
  </refnamediv>
  
  <refsect1 role="description">
   &reftitle.description;
-   <methodsynopsis>
-    <type>void</type><methodname>mt_srand</methodname>
-    <methodparam choice="opt"><type>int</type><parameter>seed</parameter></methodparam>
-   </methodsynopsis>
+  <methodsynopsis>
+   <type>void</type><methodname>mt_srand</methodname>
+   <methodparam choice="opt"><type>int</type><parameter>seed</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer>MT_RAND_MT19937</initializer></methodparam>
+  </methodsynopsis>
   <para>
    Setzt den Zufallszahlengenerator mit <parameter>seed</parameter> oder mit
    einem Zufallswert, wenn <parameter>seed</parameter> nicht angegeben ist.
@@ -29,7 +30,43 @@
      <term><parameter>seed</parameter></term>
      <listitem>
       <para>
-       Ein optionaler seed-Wert.
+       Ein beliebiger <type>integer</type> Startwert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
+     <listitem>
+      <para>
+       Eine der folgenden Konstanten kann verwendet werden, um die
+       Implementierung des zu verwendenden Algorithmus zu bestimmen.
+       <informaltable>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Constant</entry>
+           <entry>&Description;</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><constant>MT_RAND_MT19937</constant></entry>
+           <entry>
+            Verwendet die korrekte Mersenne Twister Implementierung, die von PHP
+            7.1.0 an verfügbar ist.
+           </entry>
+          </row>
+          <row>
+           <entry><constant>MT_RAND_PHP</constant></entry>
+           <entry>
+            Verwendet eine inkorrekte Mersenne Twister Implementierung, die vor
+            PHP 7.1.0 standardmäßig verwendet wurde. Dieser Modus ist aus
+            Gründen der Abwärtskompatibilität verfügbar.
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </informaltable>
       </para>
      </listitem>
     </varlistentry>
@@ -56,6 +93,25 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <function>srand</function> <link
+        linkend="migration71.incompatible.rand-srand-aliases">ist nun</link> ein
+        Alias von <function>mt_srand</function>.
+       </entry>
+      </row>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <function>mt_rand</function> <link
+        linkend="migration71.incompatible.fixes-to-mt_rand-algorithm">
+        verwendet nun</link> eine korrekte Version des Mersenne Twister
+        Algorithmus. Um auf das vorherige Verhalten auszuweichen, kann
+        <function>mt_srand</function> mit <constant>MT_RAND_PHP</constant> als
+        zweitem Parameter verwendet werden.
+       </entry>
+      </row>
       <row>
        <entry>Seit 5.2.1</entry>
        <entry>
@@ -85,7 +141,7 @@
 function make_seed()
 {
   list($usec, $sec) = explode(' ', microtime());
-  return (float) $sec + ((float) $usec * 100000);
+  return $sec + $usec * 1000000;
 }
 mt_srand(make_seed());
 $randval = mt_rand();

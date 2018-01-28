@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e36faa1eaeecc8db20ed9b6d9820ca25ffc69d0b Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: fe89d0109827327fefa209e29108c1b7d771fd05 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.mt-rand" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>mt_rand</refname>
-  <refpurpose>Erzeugt "bessere" Zufallszahlen</refpurpose>
+  <refpurpose>Erzeugt eine Zufallszahl nach dem Mersenne Twister Verfahren</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -19,14 +19,15 @@
    <methodparam><type>int</type><parameter>min</parameter></methodparam>
    <methodparam><type>int</type><parameter>max</parameter></methodparam>
   </methodsynopsis>
+  &caution.cryptographically-insecure;
   <simpara>
    Viele Zufallszahlengeneratoren, die auf älteren libc-Versionen basieren, haben
    seltsame oder doch zumindest unerwartete Verhaltensweisen und sind zudem recht
-   langsam. Standardmäßig verwendet PHP den libc-Zufallszahlengenerator mit der
-   Funktion <function>rand</function>. Die Funktion <function>mt_rand</function>
-   kann jedoch als vollwertiger Ersatz verwendet werden. Sie verwendet einen
-   Zufallszahlengenerator mit den bekannten Charakteristika der
-   <link xlink:href="&url.mersenne;">Mersenne Twister</link>, die Zufallszahlen
+   langsam. 
+   Die Funktion <function>mt_rand</function> ist ein vollwertiger Ersatz für das
+   ältere <function>rand</function>. Sie verwendet einen Zufallszahlengenerator
+   mit den bekannten Charakteristika der <link
+   xlink:href="&url.mersenne;">Mersenne Twister</link>, die Zufallszahlen
    viermal schneller generiert als der durchschnittliche libc-rand()-Aufruf.
   </simpara>
   <simpara>
@@ -86,6 +87,35 @@
      </thead>
      <tbody>
       <row>
+       <entry>7.2.0</entry>
+       <entry>
+        <function>mt_rand</function> <link
+        linkend="migration72.incompatible.rand-mt_rand-output">erhielt einen
+        Bugfix</link> für einen Modulus-Verzerrungsfehler. Das bedeutet, dass
+        Folgen mit einem bestimmten Startwert sich von PHP 7.1 auf 64-bit
+        Rechnern unterscheiden können.
+       </entry>
+      </row>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <function>rand</function> <link
+        linkend="migration71.incompatible.rand-srand-aliases">wurde zu</link>
+        einem Alias von <function>mt_rand</function>.
+       </entry>
+      </row>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <function>mt_rand</function> <link
+        linkend="migration71.incompatible.fixes-to-mt_rand-algorithm">
+        verwendet nun</link> eine korrekte Version des Mersenne Twister
+        Algorithmus. Um auf das vorherige Verhalten auszuweichen, kann
+        <function>mt_srand</function> mit <constant>MT_RAND_PHP</constant> als
+        zweitem Parameter verwendet werden.
+       </entry>
+      </row>
+      <row>
        <entry>5.3.4</entry>
        <entry>
         Erzeugt eine <constant>E_WARNING</constant> und gibt &false; zurück,
@@ -127,18 +157,15 @@ echo mt_rand(5, 15);
  
  <refsect1 role="notes">
   &reftitle.notes;
-  &caution.cryptographically-insecure;
-  <caution>
+  <warning>
    <para>
-    Wenn <parameter>max</parameter> größer als <literal>2^32</literal>
-    ist (auf einem 64-bit System), dann sind die Rückgabewerte von
-    <function>mt_rand</function> bevorzugt gerade Zahlen, d.h. die
-    Rückgabewerte sind nicht mehr strikt gleichverteilt.
-    Dies kommt daher, dass, wenn <parameter>max</parameter> größer ist als der
-    Wert, der von <function>mt_getrandmax</function> zurückgegeben wird, die
-    Ausgabe des Zufallszahlengenerators hochskaliert werden muss.
+    Der Bereich von <parameter>min</parameter> und <parameter>max</parameter>
+    darf nicht größer sein als <function>mt_getrandmax</function>. Das heißt,
+    (<parameter>max</parameter> - <parameter>min</parameter>) &lt;=
+    <function>mt_getrandmax</function>. Andernfalls, kann
+    <function>mt_rand</function> schlechtere Zufallszahlen liefern als es sollte.
    </para>
-  </caution>
+  </warning>
  </refsect1>
 
  <refsect1 role="seealso">
@@ -147,6 +174,8 @@ echo mt_rand(5, 15);
    <simplelist>
     <member><function>mt_srand</function></member>
     <member><function>mt_getrandmax</function></member>
+    <member><function>random_int</function></member>
+    <member><function>random_bytes</function></member>
     <member><function>openssl_random_pseudo_bytes</function></member>
     <member><function>rand</function></member>
    </simplelist>
