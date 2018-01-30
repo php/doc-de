@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5fb8369ce45d05ddfd67bc7929b8bb257a7a68a1 Maintainer: nikic Status: ready -->
+<!-- EN-Revision: 55d32ace546da9837a389e0ba33fe91afd47ee3c Maintainer: nikic Status: ready -->
 <refentry xml:id="function.realpath" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>realpath</refname>
@@ -15,7 +15,7 @@
   </methodsynopsis>
   <para>
    <function>realpath</function> löst alle symbolischen Verweise,
-   '/./', '/../' und mehrere aufeinanderfolgende '/' Zeichen,
+   <literal>/./</literal>, <literal>/../</literal> und mehrere aufeinanderfolgende <literal>/</literal> Zeichen,
    die in <parameter>path</parameter> enthalten sind, auf und gibt
    den so entstehenden absoluten Pfad zurück.
   </para>
@@ -48,7 +48,8 @@
   &reftitle.returnvalues;
   <para>
    Gibt bei Erfolg den eindeutigen und absoluten Pfadnamen zurück. Dieser wird
-   keine symbolischen Links, '/./' oder '/../' mehr enthalten.
+   keine symbolischen Links, <literal>/./</literal> oder <literal>/../</literal> mehr enthalten.
+   Abschließende Trennzeichen wie <literal>\</literal> und <literal>/</literal> werden ebenfalls entfernt.
   </para>
   <para>
    <function>realpath</function> gibt &false; zurück, wenn ein Fehler auftritt, 
@@ -59,6 +60,19 @@
     Das ausführende Script muss alle Verzeichnisse im Pfad öffnen können
     (auf unixoiden Systemen wäre das das "execute" Recht). Ist dies nicht
     der Fall, gibt <function>realpath</function> &false; zurück.
+   </para>
+  </note>
+  <note>
+   <para>
+    Bei Dateisystemen, bei denen Groß-/Kleinschreibung keine Rolle spielt,
+    kann <function>realpath</function> die Schreibweise kanonisieren, oder auch
+    nicht.
+   </para>
+  </note>
+  <note>
+   <para>
+    Die Funktion <function>realpath</function> funktioniert nicht für Dateien in
+    einem Phar, da solche Pfade virtuelle Pfade sind, aber keine realen Pfade.
    </para>
   </note>
   &fs.file.32bit;
@@ -107,7 +121,10 @@
 <![CDATA[
 <?php
 chdir('/var/www/');
-echo realpath('./../../etc/passwd');
+echo realpath('./../../etc/passwd') . PHP_EOL;
+
+
+echo realpath('/tmp/') . PHP_EOL;
 ?>
 ]]>
     </programlisting>
@@ -115,6 +132,7 @@ echo realpath('./../../etc/passwd');
     <screen>
 <![CDATA[
 /etc/passwd
+/tmp
 ]]>
     </screen>
    </example>
@@ -127,7 +145,9 @@ echo realpath('./../../etc/passwd');
     <programlisting role="php">
 <![CDATA[
 <?php
-echo realpath('/windows/system32');
+echo realpath('/windows/system32'), PHP_EOL;
+
+echo realpath('C:\Program Files\\'), PHP_EOL;
 ?>
 ]]>
     </programlisting>
@@ -135,6 +155,7 @@ echo realpath('/windows/system32');
     <screen>
 <![CDATA[
 C:\WINDOWS\System32
+C:\Program Files
 ]]>
     </screen>
    </example>
