@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6bfcf7d9af614b4155c72e84814a61607be21229 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 0a7a550a651bf837463ea57270bdbd4697b66fb9 Maintainer: hholzgra Status: ready -->
 <!-- Credits: tom -->
   <chapter xml:id="security.database" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
    <title>Datenbank - Sicherheit</title>
@@ -113,25 +113,75 @@
      vor dem Speichern, und entschlüsselt diese wieder beim Erhalt. Siehe die
      Verweise für weitere Beispiele, wie Verschlüsselung arbeitet.
     </simpara>
-    <simpara>
-     Im Fall von wirklich versteckten Daten, wenn deren unverfälschte
-     Repräsentation nicht nötig ist (z.B. keine Anzeige), ist hashing ebenfalls
-     überlegenswert. Das bekannte Beispiel für Hashing ist das Speichern des
-     kryptographischen Hashs eines Passwortes in einer Datenbank, anstatt des Passwortes selbst.
-     Siehe auch <function>crypt</function>.
-    </simpara>
-    <example>
-     <title>Verwenden eines hashed Passwortfeldes</title>
-     <programlisting role="php">
+
+    <sect2 xml:id="security.database.storage.hashing">
+     <title>Hashing</title>
+     <simpara>
+      Im Fall von wirklich versteckten Daten, wenn deren unverfälschte
+      Repräsentation nicht nötig ist (z.B. keine Anzeige), ist Hashing ebenfalls
+      überlegenswert. Das bekannte Beispiel für Hashing ist das Speichern des
+      kryptographischen Hashs eines Passwortes in einer Datenbank, anstatt des Passwortes selbst.
+     </simpara> 
+     <simpara>
+      In PHP 5.5 oder neuer bieten die <link
+      linkend="ref.password">Passwort</link>-Funktionen eine bequeme Möglichkeit
+      sensible Daten zu hashen und mit diesen Hashes zu arbeiten. In PHP 5.3.7+
+      kann die <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      xlink:href="&url.password.compat;">password_compat</link>-Bibliothek
+      verwendet werden.
+     </simpara>
+     <simpara>
+      <function>password_hash</function> wird verwendet, um eine gegebene
+      Zeichenkette unter Verwendung des stärksten zurzeit verfügbaren
+      Algorithmus zu hashen, und <function>password_verify</function> prüft, ob
+      ein gegebenes Passwort mit dem Hash, der in der Datenbank gespeichert ist,
+      übereinstimmt.
+     </simpara> 
+     <example>
+      <title>Hashen eines Passwortfeldes</title>
+      <programlisting role="php">
 <![CDATA[
-// Speichern des Passwort hash
+<?php
+
+// Speichern des Passwort-Hash
+$query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
+            pg_escape_string($username),
+            password_hash($password, PASSWORD_DEFAULT));
+$result = pg_query($connection, $query);
+
+// Abfragen, ob der User das richtige Passwort übermittelt hat
+$query = sprintf("SELECT pwd FROM users WHERE name='%s';",
+            pg_escape_string($username));
+$row = pg_fetch_assoc(pg_query($connection, $query));
+
+if ($row && password_verify($password, $row['pwd'])) {
+    echo 'Willkommen, ' . htmlspecialchars($username) . '!';
+} else {
+    echo 'Authentifikation für ' . htmlspecialchars($username) . 'fehlgeschlagen.';
+}
+
+?>
+]]>
+      </programlisting>
+     </example>
+     <simpara>
+      In älteren PHP-Versionen kann dies unter Verwendung von
+      <function>crypt</function> erreicht werden.
+     </simpara>
+     <example>
+      <title>Hashen eines Passworts unter Verwendung von <function>crypt</function></title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+
+// Speichern des Passwort-Hash
 // $random_chars z.B. unter Verwendung von /dev/random abgerufen
 $query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
             pg_escape_string($username),
             pg_escape_string(crypt($password, '$2a$07$' . $random_chars . '$')));
 $result = pg_query($connection, $query);
 
-// Afragen, ob der User das richtige Passwort übermittelt hat
+// Abfragen, ob der User das richtige Passwort übermittelt hat
 $query = sprintf("SELECT pwd FROM users WHERE name='%s';",
             pg_escape_string($username));
 $row = pg_fetch_assoc(pg_query($connection, $query));
@@ -144,8 +194,9 @@ if ($row && crypt($password, $row['pwd']) == $row['pwd']) {
 
 ?>
 ]]>
-     </programlisting>
-    </example>
+      </programlisting>
+     </example>
+    </sect2>
    </sect1>
 
    <sect1 xml:id="security.database.sql-injection">
