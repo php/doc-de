@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: a44a1e0b7918846659a3c91013855d2c3d674fb9 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 06df50f0b11dab8ad595fb8c544c478019ff1d17 Maintainer: wiesemann Status: ready -->
 
  <sect1 xml:id="language.oop5.basic" xmlns="http://docbook.org/ns/docbook">
   <title>Die Grundlagen</title>
@@ -229,6 +229,85 @@ bool(true)
    </example>
   </sect2>
 
+  
+  <sect2 xml:id="language.oop5.basic.properties-methods">
+   <title>Eigenschaften und Methoden</title>
+   <para>
+    Klassen-Eigenschaften und -Methoden leben in separaten "Namensräumen", so
+    dass es eine Eigenschaft und eine Methode des selben Namens geben kann. Der
+    Zugriff auf eine Eigenschaft und eine Methode wird gleich notiert, und ob
+    auf eine Eigenschaft zugegriffen oder eine Methode aufgerufen wird, hängt
+    einzig und allein vom Kontext ab, d.h. ob die Verwendung ein
+    Variablenzugriff oder ein Funktionsaufruf ist.
+   </para>
+   <example>
+    <title>Variablenzugriff vs. Methodenaufruf</title>
+    <programlisting role="php">
+<![CDATA[
+class Foo
+{
+    public $bar = 'Eigenschaft';
+    
+    public function bar() {
+        return 'Methode';
+    }
+}
+
+$obj = new Foo();
+echo $obj->bar, PHP_EOL, $obj->bar(), PHP_EOL;
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Eigenschaft
+Methode
+]]>
+    </screen>
+   </example>
+   <para>
+    Das bedeutet, dass der Aufruf einer <link
+    linkend="functions.anonymous">anonymen Funktion</link>, die einer
+    Eigenschaft zugewiesen wurde, nicht direkt möglich ist. Statt dessen muss
+    beispielsweise die Eigenschaft zunächst einer Variablen zugewiesen werden.
+    Von PHP 7.0.0 an ist es möglich, eine solche Eigenschaft direkt aufzurufen,
+    indem man sie in Klammern einschließt.
+   </para>
+   <example>
+    <title>Aufruf einer anonymen Funktion, die in einer Eigenschaft gespeichert ist</title>
+    <programlisting role="php">
+<![CDATA[
+class Foo
+{
+    public $bar;
+    
+    public function __construct() {
+        $this->bar = function() {
+            return 42;
+        };
+    }
+}
+
+$obj = new Foo();
+
+// von PHP 5.3.0 an:
+$func = $obj->bar;
+echo $func(), PHP_EOL;
+
+
+// alternativ, von PHP 7.0.0 an:
+echo ($obj->bar)(), PHP_EOL;
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+42
+]]>
+    </screen>
+   </example>
+  </sect2>
+
   <sect2 xml:id="language.oop5.basic.extends">
    <title>extends</title>
    <para>
@@ -317,6 +396,16 @@ NS\ClassName
      </screen>
     </example>
    </para>
+   <note>
+    <para>
+     Bei der Auflösung des Klassennamens unter Verwendung von
+     <literal>::class</literal> handelt es sich um eine Transformation zur
+     Übersetzungszeit. Das bedeutet, dass zu der Zeit, zu der die
+     Klassennamen-Zeichenkette erzeugt wird, noch kein Autoloading erfolgt ist.
+     Daraus folgt, dass Klassennamen erweitert werden, selbst wenn die Klasse
+     nicht existiert. In diesem Fall wird kein Fehler erzeugt.
+    </para>
+   </note>
   </sect2>
  </sect1>
 
