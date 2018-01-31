@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: afc3f34c682418a582b0f9199db0bac4a087821f Maintainer: simp Status: ready -->
+<!-- EN-Revision: bae0d227acb2fcdc85a04405f4f23b25dbfdebcf Maintainer: simp Status: ready -->
 <refentry xml:id="function.ldap-connect" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ldap_connect</refname>
@@ -11,14 +11,21 @@
   &reftitle.description;
   <methodsynopsis>
    <type>resource</type><methodname>ldap_connect</methodname>
-   <methodparam choice="opt"><type>string</type><parameter>hostname</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>host</parameter><initializer>&null;</initializer></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>port</parameter><initializer>389</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Stellt eine Verbindung zu einem LDAP-Server unter einem 
-   angegebenen <parameter>Hostname</parameter> und 
-   <parameter>Port</parameter> her.
+   Erzeugt einen LDAP Verbindungskennung und prüft, ob die
+   angegebenen <parameter>host</parameter> und 
+   <parameter>port</parameter> plausibel sind.
   </para>
+  <note>
+   <simpara>
+    Es ist zu beachten, dass diese Funktion <emphasis>keine</emphasis> Verbindung
+    öffnet. Sie prüft, ob die übergebenen Parameter plausibel sind, und kann
+    verwendet werden, um eine Verbindung zu öffnen sobald eine benötigt wird.
+   </simpara>
+  </note>
  </refsect1>
  
  
@@ -27,14 +34,21 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>hostname</parameter></term>
+     <term><parameter>host</parameter></term>
      <listitem>
       <para>
-       Bei Verwendung von OpenLDAP 2.x.x kann eine URL statt des
-       Hostnamens angegeben werden. Um LDAP mit SSL-Unterstützung zu 
-       verwenden, kompilieren Sie OpenLDAP mit SSL-Unterstützung, 
-       PHP mit SSL und verwenden für diesen Parameter 
-       <literal>ldaps://hostname/</literal>.
+       Dieser Parameter unterstützt einen Hostnamen, oder mit OpenLDAP 2.x.x und
+       später, eine vollständige LDAP-URI der Form
+       <literal>ldap://hostname:port</literal> oder
+       <literal>ldaps://hostname:port</literal> für SSL-Verschlüsselung.
+      </para>
+      <para>
+       Es können ebenfalls mehrere LDAP-URIs getrennt durch Leerzeichen als eine
+       Zeichenkette übergeben werden.
+      </para>
+      <para>
+       Es ist zu beachten, dass <literal>hostname:port</literal> keine
+       unterstützte LDAP-URI ist, da das Schema fehlt.
       </para>
      </listitem>
     </varlistentry>
@@ -43,7 +57,7 @@
      <listitem>
       <para>
        Der Port zu dem eine Verbindung aufgebaut werden soll. 
-       Dies wird bei der Verwendung von URLs nicht benutzt.
+       Dies wird bei der Verwendung von LDAP-URIs nicht benutzt.
       </para>
      </listitem>
     </varlistentry>
@@ -54,8 +68,12 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt eine positive Verbindungs-Kennung im Erfolgsfall oder
-   &false; im Fehlerfall zurück. Wenn OpenLDAP 2.x.x verwendet wird, 
+   Liefert eine postive LDAP Verbindungskennung zurück, wenn die angegebene
+   Hostname/Port-Kombination oder LDAP-URI plausibel scheint. Es handelt sich um
+   eine Syntaxprüfung der übergebenen Paramter, aber der (oder die) Server
+   werden nicht kontaktiert! Schlägt die Syntaxprüfung fehlt, wird &false;
+   zurückgegeben.
+   Wenn OpenLDAP 2.x.x verwendet wird, 
    liefert <function>ldap_connect</function> immer eine gültige Resource
    mit positiver Verbindungs-Kennung zurück. Die Verbindung zum LDAP-Server
    wird noch nicht hergestellt, die Verbindung wird lediglich initialisiert.
