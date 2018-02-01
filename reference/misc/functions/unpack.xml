@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 55929e29ac7535345c9f38ad3f703c6f3cd2cc59 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 771733d62d77514e6a438b6cf756fd454e58fc2c Maintainer: sammywg Status: ready -->
 <refentry xml:id="function.unpack" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>unpack</refname>
@@ -13,6 +13,7 @@
    <type>array</type><methodname>unpack</methodname>
    <methodparam><type>string</type><parameter>format</parameter></methodparam>
    <methodparam><type>string</type><parameter>data</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>offset</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
   <para>
    Überträgt die Daten eines Binär-Strings in ein Array unter Berücksichtigung
@@ -46,6 +47,14 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term><parameter>offset</parameter></term>
+     <listitem>
+      <para>
+       Der Offset, an dem das Entpacken beginnt.
+      </para>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
  </refsect1>
@@ -70,6 +79,19 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>7.2.0</entry>
+       <entry>
+        <type>float</type> und <type>double</type> Typen unterstützen sowohl Big
+        Endian als auch Little Endian.
+       </entry>
+      </row>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        Das optionale <parameter>offset</parameter> wurde hinzugefügt.
+       </entry>
+      </row>
       <row>
        <entry>5.5.0</entry>
        <entry>
@@ -106,13 +128,20 @@
 <?php
 $binarydata = "\x04\x00\xa0\x00";
 $array = unpack("cchars/nint", $binarydata);
+print_r($array);
 ?>
 ]]>
     </programlisting>
-    <para>
-     Das Ergebnis Array enthält die Einträge "chars" mit dem wert
-     <literal>4</literal> und "int" mit <literal>160</literal>.
-    </para>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Array
+(
+    [chars] => 4
+    [int] => 160
+)
+]]>
+    </screen>
    </example>
   </para>
 
@@ -124,13 +153,21 @@ $array = unpack("cchars/nint", $binarydata);
 <?php
 $binarydata = "\x04\x00\xa0\x00";
 $array = unpack("c2chars/nint", $binarydata);
+print_r($array);
 ?>
 ]]>
      </programlisting>
-     <para>
-      Das Ergebnis Array wird die Einträge "chars1", "chars2" and "int"
-      enthalten.
-     </para>
+     &example.outputs;
+     <screen>
+<![CDATA[
+Array
+(
+    [chars1] => 4
+    [chars2] => 0
+    [int] => 40960
+)
+]]>
+     </screen>
     </example>
    </para>
   </refsect1>
@@ -150,9 +187,10 @@ $array = unpack("c2chars/nint", $binarydata);
   </caution>
   <caution>
    <para>
-    Beachten Sie, dass für nicht benannte Elemente ein leerer String verwendet
-    wird. Werden mehrere Elemente nicht bennant, werden die entsprechenden
-    Elemente überschrieben, da die verwendeten Schlüssel identisch sind:
+    Wird ein Element nicht benannt, dann werden numerische Indizes beginnend mit
+    <literal>1</literal> verwendet. Es ist zu berücksichtigen, dass im Falle
+    mehrerer unbenannter Elemente ein Teil der Daten überschrieben wird, da die
+    Nummerierung für jedes Element wieder bei <literal>1</literal> beginnt.
    </para>
    <para>
     <example>
@@ -166,11 +204,21 @@ var_dump($array);
 ?>
 ]]>
      </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+array(2) {
+  [1]=>
+  int(160)
+  [2]=>
+  int(66)
+}
+]]>
+     </screen>
      <para>
-      Das Ergebnis Array wird die Elemente "1" mit dem Wert <literal>160</literal>
-      und "2" mit <literal>66</literal> enthalten. Der erste Wert vom Symbol
-      <literal>c</literal> wurde mit dem Wert vom Symbol <literal>n</literal>
-      überschrieben.
+      Es ist zu beachten, dass der erste Wert vom Symbol
+      <literal>c</literal> mit dem Wert vom Symbol <literal>n</literal>
+      überschrieben wurde.
      </para>
     </example>
    </para>

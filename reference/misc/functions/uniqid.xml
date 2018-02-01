@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8b5940cadeb4f1c8492f4a7f70743a2be807cf39 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: b8758b0605e80c4e3610137b7502a6abeea5c69b Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.uniqid" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -13,20 +13,22 @@
   <methodsynopsis>
    <type>string</type><methodname>uniqid</methodname>
    <methodparam choice="opt"><type>string</type><parameter>prefix</parameter><initializer>""</initializer></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>more_entropy</parameter><initializer>false</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>more_entropy</parameter><initializer>&false;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Gibt eine eindeutige ID mit Präfix zurück, die auf der aktuellen Zeit in
    Mikrosekunden basiert.
   </para>
+  &caution.cryptographically-insecure;
   <warning>
-   <para>
-    Diese Funktion erzeugt keine zufälligen oder unvoraussagbaren Zeichenketten.
-    <emphasis>Diese Funktion darf nicht für Sicherheitszwecke verwendet werden.</emphasis>
-    Kryptographisch sichere Zufalls-Funktionen/Generatoren und kryptographisch
-    sichere Hash-Funktionen sollten verwendet werden, um unvoraussagbare sichere
-    IDs zu erzeugen.
-   </para>
+    <para>
+     Diese Funktion garantiert nicht die Eindeutigkeit der Rückgabewerte. Da die
+     meisten System die Systemzeit durch NTP oder ähnlich justieren, ändert sich
+     die Systemzeit kontinuierlich. Daher ist es möglich, dass diese Funktion
+     keine eindeutige ID für den Prozess/Thread zurückgibt.
+     <parameter>more_entropy</parameter> kann verwendet werden, um die
+     Wahrscheinlichkeit der Eindeutigkeit zu erhöhen.
+    </para>
   </warning>
  </refsect1>
 
@@ -68,8 +70,14 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt eine eindeutige ID als Zeichenkette zurück.
+   Gibt eine zeitstempelbasierte eindeutige ID als Zeichenkette zurück.
   </para>
+  <warning>
+   <para>
+    Diese Funktion versucht eine eindeutige Kennung zu erzeugen, aber sie
+    garantiert nicht die hunderprozentige Eindeutigkeit des Rückgabewerts.
+   </para>
+  </warning>
  </refsect1>
 
  <refsect1 role="examples">
@@ -102,15 +110,6 @@ $uniqid = uniqid('', true);
 
  <refsect1 role="notes">
   &reftitle.notes;
-  <caution>
-   <para>
-    Diese Funktion erzeugt keine kryptographisch sicheren Tokens; tatsächlich
-    ist der Rückgabewert ohne die Übergabe eines zusätzlichen Parameters nur
-    wenig von <function>microtime</function> verschieden. Zum Erzeugen von
-    kryptographisch sicheren Tokens sollte
-    <function>openssl_random_pseudo_bytes</function> verwendet werden.
-   </para>
-  </caution>
   <note>
    <para>
     Unter Cygwin muss der Parameter <parameter>more_entropy</parameter> auf
