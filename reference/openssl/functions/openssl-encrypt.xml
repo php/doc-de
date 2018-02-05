@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b51626a97924e7267b8403c36ad633ab5c72957a Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 5b848aeb03fc31ee104960eea4d1c7367b4ee83a Maintainer: cmb Status: ready -->
 
 <refentry xml:id="function.openssl-encrypt" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -35,7 +35,7 @@
      <term><parameter>data</parameter></term>
      <listitem>
       <para>
-       Die zu verschlüsselnden Daten.
+       Die zu verschlüsselnde Klartextnachricht.
       </para>
      </listitem>
     </varlistentry>
@@ -159,6 +159,65 @@
   </informaltable>
  </refsect1>
  
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>AES Authenticated Encryption im GCM-Modus Beispiel für PHP 7.1+</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// $key sollte zuvor auf eine kryptographisch sichere Weise erzeugt worden sein, z.B. per openssl_random_pseudo_bytes
+$plaintext = "zu verschlüsselnde Nachricht";
+$cipher = "aes-128-gcm";
+if (in_array($cipher, openssl_get_cipher_methods()))
+{
+	$ivlen = openssl_cipher_iv_length($cipher);
+	$iv = openssl_random_pseudo_bytes($ivlen);
+	$ciphertext = openssl_encrypt($plaintext, $cipher, $key, $options=0, $iv, $tag);
+	// speichere $cipher, $iv und $tag für spätere Entschlüsselung
+	$original_plaintext = openssl_decrypt($ciphertext, $cipher, $key, $options=0, $iv, $tag);
+	echo $original_plaintext."\n";
+}
+?>
+]]>
+    </programlisting>
+   </example>
+
+   <example>
+    <title>AES Authenticated Encryption Beispiel für PHP 5.6+</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// $key sollte zuvor auf eine kryptographisch sichere Weise erzeugt worden sein, z.B. per openssl_random_pseudo_bytes
+$plaintext = "zu verschlüsselnde Nachricht";
+$ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
+$iv = openssl_random_pseudo_bytes($ivlen);
+$ciphertext_raw = openssl_encrypt($plaintext, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
+$hmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+$ciphertext = base64_encode( $iv.$hmac.$ciphertext_raw );
+
+// spätere Entschlüsselung ...
+$c = base64_decode($ciphertext);
+$ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
+$iv = substr($c, 0, $ivlen);
+$hmac = substr($c, $ivlen, $sha2len=32);
+$ciphertext_raw = substr($c, $ivlen+$sha2len);
+$original_plaintext = openssl_decrypt($ciphertext_raw, $cipher, $key, $options=OPENSSL_RAW_DATA, $iv);
+$calcmac = hash_hmac('sha256', $ciphertext_raw, $key, $as_binary=true);
+if (hash_equals($hmac, $calcmac)) // PHP 5.6+ Rechenzeitangriff-sicherer Vergleich
+{
+	echo $original_plaintext."\n";
+}
+?>
+]]>
+    </programlisting>
+   </example>
+
+  </para>
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>

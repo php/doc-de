@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 07eb9953564f09e10f4c65da31c0339a2db613bb Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: 8fdb77c6032ddfd31031df8f1e1f080a66a11880 Maintainer: jaenecke Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-csr-new">
  <refnamediv>
   <refname>openssl_csr_new</refname>
@@ -20,7 +20,7 @@
    <function>openssl_csr_new</function> erzeugt einen neuen CSR
    (Zertifikatssignierungsanfrage) basierend auf den Informationen, die mit
    dem Parameter <parameter>dn</parameter> angegeben werden. Dieser
-   bestimmt den Distinguished Name, der im Zertifikat benutzt werden soll.
+   bestimmt den Distinguished Name, der im Betreff des Zertifikat benutzt werden soll.
   </para>
   &note.openssl.cnf;
  </refsect1>
@@ -33,7 +33,7 @@
      <term><parameter>dn</parameter></term>
      <listitem>
       <para>
-       Der Distinguished Name der im Zertifikat genutzt werden soll
+       Der Distinguished Name oder die Betrefffelder, die im Zertifikat genutzt werden sollen.
       </para>
      </listitem>
     </varlistentry>
@@ -87,7 +87,9 @@
            <entry>digest_alg</entry>
            <entry><type>string</type></entry>
            <entry>default_md</entry>
-           <entry>Bestimmt welche digest Methode benutzt wird</entry>
+           <entry>
+            Digest-Methode oder Signaturhash, üblicherweise eins von <function>openssl_get_md_methods</function>
+           </entry>
           </row>
           <row>
            <entry>x509_extensions</entry>
@@ -160,7 +162,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den CSR zurück.
+   Gibt den CSR zurück. &return.falseforfailure;
   </para>
  </refsect1>
 
@@ -191,17 +193,20 @@ $dn = array(
 );
 
 // Erzeugen eines neuen privaten (und öffentlichen) Schlüsselpaars
-$privkey = openssl_pkey_new();
+$privkey = openssl_pkey_new(array(
+    "private_key_bits" => 2048,
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+));
 
 // Erzeugen einer Zertifikatssignierungsanfrage
-$csr = openssl_csr_new($dn, $privkey);
+$csr = openssl_csr_new($dn, $privkey, array('digest_alg' => 'sha256'));
 
 // Gewöhnlicherweise möchten Sie zu diesem Zeitpunkt ein selbstsigniertes
 // Zertifikat erzeugen, das Sie benutzten können, bis ihre CA ihre Anfrage
 // im positiven Sinne bearbeitet hat.
 // Erzeugen eines selbstsignierten Zertifikts, das für die Dauer von 365 Tagen
 // gültig ist.
-$sscert = openssl_csr_sign($csr, null, $privkey, 365);
+$sscert = openssl_csr_sign($csr, null, $privkey, 365, array('digest_alg' => 'sha256'));
 
 // Jetzt möchten Sie ihren privaten Schlüssel, ihren CSR und das
 // selbstsignierte Zertifikat sichern, damit Sie dieses, abhängig vom
@@ -225,6 +230,16 @@ while (($e = openssl_error_string()) !== false) {
      </example>
     </para>
    </refsect1>
+
+   <refsect1 role="seealso">
+    &reftitle.seealso;
+    <para>
+     <simplelist>
+      <member><function>openssl_csr_sign</function></member>
+     </simplelist>
+    </para>
+   </refsect1>
+
   </refentry>
 
 <!-- Keep this comment at the end of the file
