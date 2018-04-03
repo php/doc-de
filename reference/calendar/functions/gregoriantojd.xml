@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: db43575bd6c986a35552e4cbdfd643ae05edd092 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: cca0f0ce480de21a3fe73bb3369de36129873496 Maintainer: hholzgra Status: ready -->
   <refentry xml:id="function.gregoriantojd" xmlns="http://docbook.org/ns/docbook">
    <refnamediv>
     <refname>gregoriantojd</refname> 
@@ -24,7 +24,7 @@
      Julianischen Datum.
     </para>
     <para>
-     Gültige Daten liegen im Bereich von 4714 v. Chr. bis 9999 n. Chr.
+     Der gültige Zeitraum für den gregorianischen Kalender ist vom 25. November 4714 v. Chr. bis mindestens zum 31. Dezember 9999 n. Chr.
      Der Gregorianische Kalender wurde allerdings erst am 15. Oktober
      1582 (bzw. am 5. Oktober nach dem bis dahin gültigen Julianischen
      Kalender) von Papst Gregor XIII. eingeführt, in einigen
@@ -52,7 +52,9 @@
      <term><parameter>day</parameter></term>
      <listitem>
       <para>
-       Der Tag als Zahl zwischen 1 und 31
+       Der Tag als Zahl zwischen 1 und 31.
+       Hat der Monat weniger Tage als angegeben, tritt ein Überlauf auf; siehe
+       das Beispiel weiter unten.
       </para>
      </listitem>
     </varlistentry>
@@ -60,7 +62,10 @@
      <term><parameter>year</parameter></term>
      <listitem>
       <para>
-       Das Jahr als Zahl zwischen -4714 und 9999
+       Das Jahr als Zahl zwischen -4714 und 9999.
+       Negative Zahlen bedeuten v. Chr., positive Zahlen bedeuten n.Chr.
+       Es ist zu beachten, dass es kein Jahr <literal>0</literal> gibt; auf den
+       31. Dezember 1 v.Chr. folgt direkt der 1. Januar 1 n. Chr.
       </para>
      </listitem>
     </varlistentry>  
@@ -73,6 +78,8 @@
   <para>
    Der Julianische Tag für das gegebene Gregorianische Datum
    als Integer.
+   Für Daten außerhalb des gültigen Bereichs wird <literal>0</literal> 
+   zurückgegeben.
   </para>
  </refsect1>
 
@@ -84,13 +91,38 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$jd = GregorianToJD(10, 11, 1970);
+$jd = gregoriantojd(10, 11, 1970);
 echo "$jd\n";
-$gregorian = JDToGregorian($jd);
+$gregorian = jdtogregorian($jd);
 echo "$gregorian\n";
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+2440871
+10/11/1970
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Überlaufverhalten</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+echo gregoriantojd(2, 31, 2018), PHP_EOL,
+     gregoriantojd(3,  3, 2018), PHP_EOL;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+2458181
+2458181
+]]>
+    </screen>
    </example>
   </para>
  </refsect1>
