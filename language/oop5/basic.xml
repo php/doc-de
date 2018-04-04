@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 06df50f0b11dab8ad595fb8c544c478019ff1d17 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 0fe00e3574f5267948a29692e8daddaaeb275cee Maintainer: wiesemann Status: ready -->
 
  <sect1 xml:id="language.oop5.basic" xmlns="http://docbook.org/ns/docbook">
   <title>Die Grundlagen</title>
@@ -57,8 +57,22 @@ class SimpleClass
     Kontext eines zusätzlichen Objektes aufgerufen wird).
    </para>
    <para>
+    Von PHP 7.0.0 an führt das statische Aufrufen nicht-statischer Methoden aus
+    einem inkompatiblen Kontext dazu, dass $this innerhalb der Methode nicht
+    definiert ist. Der statische Aufruf einer nicht-statischen Methode aus einem
+    inkompatiblen Kontext wurde von PHP 5.6.0 an missbilligt. Von PHP 7.0.0 an
+    ist der statische Aufruf einer nicht-statischen Methode allgemein
+    missbilligt (auch wenn sie aus einem kompatiblen Kontext aufgerufen wird).
+    Vor PHP 5.6.0 lösten solche Aufrufe bereits eine Strict-Notice aus.
+   </para>
+   <para>
     <example xml:id="language.oop5.basic.class.this">
      <title>Einige Beispiele für die <varname>$this</varname>-Pseudovariable</title>
+     <simpara>
+      Wir nehmen an, dass error_reporting für dieses Beispiel deaktiviert ist;
+      andernfalls würde der folgende Code Deprecated- bzw. Strict-Notices
+      auslösen, je nach verwendeter PHP-Version.
+     </simpara>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -80,8 +94,6 @@ class B
 {
     function bar()
     {
-        // Hinweis: die folgende Zeile führt zu einer Warnung, wenn
-        // E_STRICT aktiviert ist
         A::foo();
     }
 }
@@ -89,23 +101,31 @@ class B
 $a = new A();
 $a->foo();
 
-// Hinweis: die folgende Zeile führt zu einer Warnung, wenn E_STRICT aktiviert ist
 A::foo();
+
 $b = new B();
 $b->bar();
 
-// Hinweis: die folgende Zeile führt zu einer Warnung, wenn E_STRICT aktiviert ist
 B::bar();
 ?>
 ]]>
      </programlisting>
-     &example.outputs;
+     &example.outputs.5;
      <screen>
 <![CDATA[
 $this ist definiert (A)
 $this ist nicht definiert.
 $this ist definiert (B)
 $this ist nicht definiert.
+]]>
+     </screen>
+     &example.outputs.7;
+     <screen>
+<![CDATA[
+$this ist defined (A)
+$this ist nicht defined.
+$this ist nicht defined.
+$this ist nicht defined.
 ]]>
      </screen>
     </example>
@@ -227,6 +247,26 @@ bool(true)
 ]]>
     </screen>
    </example>
+   <para>
+    PHP 5.4.0 führte die Möglichkeit ein, auf ein Mitglied eines neu erzeugten
+    Objekts in einem einzigen Ausdruck zuzugreifen:
+   </para>
+   <example>
+    <title>Zugriff auf ein Mitglied eine neu erzeugten Objekts</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+echo (new DateTime())->format('Y');
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+2016
+]]>
+    </screen>
+   </example>
   </sect2>
 
   
@@ -244,6 +284,7 @@ bool(true)
     <title>Variablenzugriff vs. Methodenaufruf</title>
     <programlisting role="php">
 <![CDATA[
+<?php
 class Foo
 {
     public $bar = 'Eigenschaft';
@@ -277,6 +318,7 @@ Methode
     <title>Aufruf einer anonymen Funktion, die in einer Eigenschaft gespeichert ist</title>
     <programlisting role="php">
 <![CDATA[
+<?php
 class Foo
 {
     public $bar;
