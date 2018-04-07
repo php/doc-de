@@ -1,42 +1,162 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.getrusage" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>getrusage</refname>
-    <refpurpose>
-     Zeigt den aktuellen Ressourcenverbrauch an
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>array</type><methodname>getrusage</methodname>
-      <methodparam choice="opt"><type>int</type><parameter>who</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Dies ist eine Schnittstelle zu getrusage(2). Stellt ein
-     assoziatives Array mit den Daten zur Verfügung, die der
-     Systemaufruf ausgibt.  Wenn who 1 ist, wird getusage mit
-     RUSAGE_CHILDREN aufgerufen.
-    </para>
-    <para>
-     Alle Einträge können über ihre Dukumentenfeldernamen aufgerufen
-     werden.
-     <example>
-      <title><function>getrusage</function> Beispiel</title>
-      <programlisting role="php">
+<!-- EN-Revision: 8aee3a0831e0f8d902653ab64d15c61aca40089d Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.getrusage" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>getrusage</refname>
+  <refpurpose>Ermittelt den aktuellen Ressourcenverbrauch</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>array</type><methodname>getrusage</methodname>
+   <methodparam choice="opt"><type>int</type><parameter>who</parameter><initializer>0</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Dies ist eine Schnittstelle zu getrusage(2), das Daten des Systemaufrufs
+   liefert.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>who</parameter></term>
+     <listitem>
+      <para>
+       Ist <parameter>who</parameter> 1, wird getrusage mit
+       <constant>RUSAGE_CHILDREN</constant> aufgerufen.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt ein assoziatives Array mit den Daten zurück, die der Systemaufruf
+   ausgibt. Alle Elemente sind unter Verwendung ihres dokumentierten Feldnamens
+   zugreifbar.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>getrusage</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
 $dat = getrusage();
-echo $dat["ru_nswap"];         # number of swaps
-echo $dat["ru_majflt"];        # number of page faults
-echo $dat["ru_utime.tv_sec"];  # user time used (seconds)
-echo $dat["ru_utime.tv_usec"]; # user time used (microseconds)
-      </programlisting>
-     </example>
-     Siehe auch im Handbuch des Betriebssystems für weitere Details. 
-    </para>
-   </refsect1>
-  </refentry>
+echo $dat["ru_oublock"];       // number of block output operations
+echo $dat["ru_inblock"];       // number of block input operations
+echo $dat["ru_msgsnd"];        // number of IPC messages sent
+echo $dat["ru_msgrcv"];        // number of IPC messages received
+echo $dat["ru_maxrss"];        // maximum resident set size
+echo $dat["ru_ixrss"];         // integral shared memory size
+echo $dat["ru_idrss"];         // integral unshared data size
+echo $dat["ru_minflt"];        // number of page reclaims (soft page faults)
+echo $dat["ru_majflt"];        // number of page faults (hard page faults)
+echo $dat["ru_nsignals"];      // number of signals received
+echo $dat["ru_nvcsw"];         // number of voluntary context switches
+echo $dat["ru_nivcsw"];        // number of involuntary context switches
+echo $dat["ru_nswap"];         // number of swaps
+echo $dat["ru_utime.tv_usec"]; // user time used (microseconds)
+echo $dat["ru_utime.tv_sec"];  // user time used (seconds)
+echo $dat["ru_stime.tv_usec"]; // system time used (microseconds)
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.0.0</entry>
+       <entry>
+        Diese Funktion wird nun unter Windows unterstützt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Unter Windows gibt <function>getrusage</function> nur folgende Elemente zurück:
+   </para>
+   <para>
+    <simplelist>
+     <member><literal>"ru_stime.tv_sec"</literal></member>
+     <member><literal>"ru_stime.tv_usec"</literal></member>
+     <member><literal>"ru_utime.tv_sec"</literal></member>
+     <member><literal>"ru_utime.tv_usec"</literal></member>
+     <member>
+      <literal>"ru_majflt"</literal> (nur wenn <parameter>who</parameter>
+      <constant>RUSAGE_SELF</constant> ist)
+     </member>
+     <member>
+      <literal>"ru_maxrss"</literal> (nur wenn <parameter>who</parameter>
+      <constant>RUSAGE_SELF</constant> ist)
+     </member>
+    </simplelist>
+   </para>
+   <para>
+    Wird <function>getrusage</function> mit <parameter>who</parameter>
+    als <literal>1</literal> (<constant>RUSAGE_CHILDREN</constant>) aufgerufen,
+    dann wird der Ressourcenverbrauch der Threads zusammengefasst (was bedeutet,
+    dass die Funktion intern mit <constant>RUSAGE_THREAD</constant> aufgerufen
+    wird).
+   </para>
+  </note>
+  <note>
+   <para>
+    Unter BeOS 2000 werden nur folgende Element zurückgegeben:
+   </para>
+   <para>
+    <simplelist>
+     <member><literal>"ru_stime.tv_sec"</literal></member>
+     <member><literal>"ru_stime.tv_usec"</literal></member>
+     <member><literal>"ru_utime.tv_sec"</literal></member>
+     <member><literal>"ru_utime.tv_usec"</literal></member>
+    </simplelist>
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member>Die Seite ihres Handbuchs zu <command>getrusage(2)</command></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

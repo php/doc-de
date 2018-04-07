@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 7cf7e11a25f45bacd17ef5bb4deff02a00222063 Maintainer: hholzgra Status: ready -->
+
 <refentry xml:id="function.phpversion" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>phpversion</refname>
@@ -27,7 +28,7 @@
      <term><parameter>extension</parameter></term>
      <listitem>
       <para>
-       Ein optionaler Extensionname
+       Ein optionaler Extensionname.
       </para>
      </listitem>
     </varlistentry>
@@ -63,14 +64,55 @@ echo phpversion('tidy');
     </programlisting>
    </example>
   </para>
+  <para>
+   <example>
+    <title><constant>PHP_VERSION_ID</constant> Beispiel und Verwendung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// PHP_VERSION_ID ist von PHP 5.2.7 an verfügbar; 
+// emuliere es unter älteren Versionen
+// version is lower than that, then emulate it
+if (!defined('PHP_VERSION_ID')) {
+    $version = explode('.', PHP_VERSION);
+
+    define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+}
+
+// PHP_VERSION_ID ist als Zahl definiert; je höher diese ist,
+// desto neuer ist die PHP-Version. Es ist wie oben angegeben definiert:
+//
+// $version_id = $major_version * 10000 + $minor_version * 100 + $release_version;
+//
+// Nun kann PHP_VERSION_ID verwendet werden, um zu prüfen, ob diese PHP-Version
+// bestimmte Features unterstützt, ohne jedesmal version_compare() zu verwenden,
+// um zu prüfen, ob die aktuelle PHP-Version bestimmte Features nicht unterstützt.
+//
+// Beispielsweise können wir so die PHP_VERSION_* Konstanten definieren,
+// die in Versionen vor 5.2.7 nicht verfügbar waren.
+
+if (PHP_VERSION_ID < 50207) {
+    define('PHP_MAJOR_VERSION',   $version[0]);
+    define('PHP_MINOR_VERSION',   $version[1]);
+    define('PHP_RELEASE_VERSION', $version[2]);
+
+    // und so weiter, ...
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
   &reftitle.notes;
   <note>
    <para>
-    Die PHP Version kann auch über die vordefinierte Konstante
-    <constant>PHP_VERSION</constant> ermittelt werden.
+    Diese Information ist ebenfalls in der vordefinierten Konstante
+    <constant>PHP_VERSION</constant> verfügbar. Weitere Versionsinformation ist
+    durch die Verwendung der <constant>PHP_VERSION_*</constant>  Konstanten
+    verfügbar.
    </para>
   </note>
  </refsect1>
@@ -79,6 +121,7 @@ echo phpversion('tidy');
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><link linkend="reserved.constants.core">PHP_VERSION Konstanten</link></member>
     <member><function>version_compare</function></member>
     <member><function>phpinfo</function></member>
     <member><function>phpcredits</function></member>

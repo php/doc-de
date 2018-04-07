@@ -1,119 +1,210 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.dl" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>dl</refname>
-    <refpurpose>Lädt eine PHP-Erweiterung (Extension) zur Laufzeit </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-    <methodsynopsis>
-     <type>int</type><methodname>dl</methodname>
-     <methodparam><type>string</type><parameter>library</parameter></methodparam>
-    </methodsynopsis>
-    <para>
-     Lädt die mittels dem Parameter <parameter>library</parameter> angegebene
-     PHP-Erweiterung. Der Parameter <parameter>library</parameter> ist
-     <emphasis>nur</emphasis> der Dateiname der zu ladenden Erweiterung
-     (Extension), welcher von Ihrer Plattform abhängig ist. Z.B. würde die
-     Extension <link linkend="ref.sockets">sockets</link> (wenn als shared
-     module kompiliert, nicht standardmäßig!) auf Unix Plattformen
-     <filename>sockets.so</filename>, und auf Windows Plattformen
-     <filename>php_sockets.dll</filename> heißen.
-    </para>
-    <para>
-     &return.success; Ist die Funktionalität des Ladens von Modulen nicht
-     verfügbar (siehe Anmerkung), oder wurde sie deaktiviert (entweder durch
-     Deaktivieren von <literal>enable_dl</literal> oder durch aktivieren von
-     <literal>safe_mode</literal> in der &php.ini;), wird ein
-     <constant>E_ERROR</constant> ausgegeben, und die Ausführung gestoppt.
-     Scheitert <function>dl</function> weil die angegebene Erweiterung nicht
-     geladen werden konnte, wird zusätzlich zu &false; eine
-     <constant>E_WARNING</constant> Meldung ausgegeben.
-    </para>
-    <para>
-     Verwenden Sie <function>extension_loaded</function> um zu testen, ob
-     die gewünschte Erweiterung bereits verfügbar ist oder nicht. Dies
-     funktioniert sowohl bei eingebauten, als auch bei dynamisch geladenen
-     Erweiterungen (entweder durch &php.ini;, oder mittels
-     <function>dl</function>).
-    </para>
-    <example>
-     <title><function>dl</function> Beispiel</title>
-     <programlisting role="php">
+<!-- EN-Revision: 95bdd6883b5dde9504701777ba81b3c5f15df52b Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.dl" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>dl</refname>
+  <refpurpose>Lädt eine PHP-Erweiterung (Extension) zur Laufzeit </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>dl</methodname>
+   <methodparam><type>string</type><parameter>library</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Lädt die mittels dem Parameter <parameter>library</parameter> angegebene
+   PHP-Erweiterung.
+  </para> 
+  <para>
+   Verwenden Sie <function>extension_loaded</function> um zu testen, ob
+   die gewünschte Erweiterung bereits verfügbar ist oder nicht. Dies
+   funktioniert sowohl bei eingebauten, als auch bei dynamisch geladenen
+   Erweiterungen (entweder durch &php.ini;, oder mittels
+   <function>dl</function>).
+  </para>
+  <warning>
+   <simpara>
+    Diese Funktion wurde von den meisten SAPIs in PHP 5.3.0 entfernt, 
+    und von PHP-FPM in PHP 7.0.0.
+   </simpara>
+  </warning>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>library</parameter></term>
+     <listitem>
+      <para>
+       Dieser Parameter ist <emphasis>nur</emphasis> der Dateiname der zu
+       ladenden Erweiterung (Extension), welcher von Ihrer Plattform abhängig
+       ist. Z.B. würde die Extension <link linkend="ref.sockets">sockets</link>
+       (wenn als shared module kompiliert, nicht standardmäßig!) auf Unix
+       Plattformen <filename>sockets.so</filename>, und auf Windows Plattformen
+       <filename>php_sockets.dll</filename> heißen.
+      </para>
+      <para>
+       Das Verzeichnis, von wo aus die Erweiterung geladen wird, hängt von
+       Ihrer Plattform ab:
+      </para>
+      <para>
+       Windows - Wenn nicht explizit in der &php.ini; angegeben, wird die
+       Erweiterung standardmäßig von <filename>c:\php5\</filename> geladen.
+      </para>
+      <para>
+       Unix - Wenn nicht explizit in der &php.ini; angegeben, hängt das
+       standardmäßige Verzeichnis ab von:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          ob PHP mit <literal>--enable-debug</literal> erstellt wurde oder nicht
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          ob PHP mit (experimentellem) ZTS (Zend Thread Safety) Unterstützung
+          erstellt wurde oder nicht
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          der aktuellen internen <literal>ZEND_MODULE_API_NO</literal> (Zend
+          interne Modul API Nummer, welche im Grunde das Datum der letzten
+          größeren Modul API Änderung darstellt, z.B.
+          <literal>20010901</literal>).
+         </simpara>
+        </listitem>
+       </itemizedlist>
+       Das obige in Betracht gezogen, ist das standardmäßige Verzeichnis
+       <literal>&lt;php-install-directory&gt;/lib/php/extension/&lt;debug-or-not&gt;-&lt;zts-or-not&gt;-ZEND_MODULE_API_NO</literal>,
+       z.B.
+       <filename>/usr/local/php/lib/php/extensions/debug-non-zts-20010901</filename>
+       oder
+       <filename>/usr/local/php/lib/php/extensions/no-debug-zts-20010901</filename>.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success; Ist die Funktionalität des Ladens von Modulen nicht
+   verfügbar, oder wurde sie deaktiviert (entweder durch Deaktivieren von <link
+   linkend="ini.enable-dl">enable_dl</link> oder durch Aktivieren von &safemode;
+   in der &php.ini;), wird ein <constant>E_ERROR</constant> ausgegeben, und die
+   Ausführung gestoppt. Scheitert <function>dl</function> weil die angegebene
+   Erweiterung nicht geladen werden konnte, wird zusätzlich zu &false; eine
+   <constant>E_WARNING</constant> Meldung ausgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>dl</function> Beispiele</title>
+    <programlisting role="php">
 <![CDATA[
-if (!extension_loaded('gd')) {
-    if (!dl('gd.so')) {
-        exit;
+<?php
+// Beispiel für das Laden einer Extension je nach Betriebssystem
+if (!extension_loaded('sqlite')) {
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        dl('php_sqlite.dll');
+    } else {
+        dl('sqlite.so');
     }
 }
+
+// Oder unter Verwendung der PHP_SHLIB_SUFFIX Konstante
+if (!extension_loaded('sqlite')) {
+    $prefix = (PHP_SHLIB_SUFFIX === 'dll') ? 'php_' : '';
+    dl($prefix . 'sqlite.' . PHP_SHLIB_SUFFIX);
+}
+?>
 ]]>
-     </programlisting>
-    </example>
-    <para>
-     Das Verzeichnis, von wo aus die Erweiterung geladen wird, hängt von
-     Ihrer Plattform ab:
-    </para>
-    <para>
-     Windows - Wenn nicht explizit in der &php.ini; angegeben, wird die
-     Erweiterung standardmäßig von <filename>c:\php4\extensions\</filename>
-     geladen.
-    </para>
-    <para>
-     Unix - Wenn nicht explizit in der &php.ini; angegeben, hängt das
-     standardmäßige Verzeichnis ab von:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        ob PHP mit <literal>--enable-debug</literal> erstellt wurde oder nicht
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        ob PHP mit (experimentellem) ZTS (Zend Thread Safety) Unterstützung
-        erstellt wurde oder nicht
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        der aktuellen internen <literal>ZEND_MODULE_API_NO</literal> (Zend
-        interne Modul API Nummer, welche im Grunde das Datum der letzten
-        größeren Modul API Änderung darstellt, z.B.
-        <literal>20010901</literal>).
-       </simpara>
-      </listitem>
-     </itemizedlist>
-     Das obige in Betracht gezogen, ist das standardmäßige Verzeichnis
-     <literal>&lt;php-install-directory&gt;/lib/php/extension/&lt;debug-or-not&gt;-&lt;zts-or-not&gt;-ZEND_MODULE_API_NO</literal>,
-     z.B.
-     <filename>/usr/local/php/lib/php/extensions/debug-non-zts-20010901</filename>
-     oder
-     <filename>/usr/local/php/lib/php/extensions/no-debug-zts-20010901</filename>.
-    </para>
-    <note>
-     <para>
-      <function>dl</function> wird in multithreaded WebServern
-      <emphasis>nicht</emphasis> unterstützt. In solch einer Umgebung
-      verwenden Sie bitte die <literal>extensions</literal> Anweisung
-      in Ihrer &php.ini;. Die <literal>CGI</literal> und
-      <literal>CLI</literal> Module sind davon jedoch
-      <emphasis role="strong">nicht</emphasis> betroffen!
-     </para>
-    </note>
-    <note>
-     <para>
-      <function>dl</function> unterscheidet auf Unix Plattformen zwischen Groß-
-      und Kleinschreibung.
-     </para>
-    </note>
-    <para>
-     Siehe auch
-     <link linkend="ini.extension">Extension Loading Directives</link>
-     and <function>extension_loaded</function>.
-    </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.0.0</entry>
+       <entry>
+        <function>dl</function> wurde in PHP-FPM deaktiviert.
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.9</entry>
+       <entry>
+        <function>dl</function> wurde in PHP-FPM aktiviert; allerdings wird davon abgeraten.
+       </entry>
+      </row>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        <function>dl</function> ist nun in einigen SAPIs aufgrund von
+        Stabilitätsproblemen deaktiviert. Die einzigen SAPIs, die
+        <function>dl</function> erlauben, sind CLI und Embed. Statt dessen
+        sollten die <link linkend="ini.extension">Direktiven zum Laden von
+        Extensions</link> verwendet werden.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    <function>dl</function> wird <emphasis>nicht</emphasis> unterstützt, wenn
+    PHP mit ZTS-Unterstützung erstellt wurde. Statt dessen müssen die <link
+    linkend="ini.extension">Direktiven zum Laden von Extensions</link> verwendet
+    werden.
+   </para>
+  </note>
+  <note>
+   <para>
+    <function>dl</function> unterscheidet auf Unix-Plattformen zwischen Groß-
+    und Kleinschreibung.
+   </para>
+  </note>
+  &note.sm.disabled;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><link linkend="ini.extension">Direktiven zum Laden von Extensions</link></member>
+    <member><function>extension_loaded</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
