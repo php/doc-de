@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 674b07e333461d4cf961bdc075da7a455c42df8c Maintainer: nobody Status: ready -->
+
 <refentry xml:id="function.func-get-args" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>func_get_args</refname>
   <refpurpose>Liefert Funktionsargumente als Array</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
@@ -18,7 +19,7 @@
   </para>
   <para>
    Die Funktion kann zusammen mit <function>func_get_arg</function>
-   und <function>func_get_args</function> genutzt werden um Funktionen
+   und <function>func_num_args</function> genutzt werden um Funktionen
    mit einer variablen Anzahl von Argumenten zu implementieren.
   </para>
  </refsect1>
@@ -49,6 +50,15 @@
         Diese Funktion kann nun auch in Parameterlisten genutzt werden. 
        </entry>
       </row>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Wird diese Funktion aus dem äußeren Geltungsbereich einer Datei
+        aufgerufen, die durch den Aufruf von <function>include</function>
+        oder <function>require</function> aus einer Funktion heraus inkludiert
+        wurde, wird nun eine Warnung erzeugt, und &false; zurückgegeben.
+       </entry>
+      </row>
      </tbody>
     </tgroup>
    </informaltable>
@@ -58,7 +68,7 @@
  <refsect1 role="errors">
   &reftitle.errors;
   <para>
-   Die Funktion generiert eine Warnung wenn sie außerhalb einer 
+   Die Funktion generiert eine Warnung, wenn sie außerhalb einer 
    benutzerdefinierten Funktion aufgerufen wird.
   </para>
  </refsect1>
@@ -74,13 +84,13 @@
 function foo()
 {
     $numargs = func_num_args();
-    echo "Anzahl der Argumente: $numargs<br />\n";
+    echo "Anzahl der Argumente: $numargs \n";
     if ($numargs >= 2) {
-        echo "Das zweite Argument ist: " . func_get_arg(1) . "<br />\n";
+        echo "Das zweite Argument ist: " . func_get_arg(1) . "\n";
     }
     $arg_list = func_get_args();
     for ($i = 0; $i < $numargs; $i++) {
-        echo "Argument $i ist: " . $arg_list[$i] . "<br />\n";
+        echo "Argument $i ist: " . $arg_list[$i] . "\n";
     }
 }
 
@@ -88,6 +98,118 @@ foo(1, 2, 3);
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Anzahl der Argumente: 3 
+Das zweite Argument ist: 2
+Argument 0 ist: 1
+Argument 1 ist: 2
+Argument 2 ist: 3
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>func_get_args</function> Beispiel vor und nach PHP 5.3</title>
+    <programlisting role="php">
+<![CDATA[
+test.php
+<?php
+function foo() {
+    include './fga.inc';
+}
+
+foo('Erstes Argument', 'Zweites Argument');
+?>
+
+fga.inc
+<?php
+
+$args = func_get_args();
+var_export($args);
+
+?>
+]]>
+    </programlisting>
+    <para>
+     Ausgabe vor PHP 5.3:
+    </para>
+    <screen>
+<![CDATA[
+array (
+  0 => 'Erstes Argument',
+  1 => 'Zweites Argument',
+)
+]]>
+    </screen>
+    <para>
+     Ausgabe in PHP 5.3 und später:
+    </para>
+    <screen>
+<![CDATA[
+Warning: func_get_args():  Called from the global scope - no function
+context in /home/torben/Desktop/code/ml/fga.inc on line 3
+false
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>func_get_args</function> Beispiel mit Referenz- und Wert-Argumenten</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function byVal($arg) {
+    echo 'Wie übergeben : ', var_export(func_get_args()), PHP_EOL;
+    $arg = 'baz';
+    echo 'Nach Änderung : ', var_export(func_get_args()), PHP_EOL;
+}
+
+function byRef(&$arg) {
+    echo 'Wie übergeben : ', var_export(func_get_args()), PHP_EOL;
+    $arg = 'baz';
+    echo 'Nach Änderung : ', var_export(func_get_args()), PHP_EOL;
+}
+
+$arg = 'bar';
+byVal($arg);
+byRef($arg);
+?>
+]]>
+    </programlisting>
+    &example.outputs.7;
+    <screen>
+Wie übergeben : array (
+  0 => 'bar',
+)
+Nach Änderung : array (
+  0 => 'baz',
+)
+Wie übergeben : array (
+  0 => 'bar',
+)
+Nach Änderung : array (
+  0 => 'baz',
+)
+    </screen>
+    &example.outputs.5;
+    <screen>
+Wie übergeben : array (
+  0 => 'bar',
+)
+Nach Änderung : array (
+  0 => 'bar',
+)
+Wie übergeben : array (
+  0 => 'bar',
+)
+Nach Änderung : array (
+  0 => 'baz',
+)
+    </screen>
    </example>
   </para>
  </refsect1>
@@ -97,8 +219,8 @@ foo(1, 2, 3);
   &note.funcnoparam;
   <note>
    <simpara>
-    This function returns a copy of the passed arguments only, and does not
-    account for default (non-passed) arguments.
+    Diese Funktion gibt nur eine Kopie der übergebenen Argumente zurück, und
+    berücksichtigt keine Default-Argumente (falls nicht übergeben).
    </simpara>
   </note>
  </refsect1>
@@ -107,8 +229,10 @@ foo(1, 2, 3);
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><link linkend="functions.variable-arg-list.new"><literal>...</literal> Syntax in PHP 5.6+</link></member>
     <member><function>func_get_arg</function></member>
     <member><function>func_num_args</function></member>
+    <member><methodname>ReflectionFunctionAbstract::getParameters</methodname></member>
    </simplelist>
   </para>
  </refsect1>

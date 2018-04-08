@@ -1,31 +1,382 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: sammywg Status: working -->
-  <refentry xml:id="function.dbx-query" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>dbx_query</refname>
-    <refpurpose>
-     Sendet eine Abfrage und holt alle Ergebnisse (falls vorhanden)
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>object</type><methodname>dbx_query</methodname>
-      <methodparam><type>object</type><parameter>link_identifier</parameter></methodparam>
-      <methodparam><type>string</type><parameter>sql_statement</parameter></methodparam>
-      <methodparam choice="opt"><type>long</type><parameter>flags</parameter></methodparam>
-     </methodsynopsis>
-    <simpara>
-     <function>dbx_query</function> gibt bei Erfolg ein Objekt oder
-     <literal>1</literal> zurück, oder <literal>0</literal> im
-     Fehlerfall. Das Objekt wird nur zurückgegeben, wenn die in
-     <parameter>sql_statement</parameter> angegebene Abfrage eine
-     Ergebnisliste liefert.
-    </simpara>
-    <example>
-     <title>Wie mit dem gelieferten Wert umgegangen wird</title>
-     <programlisting role="php">
+<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.dbx-query" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>dbx_query</refname>
+  <refpurpose>
+   Sendet eine Abfrage und holt alle Ergebnisse (falls vorhanden)
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>mixed</type><methodname>dbx_query</methodname>
+   <methodparam><type>object</type><parameter>link_identifier</parameter></methodparam>
+   <methodparam><type>string</type><parameter>sql_statement</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Sendet eine Abfrage und holt alle Ergebnisse.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>link_identifier</parameter></term>
+     <listitem>
+      <para>
+       The DBX link object returned by <function>dbx_connect</function>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>sql_statement</parameter></term>
+     <listitem>
+      <para>
+       SQL statement.
+      </para>
+      <para>
+       Data inside the query should be <link
+       linkend="function.dbx-escape-string">properly escaped</link>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+       Der Parameter <parameter>flags</parameter> wird verwendet, um die Menge
+       der zu liefernden Informationen zu steuern. Die folgenden Konstanten
+       können mit dem Bit-Operator (|) beliebig kombiniert werden. Die Flags
+       DBX_COLNAMES_* heben die Einstellungen dbx.colnames_case in der
+       &php.ini; auf.
+       <variablelist>
+        <varlistentry>
+         <term>
+          <constant>DBX_RESULT_INDEX</constant>
+         </term>
+         <listitem>
+          <simpara>
+           Dieses Flag ist <emphasis>immer</emphasis> gesetzt, d.h. das
+           zurückgegebene Objekt hat eine Eigenschaft <property>data</property>,
+           welche aus einem zweidimensionalen, numerisch indizierten Array
+           besteht. Zum Beispiel steht in <literal>data[2][3]</literal> die
+           <literal>2</literal> für die Reihen- (bzw. Datensatz-) Nummer, und
+           <literal>3</literal> steht für die Spalten- (bzw. Feld- Nummer).
+           Die erste Reihe und Spalte haben den Index 0.
+          </simpara>
+          <simpara>
+           Ist <constant>DBX_RESULT_ASSOC</constant> ebenfalls angegeben,
+           so enthält das zurückgegebene Objekt auch Informationen im
+           Zusammenhang mit <constant>DBX_RESULT_INFO</constant>, selbst
+           wenn es nicht angegeben wurde.
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term>
+          <constant>DBX_RESULT_INFO</constant>
+         </term>
+         <listitem>
+          <simpara>
+           It provides info about columns, such as field names and field types.
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term>
+          <constant>DBX_RESULT_ASSOC</constant>
+         </term>
+         <listitem>
+          <simpara>
+           Dies bewirkt, dass in der <property>data</property> Eigenschaft
+           des zurückgegebenen Objektes auf die Werte eines Feldes mit den
+           entsprechenden Spaltennamen als Schlüssel zugegriffen werden kann.
+          </simpara>
+          <simpara>
+           Assoziierte Ergebnisse sind eigentlich Referenzen zu den numerisch
+           indizierten Daten, weshalb eine Änderung von
+           <literal>data[0][0]</literal> auch den Inhalt von
+           <literal>data[0]['feldname_für_erste_spalte']</literal> betrifft.
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term>
+          <constant>DBX_RESULT_UNBUFFERED</constant>
+         </term>
+         <listitem>
+          <simpara>
+           Dieses Flag unterbindet die Erstellung der <property>data</property>
+           Eigenschaft, und die <property>rows</property> Eigenschaft wird zunächst 0
+           sein. Das ist für große Datenmengen zu verwenden, wobei mit
+           <function>dbx_fetch_row</function> die Ergebnisse zeilenweise
+           abgerufen werden.
+          </simpara>
+          <simpara>
+           Die <function>dbx_fetch_row</function> Funktion gibt Zeilen zurück,
+           die mit den mit dieser Abfrage gesetzten Flags konform sind. Übrigens
+           wird auch die <property>rows</property> Eigenschaft bei jedem Aufruf
+           aktualisiert. 
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term>
+          <constant>DBX_COLNAMES_UNCHANGED</constant>
+         </term>
+         <listitem>
+          <simpara>
+           Die Groß-/Kleinschreibung der zurückgegebenen Spaltennamen bleibt unangetastet.
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term>
+          <constant>DBX_COLNAMES_UPPERCASE</constant>
+         </term>
+         <listitem>
+          <simpara>
+           Die zurückgegebenen Spaltennamen werden in Großbuchstaben gewandelt.
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term>
+          <constant>DBX_COLNAMES_LOWERCASE</constant>
+         </term>
+         <listitem>
+          <simpara>
+           Die zurückgegebenen Spaltennamen werden in Kleinbuchstaben gewandelt.
+          </simpara>
+         </listitem>
+        </varlistentry>
+       </variablelist>
+       Beachten Sie, dass <constant>DBX_RESULT_INDEX</constant> unabhängig von
+       dem aktuell verwendeten Wert des Parameters <parameter>flags</parameter>
+       immer verwendet wird. Das heißt, dass es effektiv nur die folgenden
+       Kombinationen gibt:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          <constant>DBX_RESULT_INDEX</constant>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>DBX_RESULT_INDEX</constant> |
+          <constant>DBX_RESULT_INFO</constant>
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>DBX_RESULT_INDEX</constant> |
+          <constant>DBX_RESULT_INFO</constant> |
+          <constant>DBX_RESULT_ASSOC</constant> - dies ist Standard, wenn
+        <parameter>flags</parameter> nicht angegeben ist.
+         </simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   <function>dbx_query</function> gibt bei Erfolg ein Objekt oder
+   <literal>1</literal> zurück, und <literal>0</literal> im
+   Fehlerfall. Das Objekt wird nur zurückgegeben, wenn die in
+   <parameter>sql_statement</parameter> angegebene Abfrage eine
+   Ergebnisliste liefert (d.h. eine SELECT-Abfrage, selbst wenn die
+   Ergebnismenge leer ist).
+  </para>
+  <para>
+   Das zurückgegebene Objekt hat abhängig von <parameter>flags</parameter>
+   vier oder fünf Eigenschaften:
+   <variablelist>
+    <varlistentry>
+     <term>
+      <property>handle</property>
+     </term>
+     <listitem>
+      <para>
+         Das ein gültiges Handle für die verbundene Datenbank, und als solches
+         kann es (wenn nötig) auch in modulspezifischen Funktionen verwendet
+         werden.
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+$result = dbx_query($link, "SELECT id FROM table");
+mysql_field_len($result->handle, 0);
+?>
+]]>
+        </programlisting>
+       </informalexample>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <property>cols</property> und <property>rows</property>
+     </term>
+     <listitem>
+      <para>
+       Diese enthalten die Anzahl der Spalten (oder Felder) bzw. Reihen
+       (oder Datensätze).
+       <informalexample>
+        <programlisting role="php">
+<![CDATA[
+<?php
+$result = dbx_query($link, 'SELECT id FROM table');
+echo $result->rows; // number of records
+echo $result->cols; // number of fields 
+?>
+]]>
+        </programlisting>
+       </informalexample>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <property>info</property> (optional)
+     </term>
+     <listitem>
+      <simpara>
+       Dies wird nur zurückgegeben, wenn im Parameter
+       <parameter>flags</parameter> entweder
+       <constant>DBX_RESULT_INFO</constant> oder
+       <constant>DBX_RESULT_ASSOC</constant> spezifiziert sind. Es ist ein
+       zweidimensionales Array mit zwei Reihen (<literal>name</literal> und
+       <literal>type</literal>), welches die Spalteninformationen enthält.
+      </simpara>
+      <example>
+       <title>Auflistung von Name und Typ jedes Feldes</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+$result = dbx_query($link, 'SELECT id FROM table',
+                     DBX_RESULT_INDEX | DBX_RESULT_INFO);
+
+for ($i = 0; $i < $result->cols; $i++ ) {
+    echo $result->info['name'][$i] . "\n";
+    echo $result->info['type'][$i] . "\n";  
+}
+?>
+]]>
+       </programlisting>
+      </example>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>
+      <property>data</property>
+     </term>
+     <listitem>
+      <simpara>
+       Diese Eigenschaft enthält die aktuellen Ergebnisdaten, möglicherweise
+       auch mit den Spaltennamen assoziiert, was jedoch vom Parameter
+       <parameter>flags</parameter> abhängig ist. Wenn
+       <constant>DBX_RESULT_ASSOC</constant> gesetzt ist, kann
+       <literal>$result->data[2]["feldname"]</literal> verwendet werden.
+      </simpara>
+      <example>
+       <title>Ausgabe des Inhaltes der data Eigenschaft in eine HTML Tabelle</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+$result = dbx_query($link, 'SELECT id, parentid, description FROM table');
+
+echo "<table>\n";
+foreach ($result->data as $row) {
+    echo "<tr>\n";
+    foreach ($row as $field) {
+        echo "<td>$field</td>";
+    }
+    echo "</tr>\n";
+}
+echo "</table>\n";
+?>
+]]>
+       </programlisting>
+      </example>
+      <example>
+       <title>Umgang mit UNGEPUFFERTEN Abfragen</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+
+$result = dbx_query ($link, 'SELECT id, parentid, description FROM table', DBX_RESULT_UNBUFFERED);
+
+echo "<table>\n";
+while ($row = dbx_fetch_row($result)) {
+    echo "<tr>\n";
+    foreach ($row as $field) {
+        echo "<td>$field</td>";
+    }
+    echo "</tr>\n";
+}
+echo "</table>\n";
+
+?>
+]]>
+       </programlisting>
+      </example>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>5.0.0</entry>
+       <entry>
+        <constant>DBX_RESULT_UNBUFFERED</constant> wurde eingeführt.
+       </entry>
+      </row>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        <constant>DBX_COLNAMES_UNCHANGED</constant>,
+        <constant>DBX_COLNAMES_UPPERCASE</constant>, und
+        <constant>DBX_COLNAMES_LOWERCASE</constant> wurden eingeführt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Wie mit dem gelieferten Wert umgegangen wird</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 $link   = dbx_connect(DBX_ODBC, "", "db", "username", "password")
@@ -33,262 +384,47 @@ $link   = dbx_connect(DBX_ODBC, "", "db", "username", "password")
 
 $result = dbx_query($link, 'SELECT id, parentid, description FROM table');
 
-if ( is_object($result) ) {
+if (is_object($result)) {
     // ... tue hier irgendetwas, detaillierte Beispiele siehe unten ...
     // erst die Ausgabe der Feldnamen und Typen
     // dann die Ausgabe einer Tabelle mit den gelieferten Werten
-}
-else if ( $result == 1 ) {
-    echo("Abfrage wurde erfolgreich ausgeführt, jedoch keine Ergebnisse");
-}
-else {
-    exit("Fehler bei Abfrage");
+} else {
+    exit("Abfrage ist fehlgeschlagen");
 }
 
 dbx_close($link);
 ?>
 ]]>
-     </programlisting>
-    </example>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
 
-    <para>
-     Der Parameter <parameter>flags</parameter> wird verwendet, um die Menge
-     der zu liefernden Informationen zu steuern. Die folgenden Konstanten
-     können mit dem Bit-Operator (|) beliebig kombiniert werden. Die Flags
-     DBX_COLNAMES_* heben die Einstellungen dbx.colnames_case in der
-     &php.ini; auf.
-     <variablelist>
-      <varlistentry>
-       <term>
-        <constant>DBX_RESULT_INDEX</constant>
-       </term>
-       <listitem>
-        <simpara>
-         Dieser Flag ist <emphasis>immer</emphasis> gesetzt, d.h. dass
-         zurückgegebene Objekt hat eine Eigenschaft <property>data</property>,
-         welche aus einem zweidimensionalen, numerisch indizierten Array
-         besteht. Zum Beispiel steht in <literal>data[2][3]</literal> die
-         <literal>2</literal> für die Reihen- (bzw. Datensatz-) Nummer, und
-         <literal>3</literal> steht für die Spalten- (bzw. Feld- Nummer).
-         Die erste Reihe und Spalte haben den Index 0.
-        </simpara>
-        <simpara>
-         Ist <constant>DBX_RESULT_ASSOC</constant> ebenfalls angegeben,
-         so enthält das zurückgegebene Objekt auch Informationen im
-         Zusammenhang mit <constant>DBX_RESULT_INFO</constant>, selbst
-         wenn es nicht angegeben wurde.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <constant>DBX_RESULT_INFO</constant>
-       </term>
-       <listitem>
-        <simpara>
-         Liefert Informationen über Spalten, wie Feldnamen und Feldtypen.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <constant>DBX_RESULT_ASSOC</constant>
-       </term>
-       <listitem>
-        <simpara>
-         Dies bewirkt, dass in der <property>data</property> Eigenschaft
-         des zurückgegebenen Objektes auf die Werte eines Feldes mit den
-         entsprechenden Spaltennamen als Schlüssel zugegriffen werden kann.
-        </simpara>
-        <simpara>
-         Assoziierte Ergebnisse sind eigentlich Referenzen zu den numerisch
-         indizierten Daten, weshalb eine Änderung von
-         <literal>data[0][0]</literal> auch den Inhalt von
-         <literal>data[0]['feldname_für_erste_spalte']</literal> betrifft.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <constant>DBX_COLNAMES_UNCHANGED</constant> (available from PHP 4.3.0)
-       </term>
-       <listitem>
-        <simpara>
-         The case of the returned column names will not be changed.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <constant>DBX_COLNAMES_UPPERCASE</constant> (available from PHP 4.3.0)
-       </term>
-       <listitem>
-        <simpara>
-         The case of the returned column names will be changed to
-         uppercase.
-        </simpara>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <constant>DBX_COLNAMES_LOWERCASE</constant> (available from PHP 4.3.0)
-       </term>
-       <listitem>
-        <simpara>
-         The case of the returned column names will be changed to
-         lowercase.
-        </simpara>
-       </listitem>
-      </varlistentry>
-     </variablelist>
-     Beachten Sie, dass <constant>DBX_RESULT_INDEX</constant> unabhängig von
-     dem aktuell verwendeten Wert des Parameters <parameter>flags</parameter>
-     immer verwendet wird. Das heißt, dass es effektiv nur die folgenden
-     Kombinationen gibt:
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        <constant>DBX_RESULT_INDEX</constant>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        <constant>DBX_RESULT_INDEX</constant> |
-        <constant>DBX_RESULT_INFO</constant>
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        <constant>DBX_RESULT_INDEX</constant> |
-        <constant>DBX_RESULT_INFO</constant> |
-        <constant>DBX_RESULT_ASSOC</constant> - dies ist Standard, wenn
-        <parameter>flags</parameter> nicht angegeben ist.
-       </simpara>
-      </listitem>
-     </itemizedlist>
-    </para>
-    <para>
-     Das zurückgegebene Objekt hat abhängig von <parameter>flags</parameter>
-     vier oder fünf Eigenschaften:
-     <variablelist>
-      <varlistentry>
-       <term>
-        <property>handle</property>
-       </term>
-       <listitem>
-        <para>
-         Das ein gültiges Handle für die verbundene Datenbank, und als solche
-         kann es (wenn nötig) auch in modulspezifischen Funktionen verwendet
-         werden.
-         <informalexample role="php">
-          <programlisting>
-<![CDATA[
-$result = dbx_query ($link, "SELECT id FROM table");
-mysql_field_len ($result->handle, 0);
-]]>
-          </programlisting>
-         </informalexample>
-        </para>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <property>cols</property> und <property>rows</property>
-       </term>
-       <listitem>
-        <para>
-         Diese enthalten die Anzahl der Spalten (oder Felder) bzw. Reihen
-         (oder Datensätze).
-         <informalexample>
-          <programlisting role="php">
-<![CDATA[
-$result = dbx_query ($link, 'SELECT id FROM table');
-echo $result->rows; // Anzahl der Datensätze
-echo $result->cols; // Anzahl der Felder
-]]>
-          </programlisting>
-         </informalexample>
-        </para>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <property>info</property> (optional)
-       </term>
-       <listitem>
-        <simpara>
-         Dies wird nur zurückgegeben, wenn im Parameter
-         <parameter>flags</parameter> entweder
-         <constant>DBX_RESULT_INFO</constant> oder
-         <constant>DBX_RESULT_ASSOC</constant> spezifiziert sind.
-         Es ist ein zweidimensionales Array mit zwei Reihen
-         (<literal>name</literal> und <literal>type</literal>),
-         welches die Spalteninformationen enthält.
-        </simpara>
-        <example>
-         <title>Auflistung von Name und Typ jedes Feldes</title>
-         <programlisting role="php">
-<![CDATA[
-$result = dbx_query ($link, 'SELECT id FROM table',
-                     DBX_RESULT_INDEX | DBX_RESULT_INFO);
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Die Modul spezifische Dokumentation sollte ebenfalls konsultiert werden.
+   </para>
+   <para>
+    Spaltennamen für Anfragen an eine Oracle Datenbank werden in Kleinbuchstaben
+    zurückgegeben.
+   </para>
+  </note>
+ </refsect1>
 
-for ($i = 0; $i < $result->cols; $i++ ) {
-    echo $result->info['name'][$i] . "\n";
-    echo $result->info['type'][$i] . "\n";
-}
-]]>
-         </programlisting>
-        </example>
-       </listitem>
-      </varlistentry>
-      <varlistentry>
-       <term>
-        <property>data</property>
-       </term>
-       <listitem>
-        <simpara>
-         Diese Eigenschaft enthält die aktuellen Ergebnisdaten, möglicherweise
-         auch mit den Spaltennamen assoziiert, was jedoch vom Parameter
-         <parameter>flags</parameter> abhängig ist. Wenn
-         <constant>DBX_RESULT_ASSOC</constant> gesetzt ist, können Sie
-         <literal>$result->data[2]["feldname"]</literal> verwenden.
-        </simpara>
-        <example>
-         <title>Ausgabe des Inhaltes der data Eigenschaft in eine HTML Tabelle</title>
-         <programlisting role="php">
-<![CDATA[
-$result = dbx_query ($link, 'SELECT id, parentid, description FROM table');
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>dbx_escape_string</function></member>
+    <member><function>dbx_fetch_row</function></member>
+    <member><function>dbx_connect</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
 
-echo "<table>\n";
-foreach ( $result->data as $row ) {
-    echo "<tr>\n";
-    foreach ( $row as $field ) {
-        echo "<td>$field</td>";
-    }
-    echo "</tr>\n";
-}
-echo "</table>\n";
-]]>
-         </programlisting>
-        </example>
-       </listitem>
-      </varlistentry>
-     </variablelist>
-    </para>
-    <note>
-     <para>
-      Konsultieren Sie bitte auch die modulspezifische Dokumentation.
-     </para>
-     <para>
-      Spaltennamen für Abfragen an einer Oracle Datenbank werden in
-      Kleinbuchstaben zurückgegeben.
-     </para>
-    </note>
-    <para>
-     Siehe auch <function>dbx_escape_string</function> und <function>dbx_connect</function>.
-    </para>
-   </refsect1>
-  </refentry>
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 84630c830d5faffd83898d7e6fb41198b912a685 Maintainer: nobody Status: ready -->
+
 <refentry xml:id="function.func-num-args" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>func_num_args</refname>
@@ -14,12 +15,11 @@
    <void/>
   </methodsynopsis>
   <para>
-   Liefert die Anzahl der Argumente die an die aufrufende Funktion
-   übergeben wurden.
+   Ermittelt die Anzahl der an eine Funktion übergebenen Argumente.
   </para>
   <para>
    Diese Funktion kann zusammen mit <function>func_get_arg</function>
-   und <function>func_get_args</function> genutzt werden um Funktionen
+   und <function>func_get_args</function> genutzt werden, um Funktionen
    mit einer variablen Anzahl von Argumenten zu implementieren.
   </para>
  </refsect1>
@@ -27,7 +27,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert die Anzahl der Argumente die beim Aufruf an die aufrufenden
+   Liefert die Anzahl der Argumente, die an die aufgerufene
    Funktion übergeben wurden.
   </para>
  </refsect1>
@@ -50,6 +50,15 @@
         Diese Funktion kann nun auch in Parameterlisten genutzt werden. 
        </entry>
       </row>
+      <row>
+       <entry>5.3.0</entry>
+       <entry>
+        Wird diese Funktion aus dem äußeren Geltungsbereich einer Datei
+        aufgerufen, die durch den Aufruf von <function>include</function>
+        oder <function>require</function> aus einer Funktion heraus inkludiert
+        wurde, wird nun eine Warnung erzeugt, und -1 zurückgegeben.
+       </entry>
+      </row>
      </tbody>
     </tgroup>
    </informaltable>
@@ -59,7 +68,7 @@
  <refsect1 role="errors">
   &reftitle.errors;
   <para>
-   Die Funktion generiert eine Warnung wenn sie von außerhalb einer
+   Die Funktion generiert eine Warnung, wenn sie von außerhalb einer
    benutzerdefinierten Funktion aufgerufen wird.
   </para>
  </refsect1>
@@ -78,10 +87,59 @@ function foo()
     echo "Anzahl der Argumente: $numargs\n";
 }
 
-foo(1, 2, 3);    // Ergebnis: 'Anzahl der Argumente: 3'
+foo(1, 2, 3);
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Anzahl der Argumente: 3
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>func_num_args</function> Beispiel vor und nach PHP 5.3</title>
+    <programlisting role="php">
+<![CDATA[
+test.php
+<?php
+function foo() {
+    include './fna.php';
+}
+
+foo('Erstes Argument', 'Zweites Argument');
+?>
+
+fna.php
+<?php
+
+$num_args = func_num_args();
+var_export($num_args);
+
+?>
+]]>
+    </programlisting>
+    <para>
+     Ausgabe vor PHP 5.3:
+    </para>
+    <screen>
+<![CDATA[
+2
+]]>
+    </screen>
+    <para>
+     Die Ausgabe in PHP 5.3 und später ist ähnlich wie:
+    </para>
+    <screen>
+<![CDATA[
+Warning: func_num_args():  Called from the global scope - no function
+context in /home/torben/Desktop/code/ml/fna.php on line 3
+-1
+]]>
+    </screen>
    </example>
   </para>
  </refsect1>
@@ -95,8 +153,10 @@ foo(1, 2, 3);    // Ergebnis: 'Anzahl der Argumente: 3'
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><link linkend="functions.variable-arg-list.new"><literal>...</literal> Syntax in PHP 5.6+</link></member>
     <member><function>func_get_arg</function></member>
     <member><function>func_get_args</function></member>
+    <member><methodname>ReflectionFunctionAbstract::getNumberOfParameters</methodname></member>
    </simplelist>
   </para>
  </refsect1>
