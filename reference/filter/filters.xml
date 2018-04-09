@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 94ccd5074517fa015c3bdd830a93996fedc978e4 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 27427a8ec05ef3493ad966408309c853e3b3fced Maintainer: nobody Status: ready -->
 <!-- Reviewed: no -->
 
 <chapter xml:id="filter.filters" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -51,7 +51,16 @@
          <parameter>default</parameter>
         </entry>
         <entry></entry>
-        <entry>Prüft ob der Wert eine gültige Email Adresse ist.</entry>
+        <entry>
+         <para>
+          Prüft, ob der Wert eine gültige E-Mail-Adresse darstellt.
+         </para>
+         <para>
+          Im Allgemeinen validiert dies E-Mail-Adressen gegen die Syntax in RFC
+          822, mit den Ausnahmen, dass Kommentare und Whitespace-Folding nicht
+          unterstützt werden.
+         </para>
+        </entry>
        </row>
        <row>
         <entry><constant>FILTER_VALIDATE_FLOAT</constant></entry>
@@ -63,7 +72,7 @@
         <entry>
          <constant>FILTER_FLAG_ALLOW_THOUSAND</constant>
         </entry>
-        <entry>Prüft ob der Wert ein Float Wert ist.</entry>
+        <entry>Prüft ob der Wert ein Float Wert ist, und konvertiert im Erfolgsfall zu float.</entry>
        </row>
        <row>
         <entry><constant>FILTER_VALIDATE_INT</constant></entry>
@@ -77,7 +86,7 @@
          <constant>FILTER_FLAG_ALLOW_OCTAL</constant>,
          <constant>FILTER_FLAG_ALLOW_HEX</constant>
         </entry>
-        <entry>Prüft ob der Wert ein Integer Wert ist, optional ob der Wert in der definierten Spanne liegt.</entry>
+        <entry>Prüft ob der Wert ein Integer Wert ist, optional ob der Wert in der definierten Spanne liegt, und konvertiert im Erfolgsfall zu int.</entry>
        </row>
        <row>
         <entry><constant>FILTER_VALIDATE_IP</constant></entry>
@@ -96,6 +105,15 @@
          
          Optional kann angegeben werden ob der Wert eine IPv4, IPv6 Adresse sein soll. Oder das die IP Adresse nicht aus einem Privaten oder Reservierten Bereich stammen soll.
         </entry>
+       </row>
+       <row>
+        <entry><constant>FILTER_VALIDATE_MAC</constant></entry>
+        <entry>"validate_mac_address"</entry>
+        <entry>
+         <parameter>default</parameter>
+        </entry>
+        <entry></entry>
+        <entry>Validiert Werte als MAC-Adresse.</entry>
        </row>
        <row>
         <entry><constant>FILTER_VALIDATE_REGEXP</constant></entry>
@@ -120,7 +138,7 @@
          <constant>FILTER_FLAG_PATH_REQUIRED</constant>,
          <constant>FILTER_FLAG_QUERY_REQUIRED</constant>
         </entry>
-        <entry>Validates value as URL (according to <link xlink:href="&url.rfc;2396">&url.rfc;2396</link>), optionally with required components. Beware a valid URL may not specify the HTTP protocol <parameter>http://</parameter> so further validation may be required to determine the URL uses an expected protocol, e.g. <parameter>ssh://</parameter> or <parameter>mailto:</parameter>. Note that the function will only find ASCII URLs to be valid; internationalized domain names (containing non-ASCII characters) will fail.</entry>
+        <entry>Validates value as URL (according to <link xlink:href="&url.rfc;2396">&url.rfc;2396</link>), optionally with required components. Beware a valid URL may not specify the HTTP protocol <literal>http://</literal> so further validation may be required to determine the URL uses an expected protocol, e.g. <literal>ssh://</literal> or <literal>mailto:</literal>. Note that the function will only find ASCII URLs to be valid; internationalized domain names (containing non-ASCII characters) will fail.</entry>
        </row>
       </tbody>
      </tgroup>
@@ -137,6 +155,31 @@
      When <parameter>default</parameter> is set to option, <parameter>default</parameter>'s value is used if value is not validated.
     </para>
    </note>
+
+  <simplesect role="changelog">
+   &reftitle.changelog;
+   <para>
+    <informaltable>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>&Version;</entry>
+        <entry>&Description;</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>5.5.0</entry>
+        <entry>
+         <constant>FILTER_VALIDATE_MAC</constant> hinzugefügt
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </para>
+  </simplesect>
+
  </section>
  <!--}}}-->
 
@@ -151,7 +194,6 @@
        <row>
         <entry>ID</entry>
         <entry>Name</entry>
-        <entry>Options</entry>
         <entry>Flags</entry>
         <entry>Description</entry>
        </row>
@@ -161,16 +203,14 @@
         <entry><constant>FILTER_SANITIZE_EMAIL</constant></entry>
         <entry>"email"</entry>
         <entry></entry>
-        <entry></entry>
         <entry>
          Remove all characters except letters, digits and
-         <literal>!#$%&amp;'*+-/=?^_`{|}~@.[]</literal>.
+         <literal>!#$%&amp;'*+-=?^_`{|}~@.[]</literal>.
         </entry>
        </row>
        <row>
         <entry><constant>FILTER_SANITIZE_ENCODED</constant></entry>
         <entry>"encoded"</entry>
-        <entry></entry>
         <entry>
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
@@ -183,13 +223,11 @@
         <entry><constant>FILTER_SANITIZE_MAGIC_QUOTES</constant></entry>
         <entry>"magic_quotes"</entry>
         <entry></entry>
-        <entry></entry>
         <entry>Apply <function>addslashes</function>.</entry>
        </row>
        <row>
         <entry><constant>FILTER_SANITIZE_NUMBER_FLOAT</constant></entry>
         <entry>"number_float"</entry>
-        <entry></entry>
         <entry>
          <constant>FILTER_FLAG_ALLOW_FRACTION</constant>,
          <constant>FILTER_FLAG_ALLOW_THOUSAND</constant>,
@@ -204,7 +242,6 @@
         <entry><constant>FILTER_SANITIZE_NUMBER_INT</constant></entry>
         <entry>"number_int"</entry>
         <entry></entry>
-        <entry></entry>
         <entry>
          Remove all characters except digits, plus and minus sign.
         </entry>
@@ -212,7 +249,6 @@
        <row>
         <entry><constant>FILTER_SANITIZE_SPECIAL_CHARS</constant></entry>
         <entry>"special_chars"</entry>
-        <entry></entry>
         <entry>
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
@@ -227,7 +263,6 @@
        <row>
         <entry><constant>FILTER_SANITIZE_FULL_SPECIAL_CHARS</constant></entry>
         <entry>"full_special_chars"</entry>
-        <entry></entry>
         <entry>
          <constant>FILTER_FLAG_NO_ENCODE_QUOTES</constant>,
         </entry>
@@ -242,7 +277,6 @@
        <row>
         <entry><constant>FILTER_SANITIZE_STRING</constant></entry>
         <entry>"string"</entry>
-        <entry></entry>
         <entry>
          <constant>FILTER_FLAG_NO_ENCODE_QUOTES</constant>,
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
@@ -257,13 +291,11 @@
         <entry><constant>FILTER_SANITIZE_STRIPPED</constant></entry>
         <entry>"stripped"</entry>
         <entry></entry>
-        <entry></entry>
         <entry>Alias of "string" filter.</entry>
        </row>
        <row>
         <entry><constant>FILTER_SANITIZE_URL</constant></entry>
         <entry>"url"</entry>
-        <entry></entry>
         <entry></entry>
         <entry>
          Remove all characters except letters, digits and
@@ -273,7 +305,6 @@
        <row>
         <entry><constant>FILTER_UNSAFE_RAW</constant></entry>
         <entry>"unsafe_raw"</entry>
-        <entry></entry>
         <entry>
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
@@ -281,7 +312,10 @@
          <constant>FILTER_FLAG_ENCODE_HIGH</constant>,
          <constant>FILTER_FLAG_ENCODE_AMP</constant>
         </entry>
-        <entry>Do nothing, optionally strip or encode special characters.</entry>
+        <entry>
+         Do nothing, optionally strip or encode special characters.
+         Dieser Filter hat den Alias <constant>FILTER_DEFAULT</constant>.
+        </entry>
        </row>
       </tbody>
      </tgroup>
@@ -304,6 +338,33 @@ filter.default_flags = 0
        </example>
      </para>
    </warning>
+   
+  <simplesect role="changelog">
+   &reftitle.changelog;
+   <para>
+    <informaltable>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>&Version;</entry>
+        <entry>&Description;</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>5.2.11/5.3.1</entry>
+        <entry>
+         Schrägstriche (<literal>/</literal>) werden von
+         <constant>FILTER_SANITIZE_EMAIL</constant> entfernt. Zuvor blieben sie
+         erhalten.
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </para>
+  </simplesect>
+
  </section>
  <!--}}}-->
 
@@ -363,7 +424,7 @@ filter.default_flags = 0
         <constant>FILTER_UNSAFE_RAW</constant>
        </entry>
        <entry>
-        Strips characters that has a numerical value &lt;32.
+        Strips characters that have a numerical value &lt;32.
        </entry>
       </row>
       <row>
@@ -375,7 +436,7 @@ filter.default_flags = 0
         <constant>FILTER_UNSAFE_RAW</constant>
        </entry>
        <entry>
-        Strips characters that has a numerical value &gt;127.
+        Strips characters that have a numerical value &gt;127.
        </entry>
       </row>
       <row>

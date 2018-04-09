@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b653253e42693d51085cc03257f56b5d75626b02 Maintainer: tihox Status: ready -->
+<!-- EN-Revision: 82d8f6e36b323410ba28e1283de5b4461806961f Maintainer: tihox Status: ready -->
 
 <refentry xml:id="function.curl-multi-setopt" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -70,15 +70,102 @@
             Das bedeutet, dass wenn Sie eine zweite Anfrage hinzufügen, die eine
             bereits existierende Verbindung verwendet, wird diese auf der
             selben Verbindung "gepiped".
+            Von cURL 7.43.0 an kann ebenfalls 2 übergeben werden, um zu
+            versuchen, den neuen Transfer über eine bestehende HTTP/2 Verbindung
+            zu multiplexen, falls möglich. Anstelle der Interger-Literale können
+            ebenfalls die CURLPIPE_* Konstanten verwendet werden, falls
+            verfügbar.
            </entry>
           </row>
           <row>
            <entry valign="top"><constant>CURLMOPT_MAXCONNECTS</constant></entry>
            <entry valign="top">
             Übergeben Sie eine Zahl, die als die maximale Menge an gleichzeitig geöffneten
-            Verbindungen verwendet wird, die libcurl zwischenspeichern kann. Standard ist 10.
-            Wenn der Cache voll ist schließt curl die älteste Verbindung im Cache, um
+            Verbindungen verwendet wird, die libcurl zwischenspeichern kann.
+            Standardmäßig wird die Anzahl erhöht, so dass viermal soviele
+            Verbindungen zwischengespeichert werden können, wie Handles mit
+            <function>curl_multi_add_handle</function> hinzugefügt wurden. Wenn
+            der Cache gefüllt ist, schließt cURL die älteste Verbindung im
+            Cache, um
             das Anwachsen der offenen Verbindungen zu vermeiden.
+           </entry>
+          </row>
+          <row>
+           <entry valign="top"><constant>CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE</constant></entry>
+           <entry valign="top">
+            Eine Zahl, die den Chunklängenschwellenwert für das Pipelining in
+            Bytes angibt, ist zu übergeben.
+           </entry>
+          </row>
+          <row>
+           <entry valign="top"><constant>CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE</constant></entry>
+           <entry valign="top">
+            Eine Zahl, die den Größenschwellenwert für das Pipelining in Bytes
+            angibt, ist zu übergeben.
+           </entry>
+          </row>
+          <row>
+           <entry valign="top"><constant>CURLMOPT_MAX_HOST_CONNECTIONS</constant></entry>
+           <entry valign="top">
+            Eine Zahl, die die Höchstanzahl von Verbindungen zu einem einzelnen
+            Host angibt, ist zu übergeben.
+           </entry>
+          </row>
+          <row>
+           <entry valign="top"><constant>CURLMOPT_MAX_PIPELINE_LENGTH</constant></entry>
+           <entry valign="top">
+            Eine Zahl, die die Höchstanzahl von Requests in einer Pipeline
+            angibt, ist zu übergeben.
+           </entry>
+          </row>
+          <row>
+           <entry valign="top"><constant>CURLMOPT_MAX_TOTAL_CONNECTIONS</constant></entry>
+           <entry valign="top">
+            Einze Zahl, die die Höchstanzahl von gleichzeitig offenen
+            Verbindungen angibt, ist zu übergeben.
+           </entry>
+          </row>
+          <row>
+           <entry valign="top"><constant>CURLMOPT_PUSHFUNCTION</constant></entry>
+           <entry valign="top">
+            Ein <type>callable</type>, das registriert wird, um Server-Pushs zu
+            behandeln, ist zu übergeben; es sollte folgende Signatur haben:
+            <methodsynopsis>
+             <type>int</type><methodname><replaceable>pushfunction</replaceable></methodname>
+             <methodparam><type>resource</type><parameter>parent_ch</parameter></methodparam>
+             <methodparam><type>resource</type><parameter>pushed_ch</parameter></methodparam>
+             <methodparam><type>array</type><parameter>headers</parameter></methodparam>
+            </methodsynopsis>
+            <variablelist>
+             <varlistentry>
+              <term><parameter>parent_ch</parameter></term>
+              <listitem>
+               <para>
+                Das Eltern-cURL-Handle (der vom Client durchgeführte Request).
+               </para>
+              </listitem>
+             </varlistentry>
+             <varlistentry>
+              <term><parameter>pushed_ch</parameter></term>
+              <listitem>
+               <para>
+                Ein neues cURL-Handle für den gepushten Request.
+               </para>
+              </listitem>
+             </varlistentry>
+             <varlistentry>
+              <term><parameter>headers</parameter></term>
+              <listitem>
+               <para>
+                Die Push-Promise-Header.
+               </para>
+              </listitem>
+             </varlistentry>
+            </variablelist>
+            Die Push-Funktion soll entweder
+            <constant>CURL_PUSH_OK</constant>, falls es den Push behandeln kann,
+            oder <constant>CURL_PUSH_DENY</constant>, um diesen zurückzuweisen,
+            zurückgeben.
            </entry>
           </row>
          </tbody>
@@ -97,6 +184,39 @@
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <constant>CURLMOPT_PUSHFUNCTION</constant> wurde eingeführt.
+       </entry>
+      </row>
+      <row>
+       <entry>7.0.7</entry>
+       <entry>
+        <constant>CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE</constant>,
+        <constant>CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE</constant>,
+        <constant>CURLMOPT_MAX_HOST_CONNECTIONS</constant>,
+        <constant>CURLMOPT_MAX_PIPELINE_LENGTH</constant> und
+        <constant>CURLMOPT_MAX_TOTAL_CONNECTIONS</constant> wurden eingeführt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
 
 </refentry>
 
