@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 27427a8ec05ef3493ad966408309c853e3b3fced Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 7d89c558b5b4967f714e58a0c83063ab1ba4521e Maintainer: nobody Status: ready -->
 <!-- Reviewed: no -->
 
 <chapter xml:id="filter.filters" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -45,19 +45,44 @@
         </entry>
        </row>
        <row>
+        <entry><constant>FILTER_VALIDATE_DOMAIN</constant></entry>
+        <entry>"validate_domain"</entry>
+        <entry>
+         <parameter>default</parameter>
+        </entry>
+        <entry>
+         <constant>FILTER_FLAG_HOSTNAME</constant>
+        </entry>
+        <entry>
+         <para>
+          Prüft, ob die Länge der Domainnamen-Labels gültig ist.
+         </para>
+         <para>
+          Validiert Domainnamen gegen RFC 1034, RFC 1035, RFC 952, RFC 1123, RFC
+          2732, RFC 2181 und RFC 1123. Das optionale Flag
+          <constant>FILTER_FLAG_HOSTNAME</constant> ermöglicht es im Besonderen
+          Hostnamen zu validieren (diese müssen mit einem alphanummerischen
+          Zeichen beginnen, und dürfen nur alphanumerische Zeichen und
+          Bindestriche enthalten).
+         </para>
+        </entry>
+       </row>
+       <row>
         <entry><constant>FILTER_VALIDATE_EMAIL</constant></entry>
         <entry>"validate_email"</entry>
         <entry>
          <parameter>default</parameter>
         </entry>
-        <entry></entry>
+        <entry>
+         <constant>FILTER_FLAG_EMAIL_UNICODE</constant>
+        </entry>
         <entry>
          <para>
           Prüft, ob der Wert eine gültige E-Mail-Adresse darstellt.
          </para>
          <para>
           Im Allgemeinen validiert dies E-Mail-Adressen gegen die Syntax in RFC
-          822, mit den Ausnahmen, dass Kommentare und Whitespace-Folding nicht
+          822, mit den Ausnahmen, dass Kommentare und Whitespace-Folding und punktlose Domainnamen nicht
           unterstützt werden.
          </para>
         </entry>
@@ -135,6 +160,8 @@
          <parameter>default</parameter>
         </entry>
         <entry>
+         <constant>FILTER_FLAG_SCHEME_REQUIRED</constant>,
+         <constant>FILTER_FLAG_HOST_REQUIRED</constant>,
          <constant>FILTER_FLAG_PATH_REQUIRED</constant>,
          <constant>FILTER_FLAG_QUERY_REQUIRED</constant>
         </entry>
@@ -169,9 +196,23 @@
       </thead>
       <tbody>
        <row>
+        <entry>7.0.0</entry>
+        <entry>
+         <constant>FILTER_FLAG_HOSTNAME</constant> hinzugefügt
+        </entry>
+       </row>
+       <row>
         <entry>5.5.0</entry>
         <entry>
          <constant>FILTER_VALIDATE_MAC</constant> hinzugefügt
+        </entry>
+       </row>
+       <row>
+        <entry>5.2.1</entry>
+        <entry>
+         <constant>FILTER_VALIDATE_URL</constant> verwendet nun implizit
+         <constant>FILTER_FLAG_SCHEME_REQUIRED</constant> und
+         <constant>FILTER_FLAG_HOST_REQUIRED</constant>.
         </entry>
        </row>
       </tbody>
@@ -214,6 +255,7 @@
         <entry>
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
+         <constant>FILTER_FLAG_STRIP_BACKTICK</constant>,
          <constant>FILTER_FLAG_ENCODE_LOW</constant>,
          <constant>FILTER_FLAG_ENCODE_HIGH</constant>
         </entry>
@@ -252,6 +294,7 @@
         <entry>
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
+         <constant>FILTER_FLAG_STRIP_BACKTICK</constant>,
          <constant>FILTER_FLAG_ENCODE_HIGH</constant>
         </entry>
         <entry>
@@ -281,6 +324,7 @@
          <constant>FILTER_FLAG_NO_ENCODE_QUOTES</constant>,
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
+         <constant>FILTER_FLAG_STRIP_BACKTICK</constant>,
          <constant>FILTER_FLAG_ENCODE_LOW</constant>,
          <constant>FILTER_FLAG_ENCODE_HIGH</constant>,
          <constant>FILTER_FLAG_ENCODE_AMP</constant>
@@ -308,6 +352,7 @@
         <entry>
          <constant>FILTER_FLAG_STRIP_LOW</constant>,
          <constant>FILTER_FLAG_STRIP_HIGH</constant>,
+         <constant>FILTER_FLAG_STRIP_BACKTICK</constant>,
          <constant>FILTER_FLAG_ENCODE_LOW</constant>,
          <constant>FILTER_FLAG_ENCODE_HIGH</constant>,
          <constant>FILTER_FLAG_ENCODE_AMP</constant>
@@ -440,6 +485,18 @@ filter.default_flags = 0
        </entry>
       </row>
       <row>
+       <entry><constant>FILTER_FLAG_STRIP_BACKTICK</constant></entry>
+       <entry>
+        <constant>FILTER_SANITIZE_ENCODED</constant>,
+        <constant>FILTER_SANITIZE_SPECIAL_CHARS</constant>,
+        <constant>FILTER_SANITIZE_STRING</constant>,
+        <constant>FILTER_UNSAFE_RAW</constant>
+       </entry>
+       <entry>
+        Entfernt Backtick-Zeichen.
+       </entry>
+      </row>
+      <row>
        <entry><constant>FILTER_FLAG_ALLOW_FRACTION</constant></entry>
        <entry>
         <constant>FILTER_SANITIZE_NUMBER_FLOAT</constant>
@@ -545,6 +602,15 @@ filter.default_flags = 0
        </entry>
       </row>
       <row>
+       <entry><constant>FILTER_FLAG_EMAIL_UNICODE</constant></entry>
+       <entry>
+        <constant>FILTER_VALIDATE_EMAIL</constant>
+       </entry>
+       <entry>
+        Erlaubt, dass der lokale Teil der E-Mail-Adresse Unicode-Zeichen enthalten kann.
+       </entry>
+      </row>
+      <row>
        <entry><constant>FILTER_FLAG_IPV4</constant></entry>
        <entry>
         <constant>FILTER_VALIDATE_IP</constant>
@@ -585,10 +651,34 @@ filter.default_flags = 0
         <constant>FILTER_VALIDATE_IP</constant>
        </entry>
        <entry>
-        Fails validation for the following reserved IPv4 ranges:
+        <para>
+        Die Validierung schlägt für die folgenden reservierten IPv4-Bereiche fehl:
         <literal>0.0.0.0/8</literal>, <literal>169.254.0.0/16</literal>,
-        <literal>192.0.2.0/24</literal> and <literal>224.0.0.0/4</literal>.
-        This flag does not apply to IPv6 addresses.
+        <literal>127.0.0.0/8</literal> and <literal>240.0.0.0/4</literal>.
+        </para>
+        <para>
+         Die Validierung schlägt für die folgenden reservierten IPv6-Bereiche fehl:
+         <literal>::1/128</literal>, <literal>::/128</literal>,
+         <literal>::ffff:0:0/96</literal> and <literal>fe80::/10</literal>.
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry><constant>FILTER_FLAG_SCHEME_REQUIRED</constant></entry>
+       <entry>
+        <constant>FILTER_VALIDATE_URL</constant>
+       </entry>
+       <entry>
+        Verlangt, dass der <acronym>URL</acronym> ein Schema enthält.
+       </entry>
+      </row>
+      <row>
+       <entry><constant>FILTER_FLAG_HOST_REQUIRED</constant></entry>
+       <entry>
+        <constant>FILTER_VALIDATE_URL</constant>
+       </entry>
+       <entry>
+        Verlangt, dass der <acronym>URL</acronym> einen Host enthält.
        </entry>
       </row>
       <row>
@@ -609,10 +699,72 @@ filter.default_flags = 0
         Requires the <acronym>URL</acronym> to contain a query string.
        </entry>
       </row>
+      <row>
+       <entry><constant>FILTER_REQUIRE_SCALAR</constant></entry>
+       <entry>
+       </entry>
+       <entry>
+        Verlangt, dass der Wert skalar ist.
+       </entry>
+      </row>
+      <row>
+       <entry><constant>FILTER_REQUIRE_ARRAY</constant></entry>
+       <entry>
+       </entry>
+       <entry>
+        Verlang, dass der Wert ein Array ist.
+       </entry>
+      </row>
+      <row>
+       <entry><constant>FILTER_FORCE_ARRAY</constant></entry>
+       <entry>
+       </entry>
+       <entry>
+        Ist der Wert skalar, wird er als Array mit dem skalaren Wert als
+        einzigem Element behandelt.
+       </entry>
+      </row>
      </tbody>
     </tgroup>
    </table>
   </para>
+
+  <simplesect role="changelog">
+   &reftitle.changelog;
+   <para>
+    <informaltable>
+     <tgroup cols="2">
+      <thead>
+       <row>
+        <entry>&Version;</entry>
+        <entry>&Description;</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>7.1.0</entry>
+        <entry>
+         <constant>FILTER_FLAG_EMAIL_UNICODE</constant> wurde hinzugefügt.
+        </entry>
+       </row>
+       <row>
+        <entry>5.3.2</entry>
+        <entry>
+         <constant>FILTER_FLAG_STRIP_BACKTICK</constant> wurde hinzugefügt.
+        </entry>
+       </row>
+       <row>
+        <entry>5.2.10</entry>
+        <entry>
+         <constant>FILTER_FLAG_NO_RES_RANGE</constant> unterstützt nun auch IPv6-Adressen.
+        </entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </para>
+  </simplesect>
+
  </section>
  <!--}}}-->
 </chapter>

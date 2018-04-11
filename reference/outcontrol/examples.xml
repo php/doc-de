@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 1745782047434a47caeeb7be56486f75ca299389 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 3 Maintainer: hholzgra Status: ready -->
 
 <appendix xml:id="outcontrol.examples" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   &reftitle.examples;
@@ -35,6 +35,60 @@ ob_end_flush();
    gesendet werden, wenn schon Daten ausgegeben wurden.)
   </para>
  </section>
+
+  <section xml:id="outcontrol.examples.rewrite">
+  <title>Verwendung des URL-Rewriters</title>
+  <para>
+   Von PHP 7.1.0 an verwenden <function>output_add_rewrite_var</function> und
+   <function>output_reset_rewrite_vars</function>  einen eigenen Ausgabepuffer.
+   D.h. der <link linkend="ini.session.use-trans-sid">trans sid</link>
+   Ausgabepuffer wird von diesen Funktionen nicht mehr verwendet. 
+  </para>
+  <para>
+   <example>
+    <title>URL-Rewriter-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Dieser Code funktioniert mit PHP 7.1.0, 7.0.10, 5.6.25 und höher.
+
+// HTTP_HOST ist der Standard-Zielhost. Wir setzen ihn händisch, damit das Beispiel funktioniert.
+$_SERVER['HTTP_HOST'] = 'php.net';
+
+// Der URL-Rewriter soll nur form und a=href umschreiben.
+// Elemente können durch tag_name=url_attr angegeben werden, z.B. img=src,iframe=src
+// Zwischen diesen Angaben sind keine Leerzeichen erlaubt.
+// Das Form-Element ist besonders, da ihm ein verstecktes Eingabefeld hinzugefügt wird.
+ini_set('url_rewriter.tags','a=href,form=');
+var_dump(ini_get('url_rewriter.tags'));
+
+// Dies wird zu URL und dem Form-Element hinzugefügt
+output_add_rewrite_var('test', 'value');
+?>
+<a href="//php.net/index.php?bug=1234">bug1234</a>
+<form action="https://php.net/?bug=1234&edit=1" action="post">
+ <input type="text" name="title" />
+</form>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+<a href="//php.net/?bug=1234&test=value">bug1234</a>
+<form action="https://php.net/?bug=1234&edit=1" method="post"><input type="hidden" name="test" value="value" />
+ <input type="text" name="title" />
+</form>
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Von PHP 7.1.0 haben die URL-Rewriter-Funktionen eigene INI Einstellungen:
+   <link linkend="ini.url-rewriter.tags">url_rewriter.tags</link>
+   und <link linkend="ini.url-rewriter.hosts">url_rewriter.hosts</link>. 
+  </para>
+ </section>
+
 </appendix>
 
 <!-- Keep this comment at the end of the file
