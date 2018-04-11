@@ -1,29 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- splitted from ./de/functions/ldap.xml, last change in rev 1.16 -->
-<!-- last change to 'ldap-sort' in en/ tree in rev 1.39 -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-<!-- OLD-Revision: 1.44/EN.1.39 -->
-  <refentry xml:id='function.ldap-sort' xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ldap_sort</refname>
-    <refpurpose>
-     Sortiert LDAP Ergebniseinträge
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>ldap_sort</methodname>
-      <methodparam><type>resource</type><parameter>link</parameter></methodparam>
-      <methodparam><type>resource</type><parameter>result</parameter></methodparam>
-      <methodparam><type>string</type><parameter>sortfilter</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     &warn.undocumented.func;
-    </para>
-   </refsect1>
-  </refentry>
+<!-- EN-Revision: df41faa973f1dbdcd5aa5f11bd7a79dd2f339026 Maintainer: nobody Status: ready -->
+
+<refentry xml:id='function.ldap-sort' xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ldap_sort</refname>
+  <refpurpose>Sortiert LDAP Ergebniseinträge clientseitig</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>ldap_sort</methodname>
+   <methodparam><type>resource</type><parameter>link</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
+   <methodparam><type>string</type><parameter>sortfilter</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Sortiere das Ergebnis einer LDAP-Suche, das von
+   <function>ldap_search</function> zurückgegeben wurde.
+  </para>
+  <para>
+   Da diese Funktion die zurückgegebenen Werte clientseitig sortiert, ist es
+   möglich, dass unerwartete Ergebnisse geliefert werden, falls entweder das
+   serverseitige <parameter>sizelimit</parameter> oder dasjenige, das mit
+   <function>ldap_search</function> festgelegt wurde, erreicht wurde.
+  </para>
+  &warn.deprecated.feature-7-0-0;
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>link</parameter></term>
+     <listitem>
+      <para>
+       Eine LDAP-Verbindungskennung, geliefert von <function>ldap_connect</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>result</parameter></term>
+     <listitem>
+      <para>
+       Eine Suchergebniskennung, geliefert von <function>ldap_search</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>sortfilter</parameter></term>
+     <listitem>
+      <para>
+       Das als Sortierschlüssel zu verwendende Merkmal.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   Sortieren eines Suchergebnisses.
+   <example>
+    <title>LDAP Sortierung</title>
+    <programlisting role="php">
+     <![CDATA[
+     <?php
+     // $ds ist eine gültige Verbindungskennung (siehe ldap_connect)
+
+     $dn        = 'ou=example,dc=org';
+     $filter    = '(|(sn=Doe*)(givenname=John*))';
+     $justthese = array('ou', 'sn', 'givenname', 'mail');
+
+     $sr = ldap_search($ds, $dn, $filter, $justthese);
+
+     // Sortiere
+     ldap_sort($ds, $sr, 'sn');
+
+     // Hole die Daten
+     $info = ldap_get_entries($ds, $sr);
+     ]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

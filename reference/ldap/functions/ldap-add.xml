@@ -1,63 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- splitted from ./de/functions/ldap.xml, last change in rev 1.10 -->
-<!-- last change to 'ldap-add' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-<!-- OLD-Revision: 1.44/EN.1.2 -->
-  <refentry xml:id="function.ldap-add" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>ldap_add</refname>
-    <refpurpose>
-     Einträge einem LDAP Verzeichnis hinzufügen
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>ldap_add</methodname>
-      <methodparam><type>resource</type><parameter>Verbindungs-Kennung</parameter></methodparam>
-      <methodparam><type>string</type><parameter>dn</parameter></methodparam>
-      <methodparam><type>array</type><parameter>eintrag</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Rückgabewert: &return.success;
-    </para>
-    <para>
-     Die <function>ldap_add</function> Funktion wird benutzt um
-     Einträge einem Verzeichnis hinzuzufügen. Die DN des Eintrags, der
-     hinzugefügt werden soll wird durch <parameter>dn</parameter> bestimmt.
-     Das Array <parameter>eintrag</parameter> bestimmt die Informationen
-     des Eintrags. Die Werte in den Einträgen werden durch individuelle
-     Merkmale indiziert. Im Fall von mehreren Werten für ein Merkmal werden
-     diese durch die Verwendung von Zahlen indiziert, die bei 0 beginnen.
-    </para>
-    <informalexample>
-<literallayout>
-    eintrag["merkmal1"] = wert
-    eintrag["merkmal2"][0] = wert1
-    eintrag["merkmal2"][1] = wert2
-</literallayout>
-     </informalexample>
-     <example>
-      <title>Komplettes Beispiel mit authentifiziertem bind</title>
-      <programlisting role="php">
+<!-- EN-Revision: fa994a739c769e155f6b6848f66f1f9a24ec9eb0 Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.ldap-add" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>ldap_add</refname>
+  <refpurpose>Einträge einem LDAP Verzeichnis hinzufügen</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>ldap_add</methodname>
+   <methodparam><type>resource</type><parameter>link_identifier</parameter></methodparam>
+   <methodparam><type>string</type><parameter>dn</parameter></methodparam>
+   <methodparam><type>array</type><parameter>entry</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>serverctrls</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Füge Einträge in ein LDAP Verzeichnis ein.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>link_identifier</parameter></term>
+     <listitem>
+      <para>
+      Eine LDAP Verbindungskennung, die von <function>ldap_connect</function>
+      zurückgegeben wurde.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>dn</parameter></term>
+     <listitem>
+      <para>
+       Der Distinguished Name eines LDAP Datenobjekts.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>entry</parameter></term>
+     <listitem>
+      <para>
+       Ein Array, das die Informationen des Eintrags bestimmt. Die Werte in den
+       Einträgen werden durch individuelle Merkmale indiziert. Im Fall von
+       mehreren Werten für ein Merkmal werden diese durch die Verwendung von
+       Zahlen indiziert, die bei 0 beginnen.
+       <informalexample>
+        <programlisting role="php">
+     <![CDATA[
+<?php
+$entry["merkmal1"] = "wert";
+$entry["merkmal2"][0] = "wert1";
+$entry["merkmal2"][1] = "wert2";
+?>
+     ]]>
+        </programlisting>
+       </informalexample>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Komplettes Beispiel mit authentifiziertem bind</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-$ds=ldap_connect("localhost");  // Annahme: der LDAP Server befindet
+$ds = ldap_connect("localhost");  // Annahme: der LDAP Server befindet
                                 // sich auf diesem Host
 
 if ($ds) {
     // bind mit passendem dn für aktulisierenden Zugriff
-    $r=ldap_bind($ds,"cn=root, o=Meine Firma, c=DE", "geheim");
+    $r = ldap_bind($ds,"cn=root, o=Meine Firma, c=DE", "geheim");
 
     // Daten vorbereiten
-    $info["cn"]="Hans Mustermann";
-    $info["sn"]="Mustermann";
-    $info["mail"]="MustermannH@firma.de";
-    $info["objectclass"]="person";
+    $info["cn"] = "Hans Mustermann";
+    $info["sn"] = "Mustermann";
+    $info["objectclass"] = "person";
 
     // hinzufügen der Daten zum Verzeichnis
-    $r=ldap_add($ds, "cn=Hans Mustermann, o=Meine Firma, c=DE", $info);
+    $r = ldap_add($ds, "cn=Hans Mustermann, o=Meine Firma, c=DE", $info);
 
     ldap_close($ds);
 } else {
@@ -65,10 +105,26 @@ if ($ds) {
 }
 ?>
 ]]>
-      </programlisting>
-     </example>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para> 
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  &note.bin-safe;
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ldap_delete</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

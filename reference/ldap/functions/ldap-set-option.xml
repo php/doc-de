@@ -1,107 +1,289 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- splitted from ./de/functions/ldap.xml, last change in rev 1.10 -->
-<!-- last change to 'ldap-set-option' in en/ tree in rev 1.2 -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-<!-- OLD-Revision: 1.44/EN.1.2 -->
-  <refentry xml:id="function.ldap-set-option" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
-   <refnamediv>
-    <refname>ldap_set_option</refname>
-    <refpurpose>Setzt den Wert der gegebenen Option</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>bool</type><methodname>ldap_set_option</methodname>
-      <methodparam><type>resource</type><parameter>Verbindungs-Kennung</parameter></methodparam>
-      <methodparam><type>int</type><parameter>option</parameter></methodparam>
-      <methodparam><type>mixed</type><parameter>neuerwert</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     Setzt den Wert der bestimmten Option auf 
-     <parameter>neuerwert</parameter>.&return.success;
-    </para>
-    <para>
-     Der Parameter <parameter>option</parameter> kann einer der
-     folgenden sein:
-     LDAP_OPT_DEREF, LDAP_OPT_SIZELIMIT, LDAP_OPT_TIMELIMIT,
-     LDAP_OPT_PROTOCOL_VERSION, LDAP_OPT_ERROR_NUMBER,
-     LDAP_OPT_REFERRALS,
-     LDAP_OPT_RESTART, LDAP_OPT_HOST_NAME, LDAP_OPT_ERROR_STRING,
-     LDAP_OPT_MATCHED_DN, LDAP_OPT_SERVER_CONTROLS,
-     LDAP_OPT_CLIENT_CONTROLS.
-     Hier eine kurze Beschreibung, schauen Sie unter
-     <link xlink:href="&url.ldap.openldap-c-api;">draft-ietf-ldapext-ldap-c-
-     api-xx.txt</link> nach Details.
-    </para>
-    <para>
-     Die Optionen LDAP_OPT_DEREF, LDAP_OPT_SIZELIMIT,
-     LDAP_OPT_TIMELIMIT, LDAP_OPT_PROTOCOL_VERSION und
-     LDAP_OPT_ERROR_NUMBER haben einen ganzzahligen Wert,
-     LDAP_OPT_REFERRALS und LDAP_OPT_RESTART haben einen boolschen
-     Wert und die Optionen LDAP_OPT_HOST_NAME, LDAP_OPT_ERROR_STRING
-     und LDAP_OPT_MATCHED_DN bestehen aus einer Zeichenkette.
-     Das erste Beispiel veranschaulicht deren Gebrauch. Die Optionen
-     LDAP_OPT_SERVER_CONTROLS and LDAP_OPT_CLIENT_CONTROLS benötigen
-     eine Kontrolliste, d.h. der Wert muss ein Array aus Kontrollen
-     sein. Eine Kontrolle besteht aus einer <emphasis>oid</emphasis>
-     die die Kontrolle identifiziert, einem wahlweisen <emphasis>
-     wert</emphasis>, und einem wahlweisen Kennzeichen für <emphasis>
-     criticality</emphasis>. Bei PHP wird eine Kontrolle durch ein
-     Array angegeben. Dieses Array enthält ein Element mit dem
-     Schlüssel <emphasis>oid</emphasis> und einer Zeichenkette als
-     Wert und zwei optionalen Elementen. Die optionalen Elemente sind
-     Schlüssel <emphasis>wert</emphasis> mit einer Zeichenkette als
-     Wert und dem Schlüssel <emphasis>iscritical</emphasis> mit einem
-     boolschen Wert. Der vorgegebene Wert von <emphasis>
-     iscritical</emphasis> ist <emphasis>&false;</emphasis> falls Sie
-     nichts angeben.
-     Schauen Sie sich das zweite Beispiel weiter unten an.
-    </para>
-    <note>
-     <para>
-      Diese Funktion steht nur zur Verfügung, wenn Sie OpenLDAP 2.x.x
-      ODER Netscape Directory SDK x.x verwenden und wurde in PHP 4.0.4
-      hinzugefügt.
+<!-- EN-Revision: f453ac589341a536aac4ff238123f5f4b5c8c90e Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.ldap-set-option" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>ldap_set_option</refname>
+  <refpurpose>Setze den Wert der gegebenen Option</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>ldap_set_option</methodname>
+   <methodparam><type>resource</type><parameter>link_identifier</parameter></methodparam>
+   <methodparam><type>int</type><parameter>option</parameter></methodparam>
+   <methodparam><type>mixed</type><parameter>newval</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Setzt den Wert der angegebenen Option auf <parameter>newval</parameter>.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>link_identifier</parameter></term>
+     <listitem>
+      <para>
+       Eine LDAP-Verbindungskennung, geliefert von <function>ldap_connect</function>.
       </para>
-     </note>
-     <para>
-     <example>
-      <title>Setzen der Protokollversion</title>
-      <programlisting role="php">
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>option</parameter></term>
+     <listitem>
+      <para>
+       Der Parameter <parameter>option</parameter> kann einer der folgenden
+       Werte sein:
+       <informaltable>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Option</entry>
+           <entry>Typ</entry>
+           <entry>Verfügbar seit</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><constant>LDAP_OPT_DEREF</constant></entry>
+           <entry>integer</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_SIZELIMIT</constant></entry>
+           <entry>integer</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_TIMELIMIT</constant></entry>
+           <entry>integer</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_NETWORK_TIMEOUT</constant></entry>
+           <entry>integer</entry>
+           <entry>PHP 5.3.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_PROTOCOL_VERSION</constant></entry>
+           <entry>integer</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_ERROR_NUMBER</constant></entry>
+           <entry>integer</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_REFERRALS</constant></entry>
+           <entry>bool</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_RESTART</constant></entry>
+           <entry>bool</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_HOST_NAME</constant></entry>
+           <entry>string</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_ERROR_STRING</constant></entry>
+           <entry>string</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_DIAGNOSTIC_MESSAGE</constant></entry>
+           <entry>string</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_MATCHED_DN</constant></entry>
+           <entry>string</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_SERVER_CONTROLS</constant></entry>
+           <entry>array</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_CLIENT_CONTROLS</constant></entry>
+           <entry>array</entry>
+           <entry></entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_KEEPALIVE_IDLE</constant></entry>
+           <entry>int</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_KEEPALIVE_PROBES</constant></entry>
+           <entry>int</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_KEEPALIVE_INTERVAL</constant></entry>
+           <entry>int</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_CACERTDIR</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_CACERTFILE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_CERTFILE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_CIPHER_SUITE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_CRLCHECK</constant></entry>
+           <entry>integer</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_CRLFILE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_DHFILE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_KEYFILE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_PROTOCOL_MIN</constant></entry>
+           <entry>integer</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_RANDOM_FILE</constant></entry>
+           <entry>string</entry>
+           <entry>PHP 7.1.0</entry>
+          </row>
+          <row>
+           <entry><constant>LDAP_OPT_X_TLS_REQUIRE_CERT</constant></entry>
+           <entry>integer</entry>
+           <entry>PHP 7.0.5</entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </informaltable>
+      </para>
+      <para>
+     Die Optionen <constant>LDAP_OPT_SERVER_CONTROLS</constant> und
+     <constant>LDAP_OPT_CLIENT_CONTROLS</constant>
+     benötigen eine Kontrolliste, d.h. der Wert muss ein Array aus Kontrollen
+     sein. Eine Kontrolle besteht aus einer <emphasis>oid</emphasis>, die die
+     Kontrolle identifiziert, einem wahlweisen <emphasis>wert</emphasis>, und
+     einem wahlweisen Kennzeichen für <emphasis>criticality</emphasis>. Bei PHP
+     wird eine Kontrolle durch ein Array angegeben. Dieses Array enthält ein
+     Element mit dem Schlüssel <emphasis>oid</emphasis> und einer Zeichenkette
+     als Wert und zwei optionalen Elementen. Die optionalen Elemente sind
+     Schlüssel <emphasis>wert</emphasis> mit einer Zeichenkette als Wert und dem
+     Schlüssel <emphasis>iscritical</emphasis> mit einem booleschen Wert. Der
+     vorgegebene Wert von <emphasis>iscritical</emphasis> ist
+     <emphasis>&false;</emphasis>, falls nicht angegeben. Siehe <link
+     xlink:href="&url.ldap.openldap-c-api;">draft-ietf-ldapext-ldap-c-api-xx.txt</link>
+     für Details. Ebenso ist das zweite Beispiel weiter unten zu konsultieren.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>newval</parameter></term>
+     <listitem>
+      <para>
+       Der neue Wert für die angegebene <parameter>option</parameter>.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Setzen der Protokollversion</title>
+    <programlisting role="php">
 <![CDATA[
-// $ds ist eine gültige Verbindungs-Kennung für einen Verzeichnis-
-// Server
+// $ds ist eine gültige Verbindungs-Kennung für einen Verzeichnis-Server
 if (ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3))
     echo "Verwenden von LDAPv3";
 else
     echo "Kann das Protokoll nicht auf Version 3 setzen";
 ]]>
-</programlisting>
-     </example>
-     <example>
-      <title>Setzen der Server Kontrollen</title>
-<programlisting role="php">
+    </programlisting>
+   </example>
+   <example>
+    <title>Setzen der Server Kontrollen</title>
+    <programlisting role="php">
 <![CDATA[
-// $ds ist eine gültige Verbingund-Kennung für einen Verzeichnis-
-// Server
+// $ds ist eine gültige Verbingund-Kennung für einen Verzeichnis-Server
 // Kontrolle ohne Wert
-$ctrl1 = array("oid" => "1.2.752.58.10.1", "iscritical" => TRUE);
+$ctrl1 = array("oid" => "1.2.752.58.10.1", "iscritical" => true);
 // iscritical hat den vorgegebenen Wert FALSE
 $ctrl2 = array("oid" => "1.2.752.58.1.10", "value" => "magic");
 // Versuch, beide Kontrollen zu setzen
-if (!ldap_set_option($ds, LDAP_OPT_SERVER_CONTROLS, array($ctrl1,
-$ctrl2)))
+if (!ldap_set_option($ds, LDAP_OPT_SERVER_CONTROLS, array($ctrl1, $ctrl2)))
     echo "Kann die Server Kontrollen nicht setzen";
 ]]>
-</programlisting>
-     </example>
-     </para>
-     <para>
-      Siehe auch <function>ldap_get_option</function>.
-     </para>
-   </refsect1>
-  </refentry>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Diese Funktion steht nur zur Verfügung, wenn Sie OpenLDAP 2.x.x
+    ODER Netscape Directory SDK x.x verwenden.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>ldap_get_option</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
