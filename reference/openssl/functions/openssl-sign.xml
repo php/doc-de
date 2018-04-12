@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: e41aab5ecacf449e51179886c17f1d41735b0234 Maintainer: nobody Status: ready -->
+
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-sign">
  <refnamediv>
   <refname>openssl_sign</refname>
@@ -14,14 +15,14 @@
    <methodparam><type>string</type><parameter>data</parameter></methodparam>
    <methodparam><type>string</type><parameter role="reference">signature</parameter></methodparam>
    <methodparam><type>mixed</type><parameter>priv_key_id</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>signature_alg</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>signature_alg</parameter><initializer>OPENSSL_ALGO_SHA1</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>openssl_sign</function> errechnet eine Signatur für die im Parameter 
-   <parameter>data</parameter> angegebenen Daten. Dazu werden die Daten zunächst 
-   mit SHA1 gehasht und dann unter Verwendung des in 
-   <parameter>priv_key_id</parameter> angegebenen privaten Schlüssels verschlüsselt. 
-   Bitte beachten Sie daß die Daten selbst nicht verschlüsselt werden.   
+   <function>openssl_sign</function> errechnet eine Signatur für die im
+   Parameter <parameter>data</parameter> angegebenen Daten, durch die Erzeugung
+   einer kryptographischen digitalen Signatur unter Verwendung des privaten
+   Schlüssels <parameter>priv_key_id</parameter>. Es ist zu beachten, daß die
+   Daten selbst nicht verschlüsselt werden.   
   </para>
  </refsect1>
 
@@ -33,6 +34,7 @@
      <term><parameter>data</parameter></term>
      <listitem>
       <para>
+       Die zu verschlüsselnden Daten.
       </para>
      </listitem>
     </varlistentry>
@@ -49,6 +51,10 @@
      <term><parameter>priv_key_id</parameter></term>
      <listitem>
       <para>
+       <type>resource</type> - ein von <function>openssl_get_privatekey</function> gelieferter Schlüssel
+      </para>
+      <para>
+       <type>string</type> - ein Schlüssel im PEM-Format
       </para>
      </listitem>
     </varlistentry>
@@ -56,9 +62,11 @@
      <term><parameter>signature_alg</parameter></term>
      <listitem>
       <para>
-       Standard ist <constant>OPENSSL_ALGO_SHA1</constant>. Für weitere 
-       Informationen siehe 
-       <link linkend="openssl.signature-algos">Signatur-Algorithmen</link>.
+       <type>int</type> - einer dieser <link linkend="openssl.signature-algos">Signatur-Algorithmen</link>.
+      </para>
+      <para>
+       <type>string</type> - eine gültige Zeichenkette wie von <function>openssl_get_md_methods</function>
+       zurückgegeben. Beispielsweise "sha256WithRSAEncryption" oder "sha384".
       </para>
      </listitem>
     </varlistentry>
@@ -73,51 +81,57 @@
   </para>
  </refsect1>
 
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.0.0</entry>
-       <entry>
-        Der Parameter <parameter>signature_alg</parameter> wurde hinzugefügt.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-  </para>
- </refsect1>
-
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>openssl_sign</function> example</title>
+    <title><function>openssl_sign</function> Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Annahme: $data enthält die Daten, die signiert werden sollen.
+// Annahme: $data enthält die Daten, die signiert werden sollen
 
-// holen und vorbereiten des privaten Schlüssels aus einer Datei.
-$fp = fopen("/src/openssl-0.9.6/demos/sign/key.pem", "r");
-$priv_key = fread($fp, 8192);
-fclose($fp);
-$pkeyid = openssl_get_privatekey($priv_key);
+// holen und vorbereiten des privaten Schlüssels aus einer Datei
+$pkeyid = openssl_pkey_get_private("file://src/openssl-0.9.6/demos/sign/key.pem");
 
-// errechnen der Unterschrift
+// errechnen der Signatur
 openssl_sign($data, $signature, $pkeyid);
 
-// Löschen des Schlüssels aus dem Speicher
+// löschen des Schlüssels aus dem Speicher
 openssl_free_key($pkeyid);
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title><function>openssl_sign</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// die zu verschlüssenlnden Daten
+$data = 'my data';
+
+// erzeuge einen neuen privaten und öffentlichen Schlüssel
+$new_key_pair = openssl_pkey_new(array(
+    "private_key_bits" => 2048,
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+));
+openssl_pkey_export($new_key_pair, $private_key_pem);
+
+$details = openssl_pkey_get_details($new_key_pair);
+$public_key_pem = $details['key'];
+
+// erzeuge die Signatur
+openssl_sign($data, $signature, $private_key_pem, OPENSSL_ALGO_SHA256);
+
+// für späteren Gebrauch speichern
+file_put_contents('private_key.pem', $private_key_pem);
+file_put_contents('public_key.pem', $public_key_pem);
+file_put_contents('signature.dat', $signature);
+
+// Signatur überprüfen
+$r = openssl_verify($data, $signature, $public_key_pem, "sha256WithRSAEncryption");
+var_dump($r);
 ?>
 ]]>
     </programlisting>

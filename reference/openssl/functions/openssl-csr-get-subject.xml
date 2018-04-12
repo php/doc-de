@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: b8758b0605e80c4e3610137b7502a6abeea5c69b Maintainer: nobody Status: ready -->
+
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-csr-get-subject">
  <refnamediv>
   <refname>openssl_csr_get_subject</refname>
-  <refpurpose>Gibt das Subject eines CERT zurück</refpurpose>
+  <refpurpose>Gibt das Subjekt eines CSR zurück</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -12,9 +13,101 @@
   <methodsynopsis>
    <type>array</type><methodname>openssl_csr_get_subject</methodname>
    <methodparam><type>mixed</type><parameter>csr</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>use_shortnames</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>use_shortnames</parameter><initializer>&true;</initializer></methodparam>
   </methodsynopsis>
-  &warn.undocumented.func;
+  <para>
+   <function>openssl_csr_get_subject</function> gibt Informationen zum
+   Distinguished Name des Subjekt zurück, die im <parameter>csr</parameter>
+   kodiert sind, was Felder wie commonName (CN), organizationName (O),
+   countryName (C) usw. einschließt.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+     &openssl.param.csr;
+    <varlistentry>
+     <term><parameter>use_shortnames</parameter></term>
+     <listitem>
+      <para>
+       <parameter>shortnames</parameter> steuert wie die Daten im Array
+       indexiert sind – ist <parameter>shortnames</parameter> &true;
+       (Standardwert), dann werden die Felder mit ihrer kurzen Namensform
+       indexiert; andernfalls wird die lange Namensform verwendet – z.B. ist CN
+       die kurze Namensform von commonName.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+ 
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>openssl_csr_get_subject() Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$subject = array(
+    "countryName" => "CA",
+    "stateOrProvinceName" => "Alberta",
+    "localityName" => "Calgary",
+    "organizationName" => "XYZ Widgets Inc",
+    "organizationalUnitName" => "PHP Documentation Team",
+    "commonName" => "Wez Furlong",
+    "emailAddress" => "wez@example.com",
+);
+$private_key = openssl_pkey_new(array(
+    "private_key_bits" => 2048,
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+));
+$configargs = array(
+    'digest_alg' => 'sha512WithRSAEncryption'
+);
+$csr = openssl_csr_new($subject, $privkey, $configargs);
+print_r(openssl_csr_get_subject($csr));
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Array
+(
+    [C] => CA
+    [ST] => Alberta
+    [L] => Calgary
+    [O] => XYZ Widgets Inc
+    [OU] => PHP Documentation Team
+    [CN] => Wez Furlong
+    [emailAddress] => wez@example.com
+)
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>openssl_csr_new</function></member>
+    <member><function>openssl_csr_get_public_key</function></member>
+    <member><function>openssl_x509_parse</function></member>
+   </simplelist>
+  </para>
  </refsect1>
 
 </refentry>
