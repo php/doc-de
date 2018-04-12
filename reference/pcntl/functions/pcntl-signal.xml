@@ -1,54 +1,159 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- splitted from ./en/functions/pcntl.xml, last change in rev 1.2 -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
- <refentry xml:id="function.pcntl-signal" xmlns="http://docbook.org/ns/docbook">
-  <refnamediv>
-   <refname>pcntl_signal</refname>
-   <refpurpose>Richtet eine Signalverarbeitung ein</refpurpose>
-  </refnamediv>
-  <refsect1>
-   <title>Beschreibung</title>
-    <methodsynopsis>
-     <type>bool</type><methodname>pcntl_signal</methodname>
-     <methodparam><type>int</type><parameter>signo</parameter></methodparam>
-     <methodparam><type>callback</type><parameter>handle</parameter></methodparam>
-     <methodparam choice="opt"><type>bool</type><parameter>restart_syscalls</parameter></methodparam>
-    </methodsynopsis>
-   <para>
-    Die Funktion <function>pcntl_signal</function> richtet eine neue
-    Signalverarbeitung für das in <parameter>signo</parameter> angegebene
-    Signal ein. Die Signalverarbeitung wird auf <parameter>handler</parameter>
-    gesetzt, was entweder der Name einer benutzerdefinierten Funktion oder
-    eine der beiden globalen Konstanten SIG_IGN oder SIG_DFL sein kann.
-    Der optionale Parameter <parameter>restart_syscalls</parameter> gibt an,
-    ob der Neustart von Systemaufrufen verwendet werden soll, wenn das Signal
-    eintrifft und ist vorgegeben als &true;.
-   </para>
-   <para>
-    &return.success;
-   </para>
-   <note>
-    <para>
-     Der optionale Parameter <parameter>restart_syscalls</parameter> wurde mit
-     PHP 4.3.0. verfügbar.
-    </para>
-   </note>
-   <note>
-    <para>
-     Die Fähigkeit, eine Objektmethode als Callback zu verwenden, wurde in PHP
-     4.3.0. verfügbar. Beachten Sie, dass die Verwendung einer Objektmethode als
-     Signalverarbeitung den Referenzzähler des Objektes erhöht, weshalb das
-     Objekt bestehen bleibt bis entweder der Handler geändert wird oder das
-     Skript endet.
-    </para>
-   </note>
+<!-- EN-Revision: b8758b0605e80c4e3610137b7502a6abeea5c69b Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.pcntl-signal" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>pcntl_signal</refname>
+  <refpurpose>Richtet eine Signalverarbeitung ein</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>pcntl_signal</methodname>
+   <methodparam><type>int</type><parameter>signo</parameter></methodparam>
+   <methodparam><type>callable|int</type><parameter>handler</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>restart_syscalls</parameter><initializer>&true;</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Die Funktion <function>pcntl_signal</function> richtet eine neue
+   Signalverarbeitung oder ersetzt eine bestehende für das in
+   <parameter>signo</parameter> angegebene Signal ein.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>signo</parameter></term>
+     <listitem>
+      <para>
+       Die Signal-Nummer.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>handler</parameter></term>
+     <listitem>
+      <para>
+       Die Signalverarbeitung. Dies ist entweder ein <type>callable</type>, das
+       aufgerufen wird, um das Signal zu verarbeiten, oder eine der beiden
+       globalen Konstanten <constant>SIG_IGN</constant> oder
+       <constant>SIG_DFL</constant>, die das Signal ignorieren bzw. die
+       Standard-Signalverarbeitung wiederherstellen.
+      </para>
+      <para>
+       Wird ein <type>callable</type> übergeben, muss es folgende Signatur haben:
+      </para>
+      <para>
+       <methodsynopsis>
+        <type>void</type><methodname><replaceable>handler</replaceable></methodname>
+        <methodparam><type>int</type><parameter>signo</parameter></methodparam>
+        <methodparam><type>mixed</type><parameter>signinfo</parameter></methodparam>
+       </methodsynopsis>
+       <variablelist>
+        <varlistentry>
+         <term><parameter>signo</parameter></term>
+         <listitem>
+          <simpara>
+           Das zu verarbeitende Signal.
+          </simpara>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>siginfo</parameter></term>
+         <listitem>
+          <simpara>
+           Unterstützt das Betriebsystem siginfo_t Strukturen, ist dies ein
+           Array von Signalinformationen, die vom Signal abhängen.
+          </simpara>
+         </listitem>
+        </varlistentry>
+       </variablelist>
+      </para>
+      <note>
+       <para>
+        Es ist zu beachten, dass die Verwendung einer Objektmethode als
+        Signalverarbeitung den Referenzzähler des Objektes erhöht, weshalb das
+        Objekt bestehen bleibt, bis entweder der Handler geändert wird oder das
+        Skript endet.
+       </para>
+      </note>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>restart_syscalls</parameter></term>
+     <listitem>
+      <para>
+       Gibt an, ob der Neustart von Systemaufrufen verwendet werden soll, wenn
+       das Signal eintrifft.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.3.0</entry>
+       <entry>
+        Von PHP 4.3.0 an benutzt PCNTL Ticks als Signalverarbeitungsmechanismus,
+        welcher wesentlich schneller als der zuvor verwendete Mechanismus ist.
+        Dieser Wechsel folgt der selben Semantik wie die Verwendung von "<link
+        linkend="control-structures.declare.ticks">Benutzer Ticks</link>". Die 
+        <link linkend="control-structures.declare">declare()</link> Anweisung
+        ist zu verwenden, um die Stellen im Programm anzugeben, in denen
+        Callbacks stattfinden dürfen, damit die Signalverarbeitung korrekt
+        funktioniert (wie im Beispiel weiter unten).
+       </entry>
+      </row>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        Von PHP 7.1.0 an wird der Signalverbeitung ein zweites Argument
+        übergeben, das die siginfo des spezfischen Signals enthält. Diese Daten
+        werden nur zur Verfügung gestellt, wenn das System die siginfo_t
+        Struktur kennt. Wenn das Betriebssystem siginfo_t nicht implementiert,
+        wird &null; übergeben.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
    <example>
     <title><function>pcntl_signal</function> Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Verwendung von Ticks wird seit PHP 4.3.0. benötigt
+// Verwendung von Ticks; wird seit PHP 4.3.0. benötigt
 declare(ticks = 1);
 
 // Signalverarbeitungsfunktion
@@ -64,7 +169,7 @@ function sig_handler($signo)
              // Aufgaben zum Neustart bearbeiten
              break;
          case SIGUSR1:
-             echo "Caught SIGUSR1...\n";
+             echo "SIGUSR1 abgefangen...\n";
              break;
          default:
              // Alle anderen Signale bearbeiten
@@ -80,7 +185,7 @@ pcntl_signal(SIGHUP,  "sig_handler");
 pcntl_signal(SIGUSR1, "sig_handler");
 
 // oder ein Objekt verwenden, ab PHP 4.3.0 möglich
-// pcntl_signal(SIGUSR1, array($obj, "tu_etwas");
+// pcntl_signal(SIGUSR1, array($obj, "do_something");
 
 echo "Erzeuge signal SIGTERM an mich selbst...\n";
 
@@ -93,25 +198,28 @@ echo "Fertig\n"
 ]]>
     </programlisting>
    </example>
-   <note>
-    <para>
-     Seit PHP 4.3.0. benutzt PCNTL Ticks als Signalverarbeitungsmechanismus,
-     welcher wesentlich schneller als der zuvor verwendete Mechanismus ist.
-     Dieser Wechsel folgt der selben Semantik wie die Verwendung von 
-     "<link linkend="control-structures.declare.ticks">Benutzer Ticks</link>".
-     Man verwendet die 
-     <link linkend="control-structures.declare">declare()</link> Anweisung, um 
-     die Stellen in seinem Programm anzugeben, in denen Callbacks stattfinden 
-     dürfen, damit die Signalverarbeitung korrekt funktioniert (wie im obigen
-     Beispiel).
-    </para>
-   </note>
-   <para>
-    Siehe auch <function>pcntl_fork</function> und
-    <function>pcntl_waitpid</function>.
-   </para>
-  </refsect1>
- </refentry>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <para>
+   <function>pcntl_signal</function> stapelt Signalverarbeitungen nicht,
+   sondern ersetzt sie.
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pcntl_fork</function></member>
+    <member><function>pcntl_waitpid</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

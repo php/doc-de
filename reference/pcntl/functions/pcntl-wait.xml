@@ -1,95 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id='function.pcntl-wait' xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>pcntl_wait</refname>
-    <refpurpose>
-     Wartet auf ein oder gibt den Status eines abgezweigten Kindes zurück
-    </refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>pcntl_wait</methodname>
-      <methodparam><type>int</type><parameter role="reference">status</parameter></methodparam>
-      <methodparam choice="opt"><type>int</type><parameter>options</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-    Die Funktion unterbricht die Ausführung des aktuellen Prozesses bis ein Kind
-    sich beendet hat oder bis ein Signal ausgeliefert wurde dessen Aktion den
-    aktuellen Prozess beendet oder eine Signalverabeitungsfunktion aufruft.
-    Wenn ein Kind sich zum Zeitpunkt des Funktionsaufrufes bereits beendet hat 
-    (ein sog. "Zombie" Prozess) kehrt die Funktion umgehend zurück. Alle durch 
-    das Kind verwendeten Ressourcen werden freigegeben. Bitte schlagen Sie in 
-    der waitpid(2) man Seite Ihres Systems für spezifische Dateils nach, wie
-    waitpid auf Ihrem System arbeitet.
-    </para>
-    <para>
-     <function>pcntl_wait</function> gibt die Prozess ID des beendeten Kindes 
-     zurück, -1 im Fehlerfall oder Null wenn WNOHANG als Option angegeben war 
-     (auf wait3 Systemen) und kein kind verfügbar war.
-    </para>
-    <para>
-     Wenn wait3 auf Ihrem System verfügbar ist (meist BSD-artige Systeme) können
-     Sie den optionalen <parameter>options</parameter> Parameter angeben.
-     Wenn dieser Parameter nicht angegeben wurde, wird wait als Systemaufruf
-     verwendet. Wenn wait3 nicht verfügbar ist, wird die Angabe eines Wertes
-     für <parameter>options</parameter> keinerlei Auswirkungen haben. Der Wert
-     von <parameter>options</parameter> ist der Wert von Null oder mehr der
-     folgenden durch <literal>OR</literal> verknüpften beiden Konstanten:
-     <table>
-      <title>mögliche Werte für <parameter>options</parameter>, falls wait3 verfügbar ist</title>
-      <tgroup cols="2">
-       <tbody>
-        <row>
-         <entry><literal>WNOHANG</literal></entry>
-         <entry>
-          kehre umgehend zurück, wenn kein Kind beendet wurde.
-         </entry>
-        </row>
-        <row>
-         <entry><literal>WUNTRACED</literal></entry>
-         <entry>
-          kehre für Kinder zurück die gestoppt sind und für solche, deren
-          Status nicht gemeldet ist.
-         </entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </table>
-    </para>
-    <para>
-     <function>pcntl_wait</function> speichert Statusinformationen im Parameter
-     <parameter>status</parameter>, welcher durch die folgenden Funktionen
-     ausgewertet werden kann:
-     <function>pcntl_wifexited</function>,
-     <function>pcntl_wifstopped</function>,
-     <function>pcntl_wifsignaled</function>,
-     <function>pcntl_wexitstatus</function>,
-     <function>pcntl_wtermsig</function> und
-     <function>pcntl_wstopsig</function>.
-    </para>
-    <note>
-     <para>
-      Diese Funktion ist gleichwertig zum Aufruf der Funktion 
-      <function>pcntl_waitpid</function> mit <literal>-1</literal> als
-      <parameter>pid</parameter> und keinerlei <parameter>options</parameter>.
-     </para>
-    </note>
-    <para>
-     Siehe auch <function>pcntl_fork</function>,
-     <function>pcntl_signal</function>,
-     <function>pcntl_wifexited</function>,
-     <function>pcntl_wifstopped</function>,
-     <function>pcntl_wifsignaled</function>,
-     <function>pcntl_wexitstatus</function>,
-     <function>pcntl_wtermsig</function>,
-     <function>pcntl_wstopsig</function> und
-     <function>pcntl_waitpid</function>.
-    </para>
-   </refsect1>
-  </refentry>
+<!-- EN-Revision: fa994a739c769e155f6b6848f66f1f9a24ec9eb0 Maintainer: nobody Status: ready -->
+
+<refentry xml:id='function.pcntl-wait' xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>pcntl_wait</refname>
+  <refpurpose>Wartet auf ein oder gibt den Status eines abgezweigten Kindes zurück</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>int</type><methodname>pcntl_wait</methodname>
+   <methodparam><type>int</type><parameter role="reference">status</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>0</initializer></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter role="reference">rusage</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Die Funktion wait unterbricht die Ausführung des aktuellen Prozesses bis ein
+   Kind sich beendet hat, oder bis ein Signal ausgeliefert wurde, dessen Aktion
+   den aktuellen Prozess beendet, oder eine Signalverabeitungsfunktion aufruft.
+   Wenn ein Kind sich zum Zeitpunkt des Funktionsaufrufes bereits beendet hat
+   (ein sog. "Zombie" Prozess), kehrt die Funktion umgehend zurück. Alle durch
+   das Kind verwendeten Ressourcen werden freigegeben. Die waitpid(2)
+   Handbuch-Seite des Systems ist bezüglich spezifischer Details, wie waitpid
+   auf dem System arbeitet, zu konsultieren.
+  </para>
+  <note>
+   <para>
+    Diese Funktion ist gleichwertig zum Aufruf der Funktion 
+    <function>pcntl_waitpid</function> mit <literal>-1</literal> als
+    <parameter>pid</parameter> und keinerlei <parameter>options</parameter>.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>status</parameter></term>
+     <listitem>
+      <para>
+       <function>pcntl_wait</function> speichert Statusinformationen im Parameter
+       <parameter>status</parameter>, welcher durch die folgenden Funktionen
+       ausgewertet werden kann:
+       <function>pcntl_wifexited</function>,
+       <function>pcntl_wifstopped</function>,
+       <function>pcntl_wifsignaled</function>,
+       <function>pcntl_wexitstatus</function>,
+       <function>pcntl_wtermsig</function> und
+       <function>pcntl_wstopsig</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>options</parameter></term>
+     <listitem>
+      <para>
+       Wenn wait3 auf Ihrem System verfügbar ist (meist BSD-artige Systeme) können
+       Sie den optionalen <parameter>options</parameter> Parameter angeben.
+       Wenn dieser Parameter nicht angegeben wurde, wird wait als Systemaufruf
+       verwendet. Wenn wait3 nicht verfügbar ist, wird die Angabe eines Wertes
+       für <parameter>options</parameter> keinerlei Auswirkungen haben. Der Wert
+       von <parameter>options</parameter> ist der Wert von keiner oder mehr der
+       folgenden durch <literal>OR</literal> verknüpften beiden Konstanten:
+       <table>
+        <title>Mögliche Werte für <parameter>options</parameter></title>
+        <tgroup cols="2">
+         <tbody>
+          <row>
+           <entry><literal>WNOHANG</literal></entry>
+           <entry>
+            Kehre umgehend zurück, wenn kein Kind beendet wurde.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>WUNTRACED</literal></entry>
+           <entry>
+            Kehre für Kinder zurück die gestoppt sind und für solche, deren
+            Status nicht gemeldet ist.
+           </entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   <function>pcntl_wait</function> gibt die Prozess ID des beendeten Kindes 
+   zurück, -1 im Fehlerfall, oder 0, wenn WNOHANG als Option angegeben wurde
+   (auf wait3 Systemen) und kein Kind verfügbar war.
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>pcntl_fork</function></member>
+    <member><function>pcntl_signal</function></member>
+    <member><function>pcntl_wifexited</function></member>
+    <member><function>pcntl_wifstopped</function></member>
+    <member><function>pcntl_wifsignaled</function></member>
+    <member><function>pcntl_wexitstatus</function></member>
+    <member><function>pcntl_wtermsig</function></member>
+    <member><function>pcntl_wstopsig</function></member>
+    <member><function>pcntl_waitpid</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
