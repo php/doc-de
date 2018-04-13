@@ -1,120 +1,151 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-<!-- splitted from ./de/functions/uodbc.xml, last change in rev 1.2 -->
-<!-- last change to 'odbc-binmode' in en/ tree in rev 1.2 -->
-  <refentry xml:id="function.odbc-binmode" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>odbc_binmode</refname>
-   <refpurpose>Die Behandlung von Binärdaten</refpurpose>
-  </refnamediv>
-  <refsect1>
-   <title>Beschreibung</title>
-     <methodsynopsis>
-     <type>int</type><methodname>odbc_binmode</methodname>
-     <methodparam><type>int</type><parameter>result_id</parameter></methodparam>
-      <methodparam><type>int</type><parameter>mode</parameter></methodparam>
-     </methodsynopsis>
-    <para>
-     (Betrifft die ODBC SQL Typen: BINARY, VARBINARY und LONGVARBINARY)
-    </para>
-    <itemizedlist>
+<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.odbc-binmode" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>odbc_binmode</refname>
+  <refpurpose>Behandlung von Binärdaten</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>odbc_binmode</methodname>
+   <methodparam><type>resource</type><parameter>result_id</parameter></methodparam>
+   <methodparam><type>int</type><parameter>mode</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Steuert die Behandlung binärer Spaltendaten. Betroffene ODBC SQL Typen sind
+   <literal>BINARY</literal>, <literal>VARBINARY</literal> und
+   <literal>LONGVARBINARY</literal>.
+  </para>
+  <para>
+   Werden SQL-Binärdaten in C-Zeichendaten konvertiert, wird jedes Byte (8 Bits)
+   der ursprünglichen Daten zu zwei ASCII-Zeichen, die der hexadezimalen
+   Darstellung des Wertes entsprechen. Der Binärwert 00000001 wird zum Beispiel
+   zu <literal>"01"</literal> gewandelt, der Binärwert 11111111 zu
+   <literal>"FF"</literal>.
+   <table>
+    <title>Die Benutzung von LONGVARBINARY</title>
+    <tgroup cols="3">
+     <thead>
+      <row>
+       <entry>binmode</entry>
+       <entry>longreadlen</entry>
+       <entry>Resultat</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry><constant>ODBC_BINMODE_PASSTHRU</constant></entry>
+       <entry>0</entry>
+       <entry>Direkte Ausgabe</entry>
+      </row>
+      <row>
+       <entry><constant>ODBC_BINMODE_RETURN</constant></entry>
+       <entry>0</entry>
+       <entry>Direkte Ausgabe</entry>
+      </row>
+      <row>
+       <entry><constant>ODBC_BINMODE_CONVERT</constant></entry>
+       <entry>0</entry>
+       <entry>Direkte Ausgabe</entry>
+      </row>
+      <row>
+       <entry><constant>ODBC_BINMODE_PASSTHRU</constant></entry>
+       <entry>0</entry>
+       <entry>Direkte Ausgabe</entry>
+      </row>
+      <row>
+       <entry><constant>ODBC_BINMODE_PASSTHRU</constant></entry>
+       <entry>>0</entry>
+       <entry>Direkte Ausgabe</entry>
+      </row>
+      <row>
+       <entry><constant>ODBC_BINMODE_RETURN</constant></entry>
+       <entry>>0</entry>
+       <entry>Direkte Ausgabe</entry>
+      </row>
+      <row>
+       <entry><constant>ODBC_BINMODE_CONVERT</constant></entry>
+       <entry>>0</entry>
+       <entry>Rückgabe als CHAR-Werte</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
+  </para>
+  <para>
+   Wenn <function>odbc_fetch_into</function> genutzt wird, wird bei
+   direkter Ausgabe ein leerer String als Spaltenwert
+   zurückgeliefert.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>result_id</parameter></term>
      <listitem>
-      <simpara>
-       ODBC_BINMODE_PASSTHRU: gibt Binärdaten direkt zum Output durch
-      </simpara>
-     </listitem> 
-     <listitem>
-      <simpara>
-       ODBC_BINMODE_RETURN: liefert die Binärdaten unverändert zurück
-      </simpara>
+      <para>
+       Die Ergebniskennung.
+      </para>
+      <para>
+       Wenn <parameter>result_id</parameter> gleich <literal>0</literal>
+       ist, wird die Einstellung als Standardwert für die neue
+       Ergebnisse verwendet.
+       <note>
+        <simpara>
+         Der Standardwert für longreadlen ist <literal>4096</literal>, und für
+         <parameter>mode</parameter> <literal>ODBC_BINMODE_RETURN</literal>. Die
+         Behandlung von binary long Spalten wird ebenfalls durch
+         <function>odbc_longreadlen</function> beeinflusst.
+        </simpara>
+       </note>
+      </para>
      </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
      <listitem>
-      <simpara>
-       ODBC_BINMODE_CONVERT: konvertiert die Binärdaten zu Zeichen und
-       liefere sie zurück 
-      </simpara>
+      <para>
+       Mögliche Werte für <parameter>mode</parameter> sind:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          <constant>ODBC_BINMODE_PASSTHRU</constant>: schleift BINÄRE Daten durch
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>ODBC_BINMODE_RETURN</constant>: liefert die Binärdaten unverändert zurück
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          <constant>ODBC_BINMODE_CONVERT</constant>: konvertiert die Binärdaten zu Zeichen und
+          liefert sie zurück 
+         </simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
      </listitem>
-    </itemizedlist>
-    <para>
-     Im <literal>ODBC_BINMODE_CONVERT</literal> werden die Binärdaten
-     zu Character-C-data gewandelt. Jedes Byte (8 Bits) der
-     ursprünglichen Daten wird zu zwei ASCII-Zeichen, die der
-     hexadezimalen Darstellung des Wertes entsprechen. Der Binärwert
-     00000001 wird zum Beispiel zu <literal>"01"</literal> gewandelt,
-     der Binärwert 11111111 zu <literal>"FF"</literal>.
-     <table>
-      <title>Die Benutzung von LONGVARBINARY</title>
-      <tgroup cols="3">
-       <thead>
-        <row>
-         <entry>binmode</entry>
-         <entry>longreadlen</entry>
-         <entry>Resultat</entry>
-        </row>
-       </thead>
-       <tbody>
-        <row>
-         <entry>ODBC_BINMODE_PASSTHRU</entry>
-         <entry>0</entry>
-         <entry>Direkte Ausgabe</entry>
-        </row>
-        <row>
-         <entry>ODBC_BINMODE_RETURN</entry>
-         <entry>0</entry>
-         <entry>Direkte Ausgabe</entry>
-        </row>
-        <row>
-         <entry>ODBC_BINMODE_CONVERT</entry>
-         <entry>0</entry>
-         <entry>Direkte Ausgabe</entry>
-        </row>
-        <row>
-         <entry>ODBC_BINMODE_PASSTHRU</entry>
-         <entry>0</entry>
-         <entry>Direkte Ausgabe</entry>
-        </row>
-        <row>
-         <entry>ODBC_BINMODE_PASSTHRU</entry>
-         <entry>>0</entry>
-         <entry>Direkte Ausgabe</entry>
-        </row>
-        <row>
-         <entry>ODBC_BINMODE_RETURN</entry>
-         <entry>>0</entry>
-         <entry>Direkte Ausgabe</entry>
-        </row>
-        <row>
-         <entry>ODBC_BINMODE_CONVERT</entry>
-         <entry>>0</entry>
-         <entry>Rückgabe als CHAR-Werte</entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </table>
-    </para>
-    <para>
-     Wenn <function>odbc_fetch_into</function> genutzt wird, wird bei
-     direkter Ausgabe ein leerer String als Spaltenwert
-     zurückgeliefert.
-    </para>
-    <para>
-     Wenn <parameter>result_id</parameter> gleich <literal>0</literal>
-     ist, wird die Einstellung als Defaultwert für die nächsten
-     Transaktionen gesetzt.
-     <note>
-      <simpara> 
-       Der Defahltwert für longreadlen ist <literal>4096</literal>,
-       für <function>odbc_binmode</function>
-       <literal>ODBC_BINMODE_RETURN</literal>, also die unveränderte
-       Rückgabe. Das Verhalten von <literal>LONGVARBINARY</literal>
-       wird ebenfalls durch die Funktion
-       <function>odbc_longreadlen</function> bestimmt.
-      </simpara>
-     </note>
-    </para>
-   </refsect1>
-  </refentry>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:

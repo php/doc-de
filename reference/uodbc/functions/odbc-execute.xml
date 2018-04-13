@@ -1,30 +1,142 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: nobody Status: ready -->
-  <refentry xml:id="function.odbc-execute" xmlns="http://docbook.org/ns/docbook">
-   <refnamediv>
-    <refname>odbc_execute</refname>
-    <refpurpose>Führt ein vorbereiteten SQL-Befehl aus</refpurpose>
-   </refnamediv>
-   <refsect1>
-    <title>Beschreibung</title>
-     <methodsynopsis>
-      <type>int</type><methodname>odbc_execute</methodname>
-      <methodparam><type>int</type><parameter>result_id</parameter></methodparam>
-      <methodparam choice="opt"><type>array</type><parameter>
-        parameters_array
-       </parameter></methodparam>
-     </methodsynopsis>
+<!-- EN-Revision: 8b5940cadeb4f1c8492f4a7f70743a2be807cf39 Maintainer: nobody Status: ready -->
+
+<refentry xml:id="function.odbc-execute" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>odbc_execute</refname>
+  <refpurpose>Führt einen vorbereiteten SQL-Befehl aus</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>bool</type><methodname>odbc_execute</methodname>
+   <methodparam><type>resource</type><parameter>result_id</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>parameters_array</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Führt eine mit <function>odbc_prepare</function> vorbereitete Anweisung aus.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>result_id</parameter></term>
+     <listitem>
+      <para>
+       Die Ergebniskennung <type>resource</type> von <function>odbc_prepare</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>parameters_array</parameter></term>
+     <listitem>
+      <para>
+       Parameter in <parameter>parameter_array</parameter> werden für
+       Platzhalter in der vorbereiteten Anweisung in der Reihenfolge ihres
+       Vorkommens eingesetzt. Elemente dieses Array werden zu Zeichenketten
+       konvertiert, wenn diese Funktion aufgerufen wird.
+      </para>
+      <para>
+       Jegliche Parameter in <parameter>parameter_array</parameter>, die mit
+       einfachen Anführungszeichen beginnen und enden, werden als Name einer
+       Datei interpretiert, die gelesen und als Daten für den entsprechenden
+       Platzhalter an den Server gesendet werden.
+      </para>
+      <simpara>
+       Soll eine Zeichenkette, die tatsächlich mit einfachen Anführungszeichen
+       beginnt und endet übergeben werden, muss ein Leerzeichen oder ein anderes
+       Zeichen, das kein einfaches Anführungszeichen ist, am Anfang oder Ende
+       der Zeichenkette eingefügt werden, was verhindert, dass der Parameter als
+       Dateiname interpretiert wird. Ist dies keine Option, dann muss ein
+       anderer Mechanismus verwendet werden, um die Zeichenkette zu übergeben,
+       wie z.B. die Abfrage direkt per <function>odbc_exec</function>
+       auszuführen.
+      </simpara>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>odbc_execute</function> und <function>odbc_prepare</function> example</title>
     <para>
-     Führt ein oder mehrere durch <function>odbc_prepare</function>
-     vorbereitete SQL-Befehle aus. Nach erfolgreicher Ausführung wird
-     &true; zurückgeliefert, sonst
-     &false;.  Das Array
-     <parameter>parameters_array</parameter> braucht nur angegeben zu
-     werden, wenn im Befehl tatsächlich Parameter vorhanden sind.
+     Im folgenden Code ist <varname>$success</varname> nur dann &true;, wenn
+     alle drei Parameter für myproc Eingabeparameter (IN) sind:
     </para>
-   </refsect1>
-  </refentry>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$a = 1;
+$b = 2;
+$c = 3;
+$stmt    = odbc_prepare($conn, 'CALL myproc(?,?,?)');
+$success = odbc_execute($stmt, array($a, $b, $c));
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   Wenn eine gespeicherte Prozedur aufgerufen werden soll, die Ein-Ausgabe-
+   (INOUT) oder Ausgabeparameter (OUT) verwendet, wird als Workaround empfohlen,
+   eine native Extension für die jeweilige Datenbank zu verwenden
+   (beispielsweise <link linkend="ref.mssql">mssql</link> für MS SQL Server oder
+   <link linkend="ref.mssql">oci8</link> für Oracle).
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>4.2.0</entry>
+       <entry>
+        Das Lesen von in <parameter>parameters_array</parameter> angegebene
+        Dateien unterliegt nun &safemode; und <link
+        linkend="ini.open-basedir">open-basedir</link> Beschränkungen.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>odbc_prepare</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
 
 <!-- Keep this comment at the end of the file
 Local variables:
