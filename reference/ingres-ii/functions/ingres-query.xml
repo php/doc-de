@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: conni Status: ready -->
+<!-- EN-Revision: a56106f69198dfe88c6084593c78a71c26b24353 Maintainer: nobody Status: ready -->
+
 <refentry xml:id="function.ingres-query" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ingres_query</refname>
@@ -23,14 +24,15 @@
   <para>
    Die Abfrage wird zu einem Teil der aktuell offenen Transaktion.
    Falls keine Transaktion geöffnet ist, öffnet <function>ingres_query</function>
-   eine neue Transaktion. Um diese Transaktion zu schließen, kann man
-   <function>ingres_commit</function> aufrufen, um die gemachten Änderungen
-   in die Datenbank zu schreiben. Mit <function>ingres_rollback</function>
-   kann man diese Änderungen aber auch wieder zrücksetzen. Wenn das Skript
+   eine neue Transaktion. Um diese Transaktion zu schließen, kann entweder
+   <function>ingres_commit</function> aufrufen werden, um die gemachten Änderungen
+   in die Datenbank zu schreiben, oder <function>ingres_rollback</function>,
+   um diese Änderungen zu verwerfen. Wenn das Skript
    beendet wird, wird jede offene Transaktion zurückgesetzt (indem die Funktion
-   <function>ingres_rollback</function> aufgerufen wird). Sie können auch die
-   Funktion <function>ingres_autocommit</function> benutzen, bevor Sie eine neue
-   Transaktion öffnen, damit wird jede einzelne SQL-Abfrage sofort comittet.
+   <function>ingres_rollback</function> aufgerufen wird).
+   Vor dem Öffnen einer neuen Transaktion kann auch <function>ingres_autocommit</function>
+   aufgerufen werden, so dass alle Änderungen sofort nach der Ausführung einer
+   SQL-Abfrage committet werden.
   </para>
   <note>
    <title>Verwandte Konfigurationen</title>
@@ -59,8 +61,12 @@
      <term><parameter>query</parameter></term>
      <listitem>
       <para>
-       Eine gültige SQL-Abfrage (mehr im Ingres <emphasis>SQL reference
-       guide</emphasis>) der Ingres-Dokumentation.
+       Eine gültige SQL-Abfrage (mehr im Ingres <literal>SQL reference
+       guide</literal> der Ingres-Dokumentation).
+      </para>
+      <para>
+       Daten in der Abfragen sollten <link
+       linkend="function.ingres-escape-string">ordnungsgemäß maskiert</link> werden.
       </para>
       <para>
        Folgende Arten von SQL-Abfragen können mit dieser Funktion nicht gesendet werden:
@@ -103,7 +109,7 @@
          </simpara>
         </listitem>
         <listitem>
-         <simpara>alle Abfragen, die sich auf Cursors beziehen, werden nicht
+         <simpara>alle Abfragen, die sich auf Cursor beziehen, werden nicht
           unterstützt</simpara>
         </listitem>
        </itemizedlist>
@@ -136,6 +142,10 @@
          </row>
         </thead>
         <tbody>
+         <row>
+          <entry>a</entry>
+          <entry><type>BOOLEAN</type></entry>
+         </row>
          <row>
           <entry>b</entry>
           <entry><type>BYTE</type></entry>
@@ -204,12 +214,11 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   <function>ingres_query</function> gibt eine Ergebniskennung für die Abfrage
-   zurück, sofern Zeilen geholt werden können. Anderenfalls wird &false;
-   zurückgegeben. Das ist beispielsweise bei einem INSERT-, UPDATE- oder
-   DELETE-Kommando der Fall. Um festzustellen, ob es einen Fehler gab, benutzt
-   man die Funktionen <function>ingres_errno</function>,
-   <function>ingres_error</function> oder <function>ingres_errsqlstate</function>.
+   <function>ingres_query</function> gibt im Erfolgsfall eine Ergebniskennung
+   für die Abfrage zurück. Anderenfalls wird &false; zurückgegeben. Um
+   festzustellen, ob es einen Fehler gab, sind
+   <function>ingres_errno</function>, <function>ingres_error</function> oder
+   <function>ingres_errsqlstate</function> zu verwenden.
   </para>
  </refsect1>
 
@@ -217,7 +226,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title>Ein einfaches SELECT-Kommando senden</title>
+    <title>Eine einfache SELECT-Abfrage senden</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -293,6 +302,7 @@ ingres_close($link);
    <simplelist>
     <member><function>ingres_unbuffered_query</function></member>
     <member><function>ingres_fetch_array</function></member>
+    <member><function>ingres_fetch_assoc</function></member>
     <member><function>ingres_fetch_object</function></member>
     <member><function>ingres_fetch_row</function></member>
     <member><function>ingres_commit</function></member>
