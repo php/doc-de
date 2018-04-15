@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision: 1.1 -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 1cd19d56e1982c9947be9239b73cc8bd03ff178e Maintainer: nobody Status: ready -->
+
 <refentry xml:id="function.bindec" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>bindec</refname>
   <refpurpose>Umwandlung von binär zu dezimal</refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
    <methodsynopsis>
@@ -14,12 +16,18 @@
    </methodsynopsis>
   <para>
    Gibt die dezimale Entsprechung der binären Zahl aus dem
-   <parameter>binary_string</parameter>-Parameter zurück-
+   <parameter>binary_string</parameter>-Parameter zurück.
   </para>
   <para>
    <function>bindec</function> konvertiert eine binäre Zahl in einen
    <type>integer</type> oder, falls aus Größengründen benötigt, in
    einen <type>float</type>.
+  </para>
+  <para>
+   <function>bindec</function> interpretiert alle
+   <parameter>binary_string</parameter> Werte als vorzeichenlose Ganzzahlen.
+   Dies ist so, weil <function>bindec</function> das höchstwertige Bit als
+   weitere Größenordnung anstatt als Vorzeichenbit ansieht.
   </para>
  </refsect1>
  <refsect1 role="parameters">
@@ -36,38 +44,21 @@
     </varlistentry>
    </variablelist>
   </para>
+  <warning>
+   <para>
+    Der Parameter muss eine Zeichenkette sein. Andere Datentypen
+    ergeben unerwartete Ergebnisse.
+   </para>
+  </warning>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
    Der Dezimalwert von <parameter>binary_string</parameter>
   </para>
  </refsect1>
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>Seit 4.1.0</entry>
-       <entry>
-        Die Funktion kann nun Werte, die zu groß für ein
-        <type>integer</type> der jeweiligen Plattform ist,
-        stattdessen als <type>float</type> zurückgeben.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-  </para>
- </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -93,7 +84,125 @@ echo bindec('111');
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title><function>bindec</function> interpretiert die Eingabe als vorzeichenlose Ganzzahlen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+/*
+ * Der Lehrwert dieses Beispiels liegt in der Ausgabe,
+ * und nicht im PHP-Code selbst.
+ */
+
+$magnitude_lower = pow(2, (PHP_INT_SIZE * 8) - 2);
+p($magnitude_lower - 1);
+p($magnitude_lower, 'Beachte den Überlauf, auch in den folgenden Fällen!');
+
+p(PHP_INT_MAX, 'PHP_INT_MAX');
+p(~PHP_INT_MAX, 'interpretiert als eins mehr als PHP_INT_MAX');
+
+if (PHP_INT_SIZE == 4) {
+    $note = 'interpretiert als größte vorzeichenlose Ganzzahl';
+} else {
+    $note = 'interpretiert als größte vorzeichenlose Ganzzahl (18446744073709551615),
+              aber ungenau aufgrund mangelnder Fließkommagenauigkeit';
+}
+p(-1, $note);
+
+
+function p($input, $note = '') {
+    echo "Eingabe:      $input\n";
+
+    $format = '%0' . (PHP_INT_SIZE * 8) . 'b';
+    $bin = sprintf($format, $input);
+    echo "Binär:        $bin\n";
+
+    ini_set('precision', 20);  // zur Lesbarkeit auf 64 bit Systemen
+    $dec = bindec($bin);
+    echo 'bindec():     ' . $dec . "\n";
+
+    if ($note) {
+        echo "HINWEIS:      $note\n";
+    }
+
+    echo "\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs.32bit;
+    <screen>
+<![CDATA[
+Eingabe:      1073741823
+Binär:        00111111111111111111111111111111
+bindec():     1073741823
+
+Eingabe:      1073741824
+Binär:        01000000000000000000000000000000
+bindec():     1073741824
+HINWEIS:      Beachte den Überlauf, auch in den folgenden Fällen!
+
+Eingabe:      2147483647
+Binär:        01111111111111111111111111111111
+bindec():     2147483647
+HINWEIS:      PHP_INT_MAX
+
+Eingabe:      -2147483648
+Binär:        10000000000000000000000000000000
+bindec():     2147483648
+HINWEIS:      interpretiert als eins mehr als PHP_INT_MAX
+
+Eingabe:      -1
+Binär:        11111111111111111111111111111111
+bindec():     4294967295
+HINWEIS:      interpretiert als größte vorzeichenlose Ganzzahl
+]]>
+    </screen>
+    &example.outputs.64bit;
+    <screen>
+<![CDATA[
+Eingabe:      4611686018427387903
+Binär:        0011111111111111111111111111111111111111111111111111111111111111
+bindec():     4611686018427387903
+
+Eingabe:      4611686018427387904
+Binär:        0100000000000000000000000000000000000000000000000000000000000000
+bindec():     4611686018427387904
+HINWEIS:      Beachte den Überlauf, auch in den folgenden Fällen!
+
+Eingabe:      9223372036854775807
+Binär:        0111111111111111111111111111111111111111111111111111111111111111
+bindec():     9223372036854775807
+HINWEIS:      PHP_INT_MAX
+
+Eingabe:      -9223372036854775808
+Binär:        1000000000000000000000000000000000000000000000000000000000000000
+bindec():     9223372036854775808
+HINWEIS:      interpretiert als eins mehr als PHP_INT_MAX
+
+Eingabe:      -1
+Binär:        1111111111111111111111111111111111111111111111111111111111111111
+bindec():     18446744073709551616
+HINWEIS:      interpreted to be the largest unsigned integer (18446744073709551615),
+              aber ungenau aufgrund mangelnder Fließkommagenauigkeit
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Die Funktion kann Zahlen konvertieren, die für den <type>integer</type>-Typ
+    der Plattform zu groß sind; größere Werte werden dann als <type>float</type>
+    zurückgegeben.
+   </para>
+  </note>
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>

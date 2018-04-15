@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra  Status: ready -->
+<!-- EN-Revision: b8758b0605e80c4e3610137b7502a6abeea5c69b Maintainer: nobody Status: ready -->
+
 <refentry xml:id="function.is-callable" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>is_callable</refname>
-  <refpurpose>
-   Prüft ob der Inhalt einer Variable als Funktion aufgerufen werden kann
-  </refpurpose>
+  <refpurpose>Prüft ob der Inhalt einer Variable als Funktion aufgerufen werden kann</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -14,13 +13,13 @@
   <methodsynopsis>
    <type>bool</type><methodname>is_callable</methodname>
    <methodparam><type>mixed</type><parameter>var</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>syntax_only</parameter><initializer>false</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>syntax_only</parameter><initializer>&false;</initializer></methodparam>
    <methodparam choice="opt"><type>string</type><parameter role="reference">callable_name</parameter></methodparam>
   </methodsynopsis>
   <para>
    Prüft ob der Inhalt einer Variable als Funktion aufgerufen werden kann.
-   Es wird geprüft ob eine einfache Variable den Namen einer gültigen 
-   Funktion enthält, oder ob in einem Array ein gültig codierter
+   Es wird geprüft, ob eine einfache Variable den Namen einer gültigen 
+   Funktion enthält, oder ob in einem Array ein gültig kodierter
    Objekt- und Funktionsname enthalten ist.
   </para>
  </refsect1>
@@ -33,9 +32,7 @@
      <term><parameter>var</parameter></term>
      <listitem>
       <para>
-       Kann entweder der Name einer Funktion als String oder ein Objekt
-       und der Name einer seiner Methoden als Array in der Form
-       <screen>array($SomeObject, 'MethodName')</screen> sein.
+       Der zu prüfende Wert.
       </para>
      </listitem>
     </varlistentry>
@@ -46,7 +43,7 @@
        Wenn dieser Parameter auf &true; gesetzt wird, so prüft die
        Funktion nur ob <parameter>var</parameter> möglicherweise eine
        Funktion oder Methode enthält. Einfache Variablen werden nur 
-       zurückgewiesen wenn sie keinen String enthalten. Arrays werden
+       zurückgewiesen, wenn sie keinen String enthalten. Arrays werden
        auf die richtige Struktur geprüft, d.g. dass das Array zwei 
        Elemente hat von denen der erste ein Objekt oder String und 
        der zweite ein String ist.
@@ -57,9 +54,9 @@
      <term><parameter>callable_name</parameter></term>
      <listitem>
       <para>
-       Hier wird der "aufrufbare Name" abgelegt. Für das obige Beispiel
-       ist dies "someClass::someMethod". Beachten Sie, dass dies keine
-       statische Methode ist, auch wenn die Syntax das nahelegt. 
+       Hier wird der "aufrufbare Name" abgelegt. Für das Beispiel weiter unten
+       ist dies "someClass::someMethod". Es ist zu beachten, dass dies keine
+       statische Methode ist, auch wenn die Syntax das nahelegt.
       </para>
      </listitem>
     </varlistentry>
@@ -70,7 +67,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefet &true; wenn <parameter>var</parameter> aufrufbar is, 
+   Liefet &true;, wenn <parameter>var</parameter> aufrufbar ist, 
    sonst &false;.
   </para>
  </refsect1>
@@ -123,6 +120,39 @@ echo $callable_name, "\n";  //  someClass::someMethod
 ]]>
     </programlisting>
    </example>   
+   <example>
+    <title><function>is_callable</function> and constructors</title>
+    <simpara>
+     Von PHP 5.3.0 an meldet <function>is_callable</function> Konstruktoren als
+     nicht aufrufbar. Dies betrifft Konstruktoren im PHP 5 Stil
+     (<literal>__construct</literal>) wie auch Konstruktoren im PHP 4 Stil (d.h.
+     Methoden mit demselben Namen wie die Klasse). Zuvor wurden beide Fälle als
+     aufrufbar angesehen.
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class Foo
+{
+    public function __construct() {}
+    public function foo() {}
+}
+
+var_dump(
+    is_callable(array('Foo', '__construct')),
+    is_callable(array('Foo', 'foo'))
+);
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+bool(false)
+bool(false)
+]]>
+    </screen>
+   </example>
   </para>   
  </refsect1>
 

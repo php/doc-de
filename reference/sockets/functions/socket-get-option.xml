@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: conni Status: ready -->
+<!-- EN-Revision: 0a58f121e638b8c8606053cb9586b356bb414238 Maintainer: nobody Status: ready -->
+
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.socket-get-option">
  <refnamediv>
   <refname>socket_get_option</refname>
@@ -17,8 +18,8 @@
   </methodsynopsis>
   <para>
    <function>socket_get_option</function> gibt den Wert der Option zurück,
-   der im Parameter <parameter>optname</parameter> für den Socket
-   <parameter>socket</parameter> gesetzt wurde.
+   die im Parameter <parameter>optname</parameter> für den Socket
+   <parameter>socket</parameter> angegeben wurde.
   </para>
  </refsect1>
 
@@ -41,8 +42,8 @@
       <para>
        Der Parameter <parameter>level</parameter> enthält die Protokollebene,
        für die die Option gilt. Beispiel: Um Optionen auf der Socketebene
-       abzufragen würde <parameter>level</parameter> den Wert SQL_SOCKET
-       enthalten. Andere Ebenen, etwa TCP, können abgefragt werden, indem man
+       abzufragen würde <parameter>level</parameter> den Wert <constant>SOL_SOCKET</constant>
+       enthalten. Andere Ebenen, etwa <constant>TCP</constant>, können abgefragt werden, indem man
        die Protokollnummer dieser Ebene angibt. Protokollnummern können mit
        einem Aufruf von <function>getprotobyname</function> ermittelt werden.
       </para>
@@ -83,7 +84,7 @@
          <row>
           <entry>SO_REUSEADDR</entry>
           <entry>
-           Gibt an, ob die lokale Adresse wiederverwendet werden kann.
+           Gibt an, ob lokale Adressen wiederverwendet werden können.
           </entry>
           <entry>
            <type>int</type>
@@ -95,7 +96,7 @@
            Gibt an, ob Verbindungen durch periodische Aussendungen von
            Nachrichten aufrecht erhalten werden. Falls der verbundene Socket
            nicht auf diese Nachrichten antworten kann, wird die Verbindung
-           unterbrochen und Prozesse, die auf diesen Socket schreiben, erhalten
+           u diesen Socket schreiben, nterbrochen und Prozesse, die auferhalten
            ein SIGPIPE-Signal.
           </entry>
           <entry>
@@ -116,9 +117,9 @@
            </para>
            <para>
             Falls <varname>l_onoff</varname> von 0 verschieden und
-            <varname>l_linger</varname> ist 0, werden bei einem
-            verbindungsorientierten Socket alle noch nicht gesendeten Daten
-            verworfen und das Signal RST (Reset) an die Gegenstelle gesendet.
+            <varname>l_linger</varname> gleich 0 ist, werden  alle noch nicht
+            gesendeten Daten verworfen, und bei einem verbindungsorientierten
+            Socket das Signal RST (Reset) an die Gegenstelle gesendet.
            </para>
            <para>
             Andererseits, falls sowohl <varname>l_onoff</varname> als auch
@@ -132,7 +133,7 @@
           </entry>
           <entry>
            <type>array</type>. Das Array enthält zwei Schlüssel:
-           <varname>l_onoff</varname> and
+           <varname>l_onoff</varname> und
            <varname>l_linger</varname>.
           </entry>
          </row>
@@ -199,7 +200,7 @@
           <entry>SO_RCVLOWAT</entry>
           <entry>
            Gibt die Mindestanzahl Bytes an, die <parameter>socket</parameter>
-           bei einer Empfangsoperation verarbeiten soll. (Der Vorgabewert ist 1.)
+           bei einer Empfangsoperation verarbeiten soll.
           </entry>
           <entry>
            <type>int</type>
@@ -243,6 +244,178 @@
            <type>int</type>
           </entry>
          </row>
+         <row>
+          <entry><constant>TCP_NODELAY</constant></entry>
+          <entry>
+           Gibt an, ob der TCP Nagle Algorithmus deaktiviert ist.
+          </entry>
+          <entry>
+           <type>int</type>
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MCAST_JOIN_GROUP</constant></entry>
+          <entry>
+           Tritt einer Multicast-Gruppe bei. (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>array</type> mit den Schlüsseln <literal>"group"</literal> (
+           das eine IPv4 oder IPv6 Multicast-Adresse als <type>string</type>
+           angibt), und <literal>"interface"</literal> (das entweder eine
+           Schnittstellennummer als <type>int</type> oder einen
+           Schnittstellennamen als <literal>string</literal>, wie etwa
+           <literal>"eth0"</literal>, angibt. <literal>0</literal> kann
+           angegeben werden, um festzulegen, dass die Schnittstelle unter
+           Verwendung von Routing-Regeln gewählt werden soll. (Dies kann nur für
+           <function>socket_set_option</function> verwendet werden.)
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MCAST_LEAVE_GROUP</constant></entry>
+          <entry>
+           Verläßt eine Multicast-Gruppe. (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>array</type>. Siehe <constant>MCAST_JOIN_GROUP</constant> für
+           weitere Information. (Dies kann nur für
+           <function>socket_set_option</function> verwendet werden.)
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MCAST_BLOCK_SOURCE</constant></entry>
+          <entry>
+           Blockiert Pakete, die von einer bestimmten Quelle an eine bestimmte
+           Multicast-Gruppe, der man zuvor beigetreten ist, gesendet wurden.
+           (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>array</type> mit denselben Schlüsseln wie
+           <constant>MCAST_JOIN_GROUP</constant>, plus einem zusätzlichen
+           Schlüssel, <literal>source</literal>, der die IPv4 oder IPv6 Adresse
+           der zu blockierenden Quelle als <type>string</type> angibt. (Dies
+           kann nur für <function>socket_set_option</function> verwendet
+           werden.)
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MCAST_UNBLOCK_SOURCE</constant></entry>
+          <entry>
+           Unblockiert Pakete, die von einer bestimmten Quelle an eine bestimmte
+           Multicast-Gruppe, der man zuvor beigetreten ist, gesendet wurden; d.h.
+           entsprechende Pakete werden wieder empfangen. (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>array</type> mit demselben Format wie
+           <constant>MCAST_BLOCK_SOURCE</constant>. (Dies kann nur für
+           <function>socket_set_option</function> verwendet werden.)
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MCAST_JOIN_SOURCE_GROUP</constant></entry>
+          <entry>
+           Empfange Pakete, die an eine bestimmte Multicast-Gruppe gesendet
+           wurden, deren Quelladresse mit einem bestimmten Wert übereinstimmt.
+           (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>array</type> mit demselben Format wie
+           <constant>MCAST_BLOCK_SOURCE</constant>. (Dies kann nur für
+           <function>socket_set_option</function> verwendet werden.)
+          </entry>
+         </row>
+         <row>
+          <entry><constant>MCAST_LEAVE_SOURCE_GROUP</constant></entry>
+          <entry>
+           Beende den Empfang von Paketen, die an eine bestimmte
+           Multicast-Gruppe gesendet wurden, deren Quelladresse mit einem
+           bestimmten Wert übereinstimmt. (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>array</type> mit demselben Format wie
+           <constant>MCAST_BLOCK_SOURCE</constant>. (Dies kann nur für
+           <function>socket_set_option</function> verwendet werden.)
+          </entry>
+         </row>
+         <row>
+          <entry><constant>IP_MULTICAST_IF</constant></entry>
+          <entry>
+           Die ausgehende Schnittstelle für IPv4 Multicast-Pakete. (hinzugefügt
+           in PHP 5.4)
+          </entry>
+          <entry>
+           Entweder <type>int</type>, um die Schnittstellennummer, oder ein
+           <type>string</type> mit dem Schnittstellennamen, wie
+           <literal>eth0</literal>. Der Wert <type>0</type> kann verwendet
+           werden, um festzulegen, dass die Routingtabelle für die
+           Schnittstellenauswahl genutzt werden soll. Die Funktion
+           <function>socket_get_option</function> gibt einen Schnittstellenindex
+           zurück. Es ist zu beachten, dass im Gegensatz zur C-API, diese Option
+           KEINE IP-Adresse akzeptiert. Das beseitigt den
+           Schnittstellenunterschied zwischen
+           <constant>IP_MULTICAST_IF</constant> und
+           <constant>IPV6_MULTICAST_IF</constant>.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>IPV6_MULTICAST_IF</constant></entry>
+          <entry>
+           Die ausgehende Schnittstelle für IPv6 Multicast-Pakete. (hinzugefügt
+           in PHP 5.4)
+          </entry>
+          <entry>
+           Identisch zu <constant>IP_MULTICAST_IF</constant>.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>IP_MULTICAST_LOOP</constant></entry>
+          <entry>
+           Die Multicast-Loopback-Richtlinie für IPv4 Pakete, die festlegt, ob
+           Multicast-Pakete, die von diesem Socket versendet wurden, ebenfalls
+           Empfänger auf demselben Host erreichen, die auf der ausgehenden
+           Schnittstelle, die von diesem Socket verwendet wird, derselben
+           Multicast-Gruppe beigetreten sind. Dies ist die Voreinstellung.
+           (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>int</type> (entweder <literal>0</literal> oder
+           <literal>1</literal>). Für <function>socket_set_option</function>
+           wird jeder Wert akzeptiert, und gemäß den übelichen PHP-Regeln in
+           Booleschen Wert konvertiert.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>IPV6_MULTICAST_LOOP</constant></entry>
+          <entry>
+           Analog zu <constant>IP_MULTICAST_LOOP</constant>, aber für IPv6.
+           (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>int</type>. Siehe <constant>IP_MULTICAST_LOOP</constant>.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>IP_MULTICAST_TTL</constant></entry>
+          <entry>
+           Die Lebensdauer ausgehender IPv4 Multicast-Pakete. Dies sollte ein
+           Wert zwischen 0 (verlasse nicht die Schnittstelle) und 255 sein.
+           Der Vorgabewert ist 1 (nur das lokale Netzwerk wird erreicht).
+           (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>int</type> zwischen 0 und 255.
+          </entry>
+         </row>
+         <row>
+          <entry><constant>IPV6_MULTICAST_HOPS</constant></entry>
+          <entry>
+           Analog zu <constant>IP_MULTICAST_TTL</constant>, aber für IPv6
+           Pakete. Der Wert -1 wird ebenfalls akzeptiert, und bedeutet, dass die
+           Vorgabewert der Route verwendet werden soll. (hinzugefügt in PHP 5.4)
+          </entry>
+          <entry>
+           <type>int</type> zwischen -1 und 255.
+          </entry>
+         </row>
         </tbody>
        </tgroup>
       </table>
@@ -255,7 +428,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den Wert der angegebenen Option zurück oder &false;, falls ein Fehler auftrat..
+   Gibt den Wert der angegebenen Option zurück oder &false;, falls ein Fehler auftrat.
   </para>
  </refsect1>
 
@@ -280,28 +453,13 @@ var_dump(socket_get_option($socket, SOL_SOCKET, SO_REUSEADDR));
   </para>
  </refsect1>
 
- <refsect1 role="changelog">
-  &reftitle.changelog;
+ <refsect1 role="seealso">
+  &reftitle.seealso;
   <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>4.3.0</entry>
-       <entry>
-        Der Name der Funktion wurde geändert. Sie ersetzt die bisherige
-        Funktion <literal>socket_getopt()</literal>.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
+   <simplelist>
+    <member><function>socket_create_listen</function></member>
+    <member><function>socket_set_option</function></member>
+   </simplelist>
   </para>
  </refsect1>
 

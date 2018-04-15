@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: hholzgra Status: working -->
+<!-- EN-Revision: 3e98008f28e920f2469bcfe83df71a63b6b07008 Maintainer: nobody Status: ready -->
+
 <refentry xml:id="function.mail" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>mail</refname>
-  <refpurpose>E-Mails senden</refpurpose>
+  <refpurpose>E-Mail senden</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -14,7 +15,7 @@
    <methodparam><type>string</type><parameter>to</parameter></methodparam>
    <methodparam><type>string</type><parameter>subject</parameter></methodparam>
    <methodparam><type>string</type><parameter>message</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>additional_headers</parameter></methodparam>
+   <methodparam choice="opt"><type>mixed</type><parameter>additional_headers</parameter></methodparam>
    <methodparam choice="opt"><type>string</type><parameter>additional_parameters</parameter></methodparam>
   </methodsynopsis>
   <para>
@@ -65,7 +66,7 @@
        Die zu sendende Nachricht.
       </para>
       <para>
-       Jede Zeile muss durch ein LF-Zeichen (\n) getrennt werden. Außerdem
+       Jede Zeile muss durch CRLF (\r\n) getrennt werden. Außerdem
        sollten die Zeilen nicht mehr als 70 Zeichen enthalten.
       </para>
       <caution>
@@ -89,14 +90,31 @@ $text = str_replace("\n.", "\n..", $text);
      <term><parameter>additional_headers</parameter> (optional)</term>
      <listitem>
       <para>
-       String, der am Ende des E-Mail-Headers eingefügt werden soll.
+       <type>String</type> oder <type>Array</type>, das am Ende des E-Mail-Headers eingefügt werden soll.
       </para>
       <para>
        Dies kann benutzt werden, um zusätzliche Header-Angaben wie From,
        Cc oder Bcc anzugeben. Falls mehrere solcher zusätzlichen
-       Header-Angaben angegeben werden soll, müssen diese durch ein
+       Header-Angaben angegeben werden sollen, müssen diese durch ein
        CRLF-Zeichen (\r\n) getrennt werden.
+       Wenn von außen kommende Daten verwendet werden, um diesen Header
+       zusammenzustellen, sollten diese Daten bereinigt werden, so dass keine
+       ungewünschten Header eingeschleust werden können.
       </para>
+      <para>
+       Wird ein <type>Array</type> übergeben, werden dessen Schlüssel als
+       Header-Namen, und dessen Werte als entsprechende Header-Werte
+       interpretiert.
+      </para>
+      <note>
+       <para>
+        Vor PHP 5.4.42 bzw. 5.5.27 bot <parameter>additional_headers</parameter>
+        noch keinen Schutz vor Mail-Header-Injection. Daher müüssen Anwender
+        sicherstellen, dass die angegeben Header sicher sind, und wirklich nur
+        Header enthalten. Unter anderem ist darauf zu achten, dass mehrere
+        aufeinanderfolgende Zeilenumbrüche den E-Mail-Header beenden.
+       </para>
+      </note>      
       <note>
        <para>
         Um eine E-Mail zu senden, <emphasis>muss</emphasis> die E-Mail
@@ -108,14 +126,15 @@ $text = str_replace("\n.", "\n..", $text);
         Falls dies nicht geschieht, wird eine Fehlermeldung ähnlich wie
         <literal>Warning: mail(): "sendmail_from" not set in php.ini or
         custom "From:" header missing</literal> ausgegeben.
-        Der <literal>From:</literal> Header setzt unter Windows auch den
-        <literal>Return-Path:</literal> Header.
+        Der <literal>From</literal> Header setzt unter Windows auch den
+        <literal>Return-Path</literal> Header.
        </para>
       </note>
       <note>
        <para>
         Wenn E-Mails nicht ankommen, versuchen Sie bitte, nur das LF-Zeichen
-        (\n) zu verwenden. Einige UNIX-MTAs (mail transfer agents) ersetzen
+        (\n) zu verwenden. Einige UNIX-MTAs (mail transfer agents) (ganz besonders
+        <link xlink:href="&url.qmail;">qmail</link>) ersetzen
         leider LF durch CRLF (\r\n) automatisch (wodurch das CR-Zeichen
         verdoppelt wird, wenn CRLF verwendet wird). Dies sollte aber nur in
         Ausnahmefällen geschehen, da es gegen <link xlink:href="&url.rfc;2822">RFC
@@ -137,10 +156,28 @@ $text = str_replace("\n.", "\n..", $text);
        <literal>-f</literal>-Option benutzt wird.
       </para>
       <para>
+       Dieser Parameter wird intern durch <function>escapeshellcmd</function>
+       maskiert, um Kommando-Injection zu verhindern.
+       <function>escapeshellcmd</function> verhindert Kommando-Injection,
+       erlaubt allerdings zusätzliche Parameter hinzuzufügen. Aus
+       Sicherheitsgründen wird empfohlen, dass dieser Parameter bereinigt wird,
+       um zu verhindern, dass keine unerwünschten Parameter an das
+       Shell-Kommando übergeben werden.
+      </para>
+      <para>
+       Da <function>escapeshellcmd</function> automatisch angewendet wird,
+       können einige Zeichen, die gemäß Internet-RFCs in E-Mail-Adressen erlaubt
+       sind, nicht verwendet werden. <function>mail</function> kann aber diese
+       Zeichen nicht erlauben, so dass für Programme, die diese Zeichen
+       unterstützen müssen, alternative Methoden für den E-Mail-Versand (wie
+       beispielsweise die Verwendung eines Frameworks oder einer Bibliothek)
+       empfohlen werden.
+      </para>
+      <para>
        Der Benutzer, unter dem der Webserver läuft, sollte als bekannter
        Benutzer in der sendmail-Konfiguration eingetragen werden, um zu
        verhindern, dass ein 'X-Warning'-Header zu den E-Mails hingefügt
-       wird, wenn mit dieser Methode (<literal>-f</literal>) der Absender
+       wird, wenn mit dieser Methode (-f) der Absender
        gesetzt wird. Sendmail-Benutzer finden diese Datei hier:
        <filename>/etc/mail/trusted-users</filename>.
       </para>
@@ -158,7 +195,7 @@ $text = str_replace("\n.", "\n..", $text);
   </para>
   <para>
    Dass eine E-Mail für den Versand akzeptiert wurde, bedeutet
-   <emphasis>nicht</emphasis>, dass sie auch wirklich den gewünschten
+   NICHT, dass sie auch wirklich den gewünschten
    Empfänger erreichen wird.
   </para>
  </refsect1>
@@ -176,14 +213,19 @@ $text = str_replace("\n.", "\n..", $text);
      </thead>
      <tbody>
       <row>
-       <entry>4.3.0 (nur Windows)</entry>
+       <entry>7.2.0</entry>
        <entry>
-        Alle benutzerdefinierten Header wie (From, Cc, Bcc und Date) werden
-        unterstützt und sind nicht abhängig von der Groß-/Kleinschreibung.
-        (Da benutzerdefinierte Header nicht direkt vom MTA interpretiert
-        werden, sondern von PHP geparst werden, unterstützte PHP &lt; 4.3
-        nur den Cc-Header, das dort auch abhängig von der
-        Groß-/Kleinschreibung war.
+        Der <parameter>additional_headers</parameter> Parameter akzeptiert nun
+        ebenfalls ein <type>Array</type>.
+       </entry>
+      </row>
+      <row>
+       <entry>5.4.42, 5.5.27</entry>
+       <entry>
+        Header-Injection-Schutz wurde für den
+        <parameter>additional_headers</parameter> Parameter implementiert. Dies
+        bedeutet, dass mehrere aufeinanderfolgende Zeilenumbrüche nicht länger
+        erlaubt sind.
        </entry>
       </row>
       <row>
@@ -192,14 +234,7 @@ $text = str_replace("\n.", "\n..", $text);
         Der <parameter>additional_parameters</parameter>-Parameter ist
         im <link linkend="ini.safe-mode">safe_mode</link> deaktiviert;
         <function>mail</function> gibt eine Warnung aus und gibt
-        &false; zurück, wenn Sie den Parameter trotzdem verwenden.
-       </entry>
-      </row>
-      <row>
-       <entry>4.0.5</entry>
-       <entry>
-        Der <parameter>additional_parameters</parameter>-Parameter wurde
-        hinzugefügt.
+        &false; zurück, wenn der Parameter trotzdem verwendet wird.
        </entry>
       </row>
      </tbody>
@@ -221,13 +256,13 @@ $text = str_replace("\n.", "\n..", $text);
 <![CDATA[
 <?php
 // Die Nachricht
-$nachricht = "Zeile 1\Zeile 2\Zeile 3";
+$nachricht = "Zeile 1\r\nZeile 2\r\nZeile 3";
 
 // Falls eine Zeile der Nachricht mehr als 70 Zeichen enthälten könnte,
 // sollte wordwrap() benutzt werden
-$nachricht = wordwrap($nachricht, 70);
+$nachricht = wordwrap($nachricht, 70, "\r\n");
 
-// Send
+// Verschicken
 mail('benutzer@example.com', 'Mein Betreff', $nachricht);
 ?>
 ]]>
@@ -255,11 +290,35 @@ mail($empfaenger, $betreff, $nachricht, $header);
     </programlisting>
    </example>
    <example>
+    <title>Verschicken einer E-Mail mit zusätzliche Headern als <type>Array</type></title>
+    <para>
+     Dieses Beispiel verschickt die selbe E-Mail wie das Beispiel direkt
+     darüber, aber diesemal werden die zusätzlichen Header als Array übergeben
+     (verfügbar von PHP 7.2.0 an).
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$empfaenger = 'niemand@example.com';
+$betreff = 'Der Betreff';
+$nachricht = 'Hallo';
+$header = array(
+    'From' => 'webmaster@example.com',
+    'Reply-To' => 'webmaster@example.com'
+    'X-Mailer' => 'PHP/' . phpversion()
+);
+
+mail($empfaenger, $betreff, $nachricht, $header);
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
     <title>Verschicken einer E-Mail mit einem zusätzlichen
     Kommandozeilen-Parameter.</title>
     <para>
      Der <parameter>additional_parameters</parameter>-Parameter kann benutzt
-     werden, um zusätzliche Parameter an das über
+     werden, um einen zusätzlichen Parameter an das über
      <literal>sendmail_path</literal> konfigurierte Programm zu senden.
     </para>
     <programlisting role="php">
@@ -280,8 +339,7 @@ mail('niemand@example.com', 'Betreff', 'Nachricht', null,
 <![CDATA[
 <?php
 // mehrere Empfänger
-$empfaenger  = 'max@example.com' . ', '; // beachten Sie das Komma
-$empfaenger .= 'moritz@example.com';
+$empfaenger  = 'max@example.com, moritz@example.com'; // beachte das Komma
 
 // Betreff
 $betreff = 'Geburtstags-Erinnerungen für August';
@@ -299,10 +357,10 @@ $nachricht = '
       <th>Person</th><th>Tag</th><th>Monat</th><th>Jahr</th>
     </tr>
     <tr>
-      <td>Julia</td><td>3.</td><td>August</td><td>1970</td>
+      <td>Max</td><td>3.</td><td>August</td><td>1970</td>
     </tr>
     <tr>
-      <td>Tom</td><td>17.</td><td>August</td><td>1973</td>
+      <td>Moritz</td><td>17.</td><td>August</td><td>1973</td>
     </tr>
   </table>
 </body>
@@ -310,26 +368,26 @@ $nachricht = '
 ';
 
 // für HTML-E-Mails muss der 'Content-type'-Header gesetzt werden
-$header  = 'MIME-Version: 1.0' . "\r\n";
-$header .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+$header[] = 'MIME-Version: 1.0';
+$header[] = 'Content-type: text/html; charset=iso-8859-1';
 
 // zusätzliche Header
-$header .= 'To: Simone <simone@example.com>, Andreas <andreas@example.com>' . "\r\n";
-$header .= 'From: Geburtstags-Erinnerungen <geburtstag@example.com>' . "\r\n";
-$header .= 'Cc: geburtstagsarchiv@example.com' . "\r\n";
-$header .= 'Bcc: geburtstagscheck@example.com' . "\r\n";
+$header[] = 'To: Simone <simone@example.com>, Andreas <andreas@example.com>';
+$header[] = 'From: Geburtstags-Erinnerungen <geburtstag@example.com>';
+$header[] = 'Cc: geburtstagsarchiv@example.com';
+$header[] = 'Bcc: geburtstagscheck@example.com';
 
 // verschicke die E-Mail
-mail($empfaenger, $betreff, $nachricht, $header);
+mail($empfaenger, $betreff, $nachricht, $implode("\r\n", $header));
 ?>
 ]]>
     </programlisting>
     <para>
      <note>
       <para>
-       Wenn Sie HTML- oder komplexe E-Mails versenden möchten, sollten Sie das
-       PEAR-Paket <link xlink:href="&url.pear.package;Mail_Mime">PEAR::Mail_Mime</link>
-       verwenden.
+       Wenn HTML- oder komplexe E-Mails versendet werden sollen, wird die Verwendung des
+       PEAR-Pakets <link xlink:href="&url.pear.package;Mail_Mime">PEAR::Mail_Mime</link>
+       empfohlen.
       </para>
      </note>
     </para>
@@ -368,25 +426,16 @@ mail($empfaenger, $betreff, $nachricht, $header);
   
   <note>
    <para>
-    E-Mails mit Anhängen und speziellen Inhalten (wie HTML) können mit dieser
-    Funktion versendet werden. Dazu wird MIME-Encoding verwendet. Weitere
-    Informationen dazu finden Sie in einem
-    Zend-Artikel <!-- Removed link to fix the build ~sobak 12/06/2016 --> und in den
-    <link xlink:href="&url.pear.package;Mail_Mime">PEAR-Mime-Klassen</link>.
-   </para>
-  </note>
-
-  <note>
-   <para>
-    Bitte beachten Sie, dass die <function>mail</function>-Funktion nicht
+    Es ist zu beachten, dass die <function>mail</function>-Funktion nicht
     dazu geeignet ist, große Mengen von E-Mails in einer Schleife zu senden,
     da die Funktion für jede E-Mail ein SMTP-Socket öffnet und schließt,
     was nicht sehr effizient ist.
    </para>
    <para>
-    Um große Mengen von E-Mails zu senden, schauen Sie sich bitte die
+    Um große Mengen von E-Mails zu senden, können die
     PEAR-Pakete <link xlink:href="&url.pear.package;Mail">PEAR::Mail</link> und
-    <link xlink:href="&url.pear.package;Mail_Queue">PEAR::Mail_Queue</link> an.
+    <link xlink:href="&url.pear.package;Mail_Queue">PEAR::Mail_Queue</link>
+    verwendet werden.
    </para>
   </note>
 
@@ -398,7 +447,7 @@ mail($empfaenger, $betreff, $nachricht, $header);
     <link xlink:href="&url.rfc;2046">RFC 2046</link>,
     <link xlink:href="&url.rfc;2047">RFC 2047</link>,
     <link xlink:href="&url.rfc;2048">RFC 2048</link>,
-    <link xlink:href="&url.rfc;2049">RFC 2049</link> und
+    <link xlink:href="&url.rfc;2049">RFC 2049</link>, und
     <link xlink:href="&url.rfc;2822">RFC 2822</link>.
    </para>
   </note>
@@ -415,7 +464,6 @@ mail($empfaenger, $betreff, $nachricht, $header);
   </para>
  </refsect1>
 </refentry>
-
 
 <!-- Keep this comment at the end of the file
 Local variables:
