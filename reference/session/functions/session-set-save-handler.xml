@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 827c4bb5be72c63554d6aaf371ccb434a2c5f20e Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 00f8e96bac6b7027aa37183a07da06abfaa73bba Maintainer: samesch Status: ready -->
+
 <refentry xml:id="function.session-set-save-handler" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>session_set_save_handler</refname>
@@ -18,6 +19,9 @@
    <methodparam><type>callback</type><parameter>destroy</parameter></methodparam>
    <methodparam><type>callback</type><parameter>gc</parameter></methodparam>
   </methodsynopsis>
+  <para>
+   Seit PHP 5.4 ist es möglich folgenden Prototypen zu registrieren:
+  </para>
   <methodsynopsis>
    <type>bool</type><methodname>session_set_save_handler</methodname>
    <methodparam><type>SessionHandlerInterface</type><parameter>sessionhandler</parameter></methodparam>
@@ -45,6 +49,7 @@
        Ein Exemplar einer Klasse die <interfacename>SessionHandlerInterface</interfacename>
        implementiert, wie beispielsweise <classname>SessionHandler</classname>, das als
        benutzerdefinierte Session-Speicherfunktion registriert werden soll.
+       Erst seit PHP 5.4.
       </para>
      </listitem>
     </varlistentry>
@@ -63,44 +68,82 @@
 
    <variablelist>
     <varlistentry>
-     <term><parameter>open</parameter></term>
+     <term><parameter>open(string $savePath, string $sessionName)</parameter></term>
      <listitem>
       <para>
-       Die öffnen-Routine funktionert wie ein Konstruktor in einer Klasse und
-       wird ausgeführt, wenn die Session geöffnet wird. Sie erwartet zwei
-       Parameter: als Ersten den Speicherpfad und als Zweiten den Namen der
-       Session.
+       Der open Callback funktionert wie ein Konstruktor in einer Klasse und
+       wird ausgeführt, wenn die Session geöffnet wird.  Es ist die erste
+       Callback-Funktion, die ausgeführt wird, wenn die Session automatisch oder
+       manuell durch <function>session_start</function> gestartet wird. Der
+       Rückgabewert ist &true; im Erfolgs-, und &false; im Fehlerfall.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>close</parameter></term>
+     <term><parameter>close()</parameter></term>
      <listitem>
       <para>
-       Die schließen-Routine funktionert wie ein Destruktor in einer Klasse
-       und wird am Ende der Session ausgeführt.
+       Der close Callback funktionert wie ein Destruktor in einer Klasse
+       und wird ausgeführt nachdem der Session write Callback aufgerufen wurde.
+       Sie wird ebenfalls aufgerufen, wenn
+       <function>session_write_close</function> aufgerufen wurde. Der
+       Rückgabewert sollte &true; im Erfolgs- und &false; im Fehlerfall sein.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>read</parameter></term>
+     <term><parameter>read(string $sessionId)</parameter></term>
      <listitem>
       <para>
-       Damit die Speicherroutine funktioniert wie erwartet, muss die
-       lesen-Routine immer eine Zeichenkette zurückgeben. Wenn es keine Daten
-       zu lesen gibt, geben Sie eine leere Zeichenkette zurück. Rückgabewerte
-       anderer Routinen werden in boolesche Ausdrücke umgewandelt. &true; für
-       einen Erfolg, &false; für einen Fehler.
+       Die <parameter>read</parameter> Callback muss immer eine sitzungskodierte
+       (serialisierte) Zeichenkette zurückgeben, oder eine leere Zeichenkette,
+       falls keine Daten zu lesen sind.
+      </para>       
+      <para>
+       Dieser Callback wird intern von PHP aufgerufen, wenn die Session
+       startet, oder wenn <function>session_start</function> aufgerufen wird.
+       Noch bevor dieser Callback aufgerufen wird, wird PHP den
+       <parameter>open</parameter> Callback ausführen.
+      </para>
+      <para>
+       Der Wert, den dieser Callback zurückgibt, muss in genau demselben
+       serialisierten Format vorliegen, das ursprünglich für die Speicherung an
+       den <parameter>write</parameter> Callback übergeben wurde. Der
+       zurückgegebene Wert wird von PHP automatisch deserialisiert, und
+       verwendet, um die superglobale <varname>$_SESSION</varname> Variable zu initialisieren.
+       Obgleich die Daten ähnlich wie bei <function>serialize</function>
+       aussehen, ist zu beachten, dass es sich um ein unterschiedliches Format
+       handelt, das in der Dokumentation zur <link
+       linkend="ini.session.serialize-handler">session.serialize_handler</link>
+       ini Einstellung beschrieben wird.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>write</parameter></term>
+     <term><parameter>write(string $sessionId, string $data)</parameter></term>
      <listitem>
       <para>
-       Die schreiben-Routine, die aufgerufen wird, wenn Session-Daten
-       gespeichert werden sollen. Diese Funktion erwartet zwei Parameter: eine
-       Session-ID und die zugehörigen Daten.
+       Der <parameter>write</parameter> Callback wird aufgerufen, wenn die
+       Session gespeichert und geschlossen werden muss. Dieser Callback nimmt
+       die aktuelle Sessionkennung und eine serialisierte Version der
+       superglobalen <varname>$_SESSION</varname> Variablen entgegen. Die intern von PHP verwendete
+       Serialisierungsmethode wird in der Dokumentation zur  <link
+       linkend="ini.session.serialize-handler">session.serialize_handler</link>
+       ini Einstellung beschrieben.
+      </para>
+      <para>
+       Die serialisierten Sessiondaten, die an diesen Callback übergeben werden,
+       sollten als zu der übergebenen Sessionkennung zugehörig gespeichert
+       werden. Werden diese Daten wieder gelesen, dann muss der
+       <parameter>read</parameter> Callback den genauen Wert liefern, der
+       ursprünglich an den <parameter>write</parameter> Callback übergeben
+       wurde.
+      </para>
+      <para>
+       Dieser Callback wird aufgerufen, wenn PHP herunterfährt, oder explizit,
+       wenn <function>session_write_close</function> aufgerufen wird. Es ist zu
+       beachten, dass PHP intern nach Ausführung dieser Funktion den
+       <parameter>close</parameter> Callback ausführen wird.
        <note>
         <para>
          Die schreiben-Routine wird nicht ausgeführt, bevor die Ausgabe
@@ -114,22 +157,30 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>destroy</parameter></term>
+     <term><parameter>destroy($sessionId)</parameter></term>
      <listitem>
       <para>
-       Die löschen-Routine wird ausgeführt, wenn eine Session mittels
-       <function>session_destroy</function> gelöscht wird. Sie erwartet die
-       Session-ID als einzigen Parameter.
+       Dieser Callback wird ausgeführt, wenn eine Session duch
+       <function>session_destroy</function> oder
+       <function>session_regenerate_id</function>, mit dem $destroy Parameter
+       auf &true; gesetzt, zerstört wird.   
+       Der Rückgabewert sollte &true; im Erfolgs und &false; im Fehlerfall sein.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>gc</parameter></term>
+     <term><parameter>gc($lifetime)</parameter></term>
      <listitem>
       <para>
-       Der Speicherbereiniger (garbage collector) wird ausgeführt, wenn der
-       Session-Speicherbereiniger ausgeführt wird. Er erwartet die maximale
-       Session-Verfallszeit als einzigen Parameter.
+       Der Garbage Collection Callback wird von PHP intern aufgerufen, um alte
+       Sessiondaten zu löschen. Die Häufigkeit wird durch <link
+       linkend="ini.session.gc-probability">session.gc_probability</link>
+       und <link linkend="ini.session.gc-divisor">session.gc_divisor</link>
+       gesteuert. Der Wert der Lebensdauer, die diesem Callback übergeben wird,
+       kann mit <link
+       linkend="ini.session.gc-maxlifetime">session.gc_maxlifetime</link>
+       festgelegt werden. Der Rückgabewert sollte &true; im Erfolgs- und &false;
+       im Fehlerfall sein.
       </para>
      </listitem>
     </varlistentry>
