@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d45a16b5f91dfa1702a2d185fa1b627cac5b1341 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: b8758b0605e80c4e3610137b7502a6abeea5c69b Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.htmlspecialchars" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -15,7 +15,7 @@
    <methodparam><type>string</type><parameter>string</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>ENT_COMPAT | ENT_HTML401</initializer></methodparam>
    <methodparam choice="opt"><type>string</type><parameter>encoding</parameter><initializer>ini_get("default_charset")</initializer></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>double_encode</parameter><initializer>true</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>double_encode</parameter><initializer>&true;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Bestimmte Zeichen haben in HTML eine spezielle Bedeutung und
@@ -40,36 +40,48 @@
    stattdessen verwenden.
   </para>
   <para>
-   Folgende Umwandlungen werden vorgenommen:
-   <itemizedlist>
-    <listitem>
-     <simpara>
-      '&amp;' (Ampersand/kaufmännisches Und) wird zu '&amp;amp;'.
-     </simpara>
-    </listitem>
-    <listitem>
-     <simpara>
-      '&quot;' (doppeltes Anführungszeichen) wird zu '&amp;quot;',
-      wenn <constant>ENT_NOQUOTES</constant> nicht gesetzt ist.
-     </simpara>
-    </listitem>
-    <listitem>
-     <simpara>
-      &quot;&#039;&quot; (einfaches Anführungszeichen) wird nur zu '&amp;#039;' (oder &amp;apos;),
-      wenn <constant>ENT_QUOTES</constant> gesetzt ist.
-     </simpara>
-    </listitem>
-    <listitem>
-     <simpara>
-      '&lt;' (kleiner als) wird zu '&amp;lt;'
-     </simpara>
-    </listitem>
-    <listitem>
-     <simpara>
-      '&gt;' (größer als) wird zu '&amp;gt;'
-     </simpara>
-    </listitem>
-   </itemizedlist>
+   <table>
+    <title>Durchgeführte Ersetzungen</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Zeichen</entry>
+       <entry>Ersetzung</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry><literal>&amp;</literal> (Kaufmanns-Und)</entry>
+       <entry><literal>&amp;amp;</literal></entry>
+      </row>
+      <row>
+       <entry><literal>&quot;</literal> (doppeltes Anführungszeichen)</entry>
+       <entry>
+        <literal>&amp;quot;</literal>, falls <constant>ENT_NOQUOTES</constant>
+        nicht gesetzt ist
+       </entry>
+      </row>
+      <row>
+       <entry>&quot;&#039;&quot; (einfaches Anführungszeichen)</entry>
+       <entry>
+        <literal>&amp;#039;</literal> (für <constant>ENT_HTML401</constant>) oder
+        <literal>&amp;apos;</literal> (für
+        <constant>ENT_XML1</constant>, <constant>ENT_XHTML</constant> oder
+        <constant>ENT_HTML5</constant>), aber nur wenn
+        <constant>ENT_QUOTES</constant> gesetzt ist
+       </entry>
+      </row>
+      <row>
+       <entry><literal>&lt;</literal> (kleiner als)</entry>
+       <entry><literal>&amp;lt;</literal></entry>
+      </row>
+      <row>
+       <entry><literal>&gt;</literal> (gößer als)</entry>
+       <entry><literal>&amp;gt;</literal></entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </table>
   </para>
  </refsect1>
  
@@ -291,6 +303,52 @@ echo $neu; // &lt;a href=&#039;test&#039;&gt;Test&lt;/a&gt;
     Beachten Sie, dass diese Funktion nur die o.a. Umwandlungen
     durchführt. Für vollständige Code-Umwandlung verwenden Sie bitte
     <function>htmlentities</function>.
+   </para>
+  </note>
+  <note>
+   <para>
+    Im Fall von mehrdeutigen <parameter>flags</parameter>-Werten, gelten die
+    folgenden Regeln:
+   </para>
+   <para>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Wird weder <constant>ENT_COMPAT</constant>, <constant>ENT_QUOTES</constant>
+       oder <constant>ENT_NOQUOTES</constant> angegeben, ist der Standardwert
+       <constant>ENT_COMPAT</constant>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Werden mehrere von <constant>ENT_COMPAT</constant>, <constant>ENT_QUOTES</constant>
+       und <constant>ENT_NOQUOTES</constant> angegeben, erhält <constant>ENT_QUOTES</constant>
+       den Vorrang, gefolgt von <constant>ENT_COMPAT</constant>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Wird weder <constant>ENT_HTML401</constant>, <constant>ENT_HTML5</constant>,
+       <constant>ENT_XHTML</constant> noch <constant>ENT_XML1</constant> angegeben,
+       ist der Standardwert <constant>ENT_HTML401</constant>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Werden mehrere von <constant>ENT_HTML401</constant>, <constant>ENT_HTML5</constant>,
+       <constant>ENT_XHTML</constant> und <constant>ENT_XML1</constant> angegeben,
+       erhält <constant>ENT_HTML5</constant> den Vorrang, gefolgt von
+       <constant>ENT_XHTML</constant> und <constant>ENT_HTML401</constant>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       When more than one of <constant>ENT_DISALLOWED</constant>, <constant>ENT_IGNORE</constant>,
+       <constant>ENT_SUBSTITUTE</constant> are present, <constant>ENT_IGNORE</constant> takes the
+       highest precedence, followed by <constant>ENT_SUBSTITUTE</constant>.
+      </simpara>
+     </listitem>
+    </itemizedlist>
    </para>
   </note>
  </refsect1>

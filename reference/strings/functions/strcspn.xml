@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8b5940cadeb4f1c8492f4a7f70743a2be807cf39 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 7e3e160e1b425ff62990223703f3ba349811f87e Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.strcspn">
  <refnamediv>
@@ -12,15 +12,22 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>strcspn</methodname>
-   <methodparam><type>string</type><parameter>str1</parameter></methodparam>
-   <methodparam><type>string</type><parameter>str2</parameter></methodparam>
+   <methodparam><type>string</type><parameter>subject</parameter></methodparam>
+   <methodparam><type>string</type><parameter>mask</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>start</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Gibt die Länge von <parameter>str1</parameter> zurück, bis zu der
-   <emphasis>kein</emphasis> Zeichen aus <parameter>str2</parameter>
+   Gibt die Länge von <parameter>subject</parameter> zurück, bis zu der
+   <emphasis>kein</emphasis> Zeichen aus <parameter>mask</parameter>
    vorkommt.
+  </para>
+  <para>
+   Wenn die Parameter <parameter>start</parameter> und <parameter>length</parameter>
+   ausgelassen werden, dann wird das gesamte <parameter>subject</parameter> untersucht.
+   Werden sie angegeben, dann ist es gleichwertig zum Aufruf von
+   <literal>strcspn(substr($subject, $start, $length), $mask)</literal>
+   (siehe <xref linkend="function.substr" /> für weitere Informationen).
   </para>
  </refsect1>
 
@@ -29,18 +36,18 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>str1</parameter></term>
+     <term><parameter>subject</parameter></term>
      <listitem>
       <para>
-       Die erste Zeichenkette.
+       Die zu untersuchende Zeichenkette.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>str2</parameter></term>
+     <term><parameter>mask</parameter></term>
      <listitem>
       <para>
-       Die zweite Zeichenkette.
+       Die Zeichenkette, die jedes nicht erlaubte Zeichen enthält.
       </para>
      </listitem>
     </varlistentry>
@@ -48,7 +55,21 @@
      <term><parameter>start</parameter></term>
      <listitem>
       <para>
-       Die Anfangsposition der zu untersuchenden Zeichenkette.
+       Die Position in <parameter>subject</parameter>, an der die Suche beginnt.
+      </para>
+      <para>
+       Wird <parameter>start</parameter> angegeben und es nicht negativ ist, dann
+       beginnt <function>strcspn</function> das <parameter>subject</parameter>
+       an der <parameter>start</parameter> Position zu untersuchen.
+       Beispielsweise ist in der Zeichenkette '<literal>abcdef</literal>' das
+       Zeichen an Position <literal>0</literal> ein '<literal>a</literal>', das
+       Zeichen an Position <literal>2</literal> ein '<literal>c</literal>', usw.
+      </para>
+      <para>
+       Wird <parameter>start</parameter> angegeben und es negativ ist, dann
+       beginnt <function>strcspn</function> das <parameter>subject</parameter> an
+       der <parameter>start</parameter> Position vom Ende von
+       <parameter>subject</parameter> zu untersuchen.
       </para>
      </listitem>
     </varlistentry>
@@ -56,7 +77,20 @@
      <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Die Länge der zu untersuchenden Zeichenkette.
+       Die Länge des Segments von <parameter>subject</parameter>, das untersucht
+       werden soll.
+      </para>
+      <para>
+       Wird <parameter>length</parameter> angegeben und es nicht negativ ist,
+       dann wird <parameter>subject</parameter> für
+       <parameter>length</parameter> Zeichen nach der Anfangsposition
+       untersucht.
+      </para>
+      <para>
+       Wird <parameter>length</parameter> angegeben und es negativ ist, dann
+       wird <parameter>subject</parameter> von der Anfangsposition bis zu
+       <parameter>length</parameter> Zeichen vom Ende von
+       <parameter>subject</parameter> untersucht.
       </para>
      </listitem>
     </varlistentry>
@@ -67,8 +101,17 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die Länge des gefundenen Segments als Integerwert zurück.
+   Gibt die Länge des Anfangssegments von <parameter>subject</parameter> zurück,
+   das ausschließlich aus Zeichen besteht, die <emphasis>nicht</emphasis> in
+   <parameter>mask</parameter> vorkommen.
   </para>
+  <note>
+   <para>
+    Wird der <parameter>start</parameter> Parameter angegeben, dann zählt die
+    zurückgegebene Länge von dieser Position, nicht vom Anfang von
+    <parameter>subject</parameter>.
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="examples">
@@ -82,11 +125,15 @@ $a = strcspn('abcd',  'apple');
 $b = strcspn('abcd',  'banana');
 $c = strcspn('hello', 'l');
 $d = strcspn('hello', 'world');
+$e = strcspn('abcdhelloabcd', 'abcd', -9);
+$f = strcspn('abcdhelloabcd', 'abcd', -9, -5);
 
 var_dump($a);
 var_dump($b);
 var_dump($c);
 var_dump($d);
+var_dump($e);
+var_dump($f);
 ?>
 ]]>
    </programlisting>
@@ -97,6 +144,8 @@ int(0)
 int(0)
 int(2)
 int(2)
+int(5)
+int(4)
 ]]>
    </screen>
   </example>

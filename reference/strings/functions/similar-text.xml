@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 2b0ee0e1f86417fc5cfb6c97d54e99450e666593 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: d95d5914f5b9c244df7358e23cdfbb1b70cff1ec Maintainer: sammywg Status: ready -->
+
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.similar-text">
  <refnamediv>
   <refname>similar_text</refname>
@@ -44,6 +45,13 @@
       <para>
        Die zweite Zeichenkette.
       </para>
+      <note>
+       <para>
+        Das Vertauschen der Parameter <parameter>first</parameter> und
+        <parameter>second</parameter> kann ein anderes Ergebnis zur Folge haben;
+        siehe das Beispiel weiter unten.
+       </para>
+      </note> 
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -51,8 +59,10 @@
      <listitem>
       <para>
        Falls Sie als Referenz ein drittes Argument angeben, wird
-       <function>similar_text</function> Ihnen die Ähnlichkeit als
-       Prozentwert errechnen.
+       <function>similar_text</function> die Ähnlichkeit als
+       Prozentwert errechnen. Dazu wird das Ergebnis von <function>similar_text</function>
+       durch den Durchschnitt der Längen der angegebenen Zeichenketten dividiert,
+       und mit <literal>100</literal> multipliziert.
       </para>
      </listitem>
     </varlistentry>
@@ -65,6 +75,40 @@
   <para>
    Gibt die Anzahl übereinstimmender Zeichen in beiden Zeichenketten zurück.
   </para>
+  <para>
+   Die Anzahl übereinstimmender Zeichen wird berechnet, indem die längste erste
+   gemeinsame Teilzeichenkette gesucht wird, und dies dann rekursiv für die Prä-
+   und Suffixe wiederholt wird. Die Längen aller gefundenen gemeinsamen
+   Teilzeichenketten werden aufsummiert.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example xml:id="similar_text.example.swapping">
+   <title>Beispiel für die Vertauschung der Argumente von <function>similar_text</function></title>
+   <para>
+    Dieses Beispiel verdeutlicht, dass das Vertauschen des
+    <parameter>first</parameter> und <parameter>second</parameter> Arguments ein
+    anderes Ergebnis zur Folge haben kann.
+   </para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$sim = similar_text('bafoobar', 'barfoo', $perc);
+echo "Ähnlichkeit: $sim ($perc %)\n";
+$sim = similar_text('barfoo', 'bafoobar', $perc);
+echo "Ähnlichkeit: $sim ($perc %)\n";
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Ähnlichkeit: 5 (71.428571428571 %)
+Ähnlichkeit: 3 (42.857142857143 %)
+]]>
+   </screen>
+  </example>
  </refsect1>
 
  <refsect1 role="seealso">
