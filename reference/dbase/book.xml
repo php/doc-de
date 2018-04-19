@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 02667c113beff1e004e8de78ca36d80a096eaeaa Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 72c73f0a7ea7dfc5cc2d8a41ddc3bd02b1384df8 Maintainer: samesch Status: ready -->
 
 <book xml:id="book.dbase" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <?phpdoc extension-membership="bundledexternal" ?>
@@ -9,10 +9,36 @@
  <!-- {{{ preface -->
  <preface xml:id="intro.dbase">
   &reftitle.intro;
+  <note>
+   <para>
+    &pecl.moved-ver;5.3.0.
+   </para>
+  </note>
   <para>
    Diese Funktionen erlauben Ihnen den Zugriff auf Datensätze, die in
    Datenbanken im dBase-Format (dbf) vorliegen.
   </para>
+  <warning>
+   <para>
+    Wir empfehlen, keine dBase-Dateien als Produktions-Datenbank zu benutzen.
+    Wählen Sie dafür stattdessen einen echten SQL-Server; <link
+    xlink:href="&url.mysql;">MySQL</link> oder <link
+    xlink:href="&url.pgsql;">Postgres</link> sind bei PHP eine gute Wahl. Die
+    dBase-Unterstützung durch PHP dient hauptsächlich dem Im- und Export von
+    Daten zu oder aus ihrer Web-Datenbank, weil das DBF-Datei-Format allgemein
+    von Windows-Tabellenkalulationen und -Zeitplanern verstanden wird.
+   </para>
+  </warning>
+  <caution>
+   <para>
+    Von dbase 7.0.0 an werden Datenbanken automatisch per
+    <function>flock</function> gesperrt. Zuvor wurden Sperren nicht unterstützt,
+    so dass zwei Webserver-Prozesse, die gleichzeitig dieselbe dBase-Datei
+    änderten, mit hoher Wahrscheinlichkeit die Datenbank ruinierten. Dies kann
+    auf Systemen, die die Sperren auf Prozessebene implementieren unter multithreaded
+    SAPIS, wie etwa ISAPI, auch noch mit dbase 7.0.0+ passieren.
+   </para>
+  </caution>
   <para>
    dBase-Dateien sind einfache sequentielle Dateien mit fester Datensatzlänge.
    Neue Datensätze werden am Dateiende angehängt und gelöschte Datensätze
@@ -52,7 +78,7 @@
        <entry><literal>T</literal></entry>
        <entry>DateTime</entry>
        <entry><literal>YYYYMMDDhhmmss.uuu</literal></entry>
-       <entry>Es wird keine Gültigkeitsprüfung vorgenommen. Verfügbar seit dbase 7.0.0.</entry>
+       <entry>(FoxPro) Es wird keine Gültigkeitsprüfung vorgenommen. Verfügbar seit dbase 7.0.0.</entry>
       </row>
       <row>
        <entry><literal>N</literal></entry>
@@ -60,7 +86,16 @@
        <entry>Eine Zahl</entry>
        <entry>
         Sie müssen die Länge und die Genauigkeit (die Anzahl der
-        Nachkommastellen) angeben
+        Nachkommastellen) angeben.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>F</literal></entry>
+       <entry>Float</entry>
+       <entry>Eine Gleitkommazahl</entry>
+       <entry>
+        Dasselbe wie <literal>N</literal>.
+        Die Unterstützung für diesen Feldtyp wurde in PHP 5.2.0 hinzugefügt
        </entry>
       </row>
       <row>
@@ -79,19 +114,13 @@
        <entry>Boolean</entry>
        <entry>
         <literal>T</literal> oder <literal>Y</literal> für &true;,
-        <literal>F</literal> oder <literal>N</literal> für &false;
+        <literal>F</literal> oder <literal>N</literal> für &false;,
+        <literal>?</literal> für nicht initialisiert.
        </entry>
        <entry>
-        Wird seit dbase 7.0.0 als <type>bool</type> (&true; oder &false;) zurückgeliefert.
+        Wird seit dbase 7.0.0 als <type>bool</type> (&true; oder &false;),
+        oder &null; für nicht initialisierte Felder zurückgeliefert.
         Wurde vorher als <type>int</type> (<literal>1</literal> oder <literal>0</literal>> zurückgeliefert.
-       </entry>
-      </row>
-      <row>
-       <entry><literal>F</literal></entry>
-       <entry>Float</entry>
-       <entry>Eine Gleitkommazahl</entry>
-       <entry>
-        Die Unterstützung für diesen Feldtyp wurde in PHP 5.2.0 hinzugefügt
        </entry>
       </row>
      </tbody>
@@ -100,26 +129,17 @@
   </para>
   <note>
    <para>
-    &pecl.moved-ver;5.3.0.
+    Von dbase 7.0.0 an werden nullable Felder für
+    <constant>DBASE_TYPE_FOXPRO</constant> Datenbanken unterstützt. Ist ein Feld
+    nullable, wird die Übergabe von &null; das entsprechende Flag setzen, und
+    beim späteren Abruf wird der Feldwert &null; sein.
    </para>
   </note>
-  <warning>
+  <note>
    <para>
-    Es gibt keine Unterstützug für Indizes oder Memo-Felder. Auch
-    Sperrfunktionen sind nicht vorhanden. Zwei gleichzeitig ablaufende
-    Webserver-Prozesse, die die selbe dBase-Datei bearbeiten, werden Ihre
-    Datenbank sehr wahrscheinlich zerstören.
-   </para>
-   <para>
-    Wir empfehlen, keine dBase-Dateien als Produktions-Datenbank zu benutzen.
-    Wählen Sie dafür stattdessen einen echten SQL-Server; <link
-    xlink:href="&url.mysql;">MySQL</link> oder <link
-    xlink:href="&url.pgsql;">Postgres</link> sind bei PHP eine gute Wahl. Die
-    dBase-Unterstützung durch PHP dient hauptsächlich dem Im- und Export von
-    Daten zu oder aus ihrer Web-Datenbank, weil das DBF-Datei-Format allgemein
-    von Windows-Tabellenkalulationen und -Zeitplanern verstanden wird.
-   </para>
-  </warning>
+    Indizes und Memo-Felder werden nicht unterstützt.
+  </para>
+  </note>
  </preface>
  <!-- }}} -->
 
