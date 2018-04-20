@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: f08a981a30c7f1871577f6908c265b798f19b33f Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 6e796ded268ec18315c51536c3aa6532dbeb9f71 Maintainer: samesch Status: ready -->
+
 <refentry xml:id="function.preg-match-all" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>preg_match_all</refname>
@@ -103,6 +104,41 @@ Beispiel: , das ist ein Test
             </para>
            </informalexample>
           </para>
+          <para>
+           Enthält das Suchmuster benannte Teilsuchmuster, dann enthält
+           <varname>$matches</varname> zusätzlich Elemente mit dem Namen der
+           Teilsuchmuster als Schlüssel.
+          </para>
+          <para>
+           Enthält das Suchmuster duplizierte benannte Teilsuchmuster, wird nur
+           das letzte Teilsuchmuster in <varname>$matches[NAME]</varname>
+           gespeichert.
+           <informalexample>
+            <programlisting role="php">
+<![CDATA[
+<?php
+preg_match_all(
+    '/(?J)(?<match>foo)|(?<match>bar)/',
+    'foo bar',
+    $matches,
+    PREG_PATTERN_ORDER
+);
+print_r($matches['match']);
+?>
+]]>
+            </programlisting>
+            &example.outputs;
+            <screen>
+<![CDATA[
+Array
+(
+    [0] => 
+    [1] => bar
+)
+]]>
+            </screen>
+           </informalexample>
+          </para>
          </listitem>
         </varlistentry>
         <varlistentry>
@@ -143,14 +179,82 @@ echo $ausgabe[1][0] . ", " . $ausgabe[1][1] . "\n";
            Wenn dieses Flag gesetzt ist, wird mit jeder gefundenen
            Übereinstimmung der dazugehörige Versatz in der Zeichenkette
            zurückgegeben. Beachten Sie, dass dies den Wert von
-           <parameter>matches</parameter> in ein Array ändert, in dem jedes
+           <parameter>matches</parameter> in ein Array von Arrays ändert, in dem jedes
            Element ein Array ist, das aus der übereinstimmenden Zeichenkette
            als Element <literal>0</literal> und deren Stelle in
            <parameter>subject</parameter> als Element <literal>1</literal>
            besteht.
+           <informalexample>
+            <programlisting role="php">
+<![CDATA[
+<?php
+preg_match_all('/(foo)(bar)(baz)/', 'foobarbaz', $matches, PREG_OFFSET_CAPTURE);
+print_r($matches);
+?>
+]]>
+            </programlisting>
+            &example.outputs;
+            <screen>
+<![CDATA[
+Array
+(
+    [0] => Array
+        (
+            [0] => Array
+                (
+                    [0] => foobarbaz
+                    [1] => 0
+                )
+
+        )
+
+    [1] => Array
+        (
+            [0] => Array
+                (
+                    [0] => foo
+                    [1] => 0
+                )
+
+        )
+
+    [2] => Array
+        (
+            [0] => Array
+                (
+                    [0] => bar
+                    [1] => 3
+                )
+
+        )
+
+    [3] => Array
+        (
+            [0] => Array
+                (
+                    [0] => baz
+                    [1] => 6
+                )
+
+        )
+
+)
+]]>
+            </screen>
+           </informalexample>
           </para>
          </listitem>
         </varlistentry>
+        <varlistentry>
+         <term><constant>PREG_UNMATCHED_AS_NULL</constant></term>
+         <listitem>
+          <para>
+           Wird dieses Flag angegeben werden nicht gefundene Teilsuchmuster als
+           &null; geliefert; andernfalls werden sie als eine leere Zeichenkette
+           (<type>string</type>) geliefert.
+          </para>
+         </listitem>
+        </varlistentry>  
        </variablelist>
       </para>
       <para>
@@ -171,7 +275,7 @@ echo $ausgabe[1][0] . ", " . $ausgabe[1][1] . "\n";
       <note>
        <para>
         Die Verwendung von <parameter>offset</parameter> entspricht nicht der
-        Übergabe von <literal>substr($zeichenkette, $versatz)</literal> an
+        Übergabe von <code>substr($zeichenkette, $versatz)</code> an
         Stelle der Zeichenkette an <function>preg_match_all</function>, weil
         <parameter>pattern</parameter> Angaben wie zum Beispiel
         <emphasis>^</emphasis>, <emphasis>$</emphasis> oder
@@ -205,6 +309,13 @@ echo $ausgabe[1][0] . ", " . $ausgabe[1][1] . "\n";
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>7.2.0</entry>
+       <entry>
+        Die Konstante <constant>PREG_UNMATCHED_AS_NULL</constant> wird nun für
+        den Parameter <parameter>$flags</parameter> unterstützt.
+       </entry>
+      </row>
       <row>
        <entry>5.4.0</entry>
        <entry>
