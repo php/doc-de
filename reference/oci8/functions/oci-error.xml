@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: af4410a7e15898c3dbe83d6ea38246745ed9c6fb Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 8b5940cadeb4f1c8492f4a7f70743a2be807cf39 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.oci-error" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -12,10 +12,14 @@
   &reftitle.description;
    <methodsynopsis>
     <type>array</type><methodname>oci_error</methodname>
-    <methodparam choice="opt"><type>resource</type><parameter>source</parameter></methodparam>
+    <methodparam choice="opt"><type>resource</type><parameter>resource</parameter></methodparam>
    </methodsynopsis>
   <para>
    Liefert den zuletzt gefundenen Fehler.
+  </para>
+  <para>
+   Die Funktion sollte unmittelbar nach dem Auftreten eines Fehlers aufgerufen
+   werden. Fehler werden durch eine erfolgreiche Anweisung gelöscht.
   </para>
  </refsect1>
 
@@ -24,13 +28,14 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>source</parameter></term>
+     <term><parameter>resource</parameter></term>
      <listitem>
       <para>
-       Der Parameter ist, bei den meisten Fehlern, der am besten geeignete
-       Ressourcen-Handler. Bei Verbindungsfehlern mit
+       Bei den meisten Fehlern ist <parameter>resource</parameter> die Ressourcen-Kennung,
+       die an den fehlschlagenden Funktionsaufruf übergeben wurde. Bei Verbindungsfehlern mit
        <function>oci_connect</function>, <function>oci_new_connect</function>
-       oder <function>oci_pconnect</function> keinen Parameter mitgeben.
+       oder <function>oci_pconnect</function> sollte <parameter>resource</parameter>
+       nicht angegeben werden.
       </para>
      </listitem>
     </varlistentry>
@@ -42,36 +47,55 @@
   &reftitle.returnvalues;
   <para>
    Wenn kein Fehler gefunden wurde, liefert
-   <function>oci_error</function> &false; zurück. Ein Fehler wird von
-   <function>oci_error</function> als assoziatives Array zurückgegeben. In diesem
-   Array enthält <literal>code</literal> den Oracle-Errorcode und
-   <literal>message</literal> den Oracle-Fehlertext.
+   <function>oci_error</function> &false; zurück. Andernfalls gibt
+   <function>oci_error</function> die Fehlerinformationen als assoziatives Array.
   </para>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
   <para>
-   <informaltable>
-    <tgroup cols="2">
+   <table>
+   <title><function>oci_error</function> Array-Beschreibung</title>
+
+    <tgroup cols="3">
      <thead>
       <row>
-       <entry>&Version;</entry>
+       <entry>Schlüssel</entry>
+       <entry>Typ</entry>
        <entry>&Description;</entry>
       </row>
      </thead>
      <tbody>
       <row>
-       <entry>4.3</entry>
+       <entry><literal>code</literal></entry>
+       <entry><type>integer</type></entry>
        <entry>
-        Im Rückgabe-Array sind nun <literal>offset</literal> und
-        <literal>sqltext</literal> enthalten, die die Fehlerstelle anzeigen und
-        den ursprünglichen SQL-Text, der den Fehler verusacht hat, beinhalten.
+        Die Oracle Fehlernummer.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>message</literal></entry>
+       <entry><type>string</type></entry>
+       <entry>
+        Die Oracle Fehlermeldung.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>offset</literal></entry>
+       <entry><type>integer</type></entry>
+       <entry>
+        Die Byteposition des Fehlers in einer SQL-Anweisung. Gab es kein Statement,
+        dann ist dies gleich <literal>0</literal>.
+       </entry>
+      </row>
+      <row>
+       <entry><literal>sqltext</literal></entry>
+       <entry><type>string</type></entry>
+       <entry>
+        Der Text der SQL-Anweisung. Gab es kein Statement, dann ist dies eine 
+        leere Zeichenkette.
        </entry>
       </row>
      </tbody>
     </tgroup>
-   </informaltable>
+   </table>
   </para>
  </refsect1>
 
@@ -82,11 +106,13 @@
     <title>Zeigt die Oracle-Fehlermeldung nach einem Verbindungsfehler an</title>
     <programlisting role="php">
 <![CDATA[
-$conn = @oci_connect("scott", "tiger", "mydb");
+<?php
+$conn = oci_connect("hr", "welcome", "localhost/XE");
 if (!$conn) {
-  $e = oci_error();   // Bei oci_connect-Fehler ohne Handler
-  echo htmlentities($e['message']);
+    $e = oci_error();   // bei oci_connect-Fehlern keine Kennung übergeben
+    trigger_error(htmlentities($e['message']), E_USER_ERROR);
 }
+?>
 ]]>
     </programlisting>
    </example>
@@ -96,11 +122,13 @@ if (!$conn) {
     <title>Zeigt die Oracle-Fehlermeldung nach einem Parse-Error an</title>
     <programlisting role="php">
 <![CDATA[
-$stmt = @oci_parse($conn, "select ' from dual");  // Fehlerhafte Quottierung
-if (!$stmt) {
-  $e = oci_error($conn);  // Bei oci_parse-Fehler mit Verbindungs-Handler
-  echo htmlentities($e['message']);
+<?php
+$stid = oci_parse($conn, "select ' from dual");  // fehlerhaftes Anführungszeichen
+if (!$stid) {
+    $e = oci_error($conn);  // bei oci_parse-Fehlern Verbindungskennung übergeben
+    trigger_error(htmlentities($e['message']), E_USER_ERROR);
 }
+?>
 ]]>
       </programlisting>
      </example>
@@ -108,36 +136,27 @@ if (!$stmt) {
     <para>
      <example>
       <title>
-       Zeigt die Oracle-Fehlermeldung und das problematische Statement
-       nach einem Ausführungsfehler
+       Anzeigen der Oracle-Fehlermeldung, der problematische Anweisung und der Position
+       des Problems nach einem Ausführungsfehler
       </title>
       <programlisting role="php">
 <![CDATA[
-$r = oci_execute($stmt);
+<?php
+$stid = oci_parse($conn, "select does_not_exist from dual");
+$r = oci_execute($stid);
 if (!$r) {
-  $e = oci_error($stmt); // Bei oci_execute-Fehler mit Statement-Handle
-  echo htmlentities($e['message']);
-  echo "<pre>";
-  echo htmlentities($e['sqltext']);
-  printf("\n%".($e['offset']+1)."s", "^");
-  echo "</pre>";
+    $e = oci_error($stid); // bei oci_execute-Fehlern die Anweisungskennung übergeben
+    print htmlentities($e['message']);
+    print "\n<pre>\n";
+    print htmlentities($e['sqltext']);
+    printf("\n%".($e['offset']+1)."s", "^");
+    print  "\n</pre>\n";
 }
+?>
 ]]>
       </programlisting>
      </example>
     </para>
- </refsect1>
-
- <refsect1 role="notes">
-  &reftitle.notes;
-  <note>
-   <para>
-    In der PHP-Versionen vor 5.0.0 muss man <function>ocierror</function>
-    benutzen. Den Namen kann man immer noch nutzen. Er wurde als Alias für
-    <function>oci_error</function> für die Abwärtskompatibilität
-    erhalten. Dieses ist allerdings veraltet und wird nicht empfohlen.
-   </para>
-  </note>
  </refsect1>
 
 </refentry>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: af4410a7e15898c3dbe83d6ea38246745ed9c6fb Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 46854b1593fc9bf77d14db6fddcbfb73a20cbf86 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.oci-fetch-object" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>oci_fetch_object</refname>
-  <refpurpose>Liefert die nächste Zeile der Ergebnisdaten als Objekt</refpurpose>
+  <refpurpose>Liefert die nächste Zeile einer Abfrage als Objekt</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -15,11 +15,10 @@
    <methodparam><type>resource</type><parameter>statement</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Liefert die nächste Zeile der Ergebnisdaten als Objekt.
-  </para>
-  <para>
-   Ein nachfolgender Aufruf von <function>oci_fetch_object</function> liefert
-   die nächste Zeile des Ergebnisses oder &false;, wenn es keine weiteren Zeilen gibt.
+   Gibt ein Objekt zurück, das die nächste Ergebnismengenzeile einer Abfrage enthält.
+   Jede Eigenschaft des Objekts entspricht einer Spalte der Zeile.
+   Diese Funktion wird üblicherweise in einer Schleife aufgerufen bis sie &false;
+   zurückgibt, was anzeigt, dass es keine weitere Zeilen gibt.
   </para>
   &oci.datatypes;
  </refsect1>
@@ -31,9 +30,7 @@
     <varlistentry>
      <term><parameter>statement</parameter></term>
      <listitem>
-      <para>
-       Ein gültiger Zeiger auf ein OCI-Statement.
-      </para>
+      &oci.arg.statement.id;
      </listitem>
     </varlistentry>
    </variablelist>
@@ -43,27 +40,174 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert ein Objekt, dessen Attribute mit den Feldern der Anweisung übereinstimmen,
-   oder &false;, wenn es keine weiteren Zeilen für das <parameter>statement</parameter>
-   gibt.
+   Gibt ein Objekt zurück. Jede Eigenschaft des Objekts entspricht einer Spalte
+   der Zeile. Gibt es keine weiteren Zeilen in <parameter>statement</parameter>,
+   dann wird &false; zurückgegeben.
   </para>
-  &database.fetch-null;
-  <note>
-   <simpara>
-    Oracle liefert alle Feldnamen in Großschrift zurück und deswegen sind auch
-    die Attribute im Ergebnisobjekt in Großschrift.
-   </simpara>
-  </note>
+  <para>
+    Jegliche <literal>LOB</literal>-Spalten werden als LOB-Kennungen zurückgegeben.
+  </para>
+  <para>
+   <literal>DATE</literal>-Spalten werden als gemäß des aktuellen Datumsformats
+   formatierte Zeichenketten zurückgegeben. Das Standardformat kann mit Oracle
+   Umgebungsvariablen wie <literal>NLS_LANG</literal> geändert werden, oder auch
+   durch einen zuvor ausgeführten <literal>ALTER SESSION SET NLS_DATE_FORMAT</literal>
+   Befehl.
+  </para>
+  <para>
+   Die standardmäßigen Oracle Spaltennamen, die nicht zwischen Groß- und Kleinschreibung
+   unterscheiden, erzeugen Eigenschaftsnamen in Großbuchstaben. Spaltennamen, die
+   zwischen Groß- und Kleinschreibung unterscheiden, verwenden die genaue Schreibweise.
+   <function>var_dump</function> kann auf das Ergebnisobjekt angewendet werden,
+   um die richtige Schreibweise für den Eigenschaftszugriff zu prüfen.
+  </para>
+  <para>
+   Die Eigenschaftswerte sind &null; für jeglche <literal>NULL</literal> Datenfelder.
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>oci_fetch_object</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+/*
+  Vor der Ausführung ist die Tabelle zu erstellen:
+    CREATE TABLE mytab (id NUMBER, description VARCHAR2(30));
+    INSERT INTO mytab (id, description) values (1, 'Currywurst mit Pommes');
+    COMMIT;
+*/
+
+$conn = oci_connect('hr', 'welcome', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+
+$stid = oci_parse($conn, 'SELECT id, description FROM mytab');
+oci_execute($stid);
+
+while (($row = oci_fetch_object($stid)) != false) {
+    // verwende Eigenschaftsnamen in Großschrift für jede Standard Oracle Spalte
+    echo $row->ID . "<br>\n";
+    echo $row->DESCRIPTION . "<br>\n"; 
+}
+
+// Output is:
+//    1
+//    Currywurst mit Pommes
+
+oci_free_statement($stid);
+oci_close($conn);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>
+     <function>oci_fetch_object</function> mit Spaltennamen, die zwischen Groß-
+     und Kleinschreibung unterscheiden
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+/*
+  Vor der Ausführung ist die Tabelle mit Spaltennamen, die zwischen Groß- und
+  Kleinschreibung unterscheiden, zu erstellen:
+    CREATE TABLE mytab (id NUMBER, "MyDescription" VARCHAR2(30));
+    INSERT INTO mytab (id, "MyDescription") values (1, 'Eiskaffee');
+    COMMIT;
+*/
+
+$conn = oci_connect('hr', 'welcome', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+
+$stid = oci_parse($conn, 'SELECT id, "MyDescription" FROM mytab');
+oci_execute($stid);
+
+while (($row = oci_fetch_object($stid)) != false) {
+    // verwende Eigenschaftsnamen in Großschrift für jede Standard Oracle Spalte
+    echo $row->ID . "<br>\n";
+    // verwende die genaue Schreibweise für Spatennamen, die zwischen Groß-
+    // und Kleinschrift unterscheiden
+    echo $row->MyDescription . "<br>\n";   
+}
+
+// Output is:
+//    1
+//    Eiskaffee
+
+oci_free_statement($stid);
+oci_close($conn);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title><function>oci_fetch_object</function> mit LOBs</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+/*
+  Vor der Ausführung ist die Tabelle zu erstellen:
+    CREATE TABLE mytab (id NUMBER, description CLOB);
+    INSERT INTO mytab (id, description) values (1, 'Eine sehr lange Zeichenkette');
+    COMMIT;
+*/
+
+$conn = oci_connect('hr', 'welcome', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+
+$stid = oci_parse($conn, 'SELECT id, description FROM mytab');
+oci_execute($stid);
+
+while (($row = oci_fetch_object($stid)) != false) {
+    echo $row->ID . "<br>\n";
+    // das folgende gibt die ersten 15 Bytes von DESCRIPTION aus
+    echo $row->DESCRIPTION->read(15) . "<br>\n"; 
+}
+
+// Output is:
+//    1
+//    Eine sehr lange
+
+oci_free_statement($stid);
+oci_close($conn);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><function>oci_fetch_array</function></member>
-    <member><function>oci_fetch_assoc</function></member>
-    <member><function>oci_fetch_row</function></member>
+    <member><function>oci_fetch</function></member>
     <member><function>oci_fetch_all</function></member>
+    <member><function>oci_fetch_assoc</function></member>
+    <member><function>oci_fetch_array</function></member>
+    <member><function>oci_fetch_row</function></member>
    </simplelist>
   </para>
  </refsect1>

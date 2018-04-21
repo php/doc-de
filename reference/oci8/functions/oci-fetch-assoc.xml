@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: af4410a7e15898c3dbe83d6ea38246745ed9c6fb Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 46854b1593fc9bf77d14db6fddcbfb73a20cbf86 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="function.oci-fetch-assoc" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>oci_fetch_assoc</refname>
-  <refpurpose>Liefert die nächste Zeile der Ergebnisdaten als assoziatives Array</refpurpose>
+  <refpurpose>Liefert die nächste Zeile einer Abfrage als assoziatives Array</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -15,17 +15,16 @@
    <methodparam><type>resource</type><parameter>statement</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Liefert die nächste Zeile der Ergebnisdaten als assoziatives Array.
+   Gibt ein assoziatives Array zurück, das die nächste Zeile der Ergebnismenge
+   einer Abfrage enthält. Jedes Array-Element entspricht einer Spalte der Zeile.
+   Diese Funktion wird üblicherweise in einer Schleife aufgerufen bis sie &false;
+   zurückgibt, was anzeigt, dass es keine weitere Zeilen gibt.
   </para>
   <para>
    Ein <function>oci_fetch_assoc</function>-Aufruf ist identisch mit einem
-   <function>oci_fetch_array</function>-Aufruf und <constant>OCI_ASSOC</constant>.
+   <function>oci_fetch_array</function>-Aufruf und <constant>OCI_ASSOC</constant>
+   + <constant>OCI_RETURN_NULLS</constant>.
   </para>
-  <para>
-   Ein nachfolgender Aufruf von <function>oci_fetch_assoc</function> liefert
-   die nächste Zeile oder &false;, wenn es keine weiteren Zeilen gibt.
-  </para>
-  &oci.datatypes;
  </refsect1>
 
  <refsect1 role="parameters">
@@ -35,9 +34,7 @@
     <varlistentry>
      <term><parameter>statement</parameter></term>
      <listitem>
-      <para>
-       Ein gültiger Zeiger auf ein OCI-Statement.
-      </para>
+      &oci.arg.statement.id;
      </listitem>
     </varlistentry>
    </variablelist>
@@ -47,15 +44,50 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert ein assoziatives Array oder &false;, wenn es keine weiteren Zeilen
-   für das <parameter>statement</parameter> gibt.
+   Liefert ein assoziatives Array. Gibt es keine weiteren Zeilen
+   für das <parameter>statement</parameter>, dann wird &false; zurückgegeben.
   </para>
-  &database.fetch-null;
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>oci_fetch_assoc</function> Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$conn = oci_connect('hr', 'welcome', 'localhost/XE');
+if (!$conn) {
+    $e = oci_error();
+    trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+}
+
+$stid = oci_parse($conn, 'SELECT department_id, department_name FROM departments');
+oci_execute($stid);
+
+while (($row = oci_fetch_assoc($stid)) != false) {
+    echo $row['DEPARTMENT_ID'] . " " . $row['DEPARTMENT_NAME'] . "<br>\n";
+}
+
+oci_free_statement($stid);
+oci_close($conn);
+
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
   <note>
-   <simpara>
-    Oracle liefert alle Feldnamen in Großschrift zurück und deswegen sind auch
-    die assoziativen Indizes im Ergebnisarray in Großschrift.
-   </simpara>
+   <para>
+    Weitere Beispiele für das Holen von Zeilen sind der Dokumentation von
+    <function>oci_fetch_array</function> zu entnehmen.
+   </para>
   </note>
  </refsect1>
 
@@ -63,10 +95,11 @@
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>oci_fetch</function></member>
+    <member><function>oci_fetch_all</function></member>
     <member><function>oci_fetch_array</function></member>
     <member><function>oci_fetch_object</function></member>
     <member><function>oci_fetch_row</function></member>
-    <member><function>oci_fetch_all</function></member>
    </simplelist>
   </para>
  </refsect1>

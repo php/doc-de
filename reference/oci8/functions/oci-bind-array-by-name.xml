@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: fc4b5ceed64bea906904851d0ab8b1cd84b2e2e8 Maintainer: sammywg Status: ready -->
+
 <refentry xml:id="function.oci-bind-array-by-name" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>oci_bind_array_by_name</refname>
-  <refpurpose>Bindet ein PHP-Array namentlich an ein Oracle-PL/SQL-Array</refpurpose>
+  <refpurpose>Bindet ein PHP-Array an einen Oracle-PL/SQL-Arrayparameter</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -156,29 +157,34 @@
       <programlisting role="php">
 <![CDATA[
 <?php
+$conn = oci_connect("hr", "hrpwd", "localhost/XE");
+if (!$conn) {
+    $m = oci_error();
+    trigger_error(htmlentities($m['message']), E_USER_ERROR);
+}
 
-$c = oci_connect("scott", "tiger");
-
-$create = "CREATE TABLE bind_beispiel(name VARCHAR(20))";
-$statement = oci_parse($c, $create);
-oci_execute($statement);
+$create = "CREATE TABLE bind_example(name VARCHAR(20))";
+$stid = oci_parse($conn, $create);
+oci_execute($stid);
 
 $create_pkg = "
 CREATE OR REPLACE PACKAGE ARRAYBINDPKG1 AS
   TYPE ARRTYPE IS TABLE OF VARCHAR(20) INDEX BY BINARY_INTEGER;
   PROCEDURE iobind(c1 IN OUT ARRTYPE);
 END ARRAYBINDPKG1;";
-$statement = oci_parse($c, $create_pkg);
-oci_execute($statement);
+$stid = oci_parse($conn, $create_pkg);
+oci_execute($stid);
 
 $create_pkg_body = "
 CREATE OR REPLACE PACKAGE BODY ARRAYBINDPKG1 AS
-  CURSOR CUR IS SELECT name FROM bind_beispiel;
+  CURSOR CUR IS SELECT name FROM bind_example;
   PROCEDURE iobind(c1 IN OUT ARRTYPE) IS
     BEGIN
-    FOR i IN 1..5 LOOP
-      INSERT INTO bind_beispiel VALUES (c1(i));
-    END LOOP;
+    -- Masseneinfügung
+    FORALL i IN INDICES OF c1
+      INSERT INTO bind_example VALUES (c1(i));
+
+    -- Abrufen und umkehren
     IF NOT CUR%ISOPEN THEN
       OPEN CUR;
     END IF;
@@ -191,33 +197,21 @@ CREATE OR REPLACE PACKAGE BODY ARRAYBINDPKG1 AS
     END LOOP;
   END iobind;
 END ARRAYBINDPKG1;";
-$statement = oci_parse($c, $create_pkg_body);
-oci_execute($statement);
+$stid = oci_parse($conn, $create_pkg_body);
+oci_execute($stid);
 
-$statement = oci_parse($c, "BEGIN ARRAYBINDPKG1.iobind(:c1); END;");
-
-$array = array("eins", "zwei", "drei", "vier", "fuenf");
-
-oci_bind_array_by_name($statement, ":c1", $array, 5, -1, SQLT_CHR);
-
-oci_execute($statement);
+$stid = oci_parse($conn, "BEGIN arraybindpkg1.iobind(:c1); END;");
+$array = array("one", "two", "three", "four", "five");
+oci_bind_array_by_name($stid, ":c1", $array, 5, -1, SQLT_CHR);
+oci_execute($stid);
 
 var_dump($array);
 
- ?>
+?>
 ]]>
     </programlisting>
    </example>
   </para>
- </refsect1>
-
- <refsect1 role="notes">
-  &reftitle.notes;
-  <note>
-   <para>
-    Diese Funktion is seit dem OCI8-Release 1.2 verfügbar.
-   </para>
-  </note>
  </refsect1>
 
 </refentry>
