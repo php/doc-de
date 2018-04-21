@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d53c79d392b1e9e9295ae33795b3f851983d12db Maintainer: samesch Status: ready -->
+<!-- EN-Revision: ef9b464ad778b0e470d536c1e4a2a011f203e165 Maintainer: samesch Status: ready -->
+
 <refentry xml:id="function.session-start" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>session_start</refname>
@@ -11,7 +12,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>session_start</methodname>
-   <methodparam choice="opt"><type>array</type><parameter>options</parameter><initializer>[]</initializer></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>options</parameter><initializer>array()</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>session_start</function> erzeugt eine Session oder nimmt die
@@ -58,14 +59,13 @@
       Als optionaler Parameter kann ein assoziatives Array mit Optionen
       angegeben werden, das die aktuell gesetzten 
       <link linkend="session.configuration">Sessionkonfigurationsdirektiven</link>
-      überschreibt. Die Schlüssel sollten nicht die <literal>session.</literal>-Präfixe
+      übersteuert. Die Schlüssel sollten nicht das <literal>session.</literal>-Präfix
       beinhalten.
      </para>
      <para>
       Zusätzlich zu den normalen Konfigurationsdirektiven kann auch eine
-      In addition to the normal set of configuration directives, a
       <literal>read_and_close</literal>-Option angegeben werden. Falls auf
-      &true; gesetzt, führt es dazu, dass die Session unmittelbar nach dem
+      &true; gesetzt, führt sie dazu, dass die Session unmittelbar nach dem
       Auslesen geschlossen wird. Dadurch lässt sich eine unnötige Sperre
       vermeiden, wenn die Sessiondaten nicht verändert werden.
      </para>
@@ -94,6 +94,13 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>7.1.0</entry>
+       <entry>
+        <function>session_start</function> gibt nun &false; zurück, und initialisiert
+        <varname>$_SESSION</varname> nicht mehr, wenn das Starten der Session fehlschlug.
+       </entry>
+      </row>
       <row>
        <entry>7.0.0</entry>
        <entry>
@@ -125,12 +132,13 @@
 
  <refsect1 role="examples">
   &reftitle.examples;
-  <para>
-   <example>
-    <title>
-     Ein Session-Beispiel: <filename>seite1.php</filename>
-    </title>
-    <programlisting role="php">
+  <refsect2>
+   <title>Ein grundlegendes Session-Beispiel</title>
+
+   <para>
+    <example>
+     <title><filename>seite1.php</filename></title>
+     <programlisting role="php">
 <![CDATA[
 <?php
 // seite1.php
@@ -150,21 +158,21 @@ echo '<br /><a href="seite2.php">Seite 2</a>';
 echo '<br /><a href="seite2.php?' . SID . '">Seite 2</a>';
 ?>
 ]]>
-    </programlisting>
-   </example>
-  </para>
-  <para>
-   Nach dem Aufruf von <filename>seite1.php</filename> enthält automatisch
-   auch die zweite Seite, <filename>seite2.php</filename>, die Session-Daten.
-   Lesen Sie <link linkend="ref.session">Session Funktionen</link>, um weitere
-   Informationen über die <link linkend="session.idpassing">Übermittlung der
-   Session-ID</link> zu erhalten. Dort wird zum Beispiel erklärt, worum es
-   sich bei der Konstanten <constant>SID</constant> handelt.
-  </para>
-  <para>
-   <example>
-    <title>Ein Session-Beispiel: <filename>seite2.php</filename></title>
-    <programlisting role="php">
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Nach dem Aufruf von <filename>seite1.php</filename> enthält automatisch
+    auch die zweite Seite, <filename>seite2.php</filename>, die Session-Daten.
+    Lesen Sie <link linkend="ref.session">Session Funktionen</link>, um weitere
+    Informationen über die <link linkend="session.idpassing">Übermittlung der
+    Session-ID</link> zu erhalten. Dort wird zum Beispiel erklärt, worum es
+    sich bei der Konstanten <constant>SID</constant> handelt.
+   </para>
+   <para>
+    <example>
+     <title><filename>seite2.php</filename></title>
+     <programlisting role="php">
 <![CDATA[
 <?php
 // seite2.php
@@ -181,15 +189,15 @@ echo date('d.m.Y H:i:s', $_SESSION['zeit']);
 echo '<br /><a href="seite1.php">Seite 1</a>';
 ?>
 ]]>
-    </programlisting>
-   </example>
-  </para>
-  
+     </programlisting>
+    </example>
+   </para>
+  </refsect2>
   <refsect2>
    <title>Optionen an <function>session_start</function> übergeben</title>
 
    <example>
-    <title>Die Cookie-Gültigkeitsdauer überschreiben</title>
+    <title>Die Cookie-Gültigkeitsdauer übersteuern</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -209,7 +217,7 @@ session_start([
 <?php
 // Sofern wir wissen, dass wir keine Daten zu verändern brauchen,
 // können wir die Session unmittelbar nach dem Auslesen automatisch
-// schließen, um eine Sperre für die Session zu vermeiden und andere
+// schließen, um eine Sperre für die Session zu vermeiden und
 // andere Seiten während der Zeit am Zugriff nicht zu behindern.
 session_start([
     'cookie_lifetime' => 86400,

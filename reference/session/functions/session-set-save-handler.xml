@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 00f8e96bac6b7027aa37183a07da06abfaa73bba Maintainer: samesch Status: ready -->
+<!-- EN-Revision: b963543d8cff84496101bea9b11f23df3ce624bd Maintainer: samesch Status: ready -->
 
-<refentry xml:id="function.session-set-save-handler" xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="function.session-set-save-handler" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>session_set_save_handler</refname>
   <refpurpose>Setzt benutzerdefinierte Session-Speicherfunktionen</refpurpose>
@@ -12,20 +12,23 @@
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>session_set_save_handler</methodname>
-   <methodparam><type>callback</type><parameter>open</parameter></methodparam>
-   <methodparam><type>callback</type><parameter>close</parameter></methodparam>
-   <methodparam><type>callback</type><parameter>read</parameter></methodparam>
-   <methodparam><type>callback</type><parameter>write</parameter></methodparam>
-   <methodparam><type>callback</type><parameter>destroy</parameter></methodparam>
-   <methodparam><type>callback</type><parameter>gc</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>open</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>close</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>read</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>write</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>destroy</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>gc</parameter></methodparam>
+   <methodparam choice="opt"><type>callable</type><parameter>create_sid</parameter></methodparam>
+   <methodparam choice="opt"><type>callable</type><parameter>validate_sid</parameter></methodparam>
+   <methodparam choice="opt"><type>callable</type><parameter>update_timestamp</parameter></methodparam>
   </methodsynopsis>
   <para>
    Seit PHP 5.4 ist es möglich folgenden Prototypen zu registrieren:
   </para>
   <methodsynopsis>
    <type>bool</type><methodname>session_set_save_handler</methodname>
-   <methodparam><type>SessionHandlerInterface</type><parameter>sessionhandler</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>register_shutdown</parameter><initializer>true</initializer></methodparam>
+   <methodparam><type>object</type><parameter>sessionhandler</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>register_shutdown</parameter><initializer>&true;</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>session_set_save_handler</function> setzt die benutzerdefinierten
@@ -46,7 +49,9 @@
      <term><parameter>sessionhandler</parameter></term>
      <listitem>
       <para>
-       Ein Exemplar einer Klasse die <interfacename>SessionHandlerInterface</interfacename>
+       Ein Exemplar einer Klasse, die <interfacename>SessionHandlerInterface</interfacename>,
+       <interfacename>SessionIdInterface</interfacename> und/oder
+       <interfacename>SessionUpdateTimestampHandlerInterface</interfacename>
        implementiert, wie beispielsweise <classname>SessionHandler</classname>, das als
        benutzerdefinierte Session-Speicherfunktion registriert werden soll.
        Erst seit PHP 5.4.
@@ -57,7 +62,7 @@
      <term><parameter>register_shutdown</parameter></term>
      <listitem>
       <para>
-       Registriert <function>session_register_shutdown</function> als eine
+       Registriert <function>session_write_close</function> als eine
        <function>register_shutdown_function</function> Funktion.
       </para>
      </listitem>
@@ -184,6 +189,16 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term><parameter>create_sid()</parameter></term>
+     <listitem>
+      <para>
+       Dieser Callback wird ausgeführt, wenn eine neue Session-ID benötigt wird.
+       Es werden keine Parameter übergeben, und der Rückgabewert sollte eine
+       Zeichenkette sein, die eine gültige Session-ID für den Handler darstellt.
+      </para>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
  </refsect1>
@@ -199,7 +214,41 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>session_set_save_handler</function> Beispiel</title>
+    <title>
+     Benutzerdefierter Session-Handler; der vollständige Code ist bei <classname>SessionHandlerInterface</classname> aufgeführt
+    </title>
+    <para>
+     Der folgende Code ist für PHP-Version 5.4.0 und höher. Hier wird nur der
+     Aufruf gezeigt; der vollständige Beispielcode ist in der Dokumentation von
+     <classname>SessionHandlerInterface</classname> zu finden.
+    </para>
+    <para>
+     Es ist zu beachten, dass der OOP-Prototyp mit <function>session_set_save_handler</function>
+     verwendet wird, und dass die Shutdown-Funktion unter Verwendung des Parameters
+     flag der Funktion registriert wird. Dies wird grundsätzlich empfohlen, wenn
+     Objekte als Session-Save-Handler registriert werden.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class MySessionHandler implements SessionHandlerInterface
+{
+    // hier wird das Interface implementiert
+}
+
+$handler = new MySessionHandler();
+session_set_save_handler($handler, true);
+session_start();
+
+// fahre fort und setze und hole Werte per Schlüssel von $_SESSION
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Benutzerdefinierter Session-Save-Handler, der Objekte verwendet</title>
+    <para>
+     Der folgende Code ist für PHP-Versionen kleiner als 5.4.0.
+    </para>
     <para>
      Das folgende Beispiel liefert eine dateibasierte Session-Speicherung, die
      der Standard-Speicherroutine <parameter>files</parameter> der
@@ -207,138 +256,81 @@
      werden, dass es Datenbank-Speicherung mittels ihrer bevorzugten
      PHP-gestützten Datenbank beinhaltet.
     </para>
+    <para>
+     Es ist zu beachten, dass zusätzlich die Shutdown-Funktion
+     <function>session_write_close</function> unter Verwendung von
+     <function>register_shutdown_function</function> unter PHP kleiner 5.4.0
+     registriert wird. Dies wird grundsätzlich empfohlen, wenn Objekte als
+     Session-Save-Handler unter PHP kleiner 5.4.0 registriert werden.
+    </para>
     <programlisting role="php">
 <![CDATA[
-<?php
-function oeffne($speicherpfad, $session_name)
+class FileSessionHandler
 {
-  global $sess_speicherpfad;
+    private $savePath;
 
-  $sess_speicherpfad = $speicherpfad;
-  return(true);
-}
+    function open($savePath, $sessionName)
+    {
+        $this->savePath = $savePath;
+        if (!is_dir($this->savePath)) {
+            mkdir($this->savePath, 0777);
+        }
 
-function schliesse()
-{
-  return(true);
-}
-
-function lese($id)
-{
-  global $sess_speicherpfad;
-
-  $sess_datei = "$sess_speicherpfad/sess_$id";
-  return (string) @file_get_contents($sess_datei);
-}
-
-function schreibe($id, $sess_daten)
-{
-  global $sess_speicherpfad;
-
-  $sess_datei = "$sess_speicherpfad/sess_$id";
-  if ($fp = @fopen($sess_datei, "w")) {
-    $return = fwrite($fp, $sess_daten);
-    fclose($fp);
-    return $return;
-  } else {
-    return(false);
-  }
-}
-
-function loesche($id)
-{
-  global $sess_speicherpfad;
-
-  $sess_datei = "$sess_speicherpfad/sess_$id";
-  return(@unlink($sess_datei));
-}
-
-function gc($maxlifetime)
-{
-  global $sess_speicherpfad;
-
-  foreach (glob("$sess_speicherpfad/sess_*") as $dateiname) {
-    if (filemtime($dateiname) + $maxlifetime < time()) {
-      @unlink($dateiname);
+        return true;
     }
-  }
-  return true;
+
+    function close()
+    {
+        return true;
+    }
+
+    function read($id)
+    {
+        return (string)@file_get_contents("$this->savePath/sess_$id");
+    }
+
+    function write($id, $data)
+    {
+        return file_put_contents("$this->savePath/sess_$id", $data) === false ? false : true;
+    }
+
+    function destroy($id)
+    {
+        $file = "$this->savePath/sess_$id";
+        if (file_exists($file)) {
+            unlink($file);
+        }
+
+        return true;
+    }
+
+    function gc($maxlifetime)
+    {
+        foreach (glob("$this->savePath/sess_*") as $file) {
+            if (filemtime($file) + $maxlifetime < time() && file_exists($file)) {
+                unlink($file);
+            }
+        }
+
+        return true;
+    }
 }
 
-session_set_save_handler("oeffne", "schliesse", "lese", "schreibe", "loesche", "gc");
+$handler = new FileSessionHandler();
+session_set_save_handler(
+    array($handler, 'open'),
+    array($handler, 'close'),
+    array($handler, 'read'),
+    array($handler, 'write'),
+    array($handler, 'destroy'),
+    array($handler, 'gc')
+    );
+
+// das folgende verhindert unerwartete Effekte, wenn Objekte als Save-Handler verwendet werden
+register_shutdown_function('session_write_close');
 
 session_start();
-
-// verfahren Sie mit Sessions wie gewohnt
-?>
-]]>
-    </programlisting>
-   </example>
-   <example>
-    <title>
-     <function>session_set_save_handler</function> mit Verwendung von
-     <classname>SessionHandler</classname>
-    </title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-class MySessionHandler extends SessionHandler {
-  public function open($save_path, $sessionid)
-  {
-    global $sess_save_path;
-
-    $sess_save_path = $save_path;
-    return(true);
-  }
-  public function close()
-  {
-    return true;
-  }
-  public function read($sessionid)
-  {
-    global $sess_save_path;
-
-    $sess_file = "$sess_save_path/sess_$id";
-    return (string) @file_get_contents($sess_file);
-  }
-  public function write($sessionid, $sessiondata)
-  {
-    global $sess_save_path;
-
-    $sess_file = "$sess_save_path/sess_$id";
-    if ($fp = @fopen($sess_file, "w")) {
-      $return = fwrite($fp, $sess_data);
-      fclose($fp);
-      return $return;
-    } else {
-      return(false);
-    }
-  }
-  public function destroy($sessionid)
-  {
-    global $sess_save_path;
-
-    $sess_file = "$sess_save_path/sess_$id";
-    return(@unlink($sess_file));
-  }
-  public function gc($maxlifetime)
-  {
-    global $sess_save_path;
-
-    foreach (glob("$sess_save_path/sess_*") as $filename) {
-      if (filemtime($filename) + $maxlifetime < time()) {
-        @unlink($filename);
-      }
-    }
-    return true;
-  }
-}
-
-$handler = new MySessionHandler();
-session_set_save_handler($handler);
-
-session_start();
-?>
+// fahre fort Werte per Schlüssel in $_SESSION zu setzen und zu holen
 ]]>
     </programlisting>
    </example>
@@ -349,15 +341,36 @@ session_start();
   &reftitle.notes;
   <warning>
    <para>
+    Werden Objekte als Session-Save-Handler verwendet, ist es wichtig die
+    Shutdown-Funktion mit PHP zu registrieren, um unerwartete Nebenwirkungen in
+    Verbindung mit der Art wie PHP intern Objekte beim Herunterfahren zerstört
+    zu verhindern, was dazu führen kann, dass <parameter>write</parameter> und
+    <parameter>close</parameter> nicht aufgerufen werden. Üblicherweise sollte
+    <parameter>'session_write_close'</parameter> unter Verwendung von
+    <function>register_shutdown_function</function> registriert werden.
+   </para>
+   <para>
+    Von PHP 5.4.0 an kann <function>session_register_shutdown</function> verwendet
+    werden, oder einfach das 'register shutdown' Flag gesetzt werden, wenn
+    <function>session_set_save_handler</function> unter Verwendung der OOP-Methode
+    und der Übergabe eines Exemplars, das <classname>SessionHandlerInterface</classname>
+    implementiert, aufgerufen wird.
+   </para>
+  </warning>
+  <warning>
+   <para>
     Ab PHP 5.0.5 werden die Routinen <parameter>write</parameter> und
     <parameter>close</parameter> nach dem Zerstören von Objekten
     aufgerufen und können deshalb keine Objekte verwenden oder Exceptions
-    (Fehler-, Ausnahmesituationen) auslösen. Objekt-Destruktoren können
+    (Fehler-, Ausnahmesituationen) auslösen. Exceptions können nicht abgefangen
+    werden, und es wird auch kein Exception-Trace angezeigt; die Ausführung wird
+    einfach unerwartet abgebrochen. Objekt-Destruktoren können
     aber Sessions verwenden.
    </para>
    <para>
     Es ist möglich, <function>session_write_close</function> über den
-    Destruktor aufzurufen, um dieses Henne-Ei Problem zu lösen.
+    Destruktor aufzurufen, um dieses Henne-Ei Problem zu lösen, aber der verlässlichste
+    Weg ist das Registrieren einer Shutdown-Funktion wie oben beschrieben.
    </para>
   </warning>
   <warning>
@@ -382,11 +395,25 @@ session_start();
     </thead>
     <tbody>
      <row>
+      <entry>7.0.0</entry>
+      <entry>
+       Die optionalen Parameter <parameter>validate_sid</parameter> und
+       <parameter>update_timestamp</parameter> wurden hinzugefügt.
+      </entry>
+     </row>
+     <row>
+      <entry>5.5.1</entry>
+      <entry>
+       Der optionale Parameter <parameter>create_sid</parameter> wurde hinzugefügt.
+      </entry>
+     </row>
+     <row>
       <entry>5.4.0</entry>
       <entry>
-       <interfacename>SessionHandlerInterface</interfacename> und
-       <classname>SessionHandler</classname> zum Implementieren von
-       benutzerdefinierten Session-Speicherfunktionen hinzugefügt.
+       <interfacename>SessionHandlerInterface</interfacename> zum Implementieren
+       von Session-Handlern und
+       <classname>SessionHandler</classname>, um interne PHP Session-Handler
+       bereitzustellen, hinzugefügt.
       </entry>
      </row>
     </tbody>
@@ -401,6 +428,17 @@ session_start();
     <member>
      Die <link linkend="ini.session.save-handler">session.save_handler</link>
      Konfigurationsanweisung
+    </member>
+    <member>
+     Die <link linkend="ini.session.serialize-handler">session.serialize_handler</link>
+     Konfigurationsdirektive
+    </member>
+    <member><function>register_shutdown_function</function></member>
+    <member><function>session_register_shutdown</function> (von PHP 5.4.0 an)</member>
+    <member>
+     Eine vollständige prozedurale Referenzimplementierung kann
+     <link xlink:href="&url.session-save-handler;">save_handler.inc</link>
+     entnommen werden
     </member>
    </simplelist>
   </para>

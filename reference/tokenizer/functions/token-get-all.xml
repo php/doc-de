@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- EN-Revision: 137972b9bfa963c383d7a783f7f81fc5917a0bab Maintainer: nobody Status: ready -->
+<!-- EN-Revision: fabcfdd3e2cbf87eef7ccdffd82045a61e0c05d6 Maintainer: nobody Status: ready -->
 <!-- $Revision$ -->
 
 <refentry xml:id="function.token-get-all" xmlns="http://docbook.org/ns/docbook">
@@ -24,6 +24,7 @@
    in seinen Textrepäsentanten verwenden.
   </para>
  </refsect1>
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -55,6 +56,7 @@
    </variablelist>
   </para>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
@@ -65,29 +67,95 @@
    originalen Textinhalt und die Zeilennummer im dritten Element.
   </para>
  </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.0.0</entry>
+       <entry>
+        Der optionale <parameter>flags</parameter> Parameter wurde mitsamt
+        dem <constant>TOKEN_PARSE</constant>-Flag hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>5.2.2</entry>
+       <entry>
+        Die Zeilennummer wird im dritten Element zurückgegeben
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>token_get_all</function> Beispiele</title>
+    <title><function>token_get_all</function> Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$tokens = token_get_all('<?php echo; ?>'); /* => array(
-                                                  array(T_OPEN_TAG, '<?php'),
-                                                  array(T_ECHO, 'echo'),
-                                                  ';',
-                                                  array(T_CLOSE_TAG, '?>') ); */
+$tokens = token_get_all('<?php echo; ?>');
 
-/* Beachten Sie, dass im folgenden Beispiel die Zeichenkette geparst wurde
-   als T_INLINE_HTML und nicht wie erwartet als T_COMMENT (T_ML_COMMENT in PHP <5).
-   Das liegt an den fehlenden Beginn-/Endetags die im "Quelltext" verwendet wurden.
-   Das entspricht einem Kommentar außerhalb der <?php ?> Tags in einer normalen Datei. */
-$tokens = token_get_all('/* comment */'); // => array(array(T_INLINE_HTML, '/* comment */'));
+foreach ($tokens as $token) {
+    if (is_array($token)) {
+        echo "Line {$token[2]}: ", token_name($token[0]), " ('{$token[1]}')", PHP_EOL;
+    }
+}
 ?>
 ]]>
     </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Line 1: T_OPEN_TAG ('<?php ')
+Line 1: T_ECHO ('echo')
+Line 1: T_WHITESPACE (' ')
+Line 1: T_CLOSE_TAG ('?>')
+]]>
+    </screen>
    </example>
+  </para>
+  <para>
+   <example>
+    <title>Fehlerhaftes <function>token_get_all</function> Verwendungsbeispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$tokens = token_get_all('/* comment */');
+
+foreach ($tokens as $token) {
+    if (is_array($token)) {
+        echo "Zeile {$token[2]}: ", token_name($token[0]), " ('{$token[1]}')", PHP_EOL;
+    }
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Zeile 1: T_INLINE_HTML ('/* comment */')
+]]>
+    </screen>
+   </example>
+   Es ist zu beachten, dass im vorigen Beispiel die Zeichenkette als
+   <constant>T_INLINE_HTML</constant> und nicht wie erwartet als
+   <constant>T_COMMENT</constant> geparst wurde. Das liegt am fehlenden Start-Tag
+   im verwendeten Code. Das entspricht einem Kommentar außerhalb der PHP-Tags in
+   einer normalen Datei.
   </para>
   <para>
    <example>
@@ -137,35 +205,16 @@ T_LNUMBER
    <constant>T_PUBLIC</constant> statt <constant>T_STRING</constant> sein.
   </para>
  </refsect1>
- <refsect1 role="changelog">
-  &reftitle.changelog;
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
   <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>7.0.0</entry>
-       <entry>
-        Der optionale <parameter>flags</parameter> Parameter wurde mitsamt
-        dem <constant>TOKEN_PARSE</constant>-Flag hinzugefügt.
-       </entry>
-      </row>
-      <row>
-       <entry>5.2.2</entry>
-       <entry>Die Zeilennummer wird im dritten Element zurückgegeben
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
+   <simplelist>
+    <member><function>token_name</function></member>
+   </simplelist>
   </para>
  </refsect1>
+
 </refentry>
 
 <!-- Keep this comment at the end of the file

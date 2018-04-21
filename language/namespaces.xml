@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e52f86cf48f181cefa150a4d89c90a8a8a5c6bad Maintainer: simp Status: ready -->
+<!-- EN-Revision: 27e86fd791a1b083db2e08a37ce3443bd93cf13c Maintainer: simp Status: ready -->
+
 <chapter xml:id="language.namespaces" xmlns="http://docbook.org/ns/docbook"
 version="1.1">
  <title>Namespaces</title>
@@ -938,6 +939,15 @@ if (is_array('hi')) { // gibt "ist kein Array" aus
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term>Relativer Name</term>
+     <listitem>
+      <para>
+       Dies ist ein Bezeicher, der mit <literal>namespace</literal> beginnt, wie
+       etwa <literal>namespace\Foo\Bar</literal>.
+      </para>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
   <para>
@@ -945,42 +955,66 @@ if (is_array('hi')) { // gibt "ist kein Array" aus
    <orderedlist>
     <listitem>
      <simpara>
-      Aufrufe von vollständig qualifizierten Funktionen, Klassen oder Konstanten
-      werden zur Kompilierungszeit aufgelöst. <literal>new \A\B</literal> wird
-      z.B. zur Klasse <literal>A\B</literal> aufgelöst.
+      Vollständig qualifizierte Namens werden immer zu dem Namen ohne führenden
+      Namensraumtrenner aufgelöst. <literal>\A\B</literal> wird
+      z.B. zu <literal>A\B</literal> aufgelöst.
      </simpara>
     </listitem>
     <listitem>
      <simpara>
-      Alle unqualifizierten und qualifizierten Namen (nicht vollständig
-      qualifizierte Namen) werden gemäß den aktuellen Importen zur Kompilierungszeit
-      übersetzt. Wenn zum Beispiel der namespace <literal>A\B\C</literal> als
-      <literal>C</literal> importiert wurde, so wird ein Aufruf von
-      <literal>C\D\e()</literal> zu <literal>A\B\C\D\e()</literal> übersetzt.
+      Relative Namen werden immer zu dem Namen aufgelöst, in dem <literal>namespace</literal>
+      durch den aktuellen Namensraum ersetzt wurde. Taucht der Namen im globalen
+      Geltungsbereich auf, wird das <literal>namespace\</literal>-Präfix entfernt.
+      Beispielsweise wird <literal>namespace\A</literal> innerhalb des Namensraums
+      <literal>X\Y</literal> zu <literal>X\Y\A</literal> aufgelöst. Derselbe Name
+      im globalen Geltungsbereich wird zu <literal>A</literal> aufgelöst.
      </simpara>
     </listitem>
     <listitem>
      <simpara>
-      Innerhalb eines Namespace wird allen qualifizierten Namen, die noch nicht
-      gemäß den Importregeln übersetzt wurden, der aktuelle Namespace vorangestellt.
-      Wenn z.B. <literal>C\D\e()</literal> innerhalb des Namespace <literal>A\B</literal>
-      aufgerufen wird, so wird dies zu <literal>A\B\C\D\e()</literal> übersetzt.
+      Für qualifizierte Namen wird das erste Segment des Namens gemäß der aktuellen
+      Klassen-/Namensraum-Importtabelle übersetzt. Wird beispielsweise der Namensraum
+      <literal>A\B\C</literal> als <literal>C</literal> importiert, wird der Name
+      <literal>C\D\E</literal> zu <literal>A\B\C\D\E</literal> übersetzt.
      </simpara>
     </listitem>
     <listitem>
      <simpara>
-      Unqualifizierte Klassennamen werden zur Kompilierungszeit gemäß der aktuellen
-      Importregeln (vollständige Namen ersetzt durch kurze Aliasnamen) übersetzt.
-      Z.B. wenn der Namespace <literal>A\B\C</literal> als C importiert wurde,
-      so wird <literal>new C()</literal> zu <literal>new A\B\C()</literal>
-      übersetzt.
+      Wenn für qualifizierte Namen keine Importregel zutrifft, wird der aktuelle Namensraum
+      dem Namen vorangestellt. Beispielsweise wird der Name <literal>C\D\E</literal>
+      innerhalb des Namensraums <literal>A\B</literal> zu <literal>A\B\C\D\E</literal>
+      aufgelöst.
      </simpara>
     </listitem>
     <listitem>
      <simpara>
-      Innerhalb eines Namespace (z.B. <literal>A\B</literal>) werden Aufrufe von
-      unqualifizierten Funktionen zur Laufzeit aufgelöst. Der Aufruf der Funktion
-      <literal>foo()</literal> wird wie folgt aufgelöst:
+      Für unqualifizierte Namen wird der Name gemäß der aktuellen Importtabelle für
+      die betreffende Symboltabelle übersetzt. Das bedeutet, dass klassenartige
+      Namen gemäß der Klassen-/Namensraum-Importtabelle, Funktionsnamen gemäß der
+      Funktions-Importtabelle und Konstantennamen gemäß der Konstanten-Importtabelle
+      übersetzt werden. Beispielsweise wird nach <literal>use A\B\C;</literal> eine
+      Verwendung wie etwa <literal>new C()</literal> zum Namen <literal>A\B\C()</literal>
+      aufgelöst. Analog wird nach <literal>use function A\B\fn;</literal> eine
+      Verwendung wie etwa <literal>fn()</literal> zum Namen <literal>A\B\fn</literal>
+      aufgelöst. 
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Wenn für unqualifizierte Namen keine Importregel zutrifft, und sich der Name
+      auf ein klassenartiges Symbol bezieht, wird der aktuelle Namensraum vorangestellt.
+      Beispielsweise wird <literal>new C()</literal> innerhalb des Namensraums
+      <literal>A\B</literal> zum Namen <literal>A\B\C</literal> aufgelöst.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Wenn für unqualifizierte Namen keine Importregel zutrifft, und sich der Name
+      auf eine Funktion oder Konstante bezieht, und der Code sich außerhalb des
+      globalen Geltungsbereichs befindet, wird der Name zur Laufzeit aufgelöst.
+      Angenommen der Code befindet sich im Namensraum <literal>A\B</literal>, wird
+      im folgenden erläutert, wie der Aufruf einer Funktion <literal>foo()</literal>
+      aufgelöst wird:
      </simpara>
      <orderedlist>
       <listitem>
@@ -992,56 +1026,10 @@ if (is_array('hi')) { // gibt "ist kein Array" aus
       <listitem>
        <simpara>
         Es wird versucht, die Funktion <literal>foo()</literal> im
-        <emphasis>globalen</emphasis> Namensraum zu finden.
+        <emphasis>globalen</emphasis> Namensraum zu finden und aufzurufen.
        </simpara>
       </listitem>
      </orderedlist>
-    </listitem>
-    <listitem>
-     <simpara>
-      Innerhalb eines Namespace (z.B. <literal>A\B</literal>) werden Aufrufe
-      von unqualifizierten oder qualifizierten Klassennamen (nicht vollständig
-      qualifizierte Klassennamen) zur Laufzeit aufgelöst. Der Aufruf von
-      <literal>new C()</literal> oder <literal>new D\E()</literal> wird
-      wir folgt aufgelöst.
-      Für <literal>new C()</literal>:
-     </simpara>
-     <orderedlist>
-      <listitem>
-       <simpara>
-        Zuerst wird nach der Klasse im aktuellen Namespace gesucht:
-        <literal>A\B\C</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Es wird versucht, die Klasse <literal>A\B\C</literal> mittels Autoload zu laden.
-       </simpara>
-      </listitem>
-     </orderedlist>
-     <simpara>
-      Für <literal>new D\E()</literal>:
-     </simpara>
-     <orderedlist>
-      <listitem>
-       <simpara>
-        Es wird nach der Klasse gesucht, indem der aktuelle Namespace
-        vorangestellt wird:
-        <literal>A\B\D\E</literal>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Es wird versucht, die Klasse <literal>A\B\D\E</literal> mittels
-        Autoload zu laden.
-       </simpara>
-      </listitem>
-     </orderedlist>
-     <simpara>
-      Um auf eine globale Klasse im globalen Namespace zuzugreifen,
-      muss deren vollständig qualifizierter Name <literal>new \C()</literal>
-      verwendet werden.
-     </simpara>
     </listitem>
    </orderedlist>
   </para>

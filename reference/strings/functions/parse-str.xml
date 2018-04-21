@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: afc3f34c682418a582b0f9199db0bac4a087821f Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: b84e653f7b2e6f6fbbcf8fa445921f73989f3fc0 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.parse-str">
  <refnamediv>
@@ -12,31 +12,15 @@
   &reftitle.description;
   <methodsynopsis>
    <type>void</type><methodname>parse_str</methodname>
-   <methodparam><type>string</type><parameter>str</parameter></methodparam>
-   <methodparam choice="opt"><type>array</type><parameter role="reference">arr</parameter></methodparam>
+   <methodparam><type>string</type><parameter>encoded_string</parameter></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter role="reference">result</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Verarbeitet <parameter>str</parameter>, als ob er der Query-String
+   Verarbeitet <parameter>encoded_string</parameter>, als ob er der Query-String
    einer URL-Übergabe via GET wäre, und erstellt Variablen im aktuellen
-   Geltungsbereich.
+   Geltungsbereich (oder im Array, wenn der Parameter <parameter>result</parameter>
+   übergeben wurde).
   </para>
-  <note>
-   <para>
-    Um auf den aktuellen <literal>QUERY_STRING</literal> zuzugreifen,
-    verwenden Sie am besten die Variable <varname>$_SERVER['QUERY_STRING']</varname>.
-    Weitere Informationen finden Sie auch im Abschnitt <link
-    linkend="language.variables.external">Variablen aus externen Quellen</link>.
-   </para>
-  </note>
-  <note>
-   <para>
-    Die <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>-Einstellungen
-    beeinflussen die Ausgabe der Funktion, da <function>parse_str</function>
-    dieselben Mechanismen verwendet, die PHP zum Füllen von
-    <varname>$_GET</varname>, <varname>$_POST</varname> und anderen Variablen
-    nutzt.
-   </para>
-  </note>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -44,7 +28,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>str</parameter></term>
+     <term><parameter>encoded_string</parameter></term>
      <listitem>
       <para>
        Die Eingabezeichenkette.
@@ -52,13 +36,31 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>arr</parameter></term>
+     <term><parameter>result</parameter></term>
      <listitem>
       <para>
        Ist der zweite Parameter <parameter>arr</parameter>
        angegeben, werden die Variablen in diesem Array als dessen Elemente
        gespeichert.
       </para>
+
+      <warning>
+       <para>
+        Von der Verwendung dieser Funktion ohne den zweiten Parameter wird
+        unbedingt <emphasis>ABGERATEN</emphasis>, und von PHP 7.2 an
+        <emphasis>MISSBILLIGT</emphasis>.
+       </para>
+       <para> 
+        Das dynamische Zuweisen von Variablen im
+        Geltungsbereich einer Funktion hat genaue dieselben Probleme wie
+        <link linkend="ini.register-globals">register_globals</link>.
+       </para>
+       <para>
+        Die Erklärung warum dies gefährlich ist, kann dem Sicherheits-Abschnitt
+        zur <link linkend="security.globals">Verwendung von Register Globals</link>
+        entnommen werden.
+       </para>
+      </warning>
      </listitem>
     </varlistentry>
    </variablelist>
@@ -72,6 +74,31 @@
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>7.2.0</entry>
+       <entry>
+        Die Verwendung von <function>parse_str</function> ohne den zweiten Parameter
+        erzeugt nun einen <constant>E_DEPRECATED</constant> Fehler.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -80,22 +107,72 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-$str = "first=value&arr[]=foo+bar&arr[]=baz";
-parse_str($str);
-echo $first;  // value
-echo $arr[0]; // foo bar
-echo $arr[1]; // baz
+$str = "erstes=wert&arr[]=foo+bar&arr[]=baz";
 
+// Empfohlen
 parse_str($str, $output);
-echo $output['first'];  // value
+echo $output['erstes'];  // value
 echo $output['arr'][0]; // foo bar
 echo $output['arr'][1]; // baz
 
+// NICHT EMPFOHLEN
+parse_str($str);
+echo $erstes;  // value
+echo $arr[0]; // foo bar
+echo $arr[1]; // baz
 ?>
 ]]>
     </programlisting>
    </example>
   </para>
+  <para>
+   Weil PHP-Variablen keine Punkte oder Leerzeichen im Namen enthalten dürfen,
+   werden dieser in Unterstriche umgewandelt. Dasselbe gilt für die entsprechenden
+   Schlüsselnamen, für den Fall, dass diese Funktion mit dem Parameter
+   <parameter>result</parameter> verwendet wird.
+   <example>
+    <title><function>parse_str</function> name mangling</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+parse_str("Mein Wert=Etwas");
+echo $Mein_Wert; // Etwas
+
+parse_str("Mein Wert=Etwas", $output);
+echo $output['Mein_Wert']; // Etwas
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+
+  <note>
+   <para>
+    Alle erzeugten Variablen (oder Werte, die im Array zurückgegeben werden, wenn
+    der zweite Parameter übergeben wurde) wurden bereits mit <function>urldecode</function>
+    vorbereitet.
+   </para>
+  </note>
+  <note>
+   <para>
+    Um auf den aktuellen <literal>QUERY_STRING</literal> zuzugreifen, kann
+    die Variable <varname>$_SERVER['QUERY_STRING']</varname> verwendet werden.
+    Weitere Informationen finden sich auch im Abschnitt <link
+    linkend="language.variables.external">Variablen aus externen Quellen</link>.
+   </para>
+  </note>
+  <note>
+   <para>
+    Die <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>-Einstellung
+    beeinflusst die Ausgabe dieser Funktion, da <function>parse_str</function>
+    dieselben Mechanismen verwendet, die PHP zum Füllen der Variablen
+    <varname>$_GET</varname>, <varname>$_POST</varname>, etc. nutzt.
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="seealso">
@@ -105,14 +182,12 @@ echo $output['arr'][1]; // baz
     <member><function>parse_url</function></member>
     <member><function>pathinfo</function></member>
     <member><function>http_build_query</function></member>
-    <member><function>get_magic_quotes_gpc</function></member>
     <member><function>urldecode</function></member>
    </simplelist>
   </para>
  </refsect1>
 
 </refentry>
-
 
 <!-- Keep this comment at the end of the file
 Local variables:
