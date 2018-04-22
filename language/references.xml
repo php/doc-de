@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: n/a Maintainer: fa Status: ready -->
+<!-- EN-Revision: 8c23c19594da5936b03a667e80f6925e3765c073 Maintainer: nobody Status: ready -->
+
  <chapter xml:id="language.references" xmlns="http://docbook.org/ns/docbook">
   <title>Referenzen in PHP</title>
 
@@ -9,12 +10,14 @@
    <simpara>
     Referenzen sind in PHP ein Mechanismus um verschiedene Namen
     für den gleichen Inhalt von Variablen zu ermöglichen.
-    Sie sind nicht mit Zeigern in C zu vergleichen, sondern
-    Aliasdefinitionen für die Symboltabelle.
+    Sie sind nicht mit Zeigern in C zu vergleichen; zum Beispiel ist damit keine
+    Zeigerarithmetik möglich, sie sind keine tatsächlichen Speicheradressen usw.
+    Siehe <xref linkend="language.references.arent" /> für weitere Informationen.
+    Statt dessen sind sie Aliasdefinitionen für die Symboltabelle.
     PHP unterscheidet zwischen Variablenname und Variableninhalt,
     wobei der gleiche Variableninhalt unterschiedliche Namen besitzen kann.
     Der bestmögliche Vergleich ist der mit Dateinamen und Dateien
-    im Dateisystem von Unix - Variablennamen sind Verzeichniseinträge,
+    im Dateisystem von Unix – Variablennamen sind Verzeichniseinträge,
     während der Variableninhalt die eigentliche Datei darstellt.
     Referenzen können nun als Hardlinks im Dateisystem verstanden werden.
    </simpara>
@@ -23,45 +26,46 @@
   <sect1 xml:id="language.references.whatdo">
    <title>Was Referenzen leisten</title>
    <para>
-    PHP Referenzen erlauben es, zwei Variablennamen, sich auf den
-    gleichen Variableninhalt beziehen zu lassen. Das heißt im
-    folgenden Beispiel, dass sich <varname>$a</varname> und
-    <varname>$b</varname> auf dieselbe Variable beziehen:
-
-    <informalexample>
-     <programlisting role="php">
+    Es können grundsätzlich drei Operationen mit Referenzen durchgeführt werden:
+    <link linkend="language.references.whatdo.assign">Referenzzuweisung</link>,
+    <link linkend="language.references.whatdo.pass">Referenzübergabe</link>
+    und <link linkend="language.references.whatdo.return">Referenzrückgabe</link>.
+    Dieser Abschnitt enthält eine Einführung zu diesen Operationen mit Links zu
+    weiteren Informationen.
+   </para>
+   <sect2 xml:id="language.references.whatdo.assign">
+    <title>Referenzzuweisung</title>
+    <para>
+     PHP Referenzen erlauben es, zwei Variablennamen, sich auf den
+     gleichen Variableninhalt beziehen zu lassen. Zum Beispiel:
+     <informalexample>
+      <programlisting role="php">
 <![CDATA[
 <?php
 $a =& $b
 ?>
 ]]>
-     </programlisting>
-    </informalexample>
-
+      </programlisting>
+     </informalexample>
+     Das bedeutet, dass <varname>$a</varname> und <varname>$b</varname>
+     auf denselben Inhalt zeigen.
+     <note>
+      <para>
+       <varname>$a</varname> und <varname>$b</varname> sind hier
+       gleichwertig, und <varname>$a</varname> ist nicht nur ein
+       Zeiger auf <varname>$b</varname> oder umgekehrt, sondern
+       <varname>$a</varname> und <varname>$b</varname> zeigen auf
+       denselben Platz.
+      </para>
+     </note>
+    </para>
     <note>
      <para>
-      <varname>$a</varname> und <varname>$b</varname> sind hier
-      gleichwertig, und <varname>$a</varname> ist nicht nur ein
-      Zeiger auf <varname>$b</varname> oder umgekehrt, sondern
-      <varname>$a</varname> und <varname>$b</varname> zeigen auf
-      den selben Inhalt.
-     </para>
-    </note>
-   </para>
-   <note>
-    <para>
-     Wenn ein Array mit Referenzen kopiert wird, werden seine Werte nicht
-     dereferenziert. Dies gilt auch für Array, die per Wert an Funktionen
-     übergeben werden
-    </para>
-   </note>
-   <note>
-    <para>
-    Wenn man eine undefinierte Variable per Referenz zuweist, übergibt oder
-    zurückgibt, wird sie erstellt.
-     <example>
-      <title>Referenzen mit undefinierten Variablen benutzen</title>
-      <programlisting role="php">
+     Wenn man eine undefinierte Variable per Referenz zuweist, übergibt oder
+     zurückgibt, wird sie erstellt.
+      <example>
+       <title>Referenzen mit undefinierten Variablen benutzen</title>
+       <programlisting role="php">
 <![CDATA[
 <?php
 function foo(&$var) { }
@@ -77,60 +81,45 @@ foo($c->d);
 var_dump(property_exists($c, 'd')); // bool(true)
 ?>
 ]]>
-      </programlisting>
-     </example>
-    </para>
-   </note>
-   <para>
-   Diese Syntax kann auch mit Funktionen, die Referenzen zurückgeben, benutzt
-   werden und seit PHP 4.0.4 auch in Verbindung mit dem
-   <literal>new</literal>-Operator.
-   <informalexample>
-     <programlisting role="php">
-<![CDATA[
-<?php
-$bar =& new fooclass();
-$foo =& find_var ($bar);
-?>
-]]>
-     </programlisting>
-    </informalexample>
-    Seit PHP 5 referenziert return
-    <link linkend="language.oop5.basic.new">new</link> automatisch, also erzeugt
-    die Verwendung der veralteten Syntax <literal>=&amp;</literal> eine
-    E_STRICT-Warnung.
-    </para>
-    <note>
-     <para>
-     Wenn der <literal>&amp;</literal>-Operator nicht verwendet wird, erzeugt
-     PHP eine Kopie des Objekts. Wenn nun <literal>$this</literal> innerhalb
-     der Klasse verwendet wird, bezieht es sich auf die aktuelle Instanz der
-     Klasse. Die Zuordnung ohne <literal>&amp;</literal> erzeugt eine Kopie der
-     Instanz (d.h. des Objekts) und <literal>$this</literal> wird sich auf
-     die Kopie beziehen. In der Regel will man aus Performance- und
-     Speicherverbrausgründen nur eine einzige Instanz einer Klasse
-     erzeugen.
+       </programlisting>
+      </example>
      </para>
-     <para>
-      Während man den <literal>@</literal>-Operator benutzen kann, um Fehler
-      im Konstruktor zu <emphasis>unterdrücken</emphasis>, wenn man ihn als
-      <literal>@new</literal> benutzt, funktioniert dies nicht bei der Benutzung
-      von <literal>&amp;new</literal>. Dies ist eine Einschränkung der Zend
-      Engine und resultiert daher in einem Parserfehler.
-     </para>
-   </note>
-   <warning>
+    </note>
     <para>
-     Wenn man einer als <literal>global</literal> deklarierten Variable eine
-     Referenz innerhalb einer Funktion zuweist, wird die Referenz nur innerhalb
-     der Funktion sichtbar sein. Dies kann durch die Verwendung des
-     <varname>$GLOBALS</varname>-Arrays vermieden werden.
-     <example>
-      <title>Globale Variablen innerhalb einer Funktion referenzieren</title>
+    Diese Syntax kann auch mit Funktionen, die Referenzen zurückgeben, benutzt
+    werden:
+    <informalexample>
       <programlisting role="php">
 <![CDATA[
 <?php
-$var1 = "Beispielvariable";
+$foo =& find_var($bar);
+?>
+]]>
+      </programlisting>
+     </informalexample>
+     Seit PHP 5 gibt <link linkend="language.oop5.basic.new">new</link> automatisch eine
+     Referenz zurück, so dass die Verwendung von <literal>=&amp;</literal> in diesem
+     Zusammenhang missbilligt ist, und von PHP 5.3 an einen <constant>E_DEPRECATED</constant>
+     Fehler erzeugt, und einen <constant>E_STRICT</constant> Fehler in früheren Versionen.
+     Von PHP 7.0 an ist dies syntaktisch ungültig.
+     (Technisch gesehen ist der Unterschied, dass in PHP 5 Objektvariablen, ganz ähnlich
+     wie Ressourcen, lediglich ein Zeiger auf die eigentlichen Objektdaten sind, so dass
+     diese Objektreferenzen keine "Referenzen" in dem obigen Sinne (Aliase) sind. Weitere
+     Informationen können <link linkend="language.oop5.references">Objekte und Referenzen</link>
+     entnommen werden.)
+    </para>
+    <warning>
+     <para>
+      Wird eine Referenz auf eine Variable, die in einer Funktion als <literal>global</literal>
+      deklariert wurde, zugewiesen wird, dann ist die Referenz nur innerhalb der Funktion
+      sichtbar. Das kann vermieden werden, indem das <varname>$GLOBALS</varname>-Array
+      verwendet wird.
+      <example>
+       <title>Referenzieren globaler Variablen innerhalb von Funktionen</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+$var1 = "Beispiel-Variable";
 $var2 = "";
 
 function global_references($use_globals)
@@ -139,54 +128,107 @@ function global_references($use_globals)
     if (!$use_globals) {
         $var2 =& $var1; // nur innerhalb der Funktion sichtbar
     } else {
-        $GLOBALS["var2"] =& $var1; // auch im globalen Kontext sichtbar
+        $GLOBALS["var2"] =& $var1; // ebenso im globalen Kontext sichtbar
     }
 }
 
 global_references(false);
-echo "var2 wurde auf '$var2' gesetzt\n"; // var2 ist ''
+echo "Der Wert von var2 ist '$var2'\n"; // Der Wert von var2 ist ''
 global_references(true);
-echo "var2 wurde auf '$var2' gesetzt\n"; // var2 ist 'Beispielvariable'
+echo "Der Wert von var2 ist '$var2'\n"; // Der Wert von var2 ist 'Beispiel-Variable'
 ?>
 ]]>
-      </programlisting>
-     </example>
-     Man sollte <literal>global $var;</literal> als Abkürzung für
-     <literal>$var =&amp; $GLOBALS['var'];</literal> sehen. Deswegen ändert die
-     Zuweisung per Referenz an <literal>$var</literal> nur die Referenz
-     der lokalen Variable.
-    </para>
-   </warning>
-   <note>
-    <para>
-     Wenn man einer Variable einen Wert per Referenz in einer <link
-     linkend="control-structures.foreach">foreach</link>-Anweisung zuweist,
-     werden die Referenzen auch geändert.
-     <example>
-      <title>Referenzen und die foreach-Anweisung</title>
-      <programlisting role="php">
+       </programlisting>
+      </example>
+      <literal>global $var;</literal> kann als Abkürzung für
+      <literal>$var =&amp; $GLOBALS['var'];</literal> angesehen werden. Daher ändert die
+      Zuweisung einer anderen Referenz zu <literal>$var</literal> nur die Referenz der
+      lokalen Variable.
+     </para>
+    </warning>
+    <note>
+     <para>
+      Wenn man einer Variable einen Wert per Referenz in einer &foreach;-Anweisung zuweist,
+      werden auch die Referenzen geändert.
+      <example>
+       <title>Referenzen und die foreach-Anweisung</title>
+       <programlisting role="php">
 <![CDATA[
 <?php
 $ref = 0;
 $row =& $ref;
 foreach (array(1, 2, 3) as $row) {
-    // do something
+    // mach was
 }
 echo $ref; // 3 - letztes Element des durchlaufenen Arrays
 ?>
 ]]>
+       </programlisting>
+      </example>
+     </para>
+    </note>
+    <para>
+     Obgleich keine Referenzzuweisung im engeren Sinne, können Ausdrücke, die mit dem
+     Sprachkonstrukt <link linkend="function.array"><literal>array()</literal></link>
+     erstellt werden, sich ebenso verhalten, wenn dem hinzuzufügenden Array-Element
+     <literal>&amp;</literal> vorangestellt wird. Beispiel:
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$a = 1;
+$b = array(2, 3);
+$arr = array(&$a, &$b[0], &$b[1]);
+$arr[0]++; $arr[1]++; $arr[2]++;
+/* $a == 2, $b == array(3, 4); */
+?>
+]]>
       </programlisting>
-     </example>
+     </informalexample>
     </para>
-   </note>
+    <para>
+     Es ist allerdings zu beachten, dass Referenzen in Array potentiell gefährlich sind.
+     Eine normale (also nicht Referenz-) Zuweisung mit einer Referenz auf der rechten
+     Seite wandelt die linke Seite nicht in eine Referenz, aber Referenzen innerhalb
+     von Arrays bleiben bei solchen normalen Zuweisungen erhalten. Dies gilt ebenso
+     für Funktionsaufrufe, bei denen das Array als Wertübergabe entgegengenommen wird.
+     Beispiel:
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+/* Zuweisung skalarer Variablen */
+$a = 1;
+$b =& $a;
+$c = $b;
+$c = 7; //$c ist keine Referenz; keine Änderung an $a oder $b
 
-   <para>
-    Eine weitere Einsatzmöglichkeit von Referenzen ist die Übergabe
-    von Parametern an eine Funktion mit pass-by-reference. Hierbei
-    beziehen sich der lokale Variablenname als auch der Variablenname
-    der aufrufenden Instanz auf denselben Variableninhalt:
-    <informalexample>
-     <programlisting role="php">
+/* Zuweisung von Array-Variablen */
+$arr = array(1);
+$a =& $arr[0]; //$a und $arr[0] sind in derselben Referenzmenge
+$arr2 = $arr; //keine Referenzzuweisung!
+$arr2[0]++;
+/* $a == 2, $arr == array(2) */
+/* Der Inhalt von $arr hat sich geändert, obwohl es keine Referenz ist! */
+?>
+]]>
+      </programlisting>
+     </informalexample>
+     Anders ausgedrückt, ist das Referenzverhalten von Array auf einer
+     Element-für-Element-Basis definiert; das Referenzverhalten einzelner Elemente
+     ist getrennt vom Referenzzustand des Array-Behälters.
+    </para>
+   </sect2>
+
+   <sect2 xml:id="language.references.whatdo.pass">
+    <title>Referenzübergabe</title>
+    <para>
+     Eine weitere Einsatzmöglichkeit von Referenzen ist die Übergabe
+     von Parametern an eine Funktion mit pass-by-reference. Hierbei
+     beziehen sich der lokale Variablenname als auch der Variablenname
+     der aufrufenden Instanz auf denselben Variableninhalt:
+     <informalexample>
+      <programlisting role="php">
 <![CDATA[
 <?php
 function foo(&$var) {
@@ -197,51 +239,56 @@ $a=5;
 foo($a);
 ?>
 ]]>
-     </programlisting>
-    </informalexample>
-    Nach der Ausführung hat <varname>$a</varname> den Wert 6, da sich
-    in der Funktion <varname>foo</varname> der Variablenname
-    <varname>$var</varname> auf denselben Variableninhalt bezieht wie
-    <varname>$a</varname> in der aufrufenden Instanz (hier das Hauptprogramm).
-    Es gibt auch eine detailliertere Erläuterung der Parameterübergabe <link
-    linkend="language.references.pass">by-reference</link>
-   </para>
-   <simpara>
-    Daneben besteht die Möglichkeit aus Funktionen heraus Werte mit
-    <link linkend="language.references.return">return by-reference</link>
-    zurückzugeben.
-   </simpara>
+      </programlisting>
+     </informalexample>
+     Nach der Ausführung hat <varname>$a</varname> den Wert 6, da sich
+     in der Funktion <varname>foo</varname> der Variablenname
+     <varname>$var</varname> auf denselben Variableninhalt bezieht wie
+     <varname>$a</varname>.
+     Weitere Information hierzu sind dem Abschnitt <link
+     linkend="language.references.pass">Referenzübergabe</link> zu entnehmen.
+    </para>
+   </sect2>
+
+   <sect2 xml:id="language.references.whatdo.return">
+    <title>Referenzrückgabe</title>
+    <para>
+     Daneben besteht die Möglichkeit aus Funktionen heraus Werte mit
+     <link linkend="language.references.return">return by-reference</link>
+     zurückzugeben.
+    </para>
+   </sect2>
   </sect1>
 
   <sect1 xml:id="language.references.arent">
    <title>Was Referenzen nicht sind</title>
    <para>
     Wie bereits gesagt: Referenzen sind keine Zeiger. Das bedeutet,
-    der folgende Code tut nicht, was zum Beispiel ein C Programmierer
-    erwarten würde:
+    der folgende Code tut nicht, was man erwarten könnte:
     <informalexample>
      <programlisting role="php">
 <![CDATA[
 <?php
-function foo(&$var) {
+function foo(&$var)
+{
     $var =& $GLOBALS["baz"];
 }
-foo($bar);
+foo($bar); 
 ?>
 ]]>
      </programlisting>
     </informalexample>
    </para>
    <simpara>
-    Folgendes wird passieren: <varname>$var</varname> in foo wird zunächst
-    an  <varname>$bar</varname> aus der aufrufenden Instanz, dann
-    aber an <varname>$GLOBALS["baz"]</varname> gebunden.
-    Es gibt keine andere Möglichkeit als die Verwendung des Referenzmechanismus,
-    um <varname>$bar</varname> im Sichtbarkeitsbereich an etwas anderes zu
-    binden, da <varname>bar</varname> in der Funktion <varname>foo</varname>
-    nicht verfügbar ist (diese ist durch <varname>$var</varname> repräsentiert,
-    aber <varname>$var</varname> verfügt nur Variableninhalt und keinen
-    Name-to-Binding-Eintrag in der Symboltabelle der aufrufenden Instanz).
+    Folgendes passiert: <varname>$var</varname> in <varname>foo</varname> wird zunächst
+    an  <varname>$bar</varname> aus der aufrufenden Instanz, dann aber an
+    <varname>$GLOBALS["baz"]</varname> gebunden.
+    Es gibt keine Möglichkeit unter Verwendung des Referenzmechanismus, um
+    <varname>$bar</varname> im aufrufenden Geltungsbereich an etwas anderes zu binden,
+    da <varname>$bar</varname> in  der Funktion <varname>foo</varname> nicht verfügbar
+    ist (es wird durch <varname>$var</varname> repräsentiert, aber <varname>$var</varname>
+    nur Variableninhalt, aber keine Name-an-Wert-Bindung in der aufrufenden Symboltabelle
+    hat).
     Man kann durch die <link linkend="language.references.return">Rückgabe
     von Referenzen</link> die von der Funktion benutzten Variablen
     referenzieren.
@@ -251,8 +298,8 @@ foo($bar);
   <sect1 xml:id="language.references.pass">
    <title>Parameterübergabe per Referenz</title>
    <para>
-   Man kann Variablen an Funktionen per Referenz übergeben, so dass die Funktion
-   ihre Argumente modifizieren kann. Dazu benutzt man folgende Syntax:
+    Man kann Variablen an Funktionen per Referenz übergeben, so dass die Funktion
+    ihre Argumente modifizieren kann. Dazu benutzt man folgende Syntax:
     <informalexample>
      <programlisting role="php">
 <![CDATA[
@@ -269,14 +316,20 @@ foo($a);
 ]]>
      </programlisting>
     </informalexample>
-  Zu beachten ist, dass kein Referenz-Zeichen beim Funktionsaufruf steht, nur in
-  der Funktionsdefinition. Diese allein ist ausreichend, um das Argument per
-  Referenz zu übergeben. In neueren PHP-Versionen gibt es eine Warnung, dass die
-  Benutzung von "Call-time pass-by-reference" mit Hilfe von &amp; in
-  <literal>foo(&amp;$a);</literal> veraltet ist.
+    <note>
+     <simpara>
+      Zu beachten ist, dass kein Referenz-Zeichen beim Funktionsaufruf steht, nur in
+      der Funktionsdefinition. Diese allein ist ausreichend, um das Argument per
+      Referenz zu übergeben. Von PHP 5.3.0 an gibt es eine Warnung, dass die
+      Benutzung von "Call-time pass-by-reference" mit Hilfe von &amp; in
+      <literal>foo(&amp;$a);</literal> missbilligt ist. Und von PHP 5.4.0 an ist
+      call-time pass-by-reference entfernt, so dass die Verwendung einen fatalen
+      Fehler auslöst.
+     </simpara>
+    </note>
   </para>
   <para>
-  Folgende Dinge können per Referenz übergeben werden:
+   Folgende Dinge können per Referenz übergeben werden:
    <itemizedlist>
     <listitem>
      <simpara>
@@ -284,17 +337,16 @@ foo($a);
      </simpara>
     </listitem>
     <listitem>
-     <simpara>
-      "New"-Ausdrücke, zum Beispiel <literal>foo(new foobar())</literal>
-     </simpara>
-    </listitem>
-    <listitem>
      <para>
       Referenzen, zurückgegeben von einer Funktion, zum Beispiel:
-    <informalexample>
-     <programlisting role="php">
+      <informalexample>
+       <programlisting role="php">
 <![CDATA[
 <?php
+function foo(&$var)
+{
+    $var++;
+}
 function &bar()
 {
     $a = 5;
@@ -303,36 +355,47 @@ function &bar()
 foo(bar());
 ?>
 ]]>
-     </programlisting>
-    </informalexample>
-    Es gibt detailliertere Erläuterungen zur Rückgabe <link
-    linkend="language.references.return">by-reference</link>.
+       </programlisting>
+      </informalexample>
+      Es gibt detailliertere Erläuterungen zur Rückgabe <link
+      linkend="language.references.return">by-reference</link>.
      </para>
     </listitem>
-  </itemizedlist>
+   </itemizedlist>
   </para>
   <para>
-  Alle anderen Ausdrücke sollte nicht per Referenz übergeben werden, da das
-  Ergebnis undefiniert ist. Folgende Beispiele sind etwa ungültig:
-    <informalexample>
-     <programlisting role="php">
+   Alle anderen Ausdrücke sollten nicht per Referenz übergeben werden, da das
+   Ergebnis undefiniert ist. Folgende Beispiele sind etwa ungültig:
+   <informalexample>
+    <programlisting role="php">
 <![CDATA[
 <?php
+function foo(&$var)
+{
+    $var++;
+}
 function bar() // Beachte das fehlende &
 {
     $a = 5;
     return $a;
 }
-foo(bar()); // Fatal error seit PHP 5.0.5
+foo(bar()); // Erzeugt einen fatalen Fehler von PHP 5.0.5 an, einen Strikt-Standards-Hinweis
+            // von PHP 5.1.1 an, und einen Hinweis von PHP 7.0.0 an
 
-foo($a = 5); // Ausdruck, keine Variable
-foo(5); // Fatal error
+foo($a = 5); // Ausdruck, nicht Variable
+foo(5); // Erzeugt einen fatalen Fehler
+
+class Foobar
+{
+}
+
+foo(new Foobar()) // Erzeugt einen Hinweis von PHP 7.0.7 an
+                  // Notice: Only variables should be passed by reference
 ?>
 ]]>
      </programlisting>
     </informalexample>
-    Diese Anforderungen gelten für PHP 4.0.4 und später.
-  </para>
+   </para>
   </sect1>
 
   <sect1 xml:id="language.references.return">
@@ -344,7 +407,7 @@ foo(5); // Fatal error
     <emphasis>nicht</emphasis> aus Performancegründen benutzen, der Kern
     ist intelligent genug, um dies selbst zu optimieren. Man sollte Referenzen
     nur dann zurückgeben, wenn man sinnvolle technische Gründe hat. Hierbei
-    ist folgende Syntax zu beachten:
+    ist folgende Syntax zu verwenden:
     <informalexample>
      <programlisting role="php">
 <![CDATA[
@@ -358,7 +421,7 @@ class foo {
 }
 
 $obj = new foo;
-$myValue = &$obj->getValue(); // $myValue ist eine  Referenz zu to $obj->value, mit dem Wert 42.
+$myValue = &$obj->getValue(); // $myValue ist eine Referenz auf $obj->value, mit dem Wert 42.
 $obj->value = 2;
 echo $myValue;                // Zeigt den neuen Wert von $obj->value, also 2.
 ?>
@@ -374,10 +437,10 @@ echo $myValue;                // Zeigt den neuen Wert von $obj->value, also 2.
     <simpara>
      Im Gegensatz zur Parameterübergabe per Referenz ist bei der
      Rückgabe mittels Referenz an beiden Stellen die Angabe des
-     <literal>&amp;</literal> notwendig. Dies verdeutlicht, dass Sie eine
+     <literal>&amp;</literal> notwendig. Dies zeigt an, dass Sie eine
      Referenz und nicht wie gewöhnlich eine Kopie zurückgeben. Ebenfalls wird
-     verdeutlicht, dass für <varname>$myValue</varname> im Gegensatz zur
-     normalen Zuweisung ein Referencebinding durchgeführt wird.
+     angezeit, dass für <varname>$myValue</varname> im Gegensatz zur
+     normalen Zuweisung eine Referenzbindung durchgeführt wird.
     </simpara>
    </note>
    <note>
@@ -388,9 +451,48 @@ echo $myValue;                // Zeigt den neuen Wert von $obj->value, also 2.
      Ergebnis eines <emphasis>Ausdrucks</emphasis> zurückzugeben und nicht
      eine Variable per Referenz. Man kann nur Variablen per Referenz aus
      einer Funktion zurückgeben - sonst nichts.
-     Seit PHP 4.4.0 und PHP 5.1.0 wird ein <constant>E_NOTICE</constant>-Fehler
+     Seit PHP 5.1.0 wird ein <constant>E_NOTICE</constant>-Fehler
      erzeugt, wenn versucht wird, einen dynamischen Ausdruck oder das Ergebnis
-     eines <literal>new</literal> zurückzugeben.
+     eines <literal>new</literal>-Operators zurückzugeben.
+    </simpara>
+   </note>
+   <para>
+   Um die zurückgegebene Referenz zu verwenden, muss Referenzzuweisung benutzt
+   werden:
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function &collector() {
+  static $collection = array();
+  return $collection;
+}
+$collection = &collector();
+$collection[] = 'foo';
+?> 
+]]>
+    </programlisting>
+   </informalexample>
+   Um die zurückgegebene Referenz an eine andere Funktion zu übergeben, die eine
+   Referenz erwartet, kann diese Syntax verwendet werden:
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function &collector() {
+  static $collection = array();
+  return $collection;
+}
+array_push(collector(), 'foo');
+?> 
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+   <note>
+    <simpara>
+      Es ist zu beachten, dass <literal>array_push(&amp;collector(), 'foo');</literal>
+      <emphasis>nicht</emphasis> möglich ist; es erzeugt einen fatalen Fehler.
     </simpara>
    </note>
   </sect1>
@@ -412,10 +514,7 @@ unset($a);
 ]]>
      </programlisting>
     </informalexample>
-    Die Variable <varname>$b</varname> wird nicht gelöscht, sondern es
-    wird nur die Bindung des Variablennamen <varname>$a</varname> an den
-    Variableninhalt aufgehoben. Dieser Variableninhalt ist immer noch
-    über <varname>$b</varname> verfügbar.
+    Dies wird <varname>$b</varname> nicht aufheben, sondern nur <varname>$a</varname>.
    </para>
    <simpara>
     Wiederum sieht man die Analogie zwischen Unix und den Referenzen: Das
@@ -429,15 +528,16 @@ unset($a);
    <simpara>
     Viele Sprachelemente von PHP sind intern mit der Benutzung von Referenzen
     implementiert, daher gilt alles bisher gesagte auch für diese
-    Konstrukte:
+    Konstrukte. Manche Konstrukte, wie das Übergeben und Rückgeben per Referenz, wurden
+    oben erwähnt. Andere Konstrukte, die Referenzen verwenden, sind:
    </simpara>
 
    <sect2 xml:id="references.global">
-    <title><literal>global</literal> References</title>
+    <title><literal>global</literal> Referenzen</title>
     <para>
-     Die Verwendung von <command>global $var</command> erzeugt im aktuellen
-     Gültigkeitsbereich eine Referenz auf die globale Variable <varname>$var</varname>,
-     sie ist also äquivalent zu folgendem:
+     Wird eine Variable als <command>global $var</command> deklariert, wird
+     eine Referenz auf die globale Variable <varname>$var</varname> erzeugt. Das ist
+     also dasselbe wie:
      <informalexample>
       <programlisting role="php">
 <![CDATA[
@@ -458,7 +558,7 @@ $var =& $GLOBALS["var"];
     <title><literal>$this</literal></title>
     <simpara>
      In einer Objektmethode ist <varname>$this</varname> immer eine Referenz
-     auf die aufrufende Objektinstanz.
+     auf das aufgerufene Objekt.
     </simpara>
    </sect2>
   </sect1>
