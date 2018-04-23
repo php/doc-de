@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 95bdd6883b5dde9504701777ba81b3c5f15df52b Maintainer: sammywg Status: working -->
+<!-- EN-Revision: 7b83a7643386f31a8c7c5afbc23bde0b1e627766 Maintainer: nobody Status: ready -->
 
 <phpdoc:classref xmlns:phpdoc="http://php.net/ns/phpdoc" xml:id="class.com" xmlns="http://docbook.org/ns/docbook">
  <titleabbrev>COM</titleabbrev>
@@ -118,7 +118,7 @@
             der Server angegeben, wird <constant>CLSCTX_REMOTE_SERVER</constant>
             verwendet. Konsultieren Sie die Microsoftdokumentation für
             CoCreateInstance, wenn Sie mehr über die Bedeutung dieser Konstanten
-            erfahren wollen, normalerweise werden Sie sie jedoch nicht verwenden.
+            erfahren wollen; normalerweise werden Sie sie jedoch nicht verwenden.
            </entry>
           </row>
          </tbody>
@@ -131,23 +131,24 @@
      <term>codepage</term>
      <listitem>
       <simpara>
-       Specifies the codepage that is used to convert strings to
-       unicode-strings and vice versa.  The conversion is applied whenever a
-       PHP string is passed as a parameter or returned from a method of this
-       COM object.  The code page is sticky in PHP 5, which means that it will
-       propagate to objects and variants returned from the object.
+       Gibt die Codepage an, die verwendet wird um Zeichenketten nach Unicode und
+       zurück umzuwandeln. Die Umwandlung wird immer dann durchgeührt, wenn eine
+       PHP-Zeichenkette als Parameter übergeben oder von einer Methode dieses COM-Objekts
+       zurückgegeben wird. Die Codepage ist beharrlich, was bedeutet, dass
+       sie sich auf Objekte und Varianten, die von dem Objekt zurückgegeben werden,
+       fortpflanzt.
       </simpara>
       <simpara>
-       Possible values are
-       <constant>CP_ACP</constant> (use system default ANSI code page - the
-       default if this parameter is omitted),
+       Mögliche Werte sind
+       <constant>CP_ACP</constant> (verwende die Standard ANSI-Codepage des Systems - das
+       ist der Standardwert, wenn dieser Parameter ausgelassen wird),
        <constant>CP_MACCP</constant>,
        <constant>CP_OEMCP</constant>, <constant>CP_SYMBOL</constant>,
-       <constant>CP_THREAD_ACP</constant> (use codepage/locale set for the
-       current executing thread), <constant>CP_UTF7</constant>
-       and <constant>CP_UTF8</constant>.  You may also use the number for a
-       given codepage; consult the Microsoft documentation for more details on
-       codepages and their numeric values.
+       <constant>CP_THREAD_ACP</constant> (verwende die Codepage/Locale, die für 
+       den aktuell ausgeführten Thread angegeben wurde), <constant>CP_UTF7</constant>
+       und <constant>CP_UTF8</constant>.  Ebenfalls kann die Nummer einer bestimmten
+       Codepage verwendet werden; weitere Details zu Codepages und ihren numerischen
+       Werten können der Microsoft-Dokumentation entnommen werden.
       </simpara>
      </listitem>
     </varlistentry>
@@ -156,100 +157,18 @@
  </section>
  
  <section xml:id="class.com.overloadedmethods">
-  <title>Overloaded Methods</title>
+  <title>Überladene Methoden</title>
   <para>
-   The returned object is an overloaded object, which means that PHP does
-   not see any fixed methods as it does with regular classes; instead, any
-   property or method accesses are passed through to COM.
+   Das zurückgegebene Objekt ist überladen, was bedeutet, dass PHP keine bestimmten
+   Methoden kennt, wie das normalerweise der Fall ist; statt dessen wird jeder
+   Eigenschafts- oder Methodenzugriff an COM weitergereicht.
   </para>
   <para>
-   Starting with PHP 5, PHP will automatically detect methods that accept
-   parameters by reference, and will automatically convert regular PHP
-   variables to a form that can be passed by reference.  This means that you
-   can call the method very naturally; you needn't go to any extra effort in
-   your code.
+   PHP erkennt automatisch Methoden, die Referenzparameter erwarten, und wird reguläre
+   PHP-Variablen automatisch in eine Form umwandeln, die per Referenz übergeben werden
+   kann. Das heißt, das die Methode sehr natürlich aufgerufen werden kann; es ist kein
+   Zusatzaufwand nötig.
   </para>
- </section>
-
- <section xml:id="class.com.falsemethods">
-  <title>Pseudo Methods</title>
-  <para>
-   In PHP versions prior to 5, a number of not very pleasant hacks meant that
-   the following method names were not passed through to COM and were handled
-   directly by PHP.  PHP 5 eliminates these things; read the details below to
-   determine how to fix your scripts.  These magic method names are case
-   insensitive.
-  </para>
-  <methodsynopsis xml:id="com.addref">
-   <type>void</type><methodname>COM::AddRef</methodname>
-   <void/>
-  </methodsynopsis>
-  <simpara>
-   Artificially adds a reference count to the COM object.
-  </simpara>
-  <warning>
-   <simpara>
-    You should never need to use this method. It exists as a logical complement
-    to the Release() method below.
-   </simpara>
-  </warning>
-  <methodsynopsis xml:id="com.release">
-   <type>void</type><methodname>COM::Release</methodname>
-   <void/>
-  </methodsynopsis>
-  <simpara>
-   Artificially removes a reference count from the COM object.
-  </simpara>
-  <warning>
-   <simpara>
-    You should never need to use this method.  Its existence in PHP is a bug
-    designed to work around a bug that keeps COM objects running longer than
-    they should.
-   </simpara>
-  </warning>
- </section>
-
- <section xml:id="class.com.iteratormethods">
-  <title>Pseudo Methods for Iterating</title>
-  <para>
-   These pseudo methods are only available if
-   <function>com_isenum</function> returns &true;, in which case, they hide
-   any methods with the same names that might otherwise be provided by the
-   COM object.  These methods have all been eliminated in PHP 5, and you
-   should use <xref linkend="com.examples.foreach"/> instead.
-  </para>
-  <methodsynopsis xml:id="com.all">
-   <type>variant</type><methodname>COM::All</methodname>
-   <void/>
-  </methodsynopsis>
-  <simpara>
-   Returns a variant representing a SafeArray that has 10 elements;
-   each element will be an empty/null variant.  This function was supposed to
-   return an array containing all the elements from the iterator, but was
-   never completed.  Do not use.
-  </simpara>
-  <methodsynopsis xml:id="com.next">
-   <type>variant</type><methodname>COM::Next</methodname>
-   <void/>
-  </methodsynopsis>
-  <simpara>
-   Returns a variant representing the next element available from
-   the iterator, or &false; when there are no more elements.
-  </simpara>
-  <methodsynopsis xml:id="com.prev">
-   <type>variant</type><methodname>COM::Prev</methodname>
-   <void/>
-  </methodsynopsis>
-  <simpara>Returns a variant representing the previous element available from
-   the iterator, or &false; when there are no more elements.
-  </simpara>
-  <methodsynopsis xml:id="com.reset">
-   <type>void</type><methodname>COM::Reset</methodname>
-   <void/>
-  </methodsynopsis>
-  <simpara>
-   Rewinds the iterator back to the start.
-  </simpara>
  </section>
 
  <section xml:id="class.com.examples">
@@ -262,7 +181,7 @@
 <?php
 // Word starten
 $word = new COM("word.application") or die("Konnte Word nicht instanziieren");
-echo "Word geladen, Verison {$word->Version}\n";
+echo "Word geladen, Version {$word->Version}\n";
 
 //sichtbar machen
 $word->Visible = 1;
