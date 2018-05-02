@@ -1,41 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
 <!-- EN-Revision: 1afe16f52f0ba958b7309919d490b64f54185bac Maintainer: simp Status: ready -->
-<!-- Reviewed: no -->
 
 <sect1 xml:id="migration56.new-features" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Neue Features</title>
 
  <sect2 xml:id="migration56.new-features.const-scalar-exprs">
-  <title>Ausdrücke für Konstanten</title>
+  <title>Konstante Ausdrücke</title>
 
   <para>
    Es ist nun möglich einen skalaren Ausdruck mit numerischen oder 
    String-Literalen und/oder Konstanten in Kontexten zu verwenden,
-   in denen PHP bisher einen statischen Ausdruck erwartete, beispielsweise
+   in denen PHP bisher einen statischen Wert erwartete, beispielsweise
    Deklarationen von Konstanten und Eigenschaften und Standardwerte
-   von Parametern.
+   von Funktionsparametern.
   </para>
 
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
-const EINS = 1;
-const ZWEI = EINS * 2;
+const ONE = 1;
+const TWO = ONE * 2;
 
 class C {
-    const DREI = ZWEI + 1;
-    const EIN_DRITTEL = EINS / self::DREI;
-    const SATZ = 'Der Wert von DREI ist '.self::DREI;
+    const THREE = TWO + 1;
+    const ONE_THIRD = ONE / self::THREE;
+    const SENTENCE = 'Der Wert von THREE ist '.self::THREE;
 
-    public function f($a = EINS + self::DREI) {
+    public function f($a = ONE + self::THREE) {
         return $a;
     }
 }
 
 echo (new C)->f()."\n";
-echo C::SATZ;
+echo C::SENTENCE;
 ?>
 ]]>
    </programlisting>
@@ -43,13 +42,13 @@ echo C::SATZ;
    <screen>
 <![CDATA[
 4
-Der Wert von DREI ist 3
+Der Wert von THREE ist 3
 ]]>
    </screen>
   </informalexample>
 
   <para>
-   Es ist nun möglich, ein konstantes <type>Array</type> mit dem
+   Es ist nun auch möglich, ein konstantes <type>Array</type> mit dem
    Schlüsselwort <literal>const</literal> zu definieren:
   </para>
 
@@ -118,7 +117,7 @@ $req: 1; $opt: 2; Anzahl Parameter: 3
   <para>
    <link linkend="language.types.array">Arrays</link> und
    <interfacename>Traversable</interfacename>-Objekte können in eine Liste
-   von Parametern entpackt werden, indem der <literal>...</literal>
+   von Parametern entpackt werden, indem der <literal>...</literal> Operator
    verwendet wird. Dies ist in anderen Sprachen, wie beispielsweise Ruby,
    auch als Splat-Operator bekannt.
   </para>
@@ -186,7 +185,7 @@ a ==           8
    <link linkend="language.namespaces.importing"><literal>use</literal></link> 
    wurde um das Importieren von Funktionen und Konstanten zusätzlich zu
    Klassen erweitert. Dies kann jeweils entsprechend durch die Konstrukte
-   <literal>use function</literal> oder <literal>use const</literal>
+   <literal>use function</literal> bzw. <literal>use const</literal>
    erreicht werden.
   </para>
 
@@ -234,12 +233,12 @@ Name\Space\f
 
   <para>
    <link linkend="ini.default-charset">default_charset</link> wird nun
-   als Standardzeichencodierung für die Funktionen 
+   als Standardzeichenkodierung für die Funktionen 
    <function>htmlentities</function>, <function>html_entity_decode</function>
    und <function>htmlspecialchars</function> herangezogen. Falls die
-   (nun veralteten) Einstellungen für die Zeichencodierung von iconv und 
+   (nun missbilligten) Einstellungen für die Zeichenkodierung von iconv und 
    mbstring gesetzt sind, haben diese Vorrang gegenüber default_charset
-   für die jeweilige Funktion iconv beziehungsweise mbstring.
+   für die iconv beziehungsweise mbstring Funktionen.
   </para>
 
   <para>
@@ -272,7 +271,7 @@ Name\Space\f
 
   <para>
    <link linkend="book.gmp">GMP</link>-Objekte unterstützen nun 
-   Operatorüberladung und das Casten auf skalare Typen. Dies erlaubt
+   Operatorüberladung und das Casten zu skalaren Typen. Dies erlaubt
    besser lesbaren Code bei Verwendung von GMP:
   </para>
 
@@ -295,6 +294,14 @@ if (version_compare(PHP_VERSION, '5.6', '<')) {
 ?>
 ]]>
    </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+59
+59
+59
+]]>
+   </screen>
   </informalexample>
  </sect2>
 
@@ -315,12 +322,12 @@ if (version_compare(PHP_VERSION, '5.6', '<')) {
    <programlisting role="php">
 <![CDATA[
 <?php
-$erwartet  = crypt('12345', '$2a$07$benutzeeinenlangenstringalssalt$');
-$korrekt   = crypt('12345', '$2a$07$benutzeeinenlangenstringalssalt$');
-$inkorrekt = crypt('1234',  '$2a$07$benutzeeinenlangenstringalssalt$');
+$expected  = crypt('12345', '$2a$07$benutzeeinenlangenstringalssalt$');
+$correct   = crypt('12345', '$2a$07$benutzeeinenlangenstringalssalt$');
+$incorrect = crypt('1234',  '$2a$07$benutzeeinenlangenstringalssalt$');
 
-var_dump(hash_equals($erwartet, $korrekt));
-var_dump(hash_equals($erwartet, $inkorrekt));
+var_dump(hash_equals($expected, $correct));
+var_dump(hash_equals($expected, $incorrect));
 ?>
 ]]>
    </programlisting>
@@ -340,8 +347,8 @@ bool(false)
   <para>
    Die magische Methode 
    <link linkend="language.oop5.magic.debuginfo">__debugInfo()</link>
-   wurde hinzugefügt, welche es Objekten erlaubt die Eigenschaften und
-   Werte zu bestimmen, welche bei Verwendung von 
+   wurde hinzugefügt, welche es Objekten erlaubt, die Eigenschaften und
+   Werte zu bestimmen, welche bei Verwendung von
    <function>var_dump</function> ausgegeben werden.
   </para>
 
@@ -358,7 +365,7 @@ class C {
 
     public function __debugInfo() {
         return [
-            'propQuadrat' => $this->prop ** 2,
+            'propSquared' => $this->prop ** 2,
         ];
     }
 }
@@ -371,7 +378,7 @@ var_dump(new C(42));
    <screen>
 <![CDATA[
 object(C)#1 (1) {
-  ["propQuadrat"]=>
+  ["propSquared"]=>
   int(1764)
 }
 ]]>
@@ -385,9 +392,9 @@ object(C)#1 (1) {
   <para>
    Der Hashalgorithmus <literal>gost-crypto</literal> wurde hinzugefügt. 
    Dieser implementiert die GOST-Hash-Funktion unter Verwendung der
-   CryptoPro S-box Tabellen, wie diese in 
+   CryptoPro S-box Tabellen wie in 
    <link xlink:href="&url.rfc;4357">RFC 4357, Abschnitt 11.2</link>
-   spezifiziert sind.
+   spezifiziert.
   </para>
  </sect2>
 
@@ -395,20 +402,20 @@ object(C)#1 (1) {
   <title>SSL/TLS-Verbesserungen</title>
 
   <para>
-   Eine große Zahl an Verbesserungen an der SSL/TLS-Unterstützung in PHP wurden
-   mit PHP 5.6 vorgenommen. Dies umfasst die 
+   Eine große Zahl an Verbesserungen an der SSL/TLS-Unterstützung wurden
+   in PHP 5.6 vorgenommen. Dies umfasst die 
    <link linkend="migration56.incompatible.peer-verification">standardmäßige Aktivierung von Peer-Verifikation</link>,
    Unterstützung von Zertifikat-Fingerabdrucksprüfung, Verhinderung von
    TLS-Renegotiation-Attacken und viele neue
    <link linkend="context.ssl">SSL Kontextoptionen</link>, welche eine
-   feiner granulare Kontrolle über Protokoll- und Verifikationseinstellungen
+   detailliertere Kontrolle über Protokoll- und Verifikationseinstellungen
    bei Verwendung von verschlüsselten Streams erlauben. 
   </para>
 
   <para>
    Diese Änderungen werden im Abschnitt 
    <link linkend="migration56.openssl">OpenSSL Änderungen in PHP 5.6.x</link>
-   detaillierter beschrieben.
+   dieser Migrationsanleitung detaillierter beschrieben.
   </para>
  </sect2>
 
@@ -416,11 +423,11 @@ object(C)#1 (1) {
   <title>Unterstützung für <link linkend="book.pgsql">pgsql</link> async</title>
 
   <para>
-   Die Erweiterung <link linkend="book.pgsql">pgsql</link> unterstützt
+   Die Extension <link linkend="book.pgsql">pgsql</link> unterstützt
    nun asynchrone Verbindungen und Abfragen, womit nicht blockierendes
    Verhalten bei der Interaktion mit PostgreSQL-Datenbanken ermöglicht
    wird. Asynchrone Verbindungen können mittels der Konstante
-   <constant>PGSQL_CONNECT_ASYNC</constant> aufgebaut werden und die 
+   <constant>PGSQL_CONNECT_ASYNC</constant> aufgebaut werden, und die 
    neuen Funktionen <function>pg_connect_poll</function>, 
    <function>pg_socket</function>, <function>pg_consume_input</function>
    und <function>pg_flush</function> behandeln asynchrone Verbindungen
