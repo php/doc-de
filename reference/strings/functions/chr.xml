@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: aab798badad7eb20ab21897fc80f8c1bfaa18a4e Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 79ebd89049d45ef5cf8fa93ee6bc8fac871a8e63 Maintainer: sammywg Status: ready -->
 
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.chr">
  <refnamediv>
   <refname>chr</refname>
-  <refpurpose>Gibt ein einzelnes Zeichen zurück</refpurpose>
+  <refpurpose>Erzeuge eine Ein-Byte-Zeichenkette aus einer Zahl</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>string</type><methodname>chr</methodname>
-   <methodparam><type>int</type><parameter>ascii</parameter></methodparam>
+   <methodparam><type>int</type><parameter>bytevalue</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Gibt einen Ein-Zeichen-String zurück, der dem angegebenen
-   <parameter>ascii</parameter>-Wert entspricht.
+   Gibt einen Ein-Zeichen-String zurück, der das angegebene Zeichen enthält, wobei
+   <parameter>bytevalue</parameter> als vorzeichenlose Ganzzahl interpretiert wird.
+  </para>
+  <para>
+   Dies kann verwendet werden, um einen Ein-Zeichen-String in einer
+   Ein-Byte-Kodierung wie ASCII, ISO-8859 oder Windows 1252 zu erzeugen, indem
+   die Position des gewünschten Zeichens in der Kodierungszuordnungstabelle
+   übergeben wird. Allerdings ist zu beachten, dass diese Funktion die
+   Zeichenkettenkodierung ignoriert, und insbesondere kein Unicode Code-Point
+   übergeben werden kann, um eine Zeichenkette in einer Multi-Byte-Kodierung wie
+   UTF-8 oder UTF-16 zu erzeugen.
   </para>
   <para>
    Die Funktion ergänzt <function>ord</function>.
@@ -28,20 +37,20 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>ascii</parameter></term>
+     <term><parameter>bytevalue</parameter></term>
      <listitem>
       <para>
-       Der erweiterte ASCII-Code.
+       Ein Integer zwischen 0 und 255.
       </para>
       <para>
        Werte außerhalb des gültigen Bereichs (0..255) werden bitweise mit 255
        und-verknüpft, was gleichwertig zu folgendem Algorithmus ist:
        <programlisting role="php">
 <![CDATA[
-while ($ascii < 0) {
-    $ascii += 256;
+while ($bytevalue < 0) {
+    $bytevalue += 256;
 }
-$ascii %= 256;
+$bytevalue %= 256;
 ]]>
        </programlisting>
       </para>
@@ -54,7 +63,7 @@ $ascii %= 256;
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt das angegebene Zeichen zurück.
+   Ein Ein-Zeichen-String, der das angegebene Byte enthält.
   </para>
  </refsect1>
 
@@ -66,6 +75,7 @@ $ascii %= 256;
     <programlisting role="php">
 <![CDATA[
 <?php
+// Es wird angenommen, dass die Zeichenkette als ASCII oder ASCII-kompatible Kodierung verwendet wird
 $str = "Dieser String endet mit einem Escape-Zeichen: ";
 $str .= chr(27); /* fügt das Escape-Zeichen an das Ende von $str an */
 
@@ -90,6 +100,24 @@ echo chr(-159), chr(833), PHP_EOL;
 <![CDATA[
 aA
 ]]>
+    </screen>
+   </example>
+  </para>
+  <para> 
+   <example>
+    <title>Erstellen eines UTF-8-String aus einzelnen Bytes</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+declare(encoding='UTF-8');
+$str = chr(240) . chr(159) . chr(144) . chr(152);
+echo $str;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+🐘
     </screen>
    </example>
   </para>

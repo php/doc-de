@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 79ebd89049d45ef5cf8fa93ee6bc8fac871a8e63 Maintainer: sammywg Status: ready -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.ord">
  <refnamediv>
   <refname>ord</refname>
-  <refpurpose>Gibt den ASCII-Wert eines Zeichens zurück</refpurpose>
+  <refpurpose>Konvertiere das erst Byte einer Zeichenkette in einen Wert zwischen 0 und 255</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -14,8 +14,16 @@
    <methodparam><type>string</type><parameter>string</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Gibt den ASCII-Wert des ersten Zeichens von <parameter>string</parameter>
-   zurück.
+   Interpretiert den ASCII-Wert des ersten Bytes von <parameter>string</parameter>
+   als vorzeichenlose Ganzzahl zwischen 0 und 255.
+  </para>
+  <para>
+   Liegt die Zeichenkette in einer Ein-Byte-Kodierung, wie ASCII, ISO-8859 oder
+   Windows 1252, vor, ist dies gleichwertig zur Rückgabe der Position des
+   Zeichens in der Zuordnungstabelle des Zeichensatzes. Allerdings ist zu
+   beachten, dass diese Funktion die Zeichenkettenkodierung ignoriert, und
+   insbesondere niemals einen Unicode Code-Point in einer Multi-Byte-Kodierung
+   wie UTF-8 oder UTF-16 erkennt.
   </para>
   <para>
    Die Funktion ist das Gegenstück zu <function>chr</function>.
@@ -41,8 +49,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den ASCII-Wert als Integer zurück.
-   </para>
+   Ein Integer zwischen 0 und 255.
+  </para>
  </refsect1>
 
  <refsect1 role="examples">
@@ -60,6 +68,30 @@ if (ord($str) == 10) {
 ?>
 ]]>
     </programlisting>
+   </example>
+  </para>
+ <para> 
+   <example>
+    <title>Untersuchen der einzelnen Bytes einer UTF-8-Zeichenkette</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+declare(encoding='UTF-8');
+$str = "🐘";
+for ( $pos=0; $pos < strlen($str); $pos ++ ) {
+ $byte = substr($str, $pos);
+ echo 'Byte ' . $pos . ' von $str hat den Wert ' . ord($byte) . PHP_EOL;
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+Byte 0 von $str hat den Wert 240
+Byte 1 von $str hat den Wert 159
+Byte 2 von $str hat den Wert 144
+Byte 3 von $str hat den Wert 152
+    </screen>
    </example>
   </para>
  </refsect1>
