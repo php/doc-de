@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!-- $Revision: 318318 $ -->
-<!-- EN-Revision: dc706816c30f61d28686b4bf43f5b09e6d2de8e0 Maintainer: lapistano Status: ready -->
+<!-- EN-Revision: 599a6e381eac09aabbd08ce7317d6ef8c71f19f4 Maintainer: lapistano Status: ready -->
 <refentry xml:id="pdo.sqlitecreateaggregate" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>PDO::sqliteCreateAggregate</refname>
@@ -58,19 +58,44 @@
         <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
         <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
         <methodparam><type>mixed</type><parameter>value1</parameter></methodparam>
-        <methodparam choice="opt"><type>mixed</type><parameter>value2</parameter></methodparam>
-        <methodparam choice="opt"><type>mixed</type><parameter>..</parameter></methodparam>
+        <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
        </methodsynopsis>
-      </para>
-      <para>
-       Für die erste Reihe wird <varname>context</varname> &null; sein. Folgende Reihen 
-       werden den zuvor zurückgegebenen Wert haben. Sie sollten diesen nutzen, um den
-       Status der Aggregation zu pflegen.
-      </para>
-      <para>
-       <varname>rownumber</varname> wird die Number der aktuellen Reihe beinhalten.
-      </para>
-      <para>
+       <variablelist>
+        <varlistentry>
+         <term><parameter>context</parameter></term>
+         <listitem>
+          <para>
+           &null; für die erste Reihe. Folgende Reihen 
+           werden den zuvor zurückgegebenen Wert haben. Sie sollten diesen nutzen, um den
+           Status der Aggregation zu pflegen.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>rownumber</parameter></term>
+         <listitem>
+          <para>
+           Die Nummer der aktuellen Reihe.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>value1</parameter></term>
+         <listitem>
+          <para>
+           Das erste Argument, das an das Aggregat übergeben wurde.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>...</parameter></term>
+         <listitem>
+          <para>
+           Weitere Argumente, die an das Aggregat übergeben wurden.
+          </para>
+         </listitem>
+        </varlistentry>
+       </variablelist>
        Der Rückgabewert dieser Funktion wird als <parameter>context</parameter>
        Argument im nächsten Aufruf der step oder finalize Funktion verwendet.
       </para>
@@ -88,23 +113,30 @@
        linkend="language.types.intro">scalar type</link>).
       </para>
       <para>
-       Diese Funktion ist als
+       Diese Funktion ist wie folgt zu definieren:
        <methodsynopsis>
         <type>mixed</type><methodname><replaceable>fini</replaceable></methodname>
         <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
-        <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
+        <methodparam><type>int</type><parameter>rowcount</parameter></methodparam>
        </methodsynopsis>
-       zu definieren.
-      </para>
-      <para>
-       <varname>context</varname> wird den Rückgabewert des letzten Aufrufs der
-       Schritt-Funktion enthalten.
-      </para>
-      <para>
-       <varname>rownumber</varname> wird die Anzahl an Reihen enthalten, die
-       bereite Aggregiert wurden.
-      </para>
-      <para>
+       <variablelist>
+        <varlistentry>
+         <term><parameter>context</parameter></term>
+         <listitem>
+          <para>
+           Enthält den Rückgabewert des letzten Aufrufs der Schritt-Funktion.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>rowcount</parameter></term>
+         <listitem>
+          <para>
+           Enthält die Anzahl an Reihen, die bereits aggregiert wurden.
+          </para>
+         </listitem>
+        </varlistentry>
+       </variablelist>
        Der Rückgabewert dieser Funktion wird als Rückgabewert für die
        Aggregation genutzt.
       </para>
@@ -158,7 +190,7 @@ foreach ($data as $str) {
 }
 $insert = null;
 
-function max_len_step(&$context, $rownumber, $string) 
+function max_len_step($context, $rownumber, $string) 
 {
     if (strlen($string) > $context) {
         $context = strlen($string);
@@ -166,7 +198,7 @@ function max_len_step(&$context, $rownumber, $string)
     return $context;
 }
 
-function max_len_finalize(&$context, $rownumber) 
+function max_len_finalize($context, $rowcount) 
 {
     return $context === null ? 0 : $context;
 }
@@ -184,18 +216,18 @@ var_dump($db->query('SELECT max_len(a) from strings')->fetchAll());
    In diesem Beispiel erzeugen wir eine Aggregat-Funktion, die die Länge 
    der längsten Zeichenkette innerhalb einer der Tabellenspalten ermittelt.
    Die <literal>max_len_step</literal>-Funktion wird für jede durchlaufene Reihe
-   mit dem Parameter <parameter>context</parameter> aufgerufen. Der Parameter 
+   mit dem Parameter <literal>context</literal> aufgerufen. Der Parameter 
    'context' ist eine normal PHP Variable, welche Listen oder Objektinhalte 
    beinhalten kann. In diesem Beispiel benötigen wir sie als Speicher für die 
    größte bisher gefundene Länge der geprüften Zeichenketten. Wenn also die 
-   die Zeichenkette in <parameter>string</parameter> länger ist, als die aktuell
+   die Zeichenkette in <literal>string</literal> länger ist, als die aktuell
    Längste, wird der Inhalt von 'context' mit der neuen Länge überschrieben.
   </para>
   <para>
    Nachdem alle Reihen abgearbeitet wurden, ruft SQLite die 
    <literal>max_len_finalize</literal>-Funktion auf, um das Endergebnis 
    zu ermitteln. Hier können wir nun jede Art von Berechnungen,
-   basierend auf den in <parameter>context</parameter> gesammelten Daten, 
+   basierend auf den in <literal>context</literal> gesammelten Daten, 
    durchführen. In unserem Beispiel haben wir die Berechgungen bereits bei
    der Datenerhebung getätigt, dass wir nun nur noch das Ergebnis - 
    den Inhalt von 'context' - zurückgeben brauchen.
