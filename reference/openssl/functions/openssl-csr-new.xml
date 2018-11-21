@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8fdb77c6032ddfd31031df8f1e1f080a66a11880 Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: 18f9cbcbc404fa3161104e4f3969531f686457af Maintainer: jaenecke Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-csr-new">
  <refnamediv>
   <refname>openssl_csr_new</refname>
@@ -19,8 +19,7 @@
   <para>
    <function>openssl_csr_new</function> erzeugt einen neuen CSR
    (Zertifikatssignierungsanfrage) basierend auf den Informationen, die mit
-   dem Parameter <parameter>dn</parameter> angegeben werden. Dieser
-   bestimmt den Distinguished Name, der im Betreff des Zertifikat benutzt werden soll.
+   dem Parameter <parameter>dn</parameter> angegeben werden.
   </para>
   &note.openssl.cnf;
  </refsect1>
@@ -126,10 +125,10 @@
             Bestimmt den Typ des privaten Schlüssels der erzeugt werden soll.
             Der Typ kann einer der folgenden sein:
             <constant>OPENSSL_KEYTYPE_DSA</constant>,
-            <constant>OPENSSL_KEYTYPE_DH</constant> oder
-            <constant>OPENSSL_KEYTYPE_RSA</constant>. Der Standardwert ist
-            <constant>OPENSSL_KEYTYPE_RSA</constant>, momentan ist das der
-            einzige Schlüsseltyp, der unterstützt wird.
+            <constant>OPENSSL_KEYTYPE_DH</constant>,
+            <constant>OPENSSL_KEYTYPE_RSA</constant> oder
+            <constant>OPENSSL_KEYTYPE_EC</constant>.
+            Der Standardwert ist <constant>OPENSSL_KEYTYPE_RSA</constant>.
            </entry>
           </row>
           <row>
@@ -149,7 +148,23 @@
             Eine der <link linkend="openssl.ciphers">Ziffer-Konstanten</link>.
            </entry>
           </row>
-         </tbody>
+          <row>
+           <entry>curve_name</entry>
+           <entry><type>string</type></entry>
+           <entry>none</entry>
+           <entry>
+            PHP 7.1+. Einer der <function>openssl_get_curve_names</function>.
+           </entry>
+          </row>
+          <row>
+           <entry>config</entry>
+           <entry><type>string</type></entry>
+           <entry>N/A</entry>
+           <entry>
+            Pfad zur eigenen alternativen openssl.conf Datei.
+           </entry>
+          </row>
+          </tbody>
         </tgroup>
        </table>
       </para>
@@ -174,16 +189,12 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Angabe der Daten für den distinguished name, der in dem Zertifikat benutzt
-// wird. Sie müssen die Werte dieser Schlüssel so anpassen, dass diese ihrem
-// Namen und Firma entsprechen, oder um präziser zu sein, den Namen und die
-// Firma der Person/Seite angeben, für die Sie das Zertifikat erzeugen.
-// Für SSL Zertifikate entspricht der commonName gewöhnlich dem Domainnamen,
-// für den das Zertifikat benutzt werden soll, aber bei S/MIME Zertifikaten
-// entspricht der commonName dem Namen der Person, die das Zertifikat nutzen
-// möchte.
+// für SSL Zertifikate ist der commonName der zu sichernden Domainnamen
+// für S/MIME Zertifikate the commonName ist der Eigentümer der E-Mail-Adresse
+// die location und identification Felder beziehen sich auf den Eigentümer der
+// zu sichernden Domain oder des E-Mail Eigentümers
 $dn = array(
-    "countryName" => "UK",
+    "countryName" => "GB",
     "stateOrProvinceName" => "Somerset",
     "localityName" => "Glastonbury",
     "organizationName" => "The Brain Room Limited",
@@ -201,29 +212,47 @@ $privkey = openssl_pkey_new(array(
 // Erzeugen einer Zertifikatssignierungsanfrage
 $csr = openssl_csr_new($dn, $privkey, array('digest_alg' => 'sha256'));
 
-// Gewöhnlicherweise möchten Sie zu diesem Zeitpunkt ein selbstsigniertes
-// Zertifikat erzeugen, das Sie benutzten können, bis ihre CA ihre Anfrage
-// im positiven Sinne bearbeitet hat.
 // Erzeugen eines selbstsignierten Zertifikts, das für die Dauer von 365 Tagen
 // gültig ist.
-$sscert = openssl_csr_sign($csr, null, $privkey, 365, array('digest_alg' => 'sha256'));
+$x509 = openssl_csr_sign($csr, null, $privkey, $days=365, array('digest_alg' => 'sha256'));
 
-// Jetzt möchten Sie ihren privaten Schlüssel, ihren CSR und das
-// selbstsignierte Zertifikat sichern, damit Sie dieses, abhängig vom
-// beabsichtigten Verwendungszweck, auf ihrem Web-, Mailserver oder
-// in ihrem Mailprogramm installieren können.
-// Dieses Beispiel zeigt ihnen, wie Sie diese Dinge in Variablen abspeichern,
-// aber genauso können Sie die Informationen direkt in Dateien speichern.
-// Typischerweise schicken Sie den CSR an Ihre CA, die daraufhin diese Anfrage
-// bearbeitet und Sie mit einem "richtigen" Zertifikat ausstattet.
+// Sichern des privaten Schlüssels, des CSR und des selbstsignierte Zertifikats
+// für spätere Verwendung
 openssl_csr_export($csr, $csrout) and var_dump($csrout);;
-openssl_x509_export($sscert, $certout) and var_dump($certout);
+openssl_x509_export($x509, $certout) and var_dump($certout);
 openssl_pkey_export($privkey, $pkeyout, "mypassword") and var_dump($pkeyout);
 
 // Anzeigen der möglichen aufgetretenen Fehler
 while (($e = openssl_error_string()) !== false) {
     echo $e . "\n";
 }
+?>
+]]>
+      </programlisting>
+     </example>
+   
+     <example>
+      <title>Erzeugen eines selbstsignierten ECC-Zertifikats in PHP 7.1+</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$subject = array(
+    "commonName" => "docs.php.net",
+);
+
+// Erzeugen eines neuen privaten (und öffentlichen) Schlüsselpaars
+$private_key = openssl_pkey_new(array(
+    "private_key_type" => OPENSSL_KEYTYPE_EC,
+    "curve_name" => 'prime256v1',
+));
+
+// Erzeugen einer Zertifikatssignierungsanfrage
+$csr = openssl_csr_new($subject, $private_key, array('digest_alg' => 'sha384'));
+
+// Erzeugen eines selbstsignierten EC-Zertifikats
+$x509 = openssl_csr_sign($csr, null, $private_key, $days=365, array('digest_alg' => 'sha384'));
+openssl_x509_export_to_file($x509, 'ecc-cert.pem');
+openssl_pkey_export_to_file($private_key, 'ecc-private.key');
 ?>
 ]]>
       </programlisting>

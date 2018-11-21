@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: af4410a7e15898c3dbe83d6ea38246745ed9c6fb Maintainer: lapistano Status: ready -->
+<!-- EN-Revision: 0c1b86e9c6ff3bb46c8f3383053972f2a7fbf251 Maintainer: lapistano Status: ready -->
 
 <refentry xml:id="sqlite3.createaggregate" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -40,17 +40,97 @@
      <term><parameter>step_callback</parameter></term>
      <listitem>
       <para>
-       Name der PHP- oder benutzerdefinierten Funktion, welche als Callback-Funktion für 
-       jedes Element des Aggregates genutzt wird.
+       'Callback'-Funktion, welche für jede Reihe des Abfrageergebnisses ausgeführt wird.
+       Ihr PHP sollte das Ergebnis akkumulieren und in der Aggregation 'context' speichern.
       </para>
+      <para>
+       Es ist notwendig, diese Funktion wie folgt zu definieren:
+       <methodsynopsis>
+        <type>mixed</type><methodname><replaceable>step</replaceable></methodname>
+        <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
+        <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
+        <methodparam><type>mixed</type><parameter>value1</parameter></methodparam>
+        <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
+       </methodsynopsis>
+       <variablelist>
+        <varlistentry>
+         <term><parameter>context</parameter></term>
+         <listitem>
+          <para>
+           &null; für die erste Reihe. Folgende Reihen 
+           werden den zuvor zurückgegebenen Wert haben. Sie sollten diesen nutzen, um den
+           Status der Aggregation zu pflegen.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>rownumber</parameter></term>
+         <listitem>
+          <para>
+           Die Nummer der aktuellen Reihe.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>value1</parameter></term>
+         <listitem>
+          <para>
+           Das erste Argument, das an das Aggregat übergeben wurde.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>...</parameter></term>
+         <listitem>
+          <para>
+           Weitere Argumente, die an das Aggregat übergeben wurden.
+          </para>
+         </listitem>
+        </varlistentry>
+       </variablelist>
+       Der Rückgabewert dieser Funktion wird als <parameter>context</parameter>
+       Argument im nächsten Aufruf der step oder finalize Funktion verwendet.
+      </para> 
      </listitem>
     </varlistentry>
     <varlistentry>
      <term><parameter>final_callback</parameter></term>
      <listitem>
       <para>
-       Name der PHP- oder benutzerdefinierten Funktion, welche genutzt wird, um die Aggregierung
-       abzuschließen.
+       'Callback'-Funktion, die die Informationen aller Reihen aggregiert.
+       Sind alle Reihen abgearbeitet, wird diese Funktion aufgerufen. Diese
+       sollte dann die Daten der Aggregation 'context' auswerten und das 
+       Ergebnis zurückgeben. 'Callback'-Funktionen sollten einen Variablentyp 
+       liefern, der von SQLite erwartet wird (z.B. <link 
+       linkend="language.types.intro">scalar type</link>).
+      </para>
+      <para>
+       Diese Funktion ist wie folgt zu definieren:
+       <methodsynopsis>
+        <type>mixed</type><methodname><replaceable>fini</replaceable></methodname>
+        <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
+        <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
+       </methodsynopsis>
+       <variablelist>
+        <varlistentry>
+         <term><parameter>context</parameter></term>
+         <listitem>
+          <para>
+           Enthält den Rückgabewert des letzten Aufrufs der Schritt-Funktion.
+          </para>
+         </listitem>
+        </varlistentry>
+        <varlistentry>
+         <term><parameter>rownumber</parameter></term>
+         <listitem>
+          <para>
+           Immer <literal>0</literal>.
+          </para>
+         </listitem>
+        </varlistentry>
+       </variablelist>
+       Der Rückgabewert dieser Funktion wird als Rückgabewert für die
+       Aggregation genutzt.
       </para>
      </listitem>
     </varlistentry>
@@ -65,7 +145,6 @@
     </varlistentry>
    </variablelist>
   </para>
-
  </refsect1>
 
  <refsect1 role="returnvalues">
@@ -73,6 +152,99 @@
   <para>
    Gibt &true; zurück, wenn die Aggregierung erfolgreich war. Anderenfalls wird &false; zurückgegeben.
   </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Beispiel für eine 'max_length'-Aggregierungs-Funktion</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$data = array(
+   'one',
+   'two',
+   'three',
+   'four',
+   'five',
+   'six',
+   'seven',
+   'eight',
+   'nine',
+   'ten',
+   );
+$db = new SQLite3(':memory:');
+$db->exec("CREATE TABLE strings(a)");
+$insert = $db->prepare('INSERT INTO strings VALUES (?)');
+foreach ($data as $str) {
+    $insert->bindValue(1, $str);
+    $insert->execute();
+}
+$insert = null;
+
+function max_len_step($context, $rownumber, $string)
+{
+    if (strlen($string) > $context) {
+        $context = strlen($string);
+    }
+    return $context;
+}
+
+function max_len_finalize($context, $rownumber)
+{
+    return $context === null ? 0 : $context;
+}
+
+$db->createAggregate('max_len', 'max_len_step', 'max_len_finalize');
+
+var_dump($db->querySingle('SELECT max_len(a) from strings'));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+int(5)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   In diesem Beispiel erzeugen wir eine Aggregat-Funktion, die die Länge
+   der längsten Zeichenkette innerhalb einer der Tabellenspalten ermittelt.
+   Die <literal>max_len_step</literal>-Funktion wird für jede durchlaufene Reihe
+   mit dem Parameter <literal>$context</literal> aufgerufen. Der Parameter
+   'context' ist eine normal PHP Variable, welche Listen oder Objektinhalte
+   beinhalten kann. In diesem Beispiel benötigen wir sie als Speicher für die
+   größte bisher gefundene Länge der geprüften Zeichenketten. Wenn also die
+   die Zeichenkette in <literal>$string</literal> länger ist, als die aktuell
+   Längste, wird der Inhalt von 'context' mit der neuen Länge überschrieben.
+  </para>
+  <para>
+   Nachdem alle Reihen abgearbeitet wurden, ruft SQLite die
+   <literal>max_len_finalize</literal>-Funktion auf, um das Endergebnis
+   zu ermitteln. Hier können wir nun jede Art von Berechnungen,
+   basierend auf den in <literal>$context</literal> gesammelten Daten,
+   durchführen. In unserem Beispiel haben wir die Berechgungen bereits bei
+   der Datenerhebung getätigt, dass wir nun nur noch das Ergebnis -
+   den Inhalt von 'context' - zurückgeben brauchen.
+  </para>
+  <tip>
+   <para>
+    Es ist nicht ratsam, eine Kopie der Inhalte in 'context' zu speichern, 
+    um diese dann am Ende auszuwerten. Das würde dazu führen, dass SQLite eine
+    große Menge an Speicher benötigt, um die Abfrage abzuarbeiten. Überlegen Sie
+    nur mal, wieviel Speicher eine Abfrage braucht, die 1 Millionen Reihen mit
+    je 32 Byte Inhalt aus der Datenbank liest.
+   </para>
+  </tip>
+  <tip>
+   <para>
+    <methodname>SQLite3::createAggregate</methodname> kann verwendet werden, um
+    native SQL-Funktionen von SQLite zu übersteuern.
+   </para>
+  </tip>
  </refsect1>
 
 </refentry>
