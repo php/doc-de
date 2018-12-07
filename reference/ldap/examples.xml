@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6eb1cef4f2ea20b73ff7bbf5df19fc752849156e Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 6a0d8e640aca4c8a8bbdc8777868fe524d31069f Maintainer: hholzgra Status: ready -->
 
 <chapter xml:id="ldap.examples" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  &reftitle.examples;
@@ -55,6 +55,153 @@ if ($ds) {
 } else {
     echo "<h4>Verbindung zum LDAP Server nicht möglich</h4>";
 }
+?>
+]]>
+   </programlisting>
+  </example>
+ </section>
+
+ <section xml:id="ldap.examples-controls">
+  <title>LDAP-Steuerbefehle</title>
+  <para>
+   Hier sind einige Beispiele für die Verwendung von LDAP-Steuerbefehlen unter PHP &gt;= 7.3.0.
+  </para>
+
+  <example>
+   <title>Binden mit Ppolicy Information</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$user   = 'cn=admin,dc=example,dc=com';
+$passwd = 'adminpassword';
+
+$ds = ldap_connect('ldap://localhost');
+
+if ($ds) {
+  $r = ldap_bind_ext($ds, $user, $passwd, [['oid' => LDAP_CONTROL_PASSWORDPOLICYREQUEST]]);
+
+  if (ldap_parse_result($ds, $r, $errcode, $matcheddn, $errmsg, $referrals, $ctrls)) {
+    if ($errcode != 0) {
+      die("Fehler: $errmsg ($errcode)");
+    }
+    if (isset($ctrls[LDAP_CONTROL_PASSWORDPOLICYRESPONSE])) {
+      $value = $ctrls[LDAP_CONTROL_PASSWORDPOLICYRESPONSE]['value'];
+      echo "Verfällt in: ".$value['expire']." Sekunden\n";
+      echo "Anzahl der verfügbaren Authentifizierungsversuche: ".$value['grace']."\n";
+      if (isset($value['error'])) {
+        echo "Ppolicy Fehlercode: ".$value['error'];
+      }
+    }
+  }
+} else {
+  die("Verbindung mit dem LDAP-Server nicht möglich");
+}
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Ändern der Beschreibung, falls diese nicht leer ist</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+  // $link ist eine LDAP-Verbindung
+
+  $result = ldap_mod_replace_ext(
+    $link,
+    'o=test,dc=example,dc=com',
+    ['description' => 'New description'],
+    [
+      [
+        'oid'         => LDAP_CONTROL_ASSERT,
+        'iscritical'  => TRUE,
+        'value'       => ['filter' => '(!(description=*))']
+      ]
+    ]
+  );
+
+  // Nun ist ldap_parse_result zu verwenden
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Lesen einiger Werte vor dem Löschen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+  // $link ist eine LDAP-Verbindung
+
+  $result = ldap_delete_ext(
+    $link,
+    'o=test,dc=example,dc=com',
+    [
+      [
+        'oid'         => LDAP_CONTROL_PRE_READ,
+        'iscritical'  => TRUE,
+        'value'       => ['attrs' => ['o', 'description']]
+      ]
+    ]
+  );
+
+  // Nun ist ldap_parse_result zu verwenden
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Löschen einer Referenz</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+  // $link ist eine LDAP-Verbindung
+
+  // Ohne den Steuerbefehl würde der referenzierte Knoten gelöscht.
+  // Der Steuerbefehl muss als kritisch markiert werden, um dies zu vermeiden.
+  $result = ldap_delete_ext(
+    $link,
+    'cn=reference,dc=example,dc=com',
+    [['oid' => LDAP_CONTROL_MANAGEDSAIT, 'iscritical' => TRUE]]
+  );
+
+  // Nun ist ldap_parse_result zu verwenden
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Paginierung für eine Suche verwenden</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+  // $link ist eine LDAP-Verbindung
+
+  $cookie = '';
+
+  do {
+    $result = ldap_search(
+      $link, 'dc=example,dc=base', '(cn=*)', ['cn'], 0, 0, 0, LDAP_DEREF_NEVER,
+      [['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 2, 'cookie' => $cookie]]]
+    );
+    ldap_parse_result($link, $result, $errcode , $matcheddn , $errmsg , $referrals, $controls);
+    // Um das Beispiel übersichtlich zu halten, wird nicht auf Fehler geprüft
+    $entries = ldap_get_entries($link, $result);
+    foreach ($entries as $entry) {
+      echo "cn: ".$entry['cn'][0]."\n";
+    }
+    if (isset($controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'])) {
+      // Das Cookie des letzten Aufrufs muss an den Folgenden übergeben werden
+      $cookie = $controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'];
+    } else {
+      $cookie = '';
+    }
+    // Ein leeres Cookie bedeutet die letzte Seite
+  } while (!empty($cookie));
 ?>
 ]]>
    </programlisting>
