@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: bae0d227acb2fcdc85a04405f4f23b25dbfdebcf Maintainer: simp Status: ready -->
+<!-- EN-Revision: 9f34a7ecf58a79efb4586dff4c21c24195479506 Maintainer: simp Status: ready -->
 <refentry xml:id="function.ldap-connect" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ldap_connect</refname>
@@ -9,6 +9,17 @@
  
  <refsect1 role="description">
   &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>ldap_connect</methodname>
+   <methodparam choice="opt"><type>string</type><parameter>ldap_uri</parameter><initializer>&null;</initializer></methodparam>
+  </methodsynopsis>
+  <warning>
+   <simpara>
+    Die <emphasis>folgende</emphasis> Signatur wird aus Gründen der
+    Abwärtskompatibilität weiterhin unterstützt, wird aber als veraltet
+    betrachtet und sollte nicht mehr verwendet werden!
+   </simpara>
+  </warning> 
   <methodsynopsis>
    <type>resource</type><methodname>ldap_connect</methodname>
    <methodparam choice="opt"><type>string</type><parameter>host</parameter><initializer>&null;</initializer></methodparam>
@@ -34,21 +45,27 @@
   <para>
    <variablelist>
     <varlistentry>
+     <term><parameter>ldap_uri</parameter></term>
+     <listitem>
+      <para>
+       Eine vollständige LDAP URI der Form <literal>ldap://hostname:port</literal>
+       oder <literal>ldaps://hostname:port</literal> für SSL-Verschlüsselung.
+      </para>
+      <para>
+       Es können auch mehrere LDAP-URIs, gtrennt dich ein Leerzeichen, als ein String
+       angegebene werden.
+      </para>
+      <para>
+       Es muss beachtet werden, dass <literal>hostname:port</literal> keine unterstützte 
+       LDAP URI ist, da das Schema fehlt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
      <term><parameter>host</parameter></term>
      <listitem>
       <para>
-       Dieser Parameter unterstützt einen Hostnamen, oder mit OpenLDAP 2.x.x und
-       später, eine vollständige LDAP-URI der Form
-       <literal>ldap://hostname:port</literal> oder
-       <literal>ldaps://hostname:port</literal> für SSL-Verschlüsselung.
-      </para>
-      <para>
-       Es können ebenfalls mehrere LDAP-URIs getrennt durch Leerzeichen als eine
-       Zeichenkette übergeben werden.
-      </para>
-      <para>
-       Es ist zu beachten, dass <literal>hostname:port</literal> keine
-       unterstützte LDAP-URI ist, da das Schema fehlt.
+       Der Hostname zu dem eine Verbindung aufgebaut werden soll.
       </para>
      </listitem>
     </varlistentry>
@@ -56,8 +73,7 @@
      <term><parameter>port</parameter></term>
      <listitem>
       <para>
-       Der Port zu dem eine Verbindung aufgebaut werden soll. 
-       Dies wird bei der Verwendung von LDAP-URIs nicht benutzt.
+       Der Port zu dem eine Verbindung aufgebaut werden soll.
       </para>
      </listitem>
     </varlistentry>
@@ -69,19 +85,18 @@
   &reftitle.returnvalues;
   <para>
    Liefert eine postive LDAP Verbindungskennung zurück, wenn die angegebene
-   Hostname/Port-Kombination oder LDAP-URI plausibel scheint. Es handelt sich um
+   LDAP-URI plausibel scheint. Es handelt sich um
    eine Syntaxprüfung der übergebenen Paramter, aber der (oder die) Server
    werden nicht kontaktiert! Schlägt die Syntaxprüfung fehlt, wird &false;
    zurückgegeben.
-   Wenn OpenLDAP 2.x.x verwendet wird, 
-   liefert <function>ldap_connect</function> immer eine gültige Resource
+   Andernfalls liefert <function>ldap_connect</function> immer eine gültige Resource
    mit positiver Verbindungs-Kennung zurück. Die Verbindung zum LDAP-Server
    wird noch nicht hergestellt, die Verbindung wird lediglich initialisiert.
    Der Verbindungsaufbau erfolgt bei der nächsten Nutzung einer ldap_*
    Funktion; Normalerweise ist dies <function>ldap_bind</function>.
   </para>
   <para>
-   Werden keine Argumente angegeben, wird die Verbindungs-Kennung einer 
+   Wird kein Argumente angegeben, wird die Verbindungs-Kennung einer 
    bereits geöffneten Verbindung zurückgeliefert.
   </para>
  </refsect1>
@@ -96,12 +111,11 @@
 <?php
 
 // LDAP Variablen
-$ldaphost = "ldap.example.com";  // Ihr ldap server
-$ldapport = 389;                 // Die Portnummer ihres ldap servers
+$ldapuri = "ldap://ldap.example.com:389";  // Ihre ldap-uri
 
 // Verbindung zu LDAP
-$ldapconn = ldap_connect($ldaphost, $ldapport)
-    or die( "Keine Verbindung zu $ldaphost möglich" );
+$ldapconn = ldap_connect($ldapuri)
+    or die( "Die LDAP-URI konnte nicht gepasst werden" );
     
 ?>
 ]]>
@@ -119,7 +133,7 @@ $ldaphost = "ldaps://ldap.example.com/";
 
 // Verbindung zu LDAP
 $ldapconn = ldap_connect( $ldaphost ) 
-    or die( "Keine Verbindung zu {$ldaphost} möglich" );
+    or die( "Die LDAP-URI konnte nicht gepasst werden" );
 
 ?>
 ]]>
