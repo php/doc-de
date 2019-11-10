@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: f9f9a44875b22e54e99f85d345f5209d6e198617 Maintainer: gerdtsteltner Status: ready -->
+<!-- EN-Revision: d6bb81836451c473b17756a842169db797123608 Maintainer: gerdtsteltner Status: ready -->
 <refentry xml:id="function.array-splice" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>array_splice</refname>
@@ -24,10 +24,12 @@
    <parameter>input</parameter>, und ersetzt diese durch die Elemente
    des Arrays <parameter>replacement</parameter>, wenn angegeben.
   </para>
-  <para>
-   Beachten Sie, dass numerische Schlüssel in
-   <parameter>input</parameter> nicht erhalten werden.
-  </para>
+  <note>
+   <para>
+    Numerische Schlüssel in
+    <parameter>input</parameter> werden nicht erhalten.
+   </para>
+  </note>
   <note>
    <simpara>
     Wenn <parameter>replacement</parameter> kein Array ist, wird es in
@@ -56,7 +58,10 @@
       <para>
        Ist <parameter>offset</parameter> positiv, beginnt der zu
        entfernende Bereich bei diesem Offset vom Anfang des Arrays
-       <parameter>input</parameter>. Ist <parameter>offset</parameter>
+       <parameter>input</parameter>.
+      </para>
+      <para>
+       Ist <parameter>offset</parameter>
        negativ, beginnt der zu entfernende Bereich so viele Elemente
        vor dem Ende des Arrays <parameter>input</parameter>.
       </para>
@@ -68,18 +73,30 @@
       <para>
        Ist <parameter>length</parameter> nicht angegeben, wird alles
        von <parameter>offset</parameter> bis zum Ende des Arrays
-       entfernt. Ist <parameter>length</parameter> angegeben und
-       positiv, werden so viele Elemente entfernt. Ist
-       <parameter>length</parameter> angegeben und negativ, so ist das
-       Ende des entfernten Bereichs so viele Elemente vor dem Ende des
-       Array. Wenn <parameter>length</parameter> angegeben und 0 ist, werden
-       keine Elemente entfernt.
-       Tipp: Um alles von <parameter>offset</parameter> bis zum
-       Ende des Arrays zu entfernen, wenn
-       <parameter>replacement</parameter> ebenfalls angegeben ist,
-       verwenden Sie <literal>count($input)</literal> als
-       <parameter>length</parameter>.
+       entfernt.
       </para>
+      <para>
+       Ist <parameter>length</parameter> angegeben und
+       positiv, werden so viele Elemente entfernt.
+      </para>
+      <para>
+       Ist <parameter>length</parameter> angegeben und negativ, so ist das
+       Ende des entfernten Bereichs so viele Elemente vor dem Ende des
+       Array.
+      </para>
+      <para>
+       Wenn <parameter>length</parameter> angegeben und 0 ist, werden
+       keine Elemente entfernt.
+      </para>
+      <tip>
+       <para>
+        Um alles von <parameter>offset</parameter> bis zum
+        Ende des Arrays zu entfernen, wenn
+        <parameter>replacement</parameter> ebenfalls angegeben ist,
+        verwenden Sie <code>count($input)</code> als
+        <parameter>length</parameter>.
+       </para>
+      </tip>
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -95,12 +112,16 @@
        <parameter>length</parameter> so angegeben, dass nichts entfernt
        wird, werden die Elemente von <parameter>replacement</parameter>
        an der von <parameter>offset</parameter> spezifizierten Stelle
-       eingefügt. Beachten Sie, dass Schlüssel bei der Ersetzung nicht
-       erhalten werden.
+       eingefügt.
       </para>
+      <note>
+       <para>
+        Schlüssel werden bei der Ersetzung nicht erhalten.
+       </para>
+      </note>
       <para>
        Wenn <parameter>replacement</parameter> nur aus einem Element
-       besteht, ist es nicht notwendig, <literal>array()</literal>
+       besteht, ist es nicht notwendig, <literal>array()</literal> oder eckige Klammern
        anzugeben, sofern das Element nicht selbst ein Array, ein Objekt
        oder &null; ist.
       </para>
@@ -126,36 +147,64 @@
 <?php
 $input = array("rot", "grün", "blau", "gelb");
 array_splice($input, 2);
-// $input ist nun array("rot", "grün")
+var_dump($input);
 
 $input = array("rot", "grün", "blau", "gelb");
 array_splice($input, 1, -1);
-// $input ist nun array("rot", "gelb")
+var_dump($input);
 
 $input = array("rot", "grün", "blau", "gelb");
 array_splice($input, 1, count($input), "orange");
-// $input ist nun array("rot", "orange")
+var_dump($input);
 
 $input = array("rot", "grün", "blau", "gelb");
 array_splice($input, -1, 1, array("schwarz", "braun"));
-// $input ist nun array("rot", "grün",
-//           "blau", "schwarz", "braun")
-
-$input = array("rot", "grün", "blau", "gelb");
-array_splice($input, 3, 0, "lila");
-// $input is now array("rot", "grün",
-//            "blau", "lila", "gelb");
+var_dump($input);
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(2) {
+  [0]=>
+  string(3) "rot"
+  [1]=>
+  string(5) "grün"
+}
+array(2) {
+  [0]=>
+  string(3) "rot"
+  [1]=>
+  string(4) "gelb"
+}
+array(2) {
+  [0]=>
+  string(3) "rot"
+  [1]=>
+  string(6) "orange"
+}
+array(5) {
+  [0]=>
+  string(3) "rot"
+  [1]=>
+  string(5) "grün"
+  [2]=>
+  string(4) "blau"
+  [3]=>
+  string(7) "schwarz"
+  [4]=>
+  string(5) "braun"
+}
+]]>
+    </screen>
    </example>
   </para>
   <para>
    <example>
-    <title><function>array_splice</function>-Beispiele</title>
+    <title><function>array_splice</function>-Beispiele zu gleichwertigen Anweisungen</title>
     <para>
-     Die folgenden Anweisungen ändern die Werte von <varname>$input</varname>
-     auf die gleiche Weise:
+     Die folgenden Anweisungen sind gleichwertig:
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -189,9 +238,9 @@ array_splice($input, $x, 1, $y);
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>array_merge</function></member>
     <member><function>array_slice</function></member>
     <member><function>unset</function></member>
-    <member><function>array_merge</function></member>
    </simplelist>
   </para>
  </refsect1>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9caf16a8ba22366befab30e1d4d5759a4cd406f3 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 108ea73be559f6752a461149fffa9b294545359f Maintainer: wiesemann Status: ready -->
 <!-- CREDITS: tom -->
 <refentry xml:id="function.array-map" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -17,10 +17,11 @@
    <methodparam choice="opt"><type>array</type><parameter>...</parameter></methodparam>
   </methodsynopsis>
   <para>
-   <function>array_map</function> gibt ein Array mit allen Elementen von
-   <parameter>array1</parameter> zurück, nachdem die Callback-Funktion
-   <parameter>callback</parameter> auf jedes einzelne Element angewandt
-   wurde. Die Anzahl Parameter, welche die Callback-Funktion
+   <function>array_map</function> gibt ein &array; zurück, das die Ergebnisse der
+   Anwendung der <parameter>callback</parameter> Funktion auf den entsprechenden Index von
+   <parameter>array1</parameter> (und <parameter>...</parameter>, wenn weitere Arrays angegeben wurden)
+   als Callback-Argumente enthält.
+   Die Anzahl Parameter, welche die Callback-Funktion
    <parameter>callback</parameter> akzeptiert, sollte der Anzahl der an
    <function>array_map</function> übergebenen Arrays entsprechen.
   </para>
@@ -37,6 +38,12 @@
        Callback-Funktion, die für jedes Element in jedem Array
        aufgerufen werden soll.
       </para>
+      <para>
+       &null; kann als Wert an <parameter>callback</parameter> übergeben werden,
+       um eine zip-Operation auf mehrere Arrays durchzuführen.
+       Wird nur <parameter>array1</parameter> übergeben,
+       gibt <methodname>array_map</methodname> das Eingabe-Array zurück.
+      </para>
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -52,7 +59,7 @@
      <term><parameter>...</parameter></term>
      <listitem>
       <para>
-       Variable Liste von Array-Argumenten, auf die die
+       Zusätzliche variable Liste von Array-Argumenten, auf die die
        <parameter>callback</parameter>-Funktion angewendet werden soll.
       </para>
      </listitem>
@@ -64,10 +71,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt ein Array zurück, das alle Elemente von
-   <parameter>array1</parameter> enthält, nachdem die
-   <parameter>callback</parameter>-Funktion auf jedes Element
-   angewendet wurde.
+   <function>array_map</function> gibt ein Array zurück, das die Ergebnisse der
+   Anwendung der <parameter>callback</parameter> Funktion auf den entsprechenden Index von
+   <parameter>array1</parameter> (und <parameter>...</parameter>, wenn weitere Arrays angegeben wurden)
+   als Callback-Argumente enthält.
   </para>
  </refsect1>
 
@@ -81,11 +88,11 @@
 <?php
 function cube($n)
 {
-    return($n * $n * $n);
+    return ($n * $n * $n);
 }
 
-$a = array(1, 2, 3, 4, 5);
-$b = array_map("cube", $a);
+$a = [1, 2, 3, 4, 5];
+$b = array_map('cube', $a);
 print_r($b);
 ?>
 ]]>
@@ -148,21 +155,21 @@ Array
 <?php
 function show_Spanish($n, $m)
 {
-    return("Die Zahl $n heißt auf Spanisch $m");
+    return "Die Zahl {$n} heißt auf Spanisch {$m}";
 }
 
 function map_Spanish($n, $m)
 {
-    return(array($n => $m));
+    return [$n => $m];
 }
 
-$a = array(1, 2, 3, 4, 5);
-$b = array("uno", "dos", "tres", "cuatro", "cinco");
+$a = [1, 2, 3, 4, 5];
+$b = ['uno', 'dos', 'tres', 'cuatro', 'cinco'];
 
-$c = array_map("show_Spanish", $a, $b);
+$c = array_map('show_Spanish', $a, $b);
 print_r($c);
 
-$d = array_map("map_Spanish", $a , $b);
+$d = array_map('map_Spanish', $a , $b);
 print_r($d);
 ?>
 ]]>
@@ -227,13 +234,13 @@ Array
   </para>
   <para>
    <example>
-    <title>Erstellen eines Arrays mit Arrays</title>
+    <title>Durchführen einer zip-Operation von Arrays</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$a = array(1, 2, 3, 4, 5);
-$b = array("eins", "zwei", "drei", "vier", "fünf");
-$c = array("uno", "dos", "tres", "cuatro", "cinco");
+$a = [1, 2, 3, 4, 5];
+$b = ['eins', 'zwei', 'drei', 'vier', 'fünf'];
+$c = ['uno', 'dos', 'tres', 'cuatro', 'cinco'];
 
 $d = array_map(null, $a, $b, $c);
 print_r($d);
@@ -292,19 +299,47 @@ Array
   </para>
   <para>
    <example>
+    <title>
+     &null; <parameter>callback</parameter> nur mit <parameter>array1</parameter>
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$array = [1, 2, 3];
+var_dump(array_map(null, $array));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(2)
+  [2]=>
+  int(3)
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
     <title><function>array_map</function> - mit String-Schlüsseln</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$arr = array("stringkey" => "value");
+$arr = ['stringkey' => 'value'];
 function cb1($a) {
-    return array ($a);
+    return [$a];
 }
 function cb2($a, $b) {
-    return array ($a, $b);
+    return [$a, $b];
 }
-var_dump(array_map("cb1", $arr));
-var_dump(array_map("cb2", $arr, $arr));
+var_dump(array_map('cb1', $arr));
+var_dump(array_map('cb2', $arr, $arr));
 var_dump(array_map(null,  $arr));
 var_dump(array_map(null, $arr, $arr));
 ?>
