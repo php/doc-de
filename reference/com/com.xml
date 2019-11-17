@@ -1,182 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7b83a7643386f31a8c7c5afbc23bde0b1e627766 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: fa6831306ac029c418e835168009d00483f0ac82 Maintainer: nobody Status: ready -->
 
-<phpdoc:classref xmlns:phpdoc="http://php.net/ns/phpdoc" xml:id="class.com" xmlns="http://docbook.org/ns/docbook">
+<phpdoc:classref xmlns:phpdoc="http://php.net/ns/phpdoc" xml:id="class.com" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude">
  <titleabbrev>COM</titleabbrev>
  <title>Die COM-Klasse</title>
  <partintro>
 
- <section xml:id="class.com.class">
-  <title>Beschreibung</title>
-  <simpara>
-   Die COM-Klasse erlaubt Ihnen, ein OLE-kompatibles COM-Objekt zu erzeugen, 
-   seine Methoden aufzurufen und auf seine Eigenschaften zuzugreifen.
-  </simpara>
-  <simpara>
-   <literal>$obj = new COM("Application.ID")</literal>
-  </simpara>
- </section>
+<!-- {{{ COM intro -->
+  <section xml:id="com.intro">
+   &reftitle.intro;
+   <para>
+    Die COM-Klasse erlaubt Ihnen, ein OLE-kompatibles COM-Objekt zu erzeugen, 
+    seine Methoden aufzurufen und auf seine Eigenschaften zuzugreifen.
+   </para>
+  </section>
+<!-- }}} -->
 
- <section xml:id="com.com">
-  <title>Methoden</title>
-  <methodsynopsis>
-   <methodname>COM::__construct</methodname>
-   <methodparam><type>string</type><parameter>module_name</parameter></methodparam>
-   <methodparam choice="opt"><type>mixed</type><parameter>server_name</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>codepage</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>typelib</parameter></methodparam>
-  </methodsynopsis>
-  <para>
-   COM-Klassenkonstruktor. Die Parameter haben die folgende Bedeutung:
-   <variablelist>
-    <varlistentry>
-     <term>module_name</term>
-     <listitem>
-      <simpara>
-       Kann eine ProgID, Klassen-ID oder der Moniker der zu ladenden Komponente sein.
-      </simpara>
-      <simpara>
-       Eine ProgID ist typischerweise der Applikations- oder DLL-Name, gefolgt 
-       von einem Punkt, gefolgt vom Objektnamen, z.B. <literal>Word.Application</literal>
-      </simpara>
-      <simpara>
-       Eine Klassen-ID ist die UUID, die eineindeutig eine bestimmte Klasse identifiziert.
-      </simpara>
-      <simpara>
-       Ein Moniker ist eine spezielle Form der Benennung, konzeptähnlich dem URL-Schema,
-       das eine Ressource identifiziert und angibt, wie sie geladen werden soll. 
-       Beispielsweise könnten Sie Word laden und ein Objekt erzeugen, das ein Worddokument
-       repräsentiert, indem Sie den vollständigen Pfad zum Worddokument als Modulnamen
-       angeben, oder Sie können <literal>LDAP:</literal> als einen Moniker verwenden,
-       um das ADSI-Interface zu LDAP zu nutzen.
-      </simpara>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term>server_name</term>
-     <listitem>
-      <simpara>
-       Name des DCOM-Servers, auf dem die Komponente geladen und ausgeführt werden soll.
-       Ist &null; angegeben, wird das Objekt auf dem Standardwert dieser Applikation 
-       ausgeführt. Der Standardwert ist typischerweise die Ausführung auf der lokalen
-       Maschine, obwohl der Administrator die Applikation so konfiguriert haben kann,
-       dass sie auf einer anderen Maschine startet.
-      </simpara>
-      <simpara>
-       Wenn Sie einen Nicht-&null;-Wert für den Server angeben, wird PHP das Laden des
-       Objekts zurückweisen, wenn nicht auch die Konfigurationsoption <xref
-       linkend="ini.com.allow-dcom"/> auf &true; gesetzt ist.
-      </simpara>
-      <para>
-       Wenn <parameter>server_name</parameter> ein Array ist, sollte es die folgenden
-       Elemente enthalten (Groß- und Kleinschreibung wird unterschiedlich interpretiert!).
-       Beachten Sie, dass alle Elemente optional sind (obwohl Sie bei der Angabe eines
-       Usernamens auch ein Passwort angeben müssen). Wenn Sie die Server-Einstellung 
-       weglassen, wird der Standardserver verwendet (wie oben beschrieben), und die 
-       Instanziierung des Objekts ist nicht von der <xref 
-       linkend="ini.com.allow-dcom"/>-Direktive betroffen.
-       <table>
-        <title>DCOM-Servername</title>
-        <tgroup cols="3">
-         <thead>
-          <row>
-           <entry><parameter>server_name</parameter>-Schlüssel</entry>
-           <entry>Typ</entry>
-           <entry>Beschreibung</entry>
-          </row>
-         </thead>
-         <tbody>
-          <row>
-           <entry>Server</entry>
-           <entry>string</entry>
-           <entry>Der Name des Servers.</entry>
-          </row>
-          <row>
-           <entry>Username</entry>
-           <entry>string</entry>
-           <entry>Der Username, der für die Verbindung verwendet wird.</entry>
-          </row>
-          <row>
-           <entry>Password</entry>
-           <entry>string</entry>
-           <entry>Das Passwort für <parameter>Username</parameter>.</entry>
-          </row>
-          <row>
-           <entry>Flags</entry>
-           <entry>integer</entry>
-           <entry>Eine oder mehrere der folgenden Konstanten, mittels logischem 
-            OR verknüpft:
-            <constant>CLSCTX_INPROC_SERVER</constant>,
-            <constant>CLSCTX_INPROC_HANDLER</constant>,
-            <constant>CLSCTX_LOCAL_SERVER</constant>,
-            <constant>CLSCTX_REMOTE_SERVER</constant>,
-            <constant>CLSCTX_SERVER</constant> und <constant>CLSCTX_ALL</constant>.  
-            Wenn nichts anderes angegeben ist, wird als Standardwert
-            <constant>CLSCTX_SERVER</constant> angenommen, sofern Sie ebenfalls
-            den <parameter>Server</parameter>-Parameter nicht angegeben haben. Ist
-            der Server angegeben, wird <constant>CLSCTX_REMOTE_SERVER</constant>
-            verwendet. Konsultieren Sie die Microsoftdokumentation für
-            CoCreateInstance, wenn Sie mehr über die Bedeutung dieser Konstanten
-            erfahren wollen; normalerweise werden Sie sie jedoch nicht verwenden.
-           </entry>
-          </row>
-         </tbody>
-        </tgroup>
-       </table>
-      </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term>codepage</term>
-     <listitem>
-      <simpara>
-       Gibt die Codepage an, die verwendet wird um Zeichenketten nach Unicode und
-       zurück umzuwandeln. Die Umwandlung wird immer dann durchgeührt, wenn eine
-       PHP-Zeichenkette als Parameter übergeben oder von einer Methode dieses COM-Objekts
-       zurückgegeben wird. Die Codepage ist beharrlich, was bedeutet, dass
-       sie sich auf Objekte und Varianten, die von dem Objekt zurückgegeben werden,
-       fortpflanzt.
-      </simpara>
-      <simpara>
-       Mögliche Werte sind
-       <constant>CP_ACP</constant> (verwende die Standard ANSI-Codepage des Systems - das
-       ist der Standardwert, wenn dieser Parameter ausgelassen wird),
-       <constant>CP_MACCP</constant>,
-       <constant>CP_OEMCP</constant>, <constant>CP_SYMBOL</constant>,
-       <constant>CP_THREAD_ACP</constant> (verwende die Codepage/Locale, die für 
-       den aktuell ausgeführten Thread angegeben wurde), <constant>CP_UTF7</constant>
-       und <constant>CP_UTF8</constant>.  Ebenfalls kann die Nummer einer bestimmten
-       Codepage verwendet werden; weitere Details zu Codepages und ihren numerischen
-       Werten können der Microsoft-Dokumentation entnommen werden.
-      </simpara>
-     </listitem>
-    </varlistentry>
-   </variablelist>
-  </para>
- </section>
- 
- <section xml:id="class.com.overloadedmethods">
-  <title>Überladene Methoden</title>
-  <para>
-   Das zurückgegebene Objekt ist überladen, was bedeutet, dass PHP keine bestimmten
-   Methoden kennt, wie das normalerweise der Fall ist; statt dessen wird jeder
-   Eigenschafts- oder Methodenzugriff an COM weitergereicht.
-  </para>
-  <para>
-   PHP erkennt automatisch Methoden, die Referenzparameter erwarten, und wird reguläre
-   PHP-Variablen automatisch in eine Form umwandeln, die per Referenz übergeben werden
-   kann. Das heißt, das die Methode sehr natürlich aufgerufen werden kann; es ist kein
-   Zusatzaufwand nötig.
-  </para>
- </section>
+  <section xml:id="com.synopsis">
+   &reftitle.classsynopsis;
+ <!-- {{{ Synopsis -->
+   <classsynopsis>
+    <ooclass><classname>COM</classname></ooclass>
 
- <section xml:id="class.com.examples">
-  <title>COM-Beispiele</title>
-  <para>
-   <example xml:id="example.com1">
-    <title>COM-Beispiel 1</title>
-    <programlisting role="php">
+<!-- {{{ Class synopsis -->
+    <classsynopsisinfo>
+     <ooclass>
+      <classname>COM</classname>
+     </ooclass>
+
+     <ooclass>
+      <modifier>extends</modifier>
+      <classname>VARIANT</classname>
+     </ooclass>
+
+    </classsynopsisinfo>
+<!-- }}} -->
+
+    <classsynopsisinfo role="comment">&Methods;</classsynopsisinfo>
+    <xi:include xpointer="xmlns(db=http://docbook.org/ns/docbook) xpointer(id('class.com')/db:refentry/db:refsect1[@role='description']/descendant::db:constructorsynopsis[not(@role='procedural')])">
+     <xi:fallback />
+    </xi:include>
+   </classsynopsis>
+<!-- }}} -->
+
+  </section>
+
+  <section xml:id="class.com.overloadedmethods">
+   <title>Überladene Methoden</title>
+   <para>
+    Das zurückgegebene Objekt ist überladen, was bedeutet, dass PHP keine bestimmten
+    Methoden kennt, wie das normalerweise der Fall ist; statt dessen wird jeder
+    Eigenschafts- oder Methodenzugriff an COM weitergereicht.
+   </para>
+   <para>
+    PHP erkennt automatisch Methoden, die Referenzparameter erwarten, und wird reguläre
+    PHP-Variablen automatisch in eine Form umwandeln, die per Referenz übergeben werden
+    kann. Das heißt, das die Methode sehr natürlich aufgerufen werden kann; es ist kein
+    Zusatzaufwand nötig.
+   </para>
+  </section>
+
+  <section xml:id="class.com.examples">
+   <title>COM-Beispiele</title>
+   <para>
+    <example xml:id="example.com1">
+     <title>COM-Beispiel 1</title>
+     <programlisting role="php">
 <![CDATA[
 <?php
 // Word starten
@@ -200,13 +90,13 @@ $word->Quit();
 $word = null;
 ?>
 ]]>
-    </programlisting>
-   </example>
-  </para>
-  <para>
-   <example xml:id="example.com2">
-    <title>COM-Beispiel 2</title>
-    <programlisting role="php">
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    <example xml:id="example.com2">
+     <title>COM-Beispiel 2</title>
+     <programlisting role="php">
 <![CDATA[
 <?php
 
@@ -241,12 +131,15 @@ $conn = null;
 
 ?>
 ]]>
-    </programlisting>
-   </example>
-  </para>
- </section>
+     </programlisting>
+    </example>
+   </para>
+  </section>
   
  </partintro>
+
+ &reference.com.entities.com;
+
 </phpdoc:classref>
 
 <!-- Keep this comment at the end of the file
