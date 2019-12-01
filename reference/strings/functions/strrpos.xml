@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 80267cad62d87d99aa5601f4cbb13b033992c5c9 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 652367cc9d51966f31e0b85874a325ead7087c31 Maintainer: simp Status: ready -->
 <!-- Credits: sammywg -->
 
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.strrpos">
@@ -45,10 +45,21 @@
     <varlistentry>
      <term><parameter>offset</parameter></term>
      <listitem>
+      <para> 
+       Wenn null (<literal>0</literal>) oder positiv, wird die Suche von links
+       nach rechts durchgeführt, wobei die ersten <parameter>offset</parameter>
+       Bytes des <parameter>haystack</parameter> übersprungen werden.
+      </para>
       <para>
-       Wenn angegeben, wird die Suche diese Anzahl an Buchstaben vom Anfang des
-       Strings gezählt stoppen. Wenn der Wert negativ ist, startet die Suche
-       stattdessen diese Anzahl an Zeichen vom Ende des Strings aus.
+       Wenn negativ, wird die Suche von rechts nach links durchgeführt, wobei die
+       letzten <parameter>offset</parameter> Bytes des <parameter>haystack</parameter>
+       übersprungen werden.
+       <note>
+        <para>
+         Dies bedeutet, dass das letzte Vorkommen von <parameter>needle</parameter>
+         vor den letzten <parameter>offset</parameter> Bytes gesucht wird.
+        </para>
+       </note>
       </para>
      </listitem>
     </varlistentry>
@@ -62,38 +73,16 @@
    Gibt die Position des Vorkommens des gesuchten Teilstrings relativ
    zum Anfang der Zeichenkette <parameter>haystack</parameter> (unabhängig
    von Suchrichtung oder Offset) zurück.
-   Beachten Sie bitte, dass Positionen in Zeichenketten ab 0 gezählt werden
-   und nicht ab 1.
+   <note>
+    <simpara>
+     Positionen in Zeichenketten werden ab 0 gezählt, und nicht ab 1.
+    </simpara>
+   </note>
   </para>
   <para>
    Gibt &false; zurück, falls der gesuchte teilstring nicht gefunden wurde.
   </para>
   &return.falseproblem;
- </refsect1>
- 
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.0.0</entry>
-       <entry>
-        <parameter>needle</parameter> kann nun aus mehr als
-        einem Buchstaben bestehen.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-  </para>
  </refsect1>
  
  <refsect1 role="examples">
@@ -128,16 +117,41 @@ if ($pos === false) { // Beachten sie die drei Gleichheitszeichen
 <?php
 $foo = "0123456789a123456789b123456789c";
 
-var_dump(strrpos($foo, '7', -5));  // Beginnt die Suche fünf Zeichen
-                                   // vom Ende aus. Ergebnis: int(17)
+// Sucht '0' ab dem nullten Byte (vom Anfang an)
+var_dump(strrpos($foo, '0', 0));
 
-var_dump(strrpos($foo, '7', 20));  // Beginnt die Suche zwanzig Zeichen
-                                   // vom Anfang aus. Ergebnis: int(27)
+// Sucht '0' ab dem ersten Byte (nach Byte "0")
+var_dump(strrpos($foo, '0', 1));
 
-var_dump(strrpos($foo, '7', 28));  // Ergebnis: bool(false)
+// Sucht '7' ab dem 21ten Byte (nach Byte 20)
+var_dump(strrpos($foo, '7', 20));
+
+// Sucht '7' ab dem 29ten Byte (nach Byte 28)
+var_dump(strrpos($foo, '7', 28));
+
+// Sucht '7' von rechts nach links ab dem fünften Byte vom Ende
+var_dump(strrpos($foo, '7', -5));
+
+// Sucht 'c' von rechts nach links ab dem zweiten Byte vom Ende
+var_dump(strrpos($foo, 'c', -2));
+
+// Sucht '9c' von rechts nach links ab dem zweiten Byte vom Ende
+var_dump(strrpos($foo, '9c', -2));
 ?>
 ]]>
     </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+int(0)
+bool(false)
+int(27)
+bool(false)
+int(17)
+bool(false)
+int(29)
+]]>
+   </screen>
    </example>
   </para>
  </refsect1>
