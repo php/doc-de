@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6398de67edc88a4f296fbcc2103a7565a043492e Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 9d7bbd34d55569ecd4e28ddad69bef6e94d4ec38 Maintainer: sammywg Status: ready -->
 
  <chapter xml:id="language.exceptions" xmlns="http://docbook.org/ns/docbook">
   <title>Ausnahmebehandlung (Exception-Handling)</title>
@@ -271,6 +271,15 @@ class MyException extends Exception
     wird der Code innerhalb des &finally;-Blocks immer nach den &try;- und
     &catch;-Blöcken ausgeführt, bevor die normale Ausführung fortgesetzt wird.
    </para>
+   <para>
+    Eine bemerkenswerte Wechselwirkung besteht zwischen dem &finally; Block und einer
+    &return; Anweisung. Wird eine &return; Anweisung innerhalb der &try; oder &catch;
+    Blöcke angetroffen, wird der &finally; Block dennoch ausgeführt. Außerdem wird die
+    &return; Anweisung ausgewertet, wenn sie angetroffen wird, aber das Ergebnis wird
+    erst nach dem &finally; Block zurückgegeben. Des Weiteren wird, wenn der &finally;
+    Block ebenfalls eine &return; Anweisung enthält, der Wert aus dem &finally; Block
+    zurückgegeben.
+   </para>
   </simplesect>
 
   <simplesect xml:id="language.exceptions.notes">
@@ -332,7 +341,7 @@ Hallo Welt
     </screen>
    </example>
    <example>
-    <title>Exceptionbehandlung mit einem <literal>finally</literal>-Block</title>
+    <title>Exceptionbehandlung mit einem &finally;-Block</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -372,6 +381,33 @@ Erstes finally.
 Exception abgefangen: Division durch Null.
 Zweites finally.
 Hallo Welt
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Wechselwirkung zwischen dem &finally;-Block und &return;</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+function test() {
+    try {
+        throw new Exception('foo');
+    } catch (Exception $e) {
+        return 'catch';
+    } finally {
+        return 'finally';
+    }
+}
+
+echo test();
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+finally
 ]]>
     </screen>
    </example>
