@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 58f224110635890a9fb1449e00d787439c2d915a Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: f811c29cdcb9ae601c51346f139ec75eef2ce334 Maintainer: sammywg Status: ready -->
 <refentry xml:id='function.proc-open' xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>proc_open</refname>
@@ -13,7 +13,7 @@
   &reftitle.description;
    <methodsynopsis>
     <type>resource</type><methodname>proc_open</methodname>
-    <methodparam><type>string</type><parameter>cmd</parameter></methodparam>
+    <methodparam><type>mixed</type><parameter>cmd</parameter></methodparam>
     <methodparam><type>array</type><parameter>descriptorspec</parameter></methodparam>
     <methodparam><type>array</type><parameter role="reference">pipes</parameter></methodparam>
     <methodparam choice="opt"><type>string</type><parameter>cwd</parameter><initializer>&null;</initializer></methodparam>
@@ -49,7 +49,27 @@
      <term><parameter>cmd</parameter></term>
      <listitem>
       <para>
-       Das auszuführende Kommando.
+       Das auszuführende Kommandozeile als &string;. Sonderzeichen müssen ordnungsgemäß maskiert,
+       und Argumente müssen ggf. in Anführungszeichen eingeschlossen werden.
+      </para>
+      <note>
+       <simpara>
+        Unter <emphasis>Windows</emphasis> wird, falls <literal>bypass_shell</literal> in
+        <parameter>other_options</parameter> nicht auf &true; gesetzt ist, das <parameter>cmd</parameter>
+        mit dem <literal>/c</literal> Flag als <emphasis>nicht in Anführungszeichen eingeschlossene</emphasis> Zeichenkette
+        (d.h. genau wie an <function>proc_open</function> übergeben)
+        an <command>cmd.exe</command> übergeben (genauer gesagt an <literal>%ComSpec%</literal>).
+        Dies kann <command>cmd.exe</command> veranlassen, umschließende Anführungszeichen von
+        <parameter>cmd</parameter> zu entfernen (Details sind der <command>cmd.exe</command> Dokumentation zu entnehmen),
+        was zu unerwartetem, und potentiell sogar gefährlichen Verhalten führen kann, da
+        <command>cmd.exe</command> Fehlermeldungen das übergebene <parameter>cmd</parameter>
+        oder Teile davon enthalten können (siehe Beispiel weiter unten).
+       </simpara>
+      </note>
+      <para>
+       Von PHP 7.4.0 an kann <parameter>cmd</parameter> als &array; von Kommandozeilenparametern übergeben werden.
+       In diesem Fall wird der Prozess direkt gestartet (ohne Umweg über die Shell)
+       und PHP kümmert sich um das nötige Maskieren von Argumenten.
       </para>
      </listitem>
     </varlistentry>
@@ -180,6 +200,13 @@
       <row>
        <entry>7.4.0</entry>
        <entry>
+        <function>proc_open</function> akzeptiert nun ebenfalls ein &array;
+        für das <parameter>cmd</parameter>.
+       </entry>
+      </row>
+      <row>
+       <entry>7.4.0</entry>
+       <entry>
         Die Option <literal>create_process_group</literal> wurde dem Parameter
         <parameter>other_options</parameter> hinzugefügt.
        </entry>
@@ -258,6 +285,43 @@ Array
 Rückgabewert des Kommandos: 0
 ]]>
     </screen>
+   </example>
+  </para>
+
+  <para>
+   <example>
+    <title><function>proc_open</function>-Eigenheit unter Windows</title>
+    <simpara>
+     Während man erwarten könnte, dass das folgende Program die Datei <filename>filename.txt</filename>
+     nach dem Text <literal>suche</literal> durchsucht und die Ergebnisse ausgibt,
+     verhält es sich ganz anders.
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$descriptorspec = [STDIN, STDOUT, STDOUT];
+$cmd = '"findstr" "suche" "filename.txt"';
+$proc = proc_open($cmd, $descriptorspec, $pipes);
+proc_close($proc);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Der Befehl "findstr" "suche" "filename.txt" ist entweder falsch geschrieben oder
+konnte nicht gefunden werden.
+]]>
+    </screen>
+    <simpara>
+     Um dieses Verhalten zu vermeiden, ist es üblicherweise ausreichend das
+     <parameter>cmd</parameter> in zusätzliche Anführungszeichen einzuschließen:
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+$cmd = '""findstr" "suche" "filename.txt""';
+]]>
+    </programlisting>
    </example>
   </para>
 
