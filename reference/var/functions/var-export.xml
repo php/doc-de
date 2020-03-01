@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b8758b0605e80c4e3610137b7502a6abeea5c69b Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 9ddc8b69468da104704dadf9fb8d22480c7ad687 Maintainer: hholzgra Status: ready -->
 
 <refentry xml:id="function.var-export" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -76,6 +76,16 @@
      </thead>
      <tbody>
       <row>
+       <entry>7.3.0</entry>
+       <entry>
+        <classname>stdClass</classname> Objekte werden nun als ein Array exportiert, das zu
+        einem Objekt gecastet wird (<code>(object) array( ... )</code>), anstatt die nicht
+        existente Methode <methodname>stdClass::__setState</methodname> zu verwenden.
+        Der praktische Effekt ist, dass <classname>stdClass</classname> nun exportierbar
+        ist, und der erzeugte Code sogar mit früheren Versionen von PHP funktioniert.
+       </entry>
+      </row>
+      <row>
        <entry>5.1.0</entry>
        <entry>
         Möglichkeit Klassen und Arrays die Klassen enthalten mit Hilfe der
@@ -91,6 +101,30 @@
  
  <refsect1 role="examples">
   &reftitle.examples;
+  <para>
+   <example>
+    <title>Export von stdClass (seit PHP 7.3.0)</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$person = new stdClass;
+$person->name = 'ElePHPant ElePHPantsdotter';
+$person->website = 'https://php.net/elephpant.php';
+
+var_export($person);
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+(object) array(
+   'name' => 'ElePHPant ElePHPantsdotter',
+   'website' => 'https://php.net/elephpant.php',
+)
+]]>
+    </screen>
+   </example>
+  </para>
   <para>
    <example>
     <title><function>var_export</function> Beispiel</title>
@@ -235,8 +269,9 @@ object(A)#2 (2) {
    <para>
     Um das von <function>var_export</function> erzeugte PHP ausführen zu
     können, müssen alle verarbeiteten Objekte die magische <link
-    linkend="object.set-state">__set_state</link> Methode implementieren. Es ist
-    zu beachten, dass StdClass __set_state() nicht implementiert.
+    linkend="object.set-state">__set_state</link> Methode implementieren.
+    Die einzige Ausnahme ist <classname>stdClass</classname>, die unter Verwendung
+    eines Arrays, das zu einem Objekt gecastet wird, exportiert wird.
    </para>
   </note>
  </refsect1>
