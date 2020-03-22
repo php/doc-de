@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7448d19579a5cd78362502e61f7ddea8b08fd072 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 0ba5122adcb8ce07b741f338968facba8dd03318 Maintainer: sammywg Status: ready -->
 
 <refentry xml:id="ziparchive.open" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -15,7 +15,10 @@
    <methodparam choice="opt"><type>int</type><parameter>flags</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Öffnet ein neues ZIP-Archiv für Lese-, Schreib- und Veränderungszugriffe.
+   Öffnet ein neues oder existierendes ZIP-Archiv für Lese-, Schreib- und Veränderungszugriffe.
+  </para>
+  <para>
+   Seit libzip 1.6.0 wird eine leere Datei nicht länger als gültiges Archiv angesehen.
   </para>
  </refsect1>
 
@@ -45,6 +48,11 @@
         <listitem>
          <para>
           <constant><link linkend="ziparchive.constants.create">ZipArchive::CREATE</link></constant>
+         </para>
+        </listitem>
+        <listitem>
+         <para>
+          <constant><link linkend="ziparchive.constants.rdonly">ZipArchive::RDONLY</link></constant>
          </para>
         </listitem>
         <listitem>
@@ -184,6 +192,25 @@ $zip = new ZipArchive;
 $res = $zip->open('test.zip', ZipArchive::CREATE);
 if ($res === TRUE) {
     $zip->addFromString('test.txt', 'Der Dateiinhalt kommt hier');
+    $zip->addFile('data.txt', 'eintragsname.txt');
+    $zip->close();
+    echo 'ok';
+} else {
+    echo 'Fehler';
+}
+?>
+]]>
+     </programlisting>
+    </example>
+    <example>
+     <title>Erstellen eines temporären Archivs</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$name = tempnam(sys_get_temp_dir(), "FOO");
+$zip = new ZipArchive;
+$res = $zip->open($name, ZipArchive::OVERWRITE); /* trunkieren, da eine leere Datei nicht gültig ist */
+if ($res === TRUE) {
     $zip->addFile('data.txt', 'eintragsname.txt');
     $zip->close();
     echo 'ok';
