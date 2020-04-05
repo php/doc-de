@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8e00768efc67a12ffec14d5dab06962936f27619 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: e1438a020bbc755a27f18235a0ea94f3d9d556aa Maintainer: hholzgra Status: ready -->
 <!-- Credits: simp -->
 <sect1 xml:id="language.oop5.magic" xmlns="http://docbook.org/ns/docbook">
  <title>Magische Methoden</title>
@@ -16,6 +16,8 @@
   <link linkend="object.unset">__unset()</link>,
   <link linkend="object.sleep">__sleep()</link>,
   <link linkend="object.wakeup">__wakeup()</link>,
+  <link linkend="object.serialize">__serialize()</link>,
+  <link linkend="object.unserialize">__unserialize()</link>,
   <link linkend="object.tostring">__toString()</link>,
   <link linkend="object.invoke">__invoke()</link>,
   <link linkend="object.set-state">__set_state()</link>,
@@ -52,12 +54,12 @@
    <void/>
   </methodsynopsis>
   <methodsynopsis xml:id="object.wakeup">
-   <type>void</type><methodname>__wakeup</methodname>
+   <modifier>public</modifier> <type>void</type><methodname>__wakeup</methodname>
    <void/>
   </methodsynopsis>
   
   <para>
-   <function>serialize</function> prüft, ob Ihre Klasse eine Funktion mit dem
+   <function>serialize</function> prüft, ob die Klasse eine Funktion mit dem
    magischen Namen <link linkend="object.sleep">__sleep()</link> besitzt. Wenn
    dem so ist, wird die Funktion vor jeder Serialisierung ausgeführt. Sie kann
    das Objekt aufräumen und es wird von ihr erwartet, dass sie ein Array mit den
@@ -128,6 +130,110 @@ class Connection
   </example>
  </sect2>
  
+ <sect2 xml:id="language.oop5.magic.serialize">
+  <title>
+   <link linkend="object.serialize">__serialize()</link> and
+   <link linkend="object.unserialize">__unserialize()</link>
+  </title>
+
+  <methodsynopsis xml:id="object.serialize">
+   <modifier>public</modifier> <type>array</type><methodname>__serialize</methodname>
+   <void/>
+  </methodsynopsis>
+  <methodsynopsis xml:id="object.unserialize">
+   <modifier>public</modifier> <type>void</type><methodname>__unserialize</methodname>
+   <methodparam><type>array</type><parameter>data</parameter></methodparam>
+  </methodsynopsis>
+
+  <para>
+   <function>serialize</function> prüft, ob die Klasse eine Funktion mit dem
+   magischen Namen <link linkend="object.sleep">__serialize()</link> besitzt. Wenn
+   dem so ist, wird die Funktion vor jeder Serialisierung ausgeführt. Sie muss ein assoziatives Array von Schlüssel/Wert-Paaren
+   erzeugen und zurückgeben, die die serialisierte Form des Objekts darstellen. Wird kein Array
+   zurückgegeben, wird ein <classname>TypeError</classname> geworfen.
+  </para>
+  <note>
+   <para>
+    Sind sowohl <link linkend="object.serialize">__serialize()</link> als auch
+    <link linkend="object.sleep">__sleep()</link> im selben Objekt definiert, wird nur
+    <link linkend="object.serialize">__serialize()</link> aufgerufen.
+    <link linkend="object.sleep">__sleep()</link> wird ignoriert.
+    Implementiert das Objekt das <link linkend="class.serializable">Serializable</link>
+    Interface, wird die <literal>serialize()</literal> Methode des Interface ignoriert und
+    <link linkend="object.serialize">__serialize()</link> statt dessen verwendet.
+   </para>
+  </note>
+  <para>
+   Die beabsichtigte Verwendung von <link linkend="object.serialize">__serialize()</link> ist,
+   eine serialisierungsfreundlich beliebige Darstellung eines Objekts zu definieren.
+   Elemente des Arrays dürfen Eigenschaften entsprechen, aber das ist nicht erforderlich.
+  </para>
+  <para>
+   Umgekehrt überprüft <function>unserialize</function> die Anwesenheit einer Funktion mit dem magischen
+   Namen <link linkend="object.unserialize">__unserialize()</link>. Falls vorhanden, wird dieser Funktion
+   das wiederhergestellte Array übergeben, das von <link linkend="object.serialize">__serialize()</link>
+   zurückgegeben wurde. Sie kann dann dementsprechend die Eigenschaften des Objekts aus diesem Array
+   wiederherstellen.
+  </para>
+  <note>
+   <para>
+    Sind sowohl <link linkend="object.unserialize">__unserialize()</link> als auch
+    <link linkend="object.wakeup">__wakeup()</link> im selben Objekt definiert, wird nur
+    <link linkend="object.unserialize">__unserialize()</link> aufgerufen.
+    <link linkend="object.wakeup">__wakeup()</link> wird ignoriert.
+   </para>
+  </note>
+  <note>
+   <para>
+    Dieses Feature ist seit PHP 7.4.0 verfügbar.
+   </para>
+  </note>
+  <example>
+   <title>Serialize und unserialize</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Connection
+{
+    protected $link;
+    private $dsn, $username, $password;
+
+    public function __construct($dsn, $username, $password)
+    {
+        $this->dsn = $dsn;
+        $this->username = $username;
+        $this->password = $password;
+        $this->connect();
+    }
+
+    private function connect()
+    {
+        $this->link = new PDO($this->dsn, $this->username, $this->password);
+    }
+
+    public function __serialize(): array
+    {
+        return [
+          'dsn' => $this->dsn,
+          'user' => $this->username,
+          'pass' => $this->password,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->dsn = $data['dsn'];
+        $this->username = $data['user'];
+        $this->password = $data['pass'];
+
+        $this->connect();
+    }
+}?>
+]]>
+   </programlisting>
+  </example>
+ </sect2>
+
  <sect2 xml:id="language.oop5.magic.tostring">
   <title><link linkend="object.tostring">__toString()</link></title>
   <methodsynopsis xml:id="object.tostring">
