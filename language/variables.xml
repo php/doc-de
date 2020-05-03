@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6187696fb48916b4585a8a837bf725845f7cf3c7 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 498e7a69fb58ed6d9f58a6f9155e9278117caa94 Maintainer: nobody Status: ready -->
 <!-- Credits: betz -->
 
  <chapter xml:id="language.variables" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -545,15 +545,16 @@ function foo(){
    <informalexample>
     <programlisting role="php">
 <![CDATA[
-<?php
 function test_global_ref() {
     global $obj;
-    $obj = &new stdclass;
+    $new = new stdclass;
+    $obj = &$new;
 }
 
 function test_global_noref() {
     global $obj;
-    $obj = new stdclass;
+    $new = new stdclass;
+    $obj = $new;
 }
 
 test_global_ref();
@@ -568,9 +569,11 @@ var_dump($obj);
    &example.outputs;
 
    <screen>
+<![CDATA[
 NULL
-object(stdClass)(0) {
+object(stdClass)#1 (0) {
 }
+]]>
    </screen>
 
    <simpara>
@@ -589,10 +592,15 @@ function &get_instance_ref() {
     echo "Statisches Objekt: ";
     var_dump($obj);
     if (!isset($obj)) {
+        $new = new stdclass;
         // Der statischen Variablen eine Referenz zuweisen
-        $obj = &new stdclass;
+        $obj = &$new;
     }
-    $obj->property++;
+    if (!isset($obj->property)) {
+        $obj->property = 1;
+    } else {
+        $obj->property++;
+    }
     return $obj;
 }
 
@@ -602,10 +610,15 @@ function &get_instance_noref() {
     echo "Statisches Objekt: ";
     var_dump($obj);
     if (!isset($obj)) {
+        $new = new stdclass;
         // Der statischen Variablen ein Objekt zuweisen
-        $obj = new stdclass;
+        $obj = $new;
     }
-    $obj->property++;
+    if (!isset($obj->property)) {
+        $obj->property = 1;
+    } else {
+        $obj->property++;
+    }
     return $obj;
 }
 
@@ -620,14 +633,16 @@ $still_obj2 = get_instance_noref();
    </informalexample>
    &example.outputs;
    <screen>
+<![CDATA[
 Statisches Objekt: NULL
 Statisches Objekt: NULL
 
 Statisches Objekt: NULL
-Statisches Objekt: object(stdClass)(1) {
+Statisches Objekt: object(stdClass)#3 (1) {
   ["property"]=>
   int(1)
 }
+]]>
    </screen>
 
    <simpara>
