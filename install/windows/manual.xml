@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 6ccdace91b727bd0f32214d1670a5e765fd28a09 Maintainer: nobody Status: ready -->
+
+<sect1 xml:id="install.windows.manual" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Manuelle PHP-Installation auf Windows</title>
+ <sect2>
+  <title>Web-Server wählen</title>
+  <para>
+   <itemizedlist spacing="compact">
+    <listitem>
+     <para>
+      IIS ist in Windows eingebaut.
+      Auf Windows Server verwenden Sie den Server Manager, um die IIS-Funktion hinzuzufügen.
+      Achten Sie darauf, das CGI-Rollen-Feature hinzuzufügen.
+      Verwenden Sie auf dem Windows-Desktop die Systemsteuerung unter Software, um IIS hinzuzufügen.
+      Siehe: <link xlink:href="https://msdn.microsoft.com/en-us/library/ms181052%28v=vs.80%29.aspx?f=255&amp;MSPPError=-2147217396">https://msdn.microsoft.com/en-us/library/ms181052%28v=vs.80%29.aspx?f=255&amp;MSPPError=-2147217396</link>
+      Für Desktop-Webanwendungen und Web-Entwicklung können Sie auch IIS/Express oder PHP Desktop verwenden.
+
+      <example>
+       <title>Kommandozeilen-Konfiguration von IIS und PHP</title>
+       <programlisting>
+<![CDATA[
+
+    @echo off
+
+    REM Zip-Datei des PHP build von http://windows.php.net/downloads/ herunter laden
+    REM
+    REM Pfad des Ordners in den die PHP-Zip-Datei entpackt wurde
+set phpdir=c:\php
+set phppath=php-5.6.19-nts-Win32-VC11-x86
+
+REM Löschen der aktuellen PHP-Handler
+%windir%\system32\inetsrv\appcmd clear config /section:system.webServer/fastCGI
+%windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /-[name='PHP_via_FastCGI']
+
+REM Aufsetzen der PHP-Handler
+%windir%\system32\inetsrv\appcmd set config /section:system.webServer/fastCGI /+[fullPath='%phpdir%\%phppath%\php-cgi.exe']
+%windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /+[name='PHP_via_FastCGI',path='*.php',verb='*',modules='FastCgiModule',scriptProcessor='%phpdir%\%phppath%\php-cgi.exe',resourceType='Unspecified']
+%windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /accessPolicy:Read,Script
+
+REM Konfiguration der FastCGI-Variablen
+%windir%\system32\inetsrv\appcmd set config -section:system.webServer/fastCgi /[fullPath='%phpdir%\%phppath%\php-cgi.exe'].instanceMaxRequests:10000
+%windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phpdir%\%phppath%\php-cgi.exe'].environmentVariables.[name='PHP_FCGI_MAX_REQUESTS',value='10000']"
+%windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phpdir%\%phppath%\php-cgi.exe'].environmentVariables.[name='PHPRC',value='%phpdir%\%phppath%\php.ini']"
+
+]]>
+       </programlisting>
+      </example>
+
+      <link linkend="install.windows.legacy.iis7">Manuelle Konfiguration von IIS</link>
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+      Es gibt mehrere Versionen von Apache2 für Windows.
+      Wir unterstützen ApacheLounge, aber zu den weiteren Optionen gehören XAMPP, WampServer und BitNami, die automatische Installationswerkzeuge bereitstellen.
+      Sie können mod_php oder mod_fastcgi verwenden, um PHP auf Apache zu laden.
+      Wenn Sie mod_php verwenden, MÜSSEN Sie einen TS-Build von Apache verwenden, der mit derselben Version von Visual C und derselben CPU (x86 oder x64) erstellt wurde.
+      <link linkend="install.windows.legacy.apache2">Wie man Apache2 manuell konfiguriert</link>
+     </para>
+    </listitem>
+   </itemizedlist>
+  </para>
+ </sect2>
+
+ <sect2>
+  <title>Build wählen</title>
+  <para>
+   PHP-Produktionsversionen herunterladen von <link xlink:href="http://windows.php.net/download/">http://windows.php.net/download/</link>.
+   Bei den Snapshot- und Qa-Releases wurde bereits eine Menge getestet und optimiert, aber Sie können uns gerne dabei helfen, noch mehr zu tun.
+   Es gibt 4 Arten von PHP-Builds:
+   <itemizedlist spacing="compact">
+    <listitem>
+     <para>Thread-Safe(TS) - Verwendung für Einzelprozess-Webserver, wie Apache mit mod_php</para>
+    </listitem>
+    <listitem>
+     <para>Non-Thread-Safe(NTS) - Verwendung für IIS und andere FastCGI-Webserver (Apache mit mod_fastcgi) und empfohlen für Befehlszeilen-Skripte</para>
+    </listitem>
+    <listitem>
+     <para>x86 - produktiver Einsatz von PHP 5.5 oder 5.6 oder 7.0.</para>
+    </listitem>
+    <listitem>
+     <para>x64 - produktiver Einsatz von PHP 7.0+, sofern es sich nicht um eine reine 32-Bit-Version von Windows handelt. 5.5 und 5.6 x64 sind experimentell.</para>
+    </listitem>
+   </itemizedlist>
+  </para>
+ </sect2>
+</sect1>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
