@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 52ae7dd55e62b1e7b6920499ed7448892e09bb48 Maintainer: simp Status: ready -->
+<!-- EN-Revision: b8990010918c977f62f147cf57a04c7e36f625e5 Maintainer: simp Status: ready -->
 <!-- CREDITS: tom -->
 <refentry xml:id="function.array-diff" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -61,6 +61,7 @@
    Gibt ein <type>Array</type> mit allen Werten von
    <parameter>array1</parameter> zurück, die in keinem der
    anderen Arrays vorhanden sind.
+   Schlüssel im <parameter>array1</parameter> Array bleiben erhalten.
   </para>
  </refsect1>
 
@@ -94,17 +95,54 @@ Array
     </screen>
    </example>
   </para>
+
+  <para>
+   <example>
+    <title><function>array_diff</function>-Beispiel mit nicht übereinstimmenden Typen</title>
+    <para>
+     Zwei Elemente werden nur dann als gleich angesehen, wenn
+     <literal>(string) $elem1 === (string) $elem2</literal>. In anderen Worten:
+     Wenn die String-Repräsentation die gleiche ist.
+    </para>
+    <programlisting role="php">
+     <![CDATA[
+<?php
+// Dies generiert eine Notice dass ein Array nicht in einen String umgewandelt werden kann.
+$source = [1, 2, 3, 4];
+$filter = [3, 4, [5], 6];
+$result = array_diff($source, $filter);
+
+// Wohingegen dies in Ordnung ist, da die Objekte in einen String umgewandelt werden können.
+class S {
+  private $v;
+
+  public function __construct(string $v) {
+    $this->v = $v;
+  }
+
+  public function __toString() {
+    return $this->v;
+  }
+}
+
+$source = [new S('a'), new S('b'), new S('c')];
+$filter = [new S('b'), new S('c'), new S('d')];
+
+$result = array_diff($source, $filter);
+
+// $result enthält nun ein Exemplar von S('a');
+?>
+]]>
+    </programlisting>
+    <para>
+     To use an alternate comparison function, see <function>array_udiff</function>.
+    </para>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
   &reftitle.notes;
-  <note>
-   <para>
-    Zwei Elemente werden nur dann als gleich angesehen, wenn
-    <literal>(string) $elem1 === (string) $elem2</literal>. In anderen Worten:
-    Wenn die String-Repräsentation die gleiche ist.
-   </para>
-  </note>
   <note>
    <para>
     Beachten Sie, dass diese Funktion nur eine Dimension eines n-dimensionalen
@@ -119,6 +157,7 @@ Array
   <para>
    <simplelist>
     <member><function>array_diff_assoc</function></member>
+    <member><function>array_udiff</function></member>
     <member><function>array_intersect</function></member>
     <member><function>array_intersect_assoc</function></member>
    </simplelist>

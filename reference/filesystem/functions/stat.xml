@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3c8132d8240441503401c9e66ae23b15067ee2f1 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: fe81a24d2e124209c833c9715ec4c83ca546274b Maintainer: wiesemann Status: ready -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.stat">
  <refnamediv>
   <refname>stat</refname>
@@ -18,6 +18,9 @@
    angegebene Datei. Falls <parameter>filename</parameter> ein symbolischer
    Link ist, beziehen sich die Statistiken auf die Datei selbst, nicht auf
    den symbolischen Link.
+   Unter Windows <abbrev>NTS</abbrev>-Builds vor PHP 7.4.0 bezogen sich in diesem Fall
+   die <literal>size</literal>, <literal>atime</literal>, <literal>mtime</literal> und <literal>ctime</literal>
+   Statistiken auf den symbolischen Link.
   </para>
   <para>
    <function>lstat</function> ist identisch zu <function>stat</function>,
@@ -60,12 +63,12 @@
       <row>
        <entry>0</entry>
        <entry>dev</entry>
-       <entry>Gerätenummer</entry>
+       <entry>Gerätenummer ***</entry>
       </row>
       <row>
        <entry>1</entry>
        <entry>ino</entry>
-       <entry>Inode-Nummer *</entry>
+       <entry>Inode-Nummer ****</entry>
       </row>
       <row>
        <entry>2</entry>
@@ -125,11 +128,25 @@
      </tbody>
     </tgroup>
    </table>
-   * Unter Windows wird dies immer 0 sein.
+  </para>
+  <para>
+   * Unter Windows wird dies immer <literal>0</literal> sein.
   </para>
   <para>
    ** Nur gültig unter Systemen, die den st_blksize-Typ unterstützen - andere
-   Systeme (z.B. Windows) geben -1 zurück.
+   Systeme (z.B. Windows) geben <literal>-1</literal> zurück.
+  </para>
+  <para>
+   *** Unter Windows, von PHP 7.4.0 an, ist dies die Seriennummer des Laufwerks, das die Datei enhält,
+   welches eine 64-bit Ganzzahl <emphasis>ohne Vorzeichen</emphasis> ist, so dass auf 32-bit-Systemen ein Überlauf erfolgen kann.
+   Zuvor war es die numerische Darstellung des Laufwerksbuchstabens (z.B. <literal>2</literal>
+   für <literal>C:</literal>) für <function>stat</function>, und <literal>0</literal> für
+   <function>lstat</function>.
+  </para>
+  <para>
+   **** Unter Windows, von PHP 7.4.0 an, ist dies die mit der Datei assozierte Kennung,
+   welche eine 64-bit Ganzzahl <emphasis>ohne Vorzeichen</emphasis> ist, so dass ein Überlauf erfolgen kann.
+   Zuvor war es immer <literal>0</literal>.
   </para>
   <para>
    Der Wert von <literal>mode</literal> enthält Informationen, die von mehreren Funktionen
@@ -183,6 +200,37 @@
   <para>
    Im Fehlerfall wird eine <constant>E_WARNING</constant> geworfen.
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>7.4.0</entry>
+      <entry>
+       Unter Windows ist die Gerätenummer nun die Seriennummer des Laufwerks,
+       das die Datei enthält, und die Inode-Nummer ist die mit der Datei assozierte Kennung.
+      </entry>
+     </row>
+     <row>
+      <entry>7.4.0</entry>
+      <entry>
+       Die <literal>size</literal>, <literal>atime</literal>, <literal>mtime</literal> and
+       <literal>ctime</literal> Statistiken symbolischer Links sind nun immer die des Ziels.
+       Dies war zuvor nicht der Fall für <abbrev>NTS</abbrev>-Builds unter Windows.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
