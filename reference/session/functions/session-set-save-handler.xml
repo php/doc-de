@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: ba0a270fbc5b2d8afc879552c7579b76104d48d6 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 6ec0096178dba7d0619c2e421f70b130825743c2 Maintainer: samesch Status: ready -->
 
 <refentry xml:id="function.session-set-save-handler" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -50,7 +50,7 @@
      <listitem>
       <para>
        Ein Exemplar einer Klasse, die <interfacename>SessionHandlerInterface</interfacename>,
-       <interfacename>SessionIdInterface</interfacename> und/oder
+       und optional <interfacename>SessionIdInterface</interfacename> und/oder
        <interfacename>SessionUpdateTimestampHandlerInterface</interfacename>
        implementiert, wie beispielsweise <classname>SessionHandler</classname>, das als
        benutzerdefinierte Session-Speicherfunktion registriert werden soll.
@@ -73,8 +73,16 @@
 
    <variablelist>
     <varlistentry>
-     <term><parameter>open(string $savePath, string $sessionName)</parameter></term>
+     <term><parameter>open</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>open</replaceable></methodname>
+        <methodparam><type>string</type><parameter>savePath</parameter></methodparam>
+        <methodparam><type>string</type><parameter>sessionName</parameter></methodparam>
+       </methodsynopsis>
+      </para>
       <para>
        Der open Callback funktionert wie ein Konstruktor in einer Klasse und
        wird ausgeführt, wenn die Session geöffnet wird.  Es ist die erste
@@ -85,8 +93,15 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>close()</parameter></term>
+     <term><parameter>close</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>close</replaceable></methodname>
+        <void/>
+       </methodsynopsis>
+      </para>
       <para>
        Der close Callback funktionert wie ein Destruktor in einer Klasse
        und wird ausgeführt nachdem der Session write Callback aufgerufen wurde.
@@ -97,8 +112,15 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>read(string $sessionId)</parameter></term>
+     <term><parameter>read</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>read</replaceable></methodname>
+        <methodparam><type>string</type><parameter>sessionId</parameter></methodparam>
+       </methodsynopsis>
+      </para>
       <para>
        Die <parameter>read</parameter> Callback muss immer eine sitzungskodierte
        (serialisierte) Zeichenkette zurückgeben, oder eine leere Zeichenkette,
@@ -125,8 +147,16 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>write(string $sessionId, string $data)</parameter></term>
+     <term><parameter>write</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>write</replaceable></methodname>
+        <methodparam><type>string</type><parameter>sessionId</parameter></methodparam>
+        <methodparam><type>string</type><parameter>data</parameter></methodparam>
+       </methodsynopsis>
+      </para>
       <para>
        Der <parameter>write</parameter> Callback wird aufgerufen, wenn die
        Session gespeichert und geschlossen werden muss. Dieser Callback nimmt
@@ -162,8 +192,15 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>destroy($sessionId)</parameter></term>
+     <term><parameter>destroy</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>destroy</replaceable></methodname>
+        <methodparam><type>string</type><parameter>sessionId</parameter></methodparam>
+       </methodsynopsis>
+      </para>
       <para>
        Dieser Callback wird ausgeführt, wenn eine Session duch
        <function>session_destroy</function> oder
@@ -174,8 +211,15 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>gc($lifetime)</parameter></term>
+     <term><parameter>gc</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>gc</replaceable></methodname>
+        <methodparam><type>int</type><parameter>lifetime</parameter></methodparam>
+       </methodsynopsis>
+      </para>
       <para>
        Der Garbage Collection Callback wird von PHP intern aufgerufen, um alte
        Sessiondaten zu löschen. Die Häufigkeit wird durch <link
@@ -190,12 +234,56 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>create_sid()</parameter></term>
+     <term><parameter>create_sid</parameter></term>
      <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>string</type><methodname><replaceable>create_sid</replaceable></methodname>
+        <void/>
+       </methodsynopsis>
+      </para>
       <para>
        Dieser Callback wird ausgeführt, wenn eine neue Session-ID benötigt wird.
        Es werden keine Parameter übergeben, und der Rückgabewert sollte eine
        Zeichenkette sein, die eine gültige Session-ID für den Handler darstellt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>validate_sid</parameter></term>
+     <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>bool</type><methodname><replaceable>validate_sid</replaceable></methodname>
+        <methodparam><type>string</type><parameter>key</parameter></methodparam>
+       </methodsynopsis>
+      </para>
+      <para>
+       Dieser Callback wird ausgeführt, gerade bevor eine Session gestartet werden soll,
+       eine Session-ID bereitgestellt wurde, und <link linkend="ini.session.use-strict-mode">session.use_strict_mode</link>
+       aktiv ist. Der <parameter>key</parameter> ist die zu validierende Session-ID.
+       Eine Session-ID is gültig, wenn eine Session mit dieser ID bereits existiert.
+       Der Rückgabewert sollte &true; bei Erfolg und &false; im Fehlerfall sein.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>update_timestamp</parameter></term>
+     <listitem>
+      <para>
+       Ein Callable mit folgender Signatur:
+       <methodsynopsis>
+        <type>string</type><methodname><replaceable>update_timestamp</replaceable></methodname>
+        <methodparam><type>string</type><parameter>key</parameter></methodparam>
+        <methodparam><type>string</type><parameter>val</parameter></methodparam>
+       </methodsynopsis>
+      </para>
+      <para>
+       Dieser Callback wird ausgeführt, wenn eine Session aktualisiert wird.
+       <parameter>key</parameter> ist die Session-ID, <parameter>val</parameter> sind die Session-Daten.
+       Der Rückgabewert sollte &true; bei Erfolg und &false; im Fehlerfall sein.
       </para>
      </listitem>
     </varlistentry>
