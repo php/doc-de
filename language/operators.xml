@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 828f56ed32bec8ece69aa11d3c751e28fea01213 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: dec1f8445ab2af7fbafef012fb7907ab2cd349b5 Maintainer: nobody Status: ready -->
 <!-- CREDITS: tzwenny, betz -->
 
  <chapter xml:id="language.operators" xmlns="http://docbook.org/ns/docbook">
@@ -615,6 +615,124 @@ Strict Standards: Assigning the return value of new by reference is deprecated i
      Weitere Informationen zu Referenzen und ihren Anwendungsmöglichkeiten sind dem
      Handbuch-Abschnitt <link linkend="language.references">Referenzen erklärt</link> 
      zu entnehmen.
+    </para>
+   </sect2>
+   <sect2 xml:id="language.operators.assignment.arithmetic">
+    <title>Arithmetische Zuweisungsoperatoren</title>
+    <informaltable>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Beispiel</entry>
+        <entry>Entsprechung</entry>
+        <entry>Operation</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>$a += $b</entry>
+        <entry>$a = $a + b</entry>
+        <entry>Addition</entry>
+       </row>
+       <row>
+        <entry>$a -= $b</entry>
+        <entry>$a = $a - $b</entry>
+        <entry>Subtraktion</entry>
+       </row>
+       <row>
+        <entry>$a *= $b</entry>
+        <entry>$a = $a * $b</entry>
+        <entry>Multiplikation</entry>
+       </row>
+       <row>
+        <entry>$a /= $b</entry>
+        <entry>$a = $a / $b</entry>
+        <entry>Division</entry>
+       </row>
+       <row>
+        <entry>$a %= $b</entry>
+        <entry>$a = $a % $b</entry>
+        <entry>Modulus</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </sect2>
+
+   <sect2 xml:id="language.operators.assignment.bitwise">
+    <title>Bit-Zuweisungspperatoren</title>
+    <informaltable>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Beispiel</entry>
+        <entry>Entsprechung</entry>
+        <entry>Operation</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>$a &amp;= $b</entry>
+        <entry>$a = $a &amp; $b</entry>
+        <entry>Bit-Und</entry>
+       </row>
+       <row>
+        <entry>$a |= $b</entry>
+        <entry>$a = $a | $b</entry>
+        <entry>Bit-Oder</entry>
+       </row>
+       <row>
+        <entry>$a ^= $b</entry>
+        <entry>$a = $a ^ $b</entry>
+        <entry>Bit-Xor</entry>
+       </row>
+       <row>
+        <entry>$a &lt;&lt;= $b</entry>
+        <entry>$a = $a &lt;&lt; $b</entry>
+        <entry>Linksverschiebung</entry>
+       </row>
+       <row>
+        <entry>$a &gt;&gt;= $b</entry>
+        <entry>$a = $a &gt;&gt; $b</entry>
+        <entry>Rechtsverschiebung</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </sect2>
+
+   <sect2 xml:id="language.operators.assignment.other">
+    <title>Andere Zuweisungspperatoren</title>
+    <informaltable>
+     <tgroup cols="3">
+      <thead>
+       <row>
+        <entry>Beispiel</entry>
+        <entry>Entsprechung</entry>
+        <entry>Operation</entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry>$a .= $b</entry>
+        <entry>$a = $a . $b</entry>
+        <entry>Stringverknüpfung</entry>
+       </row>
+       <row>
+        <entry>$a ??= $b</entry>
+        <entry>$a = $a ?? $b</entry>
+        <entry>Null-Zusammenführungsoperator</entry>
+       </row>
+      </tbody>
+     </tgroup>
+    </informaltable>
+   </sect2>
+   <sect2 xml:id="language.operators.assignment.see-also">
+    <para>
+     See also the manual sections on <link linkend="language.operators.arithmetic">
+     arithmetic operators</link>, <link linkend="language.operators.bitwise">bitwise operators</link>, 
+     <link linkend="language.operators.string">string operators</link>, and 
+     <link linkend="language.operators.comparison.coalesce">null coalescing operator</link>.
     </para>
    </sect2>
   </sect1>
@@ -1776,15 +1894,11 @@ echo $foo ?? $bar ?? $baz ?? $qux; // gibt 1 aus
     Aufruf, der den Fehler auslöste, ein @ vorangestellt war.
    </simpara>
    <simpara>
-    Ist das <link
-    linkend="ini.track-errors"><option>track_errors</option></link>-Feature
-    aktiviert, werden alle Fehlermeldungen, die von diesem Ausdruck erzeugt
-    werden, in der Variablen <link
-    linkend="reserved.variables.phperrormsg">$php_errormsg</link>
-    gespeichert. Da diese Variable mit jedem neuen Auftreten eines
-    Fehlers überschrieben wird, sollte man sie möglichst bald nach
-    Verwendung des Ausdrucks überprüfen, wenn man mit ihr arbeiten
-    will.
+    Alle Fehlermeldungen, die von diesem Ausdruck erzeugt
+    werden, sind im <literal>"message"</literal> Element des Arrays, das von
+    <function>get_error_last</function> zurückgegeben wird, enthalten.
+    Da das Ergebnis dieser Funktion sich bei jedem
+    Fehlers ändert, so dass es möglichst früh geprüft werden sollte.
    </simpara>
    <para>
     <informalexample>
@@ -1793,7 +1907,7 @@ echo $foo ?? $bar ?? $baz ?? $qux; // gibt 1 aus
 <?php
 /* Beabsichtigter Dateifehler */
 $my_file = @file ('nicht_vorhandene_Datei') or
-    die ("Datei konnte nicht geöffnet werden: Fehler war:'$php_errormsg'");
+    die ("Datei konnte nicht geöffnet werden: Fehler war:'" . error_get_last()['message'] . "'");
 
 // Das funktioniert bei jedem Ausdruck, nicht nur bei Funktionen:
 $value = @$cache[$key]; 
@@ -1859,8 +1973,8 @@ echo "<pre>$output</pre>";
    </para>
    <note>
     <para>
-     Der Backtick-Operator steht nicht zur Verfügung, wenn &safemode;
-     aktiviert ist oder die Funktion <function>shell_exec</function>
+     Der Backtick-Operator steht nicht zur Verfügung, wenn
+     die Funktion <function>shell_exec</function>
      deaktiviert wurde.
     </para>
    </note>
@@ -2486,7 +2600,7 @@ bool(false)
    </para>
    <para>
     instanceof löst keinen Fehler aus, wenn die getestete Variable kein Objekt ist;
-    es gibt dann einfach &false; zurück. Konstanten sind allerdings nicht erlaubt.
+    es gibt dann einfach &false; zurück. Konstanten waren allerdings vor PHP 7.3.0 nicht erlaubt.
     <example>
      <title>Verwendung von <literal>instanceof</literal> um andere Variablen zu prüfen</title>
      <programlisting role="php">
@@ -2509,6 +2623,26 @@ bool(false)
 bool(false)
 bool(false)
 PHP Fatal error:  instanceof expects an object instance, constant given
+]]>
+     </screen>
+    </example>
+   </para>
+   <para>
+    Von PHP 7.3.0 an sind Konstanten auf der linken Seite des <literal>instanceof</literal>
+    Operators erlaubt.
+    <example>
+     <title>Verwendung von <literal>instanceof</literal> um Konstanten zu prüfen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+var_dump(FALSE instanceof stdClass);
+?>
+]]>
+    </programlisting>
+    &example.outputs.73;
+    <screen>
+<![CDATA[
+bool(false)
 ]]>
      </screen>
     </example>
