@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6ccdace91b727bd0f32214d1670a5e765fd28a09 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: eb5cb175e88d9b15509fc0dc241ea6135bd36ebb Maintainer: nobody Status: ready -->
 
 <sect1 xml:id="install.windows.manual" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Manuelle PHP-Installation auf Windows</title>
@@ -22,27 +22,27 @@
        <programlisting>
 <![CDATA[
 
-    @echo off
+@echo off
 
-    REM Zip-Datei des PHP build von http://windows.php.net/downloads/ herunter laden
-    REM
-    REM Pfad des Ordners in den die PHP-Zip-Datei entpackt wurde
-set phpdir=c:\php
-set phppath=php-5.6.19-nts-Win32-VC11-x86
+REM Zip-Datei des PHP build von http://windows.php.net/downloads/ herunter laden
+REM Pfad des Ordners in den die PHP-Zip-Datei entpackt wurde (ohne abschließendes \)
+set phppath=c:\php
+
 
 REM Löschen der aktuellen PHP-Handler
 %windir%\system32\inetsrv\appcmd clear config /section:system.webServer/fastCGI
+REM Das folgende Kommando erzeugt eine Fehlermeldung, wenn PHP nicht installiert ist. Dies kann ignoriert werden.
 %windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /-[name='PHP_via_FastCGI']
 
 REM Aufsetzen der PHP-Handler
-%windir%\system32\inetsrv\appcmd set config /section:system.webServer/fastCGI /+[fullPath='%phpdir%\%phppath%\php-cgi.exe']
-%windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /+[name='PHP_via_FastCGI',path='*.php',verb='*',modules='FastCgiModule',scriptProcessor='%phpdir%\%phppath%\php-cgi.exe',resourceType='Unspecified']
+%windir%\system32\inetsrv\appcmd set config /section:system.webServer/fastCGI /+[fullPath='%phppath%\php-cgi.exe']
+%windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /+[name='PHP_via_FastCGI',path='*.php',verb='*',modules='FastCgiModule',scriptProcessor='%phppath%\php-cgi.exe',resourceType='Unspecified']
 %windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /accessPolicy:Read,Script
 
 REM Konfiguration der FastCGI-Variablen
-%windir%\system32\inetsrv\appcmd set config -section:system.webServer/fastCgi /[fullPath='%phpdir%\%phppath%\php-cgi.exe'].instanceMaxRequests:10000
-%windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phpdir%\%phppath%\php-cgi.exe'].environmentVariables.[name='PHP_FCGI_MAX_REQUESTS',value='10000']"
-%windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phpdir%\%phppath%\php-cgi.exe'].environmentVariables.[name='PHPRC',value='%phpdir%\%phppath%\php.ini']"
+%windir%\system32\inetsrv\appcmd set config -section:system.webServer/fastCgi /[fullPath='%phppath%\php-cgi.exe'].instanceMaxRequests:10000
+%windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHP_FCGI_MAX_REQUESTS',value='10000']"
+%windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHPRC',value='%phppath%\php.ini']"
 
 ]]>
        </programlisting>
