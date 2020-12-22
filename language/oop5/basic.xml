@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6187696fb48916b4585a8a837bf725845f7cf3c7 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 4528db2d91279a8f120bacfd84e48f7e2281d923 Maintainer: wiesemann Status: ready -->
 
  <sect1 xml:id="language.oop5.basic" xmlns="http://docbook.org/ns/docbook">
   <title>Die Grundlagen</title>
@@ -273,8 +273,14 @@ echo (new DateTime())->format('Y');
 ]]>
     </screen>
    </example>
-  </sect2>
 
+   <note>
+    <simpara>
+     Vor PHP 7.1 werden die Argumente nicht ausgewertet, wenn keine
+     Konstruktor-Funktion definiert ist.
+    </simpara>
+   </note>
+  </sect2>
   
   <sect2 xml:id="language.oop5.basic.properties-methods">
    <title>Eigenschaften und Methoden</title>
@@ -414,7 +420,7 @@ ein Standardwert
    <title>::class</title>
 
    <para>
-    Mit PHP 5.5 kann auch das Schlüsselwort <literal>class</literal> für die
+    Das Schlüsselwort <literal>class</literal> kann auch für die
     Namensauflösung einer Klasse verwendet werden. Man erhält den vollständig
     qualifizierten Namen der Klasse <literal>ClassName</literal> durch
     Verwendung von <literal>ClassName::class</literal>. Dies ist vor allem
@@ -452,6 +458,100 @@ NS\ClassName
      Klassennamen-Zeichenkette erzeugt wird, noch kein Autoloading erfolgt ist.
      Daraus folgt, dass Klassennamen erweitert werden, selbst wenn die Klasse
      nicht existiert. In diesem Fall wird kein Fehler erzeugt.
+    </para>
+    <example xml:id="language.oop5.basic.class.class.fail">
+     <title>Fehlende Auflösung des Klassennamens></title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+print Does\Not\Exist::class;
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+Does\Not\Exist
+]]>
+     </screen>
+    </example>
+   </note>
+   <para>
+    Von PHP 8.0.0 an kann die Konstante <literal>::class</literal> auch auf
+    Objekte angewendet werden. Diese Auflösung des Klassennamens erfolgt nicht
+    zur Übersetzungszeit, sondern zur Laufzeit. Sie hat die gleichen
+    Auswirkungen wie der Aufruf von <function>get_class</function> auf das
+    Objekt.
+   </para>
+   <example xml:id="language.oop5.basic.class.class.object">
+    <title>Namensauflösung eines Objekts</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+namespace NS {
+    class ClassName {
+    }
+}
+$c = new ClassName();
+print $c::class;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+NS\ClassName
+]]>
+    </screen>
+   </example>
+  </sect2>
+  <sect2 xml:id="language.oop5.basic.nullsafe">
+   <title>Nullsafe-Methoden und -Eigenschaften</title>
+   <para>
+    Von PHP 8.0.0 an kann auf Eigenschaften und Methoden stattdessen auch mit
+    dem "Nullsafe"-Operator zugegriffen werden: <literal>?-></literal>. Der
+    Nullsafe-Operator funktioniert genauso als Eigenschafts- oder
+    Methodenzugriff wie oben, mit dem Unterschied, dass &null; zurückgegeben
+    wird, statt dass eine Exception erzeugt wird, wenn das Objekt, das
+    dereferenziert wird, &null; ist. Wenn die Dereferenzierung Teil einer
+    Zeichenkette ist, wird der Rest der Zeichenkette übersprungen.
+   </para>
+   <para>
+    Der Effekt ist ähnlich, wie wenn man jeden Zugriff zuerst mit
+    <function>ist_null</function> prüft, aber kompakter.
+   </para>
+   <para>
+    <example>
+     <title>Nullsafe Operator</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+
+// Von PHP 8.0.0 an entspricht diese Zeile:
+$result = $repository?->getUser(5)?->name;
+
+// dem folgenden Codeblock:
+if (is_null($repository)) {
+    $result = null;
+} else {
+    $user = $repository->getUser(5);
+    if (is_null($user)) {
+        $result = null;
+    } else {
+        $result = $user->name;
+    }
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <note>
+    <para>
+     Der Nullsafe-Operator wird am besten verwendet, wenn Null ein gültiger
+     und potenziell erwarteter möglicher Rückgabewert für eine Eigenschaft
+     oder eine Methode ist. Um einen Fehler anzuzeigen, ist die Erzeugung
+     einer Exception vorzuziehen.
     </para>
    </note>
   </sect2>
