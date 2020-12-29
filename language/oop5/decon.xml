@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: db2ac1420fa7946f15518a9e42e1474159b765fd Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: a6338d747762e36e01061eae19aadca4167375b6 Maintainer: hholzgra Status: ready -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.decon" xmlns="http://docbook.org/ns/docbook">
   <title>Konstruktoren und Destruktoren</title>
@@ -9,11 +9,10 @@
    <title>Konstruktor</title>
    <methodsynopsis xml:id="object.construct">
     <type>void</type><methodname>__construct</methodname>
-    <methodparam choice="opt"><type>mixed</type><parameter>args</parameter><initializer>""</initializer></methodparam>
-    <methodparam choice="opt"><parameter>...</parameter></methodparam>
+    <methodparam rep="repeat"><type>mixed</type><parameter>values</parameter><initializer>""</initializer></methodparam>
    </methodsynopsis>
    <para>
-    PHP 5 erlaubt es Entwicklern, Konstruktormethoden für Klassen zu deklarieren.
+    PHP erlaubt es Entwicklern, Konstruktormethoden für Klassen zu deklarieren.
     Klassen mit Konstruktormethoden rufen diese für jedes neu erzeugte Objekt
     auf, so dass Konstruktoren für alle Initialisierungen passend sind, 
     die das Objekt brauchen könnte bevor es benutzt wird.
@@ -29,7 +28,7 @@
     </simpara>
    </note>
    <example>
-    <title>Die neuen, vereinheitlichten Konstruktoren verwenden</title>
+    <title>Konstruktoren bei der Vererbung</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -64,49 +63,208 @@ $obj = new OtherSubClass();
     </programlisting>
    </example>
    <para>
-    Aus Gründen der Abwärtskompatibilität mit PHP 3 und 4 sucht PHP, falls keine
-    <link linkend="object.construct">__construct()</link> Methode vorhanden ist,
-    nach einem
-    Konstruktur des alten Stils, d.h. einer Methode mit dem selben Namen wie die Klasse.
-    Der einzige Fall in dem somit Kompatibilitätsprobleme auftreten können, ist wenn
-    die Klasse eine Methode <link linkend="object.construct">__construct()</link> definiert,
-    welche jedoch für andere Zwecke benutzt wird.
-   </para>
-   <warning>
-    <simpara>
-     Konstruktoren des alten Stils wurden in PHP 7.0
-     <emphasis>MISSBILLIGT</emphasis>, und werden in einer zukünftigen Version
-     entfernt. Neuer Code sollte immer 
-     <link linkend="object.construct">__construct()</link> verwenden.
-    </simpara>
-   </warning>
-   <para>
-    Im Gegensatz zu anderen Methoden, generiert PHP keinen <constant>E_STRICT</constant>
-    Fehler, wenn <link linkend="object.construct">__construct()</link> in einer Kindklasse
-    andere Parameter definiert, als die <link linkend="object.construct">__construct()</link>
-    Methode der Elternklasse.
+    Im Gegensatz zu anderen Methoden, generiert PHP keinen
+    <constant>E_STRICT</constant> Fehler, wenn
+    <link linkend="object.construct">__construct()</link> in einer Kindklasse
+    andere Parameter definiert, als die
+    <link linkend="object.construct">__construct()</link> Methode der
+    Elternklasse.
    </para>
    <para>
-    Seit PHP 5.3.3 werden Methoden, welche mit dem Klassennamen übereinstimmen, nicht länger
-    als Konstruktoren behandelt, wenn die Klasse sich in einem Namespace befindet. Klassen,
-    welche sich nicht in einem Namespace befinden, betrifft dies jedoch nicht.
+    Konstruktoren sind gewöhnliche Methoden, die bei der Instanziierung des
+    entsprechenden Objekts aufgerufen werden. Als solche können sie eine
+    beliebige Anzahl von Argumenten definieren, die erforderlich sein können,
+    einen Typ haben können und einen Standardwert haben können.
+    Konstruktorargumente werden aufgerufen, indem die Argumente in Klammern
+    hinter den Klassennamen gesetzt werden.
    </para>
    <example>
-    <title>Konstruktoren in Klassen in Namespaces</title>
+    <title>Die Verwendung von Argumenten eines Konstruktors</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-namespace Foo;
-class Bar {
-    public function Bar() {
-        // wird in PHP 5.3.0-5.3.2 als Konstruktor behandelt
-        // wird in PHP 5.3.3 und höher als reguläre Methode behandelt
+class Punkt {
+    protected int $x;
+    protected int $y;
+
+    public function __construct(int $x, int $y = 0) {
+        $this->x = $x;
+        $this->y = $y;
     }
 }
+
+// Beide Parameter übergeben.
+$p1 = new Punkt(4, 5);
+// Nur den erforderlichen Parameter übergeben. $y nimmt den Standardwert von 0 an.
+$p2 = new Punkt(4);
+// Mit benannten Parametern (von PHP 8.0 an):
+$p3 = new Punkt(y: 5, x: 4);
 ?>
 ]]>
     </programlisting>
    </example>
+   <para>
+    Wenn eine Klasse keinen Konstruktor hat oder der Konstruktor keine
+    erforderlichen Argumente hat, können die Klammern weggelassen werden.
+   </para>
+   <sect3>
+    <title>Konstruktoren alten Stils</title>
+    <para>
+     Vor PHP 8.0.0 interpretieren Klassen im globalen Namensraum eine Methode,
+     die den gleichen Namen wie die Klasse trägt, als Konstruktor alten Stils.
+     Diese Syntax ist veraltet, und führt zu einem
+     <constant>E_DEPRECATED</constant>-Fehler, ruft die Funktion aber trotzdem
+     als Konstruktor auf. Wenn sowohl
+     <link linkend="object.construct">__construct()</link> als auch eine
+     Methode gleichen Namens definiert sind, wird
+     <link linkend="object.construct">__construct()</link> aufgerufen.
+    </para>
+    <para>
+     In Namensraum-Klassen, oder ab PHP 8.0.0 in jeder Klasse, hat eine
+     Methode mit dem Namen der Klasse keine besondere Bedeutung.
+    </para>
+    <para>
+     Verwenden Sie in neuem Code immer
+     <link linkend="object.construct">__construct()</link>.
+    </para>
+   </sect3>
+   <sect3 xml:id="language.oop5.decon.constructor.promotion">
+    <title>Konstruktor-Promotion</title>
+    <para>
+     Ab PHP 8.0.0 können Konstruktorparameter auch so befördert werden, dass
+     sie einer Objekteigenschaft entsprechen. Sehr häufig werden
+     Konstruktorparameter einer Eigenschaft im Konstruktor zugewiesen, aber
+     ansonsten nicht bearbeitet. Die Konstruktor-Promotion bietet eine
+     Kurzform für diesen Anwendungsfall. Das obige Beispiel könnte wie folgt
+     umgeschrieben werden:
+    </para>
+    <example>
+     <title>Die Verwendung der Beförderung von Konstruktor-Eigenschaften</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+class Punkt {
+    public function __construct(protected int $x, protected int $y = 0) {
+    }
+}
+]]>
+     </programlisting>
+    </example>
+    <para>
+     Wenn ein Konstruktorargument einen Sichtbarkeitsmodifizierer enthält,
+     interpretiert PHP es sowohl als Objekteigenschaft als auch als
+     Konstruktorargument und weist der Eigenschaft den Wert des Arguments zu.
+     Der Konstruktorkörper kann dann leer sein oder andere Anweisungen
+     enthalten. Alle zusätzlichen Anweisungen werden ausgeführt, nachdem die
+     Argumentwerte den entsprechenden Eigenschaften zugewiesen wurden.
+    </para>
+    <para>
+     Nicht alle Argumente müssen befördert werden. Beförderte und nicht
+     beförderte Argumente können in beliebiger Reihenfolge zu kombiniert
+     werden. Geförderte Argumente haben keinen Einfluss auf den Code, der den
+     Konstruktor aufruft.
+    </para>
+    <note>
+     <para>
+      Objekteigenschaften dürfen aufgrund der Mehrdeutigkeit, die in die
+      Engine einfließen würde, nicht mit <type>callable</type> typisiert
+      werden. Somit dürfen die angeführten Argumente auch nicht mit
+      <type>callable</type> typisiert werden. Jede andere
+      <link linkend="language.types.declarations">Typ-Deklaration</link> ist
+      jedoch erlaubt.
+     </para>
+    </note>
+    <note>
+     <para>
+      <!-- This should be linked once attributes are documented. -->
+      Attribute, die auf ein befördertes Konstruktorargument gelegt werden,
+      werden sowohl auf die Eigenschaft als auch auf das Argument übertragen.
+     </para>
+    </note>
+   </sect3>
+   <sect3 xml:id="language.oop5.decon.constructor.static">
+    <title>Erzeugung über statische Methoden</title>
+    <para>
+     PHP unterstützt nur einen einzigen Konstruktor pro Klasse. In einigen
+     Fällen, kann es jedoch wünschenswert sein, dass ein Objekt auf
+     verschiedene Weisen mit unterschiedlichen Eingaben erzeugt werden kann.
+     Der empfohlene Weg, dies zu tun, ist die, Konstruktoren in statische
+     Methoden zu packen.
+    </para>
+    <example>
+     <title>Die Erzeugung über statische Methoden verwenden</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+class Produkt {
+
+    private ?int $id;
+    private ?string $name;
+
+    private function __construct(?int $id = null, ?string $name = null) {
+        $this->id = $id;
+        $this->name = $name;
+    }
+
+    public static function fromBasicData(int $id, string $name): static {
+        $neu = new static($id, $name);
+        return $neu;
+    }
+
+    public static function fromJson(string $json): static {
+        $daten = json_decode($json);
+        return new static($daten['id'], $daten['name']);
+    }
+
+    public static function fromXml(string $xml): static {
+        // Hier der eigene Code.
+        $daten = convert_xml_to_array($xml);
+        $neu = new static();
+        $neu->id = $daten['id'];
+        $neu->name = $daten['name'];
+        return $neu;
+    }
+}
+
+$p1 = Produkt::fromBasicData(5, 'Widget');
+$p2 = Produkt::fromJson($some_json_string);
+$p3 = Produkt::fromXml($some_xml_string);
+]]>
+     </programlisting>
+    </example>
+    <para>
+     Der Konstruktor kann private oder protected gemacht werden, um zu
+     verhindern, dass er von außen aufgerufen wird. Wenn dies der Fall ist,
+     kann nur eine statische Methode die Klasse instanziieren. Da sie in der
+     gleichen Klassendefinition enthalten ist, hat sie Zugriff auf private
+     Methoden, auch wenn sie nicht zur gleichen Objektinstanz gehören. Der
+     private Konstruktor ist optional und kann je nach Anwendungsfall sinnvoll
+     sein oder nicht.
+    </para>
+    <para>
+     Die drei public static Methoden veranschaulichen dann verschiedene
+     Möglichkeiten das Objekt zu instanziieren.
+    </para>
+    <simplelist>
+     <member><code>fromBasicData()</code> nimmt genau die Parameter, die
+     benötigt werden, erzeugt dann das Objekt durch Aufruf des Konstruktors
+     und Rückgabe des Ergebnisses.</member>
+     <member><code>fromJson()</code> akzeptiert eine JSON-Zeichenkette und
+     führt selbst eine Vorverarbeitung durch, um sie in das vom Konstruktor
+     gewünschte Format zu konvertieren. Sie gibt dann das neue Objekt
+     zurück.</member>
+     <member><code>fromXml()</code> akzeptiert eine XML-Zeichenkette,
+     vorverarbeitet sie und erzeugt dann ein leeres Objekt. Der Konstruktor
+     wird immer noch aufgerufen, aber da alle Parameter optional sind,
+     überspringt sie die Methode. Sie weist dann den Objekteigenschaften
+     direkt Werte zu, bevor sie das Ergebnis zurückgibt.</member>
+    </simplelist>
+    <para>
+     In allen drei Fällen wird das Schlüsselwort <code>static</code> in den
+     Namen der Klasse übersetzt, in der sich der Code befindet. In diesem
+     Fall: <code>Produkt</code>.
+    </para>
+   </sect3>
   </sect2>
 
   <sect2 xml:id="language.oop5.decon.destructor">
