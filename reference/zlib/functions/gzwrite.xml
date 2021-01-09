@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: hholzgra  Status: ready -->
+<!-- EN-Revision: 02ba67b51f2bde571b6ce07026e935f4e81019af Maintainer: hholzgra  Status: ready -->
 <refentry xml:id="function.gzwrite" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>gzwrite</refname>
@@ -9,14 +9,14 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>gzwrite</methodname>
-   <methodparam><type>resource</type><parameter>zp</parameter></methodparam>
-   <methodparam><type>string</type><parameter>string</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
+   <type class="union"><type>int</type><type>false</type></type><methodname>gzwrite</methodname>
+   <methodparam><type>resource</type><parameter>stream</parameter></methodparam>
+   <methodparam><type>string</type><parameter>data</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>length</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>gzwrite</function> schreibt den Inhalt von
-   <parameter>string</parameter> in die angegebene gz-Datei aus.
+   <parameter>data</parameter> in die angegebene gz-Datei aus.
   </para>
  </refsect1>
  <refsect1 role="parameters">
@@ -24,17 +24,16 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>zp</parameter></term>
+     <term><parameter>stream</parameter></term>
      <listitem>
       <para>
-       Eine gz-Datei Resource. Diese muss gültig sein und auf eine
-       Datei zeigen die erfolgreich mit <function>gzopen</function>
-       geöffnet wurde.
+       Ein gz-Dateizeiger. Dieser muss gültig sein und auf eine Datei zeigen,
+       die erfolgreich mit <function>gzopen</function> geöffnet wurde.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>string</parameter></term>
+     <term><parameter>data</parameter></term>
      <listitem>
       <para>
        Der auszugebende String.
@@ -45,19 +44,18 @@
      <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Die Anzahl unkomprimierter Bytes die ausgegeben werden soll.
-       Wenn angegeben wird nach <parameter>length</parameter> 
-       geschriebenen Bytes aus <parameter>string</parameter> abgebrochen
-       wenn bis dahin das Ende des Strings nicht erreicht ist.
+       Die Anzahl unkomprimierter Bytes, die ausgegeben werden sollen. Wenn
+       angegeben, wird nach <parameter>length</parameter> aus
+       <parameter>data</parameter> geschriebenen Bytes abgebrochen, wenn bis
+       dahin das Ende des Strings nicht erreicht ist.
       </para>
       <note>
        <para>
-        Beachten Sie das der <link
+        Es ist zu beachten, dass der Konfigurationsparameter <link
         linkend="ini.magic-quotes-runtime">magic_quotes_runtime</link>
-        Konfigurationsparameter ignoriert wird und keine Slashes aus
-        <parameter>string</parameter> entfernt werden wenn der 
-        optionale Parameter <parameter>length</parameter> 
-        übergeben wird.
+        ignoriert wird und keine Slashes aus <parameter>data</parameter>
+        entfernt, werden wenn der optionale Parameter
+        <parameter>length</parameter> übergeben wird.
        </para>
       </note>
      </listitem>
@@ -67,16 +65,47 @@
  </refsect1>
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
-  <para> 
-   Gibt die Anzahl der (unkomprimierten) Bytes zurück die auf
-   den gegebenen gz-Stream ausgegeben wurden.
+  <para>
+   Gibt die Anzahl der (unkomprimierten) Bytes zurück, die auf den gegebenen
+   gz-Stream ausgegeben wurden. &return.falseforfailure;.
   </para>
  </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>length</parameter> ist jetzt ein Nullable-Typ; vorher war
+       der Standardwert <literal>0</literal>.
+      </entry>
+     </row>
+     <row>
+      <entry>7.4.0</entry>
+      <entry>
+       Falls ein Fehler auftritt, gibt diese Funktion jetzt &false; zurück;
+       vorher wurde <literal>0</literal> zurückgegeben.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>gzwrite</function> Beispiel</title>
+    <title><function>gzwrite</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -100,7 +129,6 @@ gzclose($gz);
   </para>
  </refsect1>
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
