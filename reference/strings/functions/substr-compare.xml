@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 53bdffa6b9f8ce5ffdaf476c9d450f7cd0d1afa2 Maintainer: sammywg Status: ready -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.substr-compare">
+<!-- EN-Revision: 8b12549bff077aadc8671408e884937aa67ee532 Maintainer: sammywg Status: ready -->
+<refentry xml:id="function.substr-compare" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>substr_compare</refname>
-  <refpurpose>Binärdaten-sicherer Vergleich zweier Strings, beginnend an einer bestimmten
-     Position und endend nach einer festgelegten Länge</refpurpose>
+  <refpurpose>
+   Binärdaten-sicherer Vergleich zweier Strings, beginnend an einer bestimmten
+   Position und endend nach einer festgelegten Länge
+  </refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>substr_compare</methodname>
-   <methodparam><type>string</type><parameter>main_str</parameter></methodparam>
-   <methodparam><type>string</type><parameter>str</parameter></methodparam>
+   <methodparam><type>string</type><parameter>haystack</parameter></methodparam>
+   <methodparam><type>string</type><parameter>needle</parameter></methodparam>
    <methodparam><type>int</type><parameter>offset</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>case_insensitivity</parameter><initializer>&false;</initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>length</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>case_insensitive</parameter><initializer>&false;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>substr_compare</function> vergleicht <parameter>main_str</parameter>
+   <function>substr_compare</function> vergleicht <parameter>haystack</parameter>
    ab der in <parameter>offset</parameter> definierten Position mit
-   <parameter>str</parameter>. Die Länge des verglichenen String-Bestandteils
+   <parameter>needle</parameter>. Die Länge des verglichenen String-Bestandteils
    wird vom <parameter>length</parameter>-Parameter bestimmt.
   </para>
  </refsect1>
@@ -32,7 +33,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>main_str</parameter></term>
+     <term><parameter>haystack</parameter></term>
      <listitem>
       <para>
        Die zu vergleichende Hauptzeichenkette.
@@ -40,7 +41,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>str</parameter></term>
+     <term><parameter>needle</parameter></term>
      <listitem>
       <para>
        Die zweite zu vergleichende Zeichenkette.
@@ -53,8 +54,6 @@
       <para>
        Die Anfangsposition für den Vergleich. Wenn der Wert negativ ist, wird
        rückwärts vom Ende der Zeichenkette an gezählt.
-       The start position for the comparison. If negative, it starts counting
-       from the end of the string.
       </para>
      </listitem>
     </varlistentry>
@@ -62,19 +61,19 @@
      <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Die Länge der zu vergleichenden Zeichensequenz.
-       Standardwert ist der größere Wert des Vergleiches der Länge des
-       <parameter>str</parameter> mit der Länge von
-       <parameter>main_str</parameter> minus
+       Die Länge der zu vergleichenden Zeichensequenz. Standardwert ist der
+       größere Wert des Vergleiches der Länge des
+       <parameter>needle</parameter> mit der Länge von
+       <parameter>haystack</parameter> minus
        <parameter>offset</parameter>.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>case_insensitivity</parameter></term>
+     <term><parameter>case_insensitive</parameter></term>
      <listitem>
       <para>
-       Wenn <parameter>case_insensitivity</parameter> den Wert &true; hat,
+       Wenn <parameter>case_insensitive</parameter> den Wert &true; hat,
        wird der Vergleich ohne Berücksichtigung der Groß- und Kleinschreibung
        durchgeführt.
       </para>
@@ -87,15 +86,15 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt eine Zahl &lt; 0 zurück, wenn <parameter>main_str</parameter> ab der in
-   <parameter>offset</parameter> festgelegten Position kleiner ist als
-   <parameter>str</parameter>, eine Zahl &gt; 0, wenn der ermittelte String
-   größer ist als <parameter>str</parameter>, und 0, wenn sie gleich sind.
-   Wenn der Parameter <parameter>offset</parameter> gleich (vor PHP 7.2.18, 7.3.5) oder
-   größer als die Länge von <parameter>main_str</parameter> ist oder
-   <parameter>length</parameter> gesetzt und kleiner als 0 ist (oder, vor PHP 5.5.11, kleiner als 1),
-   gibt <function>substr_compare</function>
-   eine Warnung aus und hat den Rückgabewert &false;.
+   Gibt eine Zahl &lt; 0 zurück, wenn <parameter>haystack</parameter> ab der
+   in <parameter>offset</parameter> festgelegten Position kleiner ist als
+   <parameter>needle</parameter>, eine Zahl &gt; 0, wenn der ermittelte String
+   größer ist als <parameter>needle</parameter>, und 0, wenn sie gleich sind.
+   Wenn der Parameter <parameter>offset</parameter> gleich (vor PHP 7.2.18,
+   7.3.5) oder größer als die Länge von <parameter>haystack</parameter> ist
+   oder <parameter>length</parameter> gesetzt und kleiner als 0 ist (oder, vor
+   PHP 5.5.11, kleiner als 1), gibt <function>substr_compare</function> eine
+   Warnung aus und hat den Rückgabewert &false;.
   </para>
  </refsect1>
 
@@ -112,9 +111,16 @@
      </thead>
      <tbody>
       <row>
+       <entry>8.0.0</entry>
+       <entry>
+        <parameter>length</parameter> ist jetzt ein Nullable-Typ.
+       </entry>
+      </row>
+      <row>
        <entry>7.2.18, 7.3.5</entry>
        <entry>
-        <parameter>offset</parameter> kann nun gleich der Länge des <parameter>main_str</parameter> sein.
+        <parameter>offset</parameter> kann nun gleich der Länge des
+        <parameter>haystack</parameter> sein.
        </entry>
       </row>
      </tbody>
@@ -155,8 +161,6 @@ echo substr_compare("abcde", "abc", 5, 1); // warning
  </refsect1>
 
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
