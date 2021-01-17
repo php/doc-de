@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7f569e1f175adf1fbd0e462eba8d6bc82214c939 Maintainer: sammywg Status: ready -->
-
+<!-- EN-Revision: 2a7c919451f9a536431ba2117f8f90ae814c1c5f Maintainer: sammywg Status: ready -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.setlocale">
  <refnamediv>
   <refname>setlocale</refname>
@@ -11,15 +10,18 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>string</type><methodname>setlocale</methodname>
+   <type class="union"><type>string</type><type>false</type></type><methodname>setlocale</methodname>
    <methodparam><type>int</type><parameter>category</parameter></methodparam>
-   <methodparam><type>string</type><parameter>locale</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>...</parameter></methodparam>
+   <methodparam><type>string</type><parameter>locales</parameter></methodparam>
+   <methodparam rep="repeat"><type>string</type><parameter>rest</parameter></methodparam>
   </methodsynopsis>
+  <simpara>
+   Alternative Signatur (wird bei benannten Argumenten nicht unterstützt):
+  </simpara>
   <methodsynopsis>
-   <type>string</type><methodname>setlocale</methodname>
+   <type class="union"><type>string</type><type>false</type></type><methodname>setlocale</methodname>
    <methodparam><type>int</type><parameter>category</parameter></methodparam>
-   <methodparam><type>array</type><parameter>locale</parameter></methodparam>
+   <methodparam><type>array</type><parameter>locale_array</parameter></methodparam>
   </methodsynopsis>
   <para>
    Legt regionale (locale) Einstellungen fest.
@@ -27,13 +29,13 @@
   <warning>
    <para>
     Die Locale-Informationen wirken auf den Prozess, nicht auf den Thread.
-    Sofern Sie PHP mit einer Multithreaded Server API, rechnen Sie mit unerwarteten Änderungen der
-    Locale-Einstellungen zur Laufzeit des Skripts, auch wenn das Skript selbst
-    keinen <function>setlocale</function>-Aufruf durchführt. Dies passiert,
-    da andere Skripte in verschiedenen Threads des selben Prozesses zur selben
-    Zeit prozessweit die Locale-Einstellungen mittels
-    <function>setlocale</function> ändern.
-    Unter Windows wird die Locale-Einstellung von PHP 5.6.20 bzw. PHP 7.0.5 an per Thread verwaltet.
+    Sofern Sie PHP mit einer Multithreaded Server API, rechnen Sie mit
+    unerwarteten Änderungen der Locale-Einstellungen zur Laufzeit des Skripts,
+    auch wenn das Skript selbst keinen <function>setlocale</function>-Aufruf
+    durchführt. Dies passiert, da andere Skripte in verschiedenen Threads des
+    selben Prozesses zur selben Zeit prozessweit die Locale-Einstellungen
+    mittels <function>setlocale</function> ändern. Unter Windows wird die
+    Locale-Einstellung von PHP 5.6.20 bzw. PHP 7.0.5 an per Thread verwaltet.
    </para>
   </warning>
  </refsect1>
@@ -47,8 +49,8 @@
      <listitem>
       <para>
        <parameter>category</parameter> ist eine benannte Konstante (oder
-       Zeichenkette), die die Kategorie der von den regionalen Einstellungen (Locales)
-       betroffenen Funktionen angibt:
+       Zeichenkette), die die Kategorie der von den regionalen Einstellungen
+       (Locales) betroffenen Funktionen angibt:
        <itemizedlist>
         <listitem>
          <simpara>
@@ -95,42 +97,52 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>locale</parameter></term>
+     <term><parameter>locales</parameter></term>
      <listitem>
       <para>
-       Ist <parameter>locale</parameter> &null; oder der leere String
-       <literal>""</literal>, werden die Namen der Locales von den Werten
-       der Umgebungsvariablen gleichen Namens wie die obigen
-       Kategorien oder von "LANG" bestimmt.
+       Ist <parameter>locales</parameter> &null; oder der leere String
+       <literal>""</literal>, werden die Namen der Locales von den Werten der
+       Umgebungsvariablen gleichen Namens wie die obigen Kategorien oder von
+       "LANG" bestimmt.
       </para>
       <para>
-       Ist <parameter>locale</parameter> <literal>"0"</literal>, sind keine
-       regionalen Einstellungen betroffen, und es wird die aktuelle Einstellung
-       zurückgegeben.
+       Ist <parameter>locales</parameter> <literal>"0"</literal>, sind keine
+       regionalen Einstellungen betroffen, und es wird die aktuelle
+       Einstellung zurückgegeben.
       </para>
       <para>
-       Ist <parameter>locale</parameter> ein Array oder folgen weitere Parameter,
-       dann wird jedes Arrayelement bzw. jeder Parameter versucht als neuer
-       Locale-Wert zu setzen, bis es gelingt. Dies ist dann sinnvoll, wenn eine
-       Locale-Angabe auf unterschiedlichen Systemen unter verschiedenen Namen
-       bekannt ist oder auch als Fallback für eine eventuell nicht vorhandene
-       Locale-Angabe.
+       Folgen auf <parameter>locales</parameter> weitere Parameter, dann wird
+       jeder Parameter versucht als neuen Locale-Wert zu setzen, bis es
+       gelingt. Dies ist dann sinnvoll, wenn eine Locale-Angabe auf
+       unterschiedlichen Systemen unter verschiedenen Namen bekannt ist oder
+       auch als Fallback für eine eventuell nicht vorhandene Locale-Angabe.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>...</parameter></term>
+     <term><parameter>rest</parameter></term>
      <listitem>
       <para>
-        (Optionale string oder array Parameter die als Locale-Einstellungen
-        bis zum Erfolg verwendet werden.)
+       Optionale String-Parameter die als Locale-Einstellung durchprobiert
+       werden, bis zum Erfolg.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>locale_array</parameter></term>
+     <listitem>
+      <para>
+       Jedes Array-Element wird versucht, die neue Locale zu setzen, bis zum
+       Erfolg. Dies ist nützlich, wenn eine Locale unter verschiedenen Namen
+       auf verschiedenen Systemen bekannt ist oder als Fallback für eine
+       möglicherweise nicht verfügbare Locale.
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
    <note>
     <para>
-     Unter Windows setzt setlocale(LC_ALL, '') die Locale Namen aus den
+     Unter Windows setzt setlocale(LC_ALL, '') die Locale-Namen aus den
      Regional/Sprache Einstellungen des Systems; (erreichbar über die
      Systemsteuerung).
     </para>
@@ -146,9 +158,10 @@
    angegebene Locale nicht existiert oder der Kategorie-Name ungültig ist.
   </para>
   <para>
-   Ein ungültiger Kategorie-Name erzeugt zusätzlich eine Warnmeldung. Kategorien-
-   und Locale-Namen können sie unter <link xlink:href="&url.rfc;1766">RFC 1766</link>
-   und <link xlink:href="&url.iso-639;">ISO 639</link> nachlesen. Unterschiedliche
+   Ein ungültiger Kategorie-Name erzeugt zusätzlich eine Warnmeldung.
+   Kategorien- und Locale-Namen können sie unter <link
+   xlink:href="&url.rfc;1766">RFC 1766</link> und <link
+   xlink:href="&url.iso-639;">ISO 639</link> nachlesen. Unterschiedliche
    Systeme verwenden differierende Namensräume für die Locales.
   </para>
   <note>
@@ -209,20 +222,17 @@ echo "Preferred locale for german on this system is '$loc_de'";
   <tip>
    <para>
     Windowsuser finden weitergehende Informationen über
-    <parameter>locale</parameter>-Strings auf Microsofts
+    <parameter>locales</parameter>-Strings auf Microsofts
     <acronym>MSDN</acronym>-Webseite. Unterstützte Language-Strings können Sie
-    in der <link
-    xlink:href="&url.setlocale.lang.win32;">Language Strings Dokumentation</link>,
-    Country/Region-Strings in der <link
-    xlink:href="&url.setlocale.country.win32;">Country/Region Strings Dokumentation</link>
-    nachschlagen.
+    in der <link xlink:href="&url.setlocale.lang.win32;">Language Strings
+    Dokumentation</link>, Country/Region-Strings in der <link
+    xlink:href="&url.setlocale.country.win32;">Country/Region Strings
+    Dokumentation</link> nachschlagen.
    </para>
   </tip>
  </refsect1>
 
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
