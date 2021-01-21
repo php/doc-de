@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: cdb49f7ff4e901debc13858bf6e68d848413360d Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: 902c2b77f827e8d0ecccf4f62fb90065d2f6ef79 Maintainer: nobody Status: ready -->
 <refentry xml:id="function.odbc-columnprivileges" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>odbc_columnprivileges</refname>
@@ -11,12 +10,12 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>odbc_columnprivileges</methodname>
-   <methodparam><type>resource</type><parameter>connection_id</parameter></methodparam>
-   <methodparam><type>string</type><parameter>qualifier</parameter></methodparam>
-   <methodparam><type>string</type><parameter>owner</parameter></methodparam>
-   <methodparam><type>string</type><parameter>table_name</parameter></methodparam>
-   <methodparam><type>string</type><parameter>column_name</parameter></methodparam>
+   <type class="union"><type>resource</type><type>false</type></type><methodname>odbc_columnprivileges</methodname>
+   <methodparam><type>resource</type><parameter>odbc</parameter></methodparam>
+   <methodparam><type class="union"><type>string</type><type>null</type></type><parameter>catalog</parameter></methodparam>
+   <methodparam><type>string</type><parameter>schema</parameter></methodparam>
+   <methodparam><type>string</type><parameter>table</parameter></methodparam>
+   <methodparam><type>string</type><parameter>column</parameter></methodparam>
   </methodsynopsis>
   <para>
     Listet die Spalten und die mit ihnen verbundenen Rechte für die
@@ -29,49 +28,47 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>connection_id</parameter></term>
+     <term><parameter>odbc</parameter></term>
      <listitem>
       &odbc.connection.id;
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>qualifier</parameter></term>
+     <term><parameter>catalog</parameter></term>
      <listitem>
       <para>
-       Der Kennzeichner.
+       &odbc.parameter.catalog;
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>owner</parameter></term>
+     <term><parameter>schema</parameter></term>
      <listitem>
       <para>
-       Der Eigentümer.
+       &odbc.parameter.schema;
+       &odbc.parameter.search;
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>table_name</parameter></term>
+     <term><parameter>table</parameter></term>
      <listitem>
       <para>
        Der Tabellenname.
+       &odbc.parameter.search;
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>column_name</parameter></term>
+     <term><parameter>column</parameter></term>
      <listitem>
       <para>
        Der Spaltenname.
+       &odbc.parameter.search;
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
-  </para>
-  <para>
-   Die <parameter>owner</parameter>, <parameter>table_name</parameter> und
-   <parameter>column_name</parameter> Parameter akzeptieren Platzhalter
-   ('%' für kein oder mehr Zeichen und '_' für ein einzelnes Zeichen).
   </para>
  </refsect1>
 
@@ -85,23 +82,60 @@
   <para>
    Die Ergebnismenge enhält die folgenden Spalten:
    <itemizedlist>
-    <listitem><simpara>TABLE_QUALIFIER</simpara></listitem>
-    <listitem><simpara>TABLE_OWNER</simpara></listitem>
-    <listitem><simpara>TABLE_NAME</simpara></listitem>
-    <listitem><simpara>GRANTOR</simpara></listitem>
-    <listitem><simpara>GRANTEE</simpara></listitem>
-    <listitem><simpara>PRIVILEGE</simpara></listitem>
-    <listitem><simpara>IS_GRANTABLE</simpara></listitem>
+    <listitem><simpara><literal>TABLE_CAT</literal></simpara></listitem>
+    <listitem><simpara><literal>TABLE_SCHEM</literal></simpara></listitem>
+    <listitem><simpara><literal>TABLE_NAME</literal></simpara></listitem>
+    <listitem><simpara><literal>COLUMN_NAME</literal></simpara></listitem>
+    <listitem><simpara><literal>GRANTOR</literal></simpara></listitem>
+    <listitem><simpara><literal>GRANTEE</literal></simpara></listitem>
+    <listitem><simpara><literal>PRIVILEGE</literal></simpara></listitem>
+    <listitem><simpara><literal>IS_GRANTABLE</literal></simpara></listitem>
    </itemizedlist>
+   &odbc.result.driver-specific;
   </para>
-  <para>
-   Die Ergebnis-Resource ist nach TABLE_QUALIFIER, TABLE_OWNER 
-   und TABLE_NAME sortiert.
-  </para>
+  <simpara>
+   Die Ergebnis-Resource ist nach <literal>TABLE_CAT</literal>,
+   <literal>TABLE_SCHEM</literal>, <literal>TABLE_NAME</literal>,
+   <literal>COLUMN_NAME</literal> und <literal>PRIVILEGE</literal> sortiert.
+  </simpara>
  </refsect1>
 
-</refentry>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example xml:id="odbc-columnprivileges.example.basic">
+   <title>Zugriffsberechtigungen für eine Spalte auflisten</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$conn = odbc_connect($dsn, $benutzer, $pass);
+$berechtigungen = odbc_columnprivileges($conn, 'TutorialDB', 'dbo', 'test', 'id');
+while (($row = odbc_fetch_array($berechtigungen))) {
+    print_r($row);
+    break; // weitere Zeilen der Kürze halber weggelassen
+}
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Array
+(
+    [TABLE_CAT] => TutorialDB
+    [TABLE_SCHEM] => dbo
+    [TABLE_NAME] => test
+    [COLUMN_NAME] => id
+    [GRANTOR] => dbo
+    [GRANTEE] => dbo
+    [PRIVILEGE] => INSERT
+    [IS_GRANTABLE] => YES
+)
+]]>
+   </screen>
+  </example>
+  </refsect1>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

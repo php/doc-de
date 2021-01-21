@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: 902c2b77f827e8d0ecccf4f62fb90065d2f6ef79 Maintainer: nobody Status: ready -->
 <refentry xml:id="function.odbc-binmode" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>odbc_binmode</refname>
@@ -12,20 +11,30 @@
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>odbc_binmode</methodname>
-   <methodparam><type>resource</type><parameter>result_id</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>statement</parameter></methodparam>
    <methodparam><type>int</type><parameter>mode</parameter></methodparam>
   </methodsynopsis>
   <para>
    Steuert die Behandlung binärer Spaltendaten. Betroffene ODBC SQL Typen sind
    <literal>BINARY</literal>, <literal>VARBINARY</literal> und
    <literal>LONGVARBINARY</literal>.
+    Der Standardmodus kann mit der &php.ini;-Anweisung <link
+    linkend="ini.uodbc.defaultbinmode">uodbc.defaultbinmode</link> festgelegt
+    werden.
   </para>
   <para>
-   Werden SQL-Binärdaten in C-Zeichendaten konvertiert, wird jedes Byte (8 Bits)
-   der ursprünglichen Daten zu zwei ASCII-Zeichen, die der hexadezimalen
-   Darstellung des Wertes entsprechen. Der Binärwert 00000001 wird zum Beispiel
-   zu <literal>"01"</literal> gewandelt, der Binärwert 11111111 zu
+   Werden SQL-Binärdaten in C-Zeichendaten konvertiert
+   (<constant>ODBC_BINMODE_CONVERT</constant>), wird jedes Byte (8 Bits) der
+   ursprünglichen Daten zu zwei ASCII-Zeichen, die der hexadezimalen
+   Darstellung des Wertes entsprechen. Der Binärwert 00000001 wird zum
+   Beispiel zu <literal>"01"</literal> gewandelt, der Binärwert 11111111 zu
    <literal>"FF"</literal>.
+  </para>
+  <para>
+   Während die Behandlung von <literal>BINARY</literal>- und
+   <literal>VARBINARY</literal>-Spalten nur von binmode abhängt, hängt die
+   Behandlung von <literal>LONGVARBINARY</literal>-Spalten auch von
+   longreadlen ab:
    <table>
     <title>Die Benutzung von LONGVARBINARY</title>
     <tgroup cols="3">
@@ -54,22 +63,17 @@
       </row>
       <row>
        <entry><constant>ODBC_BINMODE_PASSTHRU</constant></entry>
-       <entry>0</entry>
-       <entry>Direkte Ausgabe</entry>
-      </row>
-      <row>
-       <entry><constant>ODBC_BINMODE_PASSTHRU</constant></entry>
-       <entry>>0</entry>
+       <entry>&gt;0</entry>
        <entry>Direkte Ausgabe</entry>
       </row>
       <row>
        <entry><constant>ODBC_BINMODE_RETURN</constant></entry>
-       <entry>>0</entry>
+       <entry>&gt;0</entry>
        <entry>Direkte Ausgabe</entry>
       </row>
       <row>
        <entry><constant>ODBC_BINMODE_CONVERT</constant></entry>
-       <entry>>0</entry>
+       <entry>&gt;0</entry>
        <entry>Rückgabe als CHAR-Werte</entry>
       </row>
      </tbody>
@@ -77,9 +81,10 @@
    </table>
   </para>
   <para>
-   Wenn <function>odbc_fetch_into</function> genutzt wird, wird bei
-   direkter Ausgabe ein leerer String als Spaltenwert
-   zurückgeliefert.
+   Wenn <function>odbc_fetch_into</function> genutzt wird, wird bei direkter
+   Ausgabe ein leerer String als Spaltenwert zurückgeliefert. Wenn
+   <function>odbc__result</function> genutzt wird, werden die Daten bei
+   direkter Ausgabe direkt an den Client gesendet, d.h. ausgegeben.
   </para>
  </refsect1>
 
@@ -88,23 +93,15 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>result_id</parameter></term>
+     <term><parameter>statement</parameter></term>
      <listitem>
       <para>
        Die Ergebniskennung.
       </para>
       <para>
-       Wenn <parameter>result_id</parameter> gleich <literal>0</literal>
-       ist, wird die Einstellung als Standardwert für die neue
-       Ergebnisse verwendet.
-       <note>
-        <simpara>
-         Der Standardwert für longreadlen ist <literal>4096</literal>, und für
-         <parameter>mode</parameter> <literal>ODBC_BINMODE_RETURN</literal>. Die
-         Behandlung von binary long Spalten wird ebenfalls durch
-         <function>odbc_longreadlen</function> beeinflusst.
-        </simpara>
-       </note>
+       Wenn <parameter>statement</parameter> gleich <literal>0</literal> ist,
+       wird die Einstellung als Standardwert für die neue Ergebnisse
+       verwendet.
       </para>
      </listitem>
     </varlistentry>
@@ -127,10 +124,16 @@
         <listitem>
          <simpara>
           <constant>ODBC_BINMODE_CONVERT</constant>: konvertiert die Binärdaten zu Zeichen und
-          liefert sie zurück 
+          liefert sie zurück
          </simpara>
         </listitem>
        </itemizedlist>
+       <note>
+        <simpara>
+         Die Behandlung von binary long Spalten wird ebenfalls durch
+         <function>odbc_longreadlen</function> beeinflusst.
+        </simpara>
+       </note>
       </para>
      </listitem>
     </varlistentry>
@@ -146,7 +149,6 @@
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
