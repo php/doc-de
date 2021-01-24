@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 508e255fff6c604c31d5617fe9ddf6d776a3b43d Maintainer: conni Status: ready -->
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.socket-recvfrom">
+<!-- EN-Revision: 14dc7c47365f2b71f6c907a5ba5bccf42534d5a9 Maintainer: conni Status: ready -->
+<refentry xml:id="function.socket-recvfrom" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>socket_recvfrom</refname>
   <refpurpose>Empfängt Daten von einem Socket, egal, ob verbindungsorientiert oder nicht</refpurpose>
@@ -10,34 +10,34 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>socket_recvfrom</methodname>
-   <methodparam><type>resource</type><parameter>socket</parameter></methodparam>
-   <methodparam><type>string</type><parameter role="reference">buf</parameter></methodparam>
-   <methodparam><type>int</type><parameter>len</parameter></methodparam>
+   <type class="union"><type>int</type><type>false</type></type><methodname>socket_recvfrom</methodname>
+   <methodparam><type>Socket</type><parameter>socket</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">data</parameter></methodparam>
+   <methodparam><type>int</type><parameter>length</parameter></methodparam>
    <methodparam><type>int</type><parameter>flags</parameter></methodparam>
-   <methodparam><type>string</type><parameter role="reference">name</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter role="reference">port</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">address</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter role="reference">port</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Die Funktion <function>socket_recvfrom</function> empfängt über den Socket 
-   <parameter>socket</parameter> <parameter>len</parameter> Bytes von
-   <parameter>name</parameter> über den Port <parameter>port</parameter> (falls
-   der Socket nicht vom Typ <constant>AF_UNIX</constant> ist) und liest sie in
-   den Puffer <parameter>buf</parameter> ein. 
+   Die Funktion <function>socket_recvfrom</function> empfängt über den Socket
+   <parameter>socket</parameter> <parameter>length</parameter> Bytes von
+   <parameter>address</parameter> über den Port <parameter>port</parameter>
+   (falls der Socket nicht vom Typ <constant>AF_UNIX</constant> ist) und liest
+   sie in den Puffer <parameter>data</parameter> ein.
    <function>socket_recvfrom</function> kann dazu verwendet werden, um Daten
    sowohl von verbundenen als auch unverbundenen Sockets zu lesen. Außerdem
-   können ein oder mehrere Flags gesetzt werden, um das Verhalten dieser 
+   können ein oder mehrere Flags gesetzt werden, um das Verhalten dieser
    Funktion zu beeinflussen.
   </para>
   <para>
-   Die Parameter <parameter>name</parameter> und <parameter>port</parameter> 
-   müsssen als Referenz übergeben werden. Wenn der Socket verbindungslos ist, 
-   wird <parameter>name</parameter> auf die Internet-Protokolladresse des
-   entfernten Host oder auf den Pfad zum UNIX-Socket gesetzt. Ist der Socket 
-   verbindungsorientiert, ist <parameter>name</parameter> &null;. Zusätzlich 
+   Die Parameter <parameter>address</parameter> und <parameter>port</parameter>
+   müsssen als Referenz übergeben werden. Wenn der Socket verbindungslos ist,
+   wird <parameter>address</parameter> auf die Internet-Protokolladresse des
+   entfernten Host oder auf den Pfad zum UNIX-Socket gesetzt. Ist der Socket
+   verbindungsorientiert, ist <parameter>address</parameter> &null;. Zusätzlich
    enthält der Parameter <parameter>port</parameter> den Port des entfernten
    Host, falls es sich um einen nicht verbundenen <constant>AF_INET</constant>
-   oder <constant>AF_INET6</constant> Socket handelt.
+   oder <constant>AF_INET6</constant>-Socket handelt.
   </para>
   &note.bin-safe;
  </refsect1>
@@ -50,27 +50,29 @@
      <term><parameter>socket</parameter></term>
      <listitem>
       <para>
-       <parameter>socket</parameter> muss ein Socket-Deskriptor sein, der zuvor
-       von <function>socket_create</function> erzeugt wurde.
+       <parameter>socket</parameter> muss eine
+       <classname>Socket</classname>-Instanz sein, die zuvor mit
+       <function>socket_create</function> erzeugt wurde.
       </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><parameter>buf</parameter></term>
+     <term><parameter>data</parameter></term>
      <listitem>
       <para>
-       Die empfangenen Daten werden in die Variable <parameter>buf</parameter>
+       Die empfangenen Daten werden in die Variable <parameter>data</parameter>
        eingelesen.
       </para>
      </listitem>
     </varlistentry>
 
     <varlistentry>
-     <term><parameter>len</parameter></term>
+     <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Bis zu <parameter>len</parameter> Bytes werden vom entfernten Host gelesen. 
+       Bis zu <parameter>length</parameter> Bytes werden vom entfernten Host
+       gelesen.
       </para>
      </listitem>
     </varlistentry>
@@ -80,10 +82,10 @@
      <listitem>
       <para>
        Der Wert von <parameter>flags</parameter> kann eine beliebige Kombination
-       der folgenden Flags sein, die mit dem binären OR (<literal>|</literal>) 
+       der folgenden Flags sein, die mit dem binären OR (<literal>|</literal>)
        verknüpft werden.
       </para>
-      
+
       <table>
        <title>Mögliche Werte für <parameter>flags</parameter></title>
        <tgroup cols="2">
@@ -110,10 +112,10 @@
          <row>
           <entry><constant>MSG_WAITALL</constant></entry>
           <entry>
-           Blockiere so lange, bis mindestens <parameter>len</parameter> Daten
-           gelesen wurden. Wenn jedoch ein Signal empfangen wurde oder der 
-           entfernte Host die Verbindung beendet, kann die Funktion auch weniger
-           Daten zurückgeben.
+           Blockiere so lange, bis mindestens <parameter>length</parameter>
+           Daten gelesen wurden. Wenn jedoch ein Signal empfangen wurde oder
+           der entfernte Host die Verbindung beendet, kann die Funktion auch
+           weniger Daten zurückgeben.
           </entry>
          </row>
          <row>
@@ -130,12 +132,12 @@
     </varlistentry>
 
     <varlistentry>
-     <term><parameter>name</parameter></term>
+     <term><parameter>address</parameter></term>
      <listitem>
       <para>
        Wenn der Socket vom Typ <constant>AF_UNIX</constant> ist, enthält
-       <parameter>name</parameter> den Pfad zu einer Datei. Anderenfalls, bei
-       nicht verbundenen Sockets, enthält <parameter>name</parameter> die
+       <parameter>address</parameter> den Pfad zu einer Datei. Anderenfalls, bei
+       nicht verbundenen Sockets, enthält <parameter>address</parameter> die
        IP-Adresse des entfernten Hosts oder &null;, falls der Socket
        verbindungsorientiert ist.
       </para>
@@ -150,27 +152,44 @@
       </para>
      </listitem>
     </varlistentry>
-    
+
    </variablelist>
   </para>
  </refsect1>
- 
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
    <function>socket_recvfrom</function> gibt die Anzahl der empfangenen Bytes
-   zurück oder &false;, falls ein Fehler auftrat. Der aktuelle Fehlercode kann mit 
-   <function>socket_last_error</function> abgefragt werden. Dieser Fehlercode
-   kann an die Funktion <function>socket_strerror</function> übergeben werden,
-   um eine textuelle Beschreibung des Fehlers zu erhalten.
+   zurück oder &false;, falls ein Fehler auftrat. Der aktuelle Fehlercode kann
+   mit <function>socket_last_error</function> abgefragt werden. Dieser
+   Fehlercode kann an die Funktion <function>socket_strerror</function>
+   übergeben werden, um eine textuelle Beschreibung des Fehlers zu erhalten.
   </para>
  </refsect1>
-                     
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     &sockets.changelog.socket-param;
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>socket_recvfrom</function> Beispiel</title>
+    <title><function>socket_recvfrom</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -190,7 +209,7 @@ echo "$buf von entfernter Adresse $from über den entfernten Port $port empfange
     <para>
      Dieses Beispiel erzeugt einen UDP-Socket über Port 1223 des Hosts 127.0.0.1
      und gibt höchstens 12 Zeichen aus, die von einem entfernten Host empfangen
-     wurden. 
+     wurden.
     </para>
    </example>
   </para>
@@ -207,8 +226,7 @@ echo "$buf von entfernter Adresse $from über den entfernten Port $port empfange
    </simplelist>
   </para>
  </refsect1>
-</refentry>      
-
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

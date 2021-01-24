@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 96c9d88bad9a7d7d44bfb7f26c226df7ee9ddf26 Maintainer: nobody Status: ready -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.socket-select">
+<!-- EN-Revision: 14dc7c47365f2b71f6c907a5ba5bccf42534d5a9 Maintainer: nobody Status: ready -->
+<refentry xml:id="function.socket-select" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>socket_select</refname>
-  <refpurpose>Führt einen select()-Systemaufruf auf den gegebenen Socket-Arrays aus, wobei ein Zeitlimit bestimmt wird</refpurpose>
+  <refpurpose>
+   Führt einen select()-Systemaufruf auf den gegebenen Socket-Arrays aus,
+   wobei ein Zeitlimit bestimmt wird
+  </refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>socket_select</methodname>
-   <methodparam><type>array</type><parameter role="reference">read</parameter></methodparam>
-   <methodparam><type>array</type><parameter role="reference">write</parameter></methodparam>
-   <methodparam><type>array</type><parameter role="reference">except</parameter></methodparam>
-   <methodparam><type>int</type><parameter>tv_sec</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>tv_usec</parameter><initializer>0</initializer></methodparam>
+   <type class="union"><type>int</type><type>false</type></type><methodname>socket_select</methodname>
+   <methodparam><type class="union"><type>array</type><type>null</type></type><parameter role="reference">read</parameter></methodparam>
+   <methodparam><type class="union"><type>array</type><type>null</type></type><parameter role="reference">write</parameter></methodparam>
+   <methodparam><type class="union"><type>array</type><type>null</type></type><parameter role="reference">except</parameter></methodparam>
+   <methodparam><type class="union"><type>int</type><type>null</type></type><parameter>seconds</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>microseconds</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>socket_select</function> nimmt als Parameter Socket-Arrays entgegen
    und wartet, ob diese ihren Status ändern. Diejenigen, die Hintergrundwissen
    über BSD-Sockets haben, werden feststellen, dass diese Socket-Arrays in
-   Wirklichkeit die sogenannten Datei-Deskriptor-Mengen sind. Drei voneinander
-   unabhängige Arrays mit Socket-Deskriptoren werden überwacht.
+   Wirklichkeit die sogenannten Dateideskriptor-Mengen sind. Drei voneinander
+   unabhängige Arrays mit Sockets werden überwacht.
   </para>
  </refsect1>
 
@@ -38,8 +40,8 @@
        Die Sockets, die im <parameter>read</parameter>-Array aufgelistet sind,
        werden daraufhin überwacht, ob Zeichen zum Auslesen zur Verfügung
        gestellt werden. (Um genauer zu sein: es wird überwacht, ob ein
-       Lesevorgang nicht blockiert würde - ein Socket ist nämlich auch dann bereit, wenn er
-       bis zum Dateiende gelesen hat. In diesem Fall gibt
+       Lesevorgang nicht blockiert würde - ein Socket ist nämlich auch dann
+       bereit, wenn er bis zum Dateiende gelesen hat. In diesem Fall gibt
        <function>socket_read</function> einen leeren String zurück.)
       </para>
      </listitem>
@@ -49,7 +51,8 @@
      <listitem>
       <para>
        Die Sockets, die im <parameter>write</parameter>-Array aufgelistet
-       sind, werden daraufhin überwacht, ob ein Schreibvorgang nicht blockiert würde.
+       sind, werden daraufhin überwacht, ob ein Schreibvorgang nicht blockiert
+       würde.
       </para>
      </listitem>
     </varlistentry>
@@ -63,23 +66,23 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>tv_sec</parameter></term>
+     <term><parameter>seconds</parameter></term>
      <listitem>
       <para>
-       <parameter>tv_sec</parameter> und <parameter>tv_usec</parameter>
+       <parameter>seconds</parameter> und <parameter>microseconds</parameter>
        bilden zusammen den <literal>timeout</literal>-Parameter. Der
        <literal>timeout</literal> ist eine obere Schranke für die Zeit, die
        verstreichen kann, bis <function>socket_select</function> zurückkehrt.
-       <parameter>tv_sec</parameter> kann 0 sein, wodurch
+       <parameter>seconds</parameter> kann 0 sein, wodurch
        <function>socket_select</function> sofort zurückkehrt. Dies ist
-       nützlich beim Polling. Falls der Parameter <parameter>tv_sec</parameter>
+       nützlich beim Polling. Falls der Parameter <parameter>seconds</parameter>
        &null; ist (kein Timeout), kann <function>socket_select</function>
        unendlich lange blockieren.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>tv_usec</parameter></term>
+     <term><parameter>microseconds</parameter></term>
      <listitem>
       <para>
       </para>
@@ -128,7 +131,7 @@ socket_select($r, $w, $e, 0);
   &reftitle.returnvalues;
   <para>
    Bei Erfolg gibt <function>socket_select</function> die Anzahl der
-   Socket-Deskriptoren zurück, die in den aktualisierten Arrays enthalten sind.
+   Sockets zurück, die in den aktualisierten Arrays enthalten sind.
    Falls der Timeout wirksam wird, bevor irgend etwas Interessantes passiert,
    ist das Funktionsergebnis 0. Falls ein Fehler auftritt, wird &false;
    zurückgegeben. Der Fehlercode kann dann mit
@@ -194,28 +197,29 @@ if ($num_changed_sockets === false) {
      <listitem>
       <simpara>
        Sie sollten immer versuchen, <function>socket_select</function> ohne
-       Timeout zu benutzen. Ihr Programm sollte nichts zu tun haben, wenn keine Daten
-       verfügbar sind. Code, der von Zeitbegrenzungen abhängig ist, ist
-       normalerweise nicht portierbar und schwierig zu debuggen.
+       Timeout zu benutzen. Ihr Programm sollte nichts zu tun haben, wenn
+       keine Daten verfügbar sind. Code, der von Zeitbegrenzungen abhängig
+       ist, ist normalerweise nicht portierbar und schwierig zu debuggen.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Es darf kein Socket-Deskriptor in die Arrays eingefügt werden, wenn
-       Sie nicht vorhaben, die Ergebnisse nach der Ausführung von
+       Es darf kein Socket in die Arrays eingefügt werden, wenn Sie nicht
+       vorhaben, die Ergebnisse nach der Ausführung von
        <function>socket_select</function> zu prüfen und entsprechend darauf zu
-       reagieren. Nachdem <function>socket_select</function> beendet ist, müssen
-       alle Sockets in allen Socket-Arrays geprüft werden. Jeder Socket, der
-       zum Schreiben zur Verfügung steht, muss beschrieben werden und aus jedem
-       Socket, der zum Lesen verfügbar ist, muss gelesen werden.
+       reagieren. Nachdem <function>socket_select</function> beendet ist,
+       müssen alle Sockets in allen Socket-Arrays geprüft werden. Jeder
+       Socket, der zum Schreiben zur Verfügung steht, muss beschrieben werden
+       und aus jedem Socket, der zum Lesen verfügbar ist, muss gelesen werden.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Bei Schreib-/Leseoperationen auf den Sockets in den Arrays muss
-       damit gerechnnet werden, dass nicht notwendigerweise alle Daten geschrieben/gelesen
-       werden, die angeben wurden. Seien Sie darauf vorbereitet, dass Sie
-       möglicherweise nur ein einziges Byte schreiben/lesen können.
+       Bei Schreib-/Leseoperationen auf den Sockets in den Arrays muss damit
+       gerechnnet werden, dass nicht notwendigerweise alle Daten
+       geschrieben/gelesen werden, die angeben wurden. Seien Sie darauf
+       vorbereitet, dass Sie möglicherweise nur ein einziges Byte
+       schreiben/lesen können.
       </simpara>
      </listitem>
      <listitem>
@@ -244,7 +248,6 @@ if ($num_changed_sockets === false) {
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
