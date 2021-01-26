@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c644e37690e468f2b4bb566b515659dff04c1c12 Maintainer: lapistano Status: ready -->
-
+<!-- EN-Revision: d15a12639faeb8d1b4bcf7eff008de2885017d1e Maintainer: lapistano Status: ready -->
 <refentry xml:id="sqlite3.createaggregate" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>SQLite3::createAggregate</refname>
   <refpurpose>
-  Registriert eine PHP-Funktion zum Gebrauch als SQL-Aggregat-Funktion
+   Registriert eine PHP-Funktion zum Gebrauch als SQL-Aggregat-Funktion
   </refpurpose>
  </refnamediv>
 
@@ -15,9 +14,9 @@
   <methodsynopsis>
    <modifier>public</modifier> <type>bool</type><methodname>SQLite3::createAggregate</methodname>
    <methodparam><type>string</type><parameter>name</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>step_callback</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>final_callback</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>argument_count</parameter><initializer>-1</initializer></methodparam>
+   <methodparam><type>callable</type><parameter>stepCallback</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>finalCallback</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>argCount</parameter><initializer>-1</initializer></methodparam>
   </methodsynopsis>
   <para>
    Registriert eine PHP-Funktion zum Gebrauch als SQL-Aggregat-Funktion.
@@ -29,19 +28,20 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>Name</parameter></term>
+     <term><parameter>name</parameter></term>
      <listitem>
       <para>
-       Name des erstellten oder redefinierten SQL-Aggregates. 
+       Name des erstellten oder neu definierten SQL-Aggregates.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>step_callback</parameter></term>
+     <term><parameter>stepCallback</parameter></term>
      <listitem>
       <para>
-       'Callback'-Funktion, welche für jede Reihe des Abfrageergebnisses ausgeführt wird.
-       Ihr PHP sollte das Ergebnis akkumulieren und in der Aggregation 'context' speichern.
+       'Callback'-Funktion, welche für jede Reihe des Abfrageergebnisses
+       ausgeführt wird. Ihr PHP sollte das Ergebnis akkumulieren und es im
+       Aggregations-Kontext speichern.
       </para>
       <para>
        Es ist notwendig, diese Funktion wie folgt zu definieren:
@@ -49,16 +49,16 @@
         <type>mixed</type><methodname><replaceable>step</replaceable></methodname>
         <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
         <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
-        <methodparam><type>mixed</type><parameter>value1</parameter></methodparam>
-        <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
+        <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
+        <methodparam rep="repeat"><type>mixed</type><parameter>values</parameter></methodparam>
        </methodsynopsis>
        <variablelist>
         <varlistentry>
          <term><parameter>context</parameter></term>
          <listitem>
           <para>
-           &null; für die erste Reihe. Folgende Reihen 
-           werden den zuvor zurückgegebenen Wert haben. Sie sollten diesen nutzen, um den
+           &null; für die erste Reihe. Folgende Reihen werden den zuvor
+           zurückgegebenen Wert haben. Sie sollten diesen nutzen, um den
            Status der Aggregation zu pflegen.
           </para>
          </listitem>
@@ -72,7 +72,7 @@
          </listitem>
         </varlistentry>
         <varlistentry>
-         <term><parameter>value1</parameter></term>
+         <term><parameter>value</parameter></term>
          <listitem>
           <para>
            Das erste Argument, das an das Aggregat übergeben wurde.
@@ -80,7 +80,7 @@
          </listitem>
         </varlistentry>
         <varlistentry>
-         <term><parameter>...</parameter></term>
+         <term><parameter>values</parameter></term>
          <listitem>
           <para>
            Weitere Argumente, die an das Aggregat übergeben wurden.
@@ -90,18 +90,18 @@
        </variablelist>
        Der Rückgabewert dieser Funktion wird als <parameter>context</parameter>
        Argument im nächsten Aufruf der step oder finalize Funktion verwendet.
-      </para> 
+      </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>final_callback</parameter></term>
+     <term><parameter>finalCallback</parameter></term>
      <listitem>
       <para>
        'Callback'-Funktion, die die Informationen aller Reihen aggregiert.
        Sind alle Reihen abgearbeitet, wird diese Funktion aufgerufen. Diese
-       sollte dann die Daten der Aggregation 'context' auswerten und das 
-       Ergebnis zurückgeben. 'Callback'-Funktionen sollten einen Variablentyp 
-       liefern, der von SQLite erwartet wird (z.B. <link 
+       sollte dann die Daten der Aggregation 'context' auswerten und das
+       Ergebnis zurückgeben. 'Callback'-Funktionen sollten einen Variablentyp
+       liefern, der von SQLite erwartet wird (z.B. <link
        linkend="language.types.intro">scalar type</link>).
       </para>
       <para>
@@ -135,11 +135,12 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>argument_count</parameter></term>
+     <term><parameter>argCount</parameter></term>
      <listitem>
       <para>
        Anzahl der Argumente, welche das SQL-Aggregat erwartet.
-       Ist dieser Parameter negativ, wird das SQL-Aggregat jedwede Zahl von Argumenten erkennen.
+       Ist dieser Parameter negativ, wird das SQL-Aggregat jedwede Zahl von
+       Argumenten erkennen.
       </para>
      </listitem>
     </varlistentry>
@@ -150,7 +151,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt &true; zurück, wenn die Aggregierung erfolgreich war. &return.falseforfailure;
+   Gibt &true; zurück, wenn die Aggregierung erfolgreich war.
+   &return.falseforfailure;
   </para>
  </refsect1>
 
@@ -232,7 +234,7 @@ int(5)
   </para>
   <tip>
    <para>
-    Es ist nicht ratsam, eine Kopie der Inhalte in 'context' zu speichern, 
+    Es ist nicht ratsam, eine Kopie der Inhalte in 'context' zu speichern,
     um diese dann am Ende auszuwerten. Das würde dazu führen, dass SQLite eine
     große Menge an Speicher benötigt, um die Abfrage abzuarbeiten. Überlegen Sie
     nur mal, wieviel Speicher eine Abfrage braucht, die 1 Millionen Reihen mit
@@ -248,7 +250,6 @@ int(5)
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
