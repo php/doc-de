@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3906c681cda6cf21e5b7034be54515ba431cb7a7 Maintainer: conni Status: ready -->
-
+<!-- EN-Revision: acf3ad4cdc54585998e54b69ff316ea697358e0b Maintainer: conni Status: ready -->
 <refentry xml:id="function.shmop-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>shmop_open</refname>
-  <refpurpose>Erstellt oder öffnet einen gemeinsamen Speicherblock</refpurpose>
+  <refpurpose>Erstellt oder öffnet einen gemeinsamen Speicherbereich</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>shmop_open</methodname>
+   <type class="union"><type>Shmop</type><type>false</type></type><methodname>shmop_open</methodname>
    <methodparam><type>int</type><parameter>key</parameter></methodparam>
-   <methodparam><type>string</type><parameter>flags</parameter></methodparam>
-   <methodparam><type>int</type><parameter>mode</parameter></methodparam>
+   <methodparam><type>string</type><parameter>mode</parameter></methodparam>
+   <methodparam><type>int</type><parameter>permissions</parameter></methodparam>
    <methodparam><type>int</type><parameter>size</parameter></methodparam>
   </methodsynopsis>
   <para>
-   <function>shmop_open</function> Kann einen gemeinsamen Speicherbereich
+   <function>shmop_open</function> kann einen gemeinsamen Speicherbereich
    erstellen oder öffnen.
   </para>
  </refsect1>
@@ -31,50 +30,8 @@
      <term><parameter>key</parameter></term>
      <listitem>
       <para>
-       Die System-ID des gemeinsam genutzten Speicherblocks, dieser
+       Die System-ID des gemeinsam genutzten Speicherbereichs. Dieser
        Parameter kann als Dezimal- oder Hexadezimalzahl übergeben werden.
-      </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>flags</parameter></term>
-     <listitem>
-      <para>
-       Folgende Flags können benutzt werden:
-       <itemizedlist>
-        <listitem>
-         <simpara>
-          "a" zum Zugriff (access) auf einen gemeinsamen Speicherblock (setzt SHM_RDONLY für shmat).
-          Benutzen Sie dieses Flag, wenn Sie einen bestehenden gemeinsamen Speicherblock nur zum Lesen öffnen wollen.
-         </simpara>
-        </listitem>
-        <listitem>
-         <simpara>
-          "c" zum Erzeugen (create) eines gemeinsamen Speicherblocks
-         (setzt IPC_CREATE). Benutzen Sie dieses Flag, wenn Sie einen
-         neuen gemeinsamen Speicherblock erzeugen wollen oder, falls
-         bereits ein Segment mit derselben ID existiert, zum Öffnen
-         dieses Segments für Lese- und Schreibzugriffe.
-         </simpara>
-        </listitem>
-        <listitem>
-         <simpara>
-          "w" für Lese- und Schreibzugriffe. Benutzen Sie dieses Flag
-         wenn Sie in einen gemeinsamen Speicherbereich schreiben oder
-         daraus lesen müssen. Das wird meistens der Fall sein.
-         </simpara>
-        </listitem>
-        <listitem>
-         <simpara>
-          "n" zum Erzeugen eines neuen gemeinsamen Speichersegments
-         (setzt IPC_CREATE|IPC_EXCL). Benutzen Sie dieses Flag, wenn Sie
-          ein neues gemeinsames Speichersegment erzeugen wollen. Falls
-          schon ein Segment mit diesem Flag existiert, schlägt die Funktion
-          fehl. Dies ist aus Sicherheitsgründen nützlich, denn damit können
-          Sie vermeiden, dass konkurrierende Prozesse ausgenutzt werden.
-         </simpara>
-        </listitem>
-       </itemizedlist>
       </para>
      </listitem>
     </varlistentry>
@@ -82,7 +39,51 @@
      <term><parameter>mode</parameter></term>
      <listitem>
       <para>
-       Die Zugriffsberechtigungen für die gemeinsamen Speichersegmente sind
+       Folgende Flags können benutzt werden:
+       <itemizedlist>
+        <listitem>
+         <simpara>
+          "a" zum Zugriff (access) auf einen gemeinsamen Speicherbereich
+          (setzt SHM_RDONLY für shmat). Benutzen Sie dieses Flag, wenn Sie
+          einen bestehenden gemeinsamen Speicherbereich nur zum Lesen öffnen
+          wollen.
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          "c" zum Erzeugen (create) eines gemeinsamen Speicherbereichs (setzt
+          IPC_CREATE). Benutzen Sie dieses Flag, wenn Sie einen neuen
+          gemeinsamen Speicherbereich erzeugen wollen, oder, falls bereits ein
+          Segment mit derselben ID existiert, zum Öffnen dieses Bereichs für
+          Lese- und Schreibzugriffe.
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          "w" für Lese- und Schreibzugriffe. Benutzen Sie dieses Flag, wenn
+          Sie in einen gemeinsamen Speicherbereich schreiben oder daraus lesen
+          müssen. Das wird meistens der Fall sein.
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
+          "n" zum Erzeugen eines neuen gemeinsamen Speicherbereichs (setzt
+          IPC_CREATE|IPC_EXCL). Benutzen Sie dieses Flag, wenn Sie einen neuen
+          gemeinsames Speicherbereich erzeugen wollen. Falls schon einen
+          Bereich mit diesem Flag existiert, schlägt die Funktion fehl. Dies
+          ist aus Sicherheitsgründen nützlich, denn damit können Sie
+          vermeiden, dass konkurrierende Prozesse ausgenutzt werden.
+         </simpara>
+        </listitem>
+       </itemizedlist>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>permissions</parameter></term>
+     <listitem>
+      <para>
+       Die Zugriffsberechtigungen für die gemeinsamen Speicherbereiche sind
        dieselben wie für Dateien. Diese Berechtigungen müssen als Oktalwerte
        übergeben werden, zum Beispiel <literal>0644</literal>.
       </para>
@@ -109,9 +110,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Bei Erfolg liefert die Funktion <function>shmop_open</function> eine Kennung
-   zurück, die Sie zum Zugriff auf den erstellten gemeinsamen Speicher benutzen
-   können. Bei einem Fehler wird &false; zurückgegeben.
+   Bei Erfolg gibt <function>shmop_open</function> eine
+   <classname>Shmop</classname>-Instanz zurück, die verwendet werden kann, um
+   auf den erstellten gemeinsamen Speicherbereich zuzugreifen. Bei einem
+   Fehler wird &false; zurückgegeben.
   </para>
  </refsect1>
 
@@ -127,10 +129,11 @@
     </thead>
     <tbody>
      <row>
-      <entry>7.0.0</entry>
+      <entry>8.0.0</entry>
       <entry>
-       Der Rückgabetype der Funktion <function>shmop_open</function> wurde von
-       <type>int</type> zu <type>resource</type> geändert.
+       Bei Erfolg gibt diese Funktion nun eine
+       <classname>Shmop</classname>-Instanz zurück; vorher wurde eine
+       <type>resource</type> zurückgegeben.
       </entry>
      </row>
     </tbody>
@@ -142,7 +145,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title>Einen neuen gemeinsamen Speicherblock erstellen</title>
+    <title>Einen neuen gemeinsamen Speicherbereich erstellen</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -154,7 +157,7 @@ $shm_id = shmop_open($shm_key, "c", 0644, 100);
    </example>
   </para>
   <para>
-   In diesem Beispiel wurde ein gemeinsamer Speicherblock geöffnet. Die
+   In diesem Beispiel wurde ein gemeinsamer Speicherbereich geöffnet. Die
    System-ID wurde von der Funktion <function>ftok</function> zurückgegeben.
   </para>
  </refsect1>
@@ -168,7 +171,6 @@ $shm_id = shmop_open($shm_key, "c", 0644, 100);
   </para>
  </refsect1>
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
