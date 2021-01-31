@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d0ded87aafbc0fbc7c0198daedc1570bd65cacb3 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 395ea247cf337110d795979e14841617aa9cefa9 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.shm-attach" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>shm_attach</refname>
-  <refpurpose>Shared Memory Segment anlegen oder anbinden</refpurpose>
+  <refpurpose>Erzeugt oder öffnet einen gemeinsamen Speicherbereich</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
-   <methodsynopsis>
-    <type>resource</type><methodname>shm_attach</methodname>
-    <methodparam><type>int</type><parameter>key</parameter></methodparam> 
-    <methodparam choice="opt"><type>int</type><parameter>memsize</parameter></methodparam>
-    <methodparam choice="opt"><type>int</type><parameter>perm</parameter><initializer>0666</initializer></methodparam>
-   </methodsynopsis>
+  <methodsynopsis>
+   <type class="union"><type>SysvSharedMemory</type><type>false</type></type><methodname>shm_attach</methodname>
+   <methodparam><type>int</type><parameter>key</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>size</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>permissions</parameter><initializer>0666</initializer></methodparam>
+  </methodsynopsis>
   <para>
-   <function>shm_attach</function> liefert eine ID über die auf ein 
-   System V Shared Memory Segment mit dem gegebenen <parameter>key</parameter>
-   zugegriffen werden kann. Der erste Zugriff auf ein noch nicht existierendes
-   Segment legt dieses mit der Größe <parameter>memsize</parameter>
-   und Zugriffsberechtigungen
-   gemäß der in <parameter>perm</parameter> gesetzten Bits an.
+   <function>shm_attach</function> liefert eine ID, über die mit dem gegebenen
+   <parameter>key</parameter> auf einen gemeinsamen Speicherbereich vom Typ
+   System V zugegriffen werden kann. Der erste Aufruf legt den gemeinsamen
+   Speicherbereich mit der Größe <parameter>size</parameter> und den
+   Zugriffsberechtigungen gemäß der in <parameter>permissions</parameter>
+   gesetzten Bits an.
   </para>
   <para>
-   Ein zweimaliger Aufruf der Funktion <function>shm_attach</function>
-   mit dem gleichen <parameter>key</parameter> liefert eine andere ID,
-   über beide IDs wird aber trotzdem auf das gleiche Shared Memory
-   Segment zugegriffen. <parameter>memsize</parameter> und
-   <parameter>perm</parameter> werden in diesem Fall ignoriert. 
+   Ein zweiter Aufruf der Funktion <function>shm_attach</function> mit dem
+   gleichen <parameter>key</parameter> liefert eine andere
+   <classname>SysvSharedMemory</classname>-Instanz, aber beide Instanzen
+   greifen trotzdem auf denselben zugrundeliegenden gemeinsamen
+   Speicherbereich zu. <parameter>size</parameter> und
+   <parameter>permissions</parameter> werden in diesem Fall ignoriert.
   </para>
  </refsect1>
-
 
  <refsect1 role="parameters">
   &reftitle.parameters;
@@ -41,27 +41,26 @@
      <term><parameter>key</parameter></term>
      <listitem>
       <para>
-       Eine numerische Shared Memory Segment Id.
+       Eine numerische ID des gemeinsamen Speicherbereichs.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>memsize</parameter></term>
+     <term><parameter>size</parameter></term>
      <listitem>
       <para>
-       Die Größe des Shared Memory Segments in Bytes.
-       Wird dieser Parameter nicht übergeben so wird der Wert aus
-       <literal>sysvshm.init_mem</literal> in &php.ini; angenommen.
-       Ist auch dieser nicht gesetzt ist der Vorgabewert 10000 Bytes.
-       bytes.
+       Die Größe des gemeinsamen Speicherbereichs in Bytes. Wird dieser
+       Parameter nicht übergeben, so wird der Wert aus
+       <literal>sysvshm.init_mem</literal> in &php.ini; angenommen. Ist auch
+       dieser nicht gesetzt, ist der Vorgabewert 10000 Bytes.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>perm</parameter></term>
+     <term><parameter>permissions</parameter></term>
      <listitem>
       <para>
-       Optionale Zugriffsrechte als Bitmaske, Default ist 0666.
+       Optionale Zugriffsrechte als Bitmaske. der Standardwert ist 0666.
       </para>
      </listitem>
     </varlistentry>
@@ -72,72 +71,39 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert ein Shared Memory Resource Handle.
+   Gibt bei Erfolg eine <classname>SysvSharedMemory</classname>-Instanz
+   zurück. &return.falseforfailure;.
   </para>
  </refsect1>
 
  <refsect1 role="changelog">
   &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.3.0</entry>
-       <entry>
-        Diese Funktion gibt nun eine &resource; anstatt eines 
-        <link linkend="language.types.integer">Integer</link>
-        zurück.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-    </informaltable>
-  </para>
- </refsect1>
- 
- <refsect1 role="notes">
-  &reftitle.notes;
-  <note>
-   <para>
-    Diese Funktion vor PHP 5.3.0 einen Integer-Wert zurück.
-    Dieses Verhalten kann durch einen Cast auf Integer simuliert
-    werden falls dies aus Portabilitätsgründen nötig sein sollte.
-   </para>
-   <para>
-    <example>
-     <programlisting role="php">
-<![CDATA[
-<?php
-// Temporäre Datei erstellen und Dateipfad speichern
-$tmp = tempnam('/tmp', 'PHP');
-
-// Dateitoken-Schlüssel ermitteln
-$key = ftok($tmp, 'a');
-
-// SHM-Resource anbinden, beachten Sie den weiter unten folgenden Cast
-$id = shm_attach($key);
-
-if ($id === false) {
-    die('SHM-Segment kann nicht erzeugt werden');
-}
-
-// Cast auf Integer, da vor PHP 5.3.0 die Resource-ID als
-// Integer zurückgegeben wurde. Der Cast simuliert dieses
-// Verhalten
-$id = (integer) $id;
-?>
-]]>
-     </programlisting>
-    </example>
-   </para>
-  </note>
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       Bei Erfolg gibt diese Funktion nun eine
+       <classname>SysvSharedMemory</classname>-Instanz zurück; vorher wurde
+       eine <type>resource</type> zurückgegeben.
+      </entry>
+     </row>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>size</parameter> ist nun ein Nullable-Typ.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="seealso">
@@ -148,10 +114,9 @@ $id = (integer) $id;
     <member><function>ftok</function></member>
    </simplelist>
   </para>
- </refsect1>  
+ </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

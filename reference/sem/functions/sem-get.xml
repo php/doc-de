@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 54a343afdc91671e6dc77b8dceb2e8116223337d Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 105769eb557af47e5f2d0bea47457827114942fa Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.sem-get" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>sem_get</refname>
-  <refpurpose>Zugriff auf ein Semaphor anfordern</refpurpose>
+  <refpurpose>Fordert Zugriff auf eine Semaphor-ID an</refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
-   <methodsynopsis>
-    <type>resource</type><methodname>sem_get</methodname>
-    <methodparam><type>int</type><parameter>key</parameter></methodparam>
-    <methodparam choice="opt"><type>int</type><parameter>max_acquire</parameter><initializer>1</initializer></methodparam>
-    <methodparam choice="opt"><type>int</type><parameter>perm</parameter><initializer>0666</initializer></methodparam>
-    <methodparam choice="opt"><type>int</type><parameter>auto_release</parameter><initializer>1</initializer></methodparam>
-   </methodsynopsis>
+  <methodsynopsis>
+   <type class="union"><type>SysvSemaphore</type><type>false</type></type><methodname>sem_get</methodname>
+   <methodparam><type>int</type><parameter>key</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>max_acquire</parameter><initializer>1</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>permissions</parameter><initializer>0666</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>auto_release</parameter><initializer>&true;</initializer></methodparam>
+  </methodsynopsis>
   <para>
-   <function>sem_get</function> liefert eine ID die für den Zugriff
-   auf das System V Semaphor mit dem gegebenen <parameter>key</parameter>
-   benutzt werden kann. 
+   <function>sem_get</function> liefert eine ID, die für den Zugriff auf den
+   System-V-Semaphor mit dem gegebenen <parameter>key</parameter> benutzt
+   werden kann.
   </para>
   <para>
-   Weitere Aufrufe von <function>sem_get</function> für den
-   gleichen Key liefern unterschiedliche Semaphor IDs, diese
-   greifen aber auf den gleichen darunterliegenden Semaphor
-   zu.
+   Weitere Aufrufe von <function>sem_get</function> für den gleichen Key
+   liefern unterschiedliche Semaphor-IDs, diese greifen aber auf den gleichen
+   darunterliegenden Semaphor zu.
   </para>
   <para>
-   Ist <parameter>key</parameter> gleich <literal>0</literal> wird ein neues privates Semaphor
-   für jeden Aufruf von <function>sem_get</function> erzeugt.
+   Ist <parameter>key</parameter> gleich <literal>0</literal> wird ein neuer
+   privater Semaphor für jeden Aufruf von <function>sem_get</function>
+   erzeugt.
   </para>
  </refsect1>
 
@@ -47,19 +48,19 @@
      <term><parameter>max_acquire</parameter></term>
      <listitem>
       <para>
-       Die Anzahl der Prozesse die gleichzeitig Zugriff auf den
-       Semaphor erhalten können wird durch den Parameter
+       Die Anzahl der Prozesse, die gleichzeitig Zugriff auf den Semaphor
+       erhalten können, wird durch den Parameter
        <parameter>max_acquire</parameter> festgelegt
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>perm</parameter></term>
+     <term><parameter>permissions</parameter></term>
      <listitem>
       <para>
-       Die Zugriffsrechte für den Semaphore.
-       Der Wert wird nur gesetzt wenn der aktuelle Prozess der einzige
-       ist der in diesem Augenblick mit dem Semaphor verknüpft ist.
+       Die Zugriffsrechte für den Semaphore. Der Wert wird nur gesetzt, wenn
+       der aktuelle Prozess der einzige ist der in diesem Augenblick mit dem
+       Semaphor verknüpft ist.
       </para>
      </listitem>
     </varlistentry>
@@ -67,8 +68,8 @@
      <term><parameter>auto_release</parameter></term>
      <listitem>
       <para>
-       Legt fest ob der Semaphor am Skriptende automatisch freigegeben 
-       werden soll.
+       Legt fest, ob der Semaphor am Skriptende automatisch freigegeben werden
+       soll.
       </para>
      </listitem>
     </varlistentry>
@@ -79,8 +80,40 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt einen positiven Semaphor Identifier zrück oder &false;
-   bei Fehlern.
+   Gibt einen positiven Semaphor-Identifier zurück oder &false; bei Fehlern.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>8.0.0</entry>
+       <entry>
+        Bei Erfolg gibt diese Funktion nun eine
+        <classname>SysvSemaphore</classname>-Instanz zurück; vorher wurde
+        eine <type>resource</type> zurückgegeben.
+       </entry>
+      </row>
+      <row>
+       <entry>8.0.0</entry>
+       <entry>
+        Der Typ von <parameter>auto_release</parameter> wurde von
+        <type>int</type> auf <type>bool</type> geändert.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
   </para>
  </refsect1>
 
@@ -89,11 +122,11 @@
   <warning>
    <simpara>
     Wird <function>sem_get</function> verwendet, um auf einen Semaphor
-    zuzugreifen, der außerhalb von PHP erzeugt wurde, ist zu beachten, dass der
-    Semaphor als ein Satz von 3 Semaphoren erzeugt wurde (zum Beispiel durch
-    Angabe von 3 für den <literal>nsems</literal> Parameter beim Aufruf der C
-    Funktion <literal>semget()</literal>); andernfalls wird PHP nicht in der
-    Lage sein, auf den Semaphor zuzugreifen.
+    zuzugreifen, der außerhalb von PHP erzeugt wurde, ist zu beachten, dass
+    der Semaphor als ein Satz von 3 Semaphoren erzeugt wurde (zum Beispiel
+    durch Angabe von 3 für den <literal>nsems</literal>-Parameter beim Aufruf
+    der C-Funktion <literal>semget()</literal>); andernfalls wird PHP nicht in
+    der Lage sein, auf den Semaphor zuzugreifen.
    </simpara>
   </warning>
  </refsect1>
@@ -107,10 +140,9 @@
     <member><function>ftok</function></member>
    </simplelist>
   </para>
- </refsect1>  
+ </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

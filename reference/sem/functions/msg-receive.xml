@@ -1,33 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3bc212c744fce74a36f3345ccd4a95bb3754ccd8 Maintainer: nobody Status: ready -->
-<!-- Reviewed: no -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.msg-receive">
+<!-- EN-Revision: f7e33278a909d7f7bf491f77cb10c93581091736 Maintainer: nobody Status: ready -->
+<refentry xml:id="function.msg-receive" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>msg_receive</refname>
-  <refpurpose>Eine Nachricht aus einer Message Queue auslesen</refpurpose>
+  <refpurpose>Liest eine Nachricht aus einer Nachrichten-Warteschlange aus</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>msg_receive</methodname>
-   <methodparam><type>resource</type><parameter>queue</parameter></methodparam>
-   <methodparam><type>int</type><parameter>desiredmsgtype</parameter></methodparam>
-   <methodparam><type>int</type><parameter role="reference">msgtype</parameter></methodparam>
-   <methodparam><type>int</type><parameter>maxsize</parameter></methodparam>
+   <methodparam><type>SysvMessageQueue</type><parameter>queue</parameter></methodparam>
+   <methodparam><type>int</type><parameter>desired_message_type</parameter></methodparam>
+   <methodparam><type>int</type><parameter role="reference">received_message_type</parameter></methodparam>
+   <methodparam><type>int</type><parameter>max_message_size</parameter></methodparam>
    <methodparam><type>mixed</type><parameter role="reference">message</parameter></methodparam>
    <methodparam choice="opt"><type>bool</type><parameter>unserialize</parameter><initializer>&true;</initializer></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>0</initializer></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter role="reference">errorcode</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter role="reference">error_code</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>msg_receive</function> liest die erste Nachricht der Message Queue gegeben durch <parameter>queue</parameter> vom Typ
-   <parameter>desiredmsgtype</parameter> aus.
+   <function>msg_receive</function> liest die erste Nachricht vom Typ
+   <parameter>desired_message_type</parameter> aus der durch
+   <parameter>queue</parameter> angegeben Warteschlange aus.
   </para>
  </refsect1>
- 
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -36,28 +35,31 @@
      <term><parameter>queue</parameter></term>
      <listitem>
       <para>
-       Message Queue Ressourcen-Handle
+       Die Nachrichten-Warteschlange.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>desiredmsgtype</parameter></term>
+     <term><parameter>desired_message_type</parameter></term>
      <listitem>
       <para>
-       Wenn <parameter>desiredmsgtype</parameter> gleich 0 ist, wird die erste 
-       Nachricht aus der Queue zurückgegeben. Wenn <parameter>desiredmsgtype</parameter> 
-       größer als 0 ist, wird die erste Nachricht genau diesen Typs zurückgegeben.
-       Wenn <parameter>desiredmsgtype</parameter> kleiner als 0 ist, 
-       wird die erste Nachricht kleiner oder gleich dem absoluten Wert von
-       <parameter>desiredmsgtype</parameter> zurückgegeben.
-       Wenn keine passende Nachricht existiert, blockiert diese Funktion solange, bis eine 
-       passende Nachricht verfügbar ist.  Durch das Setzen des Flags <constant>MSG_IPC_NOWAIT</constant> 
-       im <parameter>flags</parameter> Parameter kann das blockierende Verhalten verhindert werden.
+       Wenn <parameter>desired_message_type</parameter> gleich 0 ist, wird die
+       erste Nachricht aus der Warteschlange zurückgegeben. Wenn
+       <parameter>desired_message_type</parameter> größer als 0 ist, wird die
+       erste Nachricht genau diesen Typs zurückgegeben. Wenn
+       <parameter>desired_message_type</parameter> kleiner als 0 ist, wird die
+       erste Nachricht kleiner oder gleich dem absoluten Wert von
+       <parameter>desired_message_type</parameter> zurückgegeben. Wenn keine
+       passende Nachricht existiert, blockiert diese Funktion solange, bis
+       eine passende Nachricht verfügbar ist. Durch das Setzen des Flags
+       <constant>MSG_IPC_NOWAIT</constant> im Parameter
+       <parameter>flags</parameter> kann das blockierende Verhalten verhindert
+       werden.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>msgtype</parameter></term>
+     <term><parameter>received_message_type</parameter></term>
      <listitem>
       <para>
        In diesem Parameter wird der Typ der empfangenen Nachricht gespeichert.
@@ -65,13 +67,14 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>maxsize</parameter></term>
+     <term><parameter>max_message_size</parameter></term>
      <listitem>
       <para>
        Die maximale Größe der zu akzeptierenden Nachricht wird durch
-       <parameter>maxsize</parameter> angegeben; Wenn die Nachricht in der Message Queue größer 
-       ist als dieser Wert schlägt die Funktion fehl (es sei denn, es wird das entsprechende 
-       Flag im <parameter>flags</parameter> Parameter gesetzt).
+       <parameter>max_message_size</parameter> angegeben; Wenn die Nachricht
+       in der Nachrichten-Warteschlange größer ist, als dieser Wert, schlägt
+       die Funktion fehl (es sei denn, es wird das entsprechende Flag im
+       Parameter <parameter>flags</parameter> gesetzt).
       </para>
      </listitem>
     </varlistentry>
@@ -79,8 +82,8 @@
      <term><parameter>message</parameter></term>
      <listitem>
       <para>
-       Die empfangene Nachricht wird in <parameter>message</parameter> gespeichert,
-       es sei denn es tritt ein Fehler beim Empfang auf.
+       Die empfangene Nachricht wird in <parameter>message</parameter>
+       gespeichert, es sei denn es tritt ein Fehler beim Empfang auf.
       </para>
      </listitem>
     </varlistentry>
@@ -88,17 +91,16 @@
      <term><parameter>unserialize</parameter></term>
      <listitem>
       <para>
-       Wenn dieser Wert auf
-       &true; gesetzt wird, wird die Nachricht behandelt, als wäre sie mit
-       demselben Mechanismus serialisiert worden, wie das Session Modul.
-       Die Nachricht wird deserialisiert und zurückgegeben. Dies erlaubt 
-       einen einfachen Empfang von Array und komplexen Objektstrukturen 
-       von anderen PHP Skripten. Wenn Sie den WDDX Serializer verwenden, 
-       erlaubt es den Empfang von einer WDDX kompatiblen Quelle.
+       Wenn dieser Wert auf &true; gesetzt wird, wird die Nachricht behandelt,
+       als wäre sie mit demselben Mechanismus serialisiert worden, wie das
+       Session-Modul. Die Nachricht wird deserialisiert und zurückgegeben.
+       Dies erlaubt einen einfachen Empfang von Arrays und komplexen
+       Objektstrukturen von anderen PHP-Skripten. Wenn Sie den WDDX-Serializer
+       verwenden, erlaubt es den Empfang von einer WDDX-kompatiblen Quelle.
       </para>
       <para>
-       Wenn <parameter>unserialize</parameter> &false; ist, wird die Nachricht als
-       binärsicherer String zurückgegeben.
+       Wenn <parameter>unserialize</parameter> &false; ist, wird die Nachricht
+       als binärsicherer String zurückgegeben.
       </para>
      </listitem>
     </varlistentry>
@@ -106,36 +108,40 @@
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Der optionale <parameter>flags</parameter> erlaubt die Weitergabe von Flags 
-       an den low-level System Call zu msgrcv.  Der Standardwert liegt bei 0, 
-       aber es können einer oder mehrere der folgenden Werte übergeben werden
-       (durch binäres oder vereint).
+       Der optionale Parameter <parameter>flags</parameter> erlaubt die
+       Weitergabe von Flags an den low-level msgrcv-Systemaufruf. Der
+       Standardwert liegt bei 0, aber es können einer oder mehrere der
+       folgenden Werte übergeben werden (AND- oder OR-verknüpft).
        <table>
-        <title>Flag Werte für msg_receive</title>
+        <title>Die Flag-Werte für msg_receive</title>
         <tgroup cols="2">
          <tbody>
           <row>
            <entry><constant>MSG_IPC_NOWAIT</constant></entry>
-           <entry>Wenn kein Wert des übergebenen 
-            <parameter>desiredmsgtype</parameter> in der Queue vorhanden ist, 
-            gibt die Funktion sofort zurück statt zu warten.  Die Funktion
-            schlägt fehl und gibt den Integer Wert entsprechend zu
+           <entry>
+            Wenn kein Wert des übergebenen Typs
+            <parameter>desired_message_type</parameter> in der Warteschlange
+            vorhanden ist, gibt die Funktion sofort zurück, statt zu warten.
+            Die Funktion schlägt fehl und gibt den Integerwert entsprechend an
             <constant>MSG_ENOMSG</constant> zurück.
            </entry>
           </row>
           <row>
            <entry><constant>MSG_EXCEPT</constant></entry>
-           <entry>Dieses Flag in Kombination mit einem
-            <parameter>desiredmsgtype</parameter> größer als 0 sorgt dafür, dass
-            die Funktion die erste Nachricht zurück gbit, die nicht gleich
-            <parameter>desiredmsgtype</parameter> ist.</entry>
+           <entry>
+            Dieses Flag sorgt in Kombination mit einem
+            <parameter>desired_message_type</parameter> größer als 0 dafür,
+            dass die Funktion die erste Nachricht zurück gbit, die nicht
+            gleich <parameter>desired_message_type</parameter> ist.
+           </entry>
           </row>
           <row>
            <entry><constant>MSG_NOERROR</constant></entry>
            <entry>
-            Wenn die Nachricht länger als <parameter>maxsize</parameter> ist,
-            wird durch Setzen diese Flags die Nachricht auf 
-            <parameter>maxsize</parameter> gekürzt, und die Funktion 
+            Wenn die Nachricht länger als
+            <parameter>max_message_size</parameter> ist, wird durch Setzen
+            diese Flags die Nachricht auf
+            <parameter>max_message_size</parameter> gekürzt, und die Funktion
             signalisiert keinen Fehler.
            </entry>
           </row>
@@ -146,31 +152,59 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>errorcode</parameter></term>
+     <term><parameter>error_code</parameter></term>
      <listitem>
       <para>
-       Wenn die Funktion fehlschlägt, wird der optionale <parameter>errorcode</parameter>
-       auf den Wert der System errno Variable gesetzt.
+       Wenn die Funktion fehlschlägt, wird der optionale
+       <parameter>error_code</parameter> auf den Wert der
+       System-errno-Variable gesetzt.
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsect1>
- 
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
    &return.success;
   </para>
   <para>
-   Bei erfolgreicher Ausführung wird die Message Queue Datenstruktur
-   folgendermaßen aktualisiert: <literal>msg_lrpid</literal> wird auf die Process-ID 
-   des aufrufenden Prozesses gesetzt, <literal>msg_qnum</literal> wird um 1 dekrementiert, und
+   Bei erfolgreicher Ausführung wird die Datenstruktur der
+   Nachrichten-Warteschlange folgendermaßen aktualisiert:
+   <literal>msg_lrpid</literal> wird auf die Prozess-ID des aufrufenden
+   Prozesses gesetzt, <literal>msg_qnum</literal> wird um 1 dekrementiert, und
    <literal>msg_rtime</literal> wird auf die aktuelle Zeit gesetzt.
   </para>
  </refsect1>
- 
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>8.0.0</entry>
+       <entry>
+        <parameter>queue</parameter> erwartet nun eine
+        <classname>SysvMessageQueue</classname>-Instanz; vorher wurde eine
+        <type>resource</type> erwartet.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -181,10 +215,9 @@
     <member><function>msg_set_queue</function></member>
    </simplelist>
   </para>
- </refsect1>  
- 
-</refentry>
+ </refsect1>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
