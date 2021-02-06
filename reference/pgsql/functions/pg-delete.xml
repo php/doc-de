@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 49944c9148ba4e48c1aa96544cdec3911b2f4131 Maintainer: conni Status: ready -->
+<!-- EN-Revision: 7d763b79e5d29ab6702d72d85187267f828562c6 Maintainer: conni Status: ready -->
 <refentry xml:id='function.pg-delete' xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_delete</refname>
-  <refpurpose>
-   Löscht Datensätze
-  </refpurpose>
+  <refpurpose>Löscht Datensätze</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -19,11 +17,30 @@
    <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PGSQL_DML_EXEC</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>pg_delete</function> löscht Datensätze aus <parameter>table_name</parameter>,
-   deren Feldnamen den Indizes von <parameter>assoc_array</parameter>
-   entsprechen und deren Spaltenwerte mit den Werten der Arrayelemente identisch sind. Falls
-   <parameter>options</parameter> angegeben wurde, wird <function>pg_convert</function> mit 
-   den angegebenen Optionen auf <parameter>assoc_array</parameter> angewendet.
+   <function>pg_delete</function> löscht die Datensätze aus
+   <parameter>table_name</parameter>, deren Feldnamen und Werte im Array
+   <parameter>assoc_array</parameter> angegeben wurden. Falls
+   <parameter>options</parameter> angegeben wurde, wird
+   <function>pg_convert</function> mit den angegebenen Optionen auf
+   <parameter>assoc_array</parameter> angewendet.
+  </para>
+  <para>
+   Falls <literal>options</literal> angegeben wurde, wird
+   <function>pg_convert</function> mit den angegebenen Flags auf das Array
+   <literal>assoc_array</literal> angewendet.
+  </para>
+  <para>
+   Standardmäßig übergibt <function>pg_delete</function> Rohwerte. Die Werte
+   müssen entweder maskiert werden oder es muss die Option PGSQL_DML_ESCAPE
+   angegeben werden. PGSQL_DML_ESCAPE maskiert Parameter und Bezeichner und
+   setzt sie in Anführungszeichen. Daher muss bei Tabellen- und Spaltennamen
+   zwischen Groß- und Kleinschreibung unterschieden werden.
+  </para>
+  <para>
+   Es ist zu beachten, dass weder die Maskierung noch eine vorbereitete
+   Abfrage LIKE-Abfragen, JSON, Array, Regex usw. schützen können. Diese
+   Parameter sollten im Kontext behandelt werden, d.h. Werte maskieren und
+   validieren.
   </para>
  </refsect1>
 
@@ -35,7 +52,7 @@
      <term><parameter>connection</parameter></term>
      <listitem>
       <para>
-       PostgreSQL Verbindungskennung.
+       Die PostgreSQL-Verbindungskennung.
       </para>
      </listitem>
     </varlistentry>
@@ -43,7 +60,7 @@
      <term><parameter>table_name</parameter></term>
      <listitem>
       <para>
-       Name der Tabelle, aus der Zeilen gelöscht werden.
+       Der Name der Tabelle, aus der Zeilen gelöscht werden.
       </para>
      </listitem>
     </varlistentry>
@@ -52,8 +69,8 @@
      <listitem>
       <para>
        Ein <type>array</type> dessen Schlüssel den Feldnamen der Tabelle
-       <parameter>table_name</parameter> entsprechen und dessen Werte den zu löschenden 
-       Spaltenwerten entsprechen.
+       <parameter>table_name</parameter> entsprechen und dessen Werte den zu
+       löschenden Spaltenwerten entsprechen.
       </para>
      </listitem>
     </varlistentry>
@@ -61,15 +78,15 @@
      <term><parameter>options</parameter></term>
      <listitem>
       <para>
-       Jede Kombination aus <constant>PGSQL_CONV_FORCE_NULL</constant>, 
+       Jede Kombination aus <constant>PGSQL_CONV_FORCE_NULL</constant>,
        <constant>PGSQL_DML_NO_CONV</constant>,
        <constant>PGSQL_DML_ESCAPE</constant>,
-       <constant>PGSQL_DML_EXEC</constant>, <constant>PGSQL_DML_ASYNC</constant> oder
+       <constant>PGSQL_DML_EXEC</constant>,
+       <constant>PGSQL_DML_ASYNC</constant> und
        <constant>PGSQL_DML_STRING</constant>. Falls
        <constant>PGSQL_DML_STRING</constant> in den
        <parameter>options</parameter> enthalten ist, wird der Abfragestring
-       zurückgegeben. Werden
-       <constant>PGSQL_DML_NO_CONV</constant> oder
+       zurückgegeben. Werden <constant>PGSQL_DML_NO_CONV</constant> oder
        <constant>PGSQL_DML_ESCAPE</constant> angegeben, wird
        <function>pg_convert</function> intern nicht aufgerufen.
       </para>
@@ -82,9 +99,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   &return.success;  Gibt einen <type>string</type> zurück, falls
-   die Konstante <constant>PGSQL_DML_STRING</constant> im Parameter
-   <parameter>options</parameter> übergeben wurde.
+   Gibt bei Erfolg &true; zurück oder einen <type>string</type>, falls die
+   Konstante <constant>PGSQL_DML_STRING</constant> im Parameter
+   <parameter>options</parameter> übergeben wurde. Im Fehlerfall wird &false;
+   zurückgegeben.
   </para>
  </refsect1>
 
@@ -92,15 +110,17 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>pg_delete</function> Beispiel</title>
+    <title><function>pg_delete</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
-<?php 
+<?php
   $db = pg_connect('dbname=foo');
-  // Das ist sicher, weil $_POST automatisch konvertiert wird
-  $res = pg_delete($db, 'post_log', $_POST);
+  // Das ist einigermaßen sicher, da alle Werte maskiert werden.
+  // Allerdings unterstützt PostgreSQL JSON/Array. Diese sind nicht
+  // sicher, da sie Abfragen weder maskieren noch vorbereiten.
+  $res = pg_delete($db, 'post_log', $_POST, PG_DML_ESCAPE);
   if ($res) {
-      echo "POST-Daten wurden gelscht: $res\n";
+      echo "POST-Daten wurden gelöscht: $res\n";
   } else {
       echo "Aufruf erfolgte mit falschen Angaben\n";
   }
@@ -108,39 +128,6 @@
 ]]>
     </programlisting>
    </example>
-  </para>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.6.0</entry>
-       <entry>
-        Nicht länger experimentell. Die <constant>PGSQL_DML_ESCAPE</constant>
-        Konstante wurde hinzugefügt, wie auch Unterstützung für &true;/&false;
-        und &null; Datentypen.
-       </entry>
-      </row>
-      <row>
-       <entry>5.5.3/5.4.19</entry>
-       <entry>
-        Direkte SQL-Injection in <parameter>table_name</parameter> und indirekte
-        SQL-Injection in Bezeichner wurden behoben.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
   </para>
  </refsect1>
 
@@ -153,7 +140,6 @@
   </para>
  </refsect1>
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

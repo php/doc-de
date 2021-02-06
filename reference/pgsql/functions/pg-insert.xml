@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b18e6c19c91fd4ba162fd08913e120258238a7f2 Maintainer: conni Status: ready -->
+<!-- EN-Revision: aebf045bfb7f4f2350db5e1e908cf290be334075 Maintainer: conni Status: ready -->
 <refentry xml:id='function.pg-insert' xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_insert</refname>
-  <refpurpose>
-   Überträgt Werte aus einem Array in eine Tabelle
-  </refpurpose>
+  <refpurpose>Überträgt Werte aus einem Array in eine Tabelle</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -19,10 +17,30 @@
    <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PGSQL_DML_EXEC</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>pg_insert</function> fügt die Werte des <parameter>assoc_array</parameter>
-   in die Tabelle <parameter>table_name</parameter> ein. Falls <parameter>options</parameter>
-   angegeben wurde, wird <function>pg_insert</function> auf <parameter>assoc_array</parameter>
-   mit den angegebenen Optionnen angewendet.
+   <function>pg_insert</function> fügt die Werte des
+   <parameter>assoc_array</parameter> in die Tabelle
+   <parameter>table_name</parameter> ein. Falls <parameter>options</parameter>
+   angegeben wurde, wird <function>pg_insert</function> auf
+   <parameter>assoc_array</parameter> mit den angegebenen Optionnen
+   angewendet.
+  </para>
+  <para>
+   Falls <literal>options</literal> angegeben wurde, wird
+   <function>pg_convert</function> mit den angegebenen Flags auf das Array
+   <literal>assoc_array</literal> angewendet.
+  </para>
+  <para>
+   Standardmäßig übergibt <function>pg_insert</function> Rohwerte. Die Werte
+   müssen entweder maskiert werden oder es muss die Option PGSQL_DML_ESCAPE
+   angegeben werden. PGSQL_DML_ESCAPE maskiert Parameter und Bezeichner und
+   setzt sie in Anführungszeichen. Daher muss bei Tabellen- und Spaltennamen
+   zwischen Groß- und Kleinschreibung unterschieden werden.
+  </para>
+  <para>
+   Es ist zu beachten, dass weder die Maskierung noch eine vorbereitete
+   Abfrage LIKE-Abfragen, JSON, Array, Regex usw. schützen können. Diese
+   Parameter sollten im Kontext behandelt werden, d.h. Werte maskieren und
+   validieren.
   </para>
  </refsect1>
 
@@ -34,7 +52,7 @@
      <term><parameter>connection</parameter></term>
      <listitem>
       <para>
-       PostgreSQL Verbindungskennung.
+       Die PostgreSQL-Verbindungskennung.
       </para>
      </listitem>
     </varlistentry>
@@ -42,9 +60,9 @@
      <term><parameter>table_name</parameter></term>
      <listitem>
       <para>
-       Name der Tabelle, in die die Zeilen eingefügt werden sollen. 
-       <parameter>table_name</parameter> muss mindestens soviele Spalten haben, wie das
-       <parameter>assoc_array</parameter> Elemente.
+       Der Name der Tabelle, in die die Zeilen eingefügt werden sollen.
+       <parameter>table_name</parameter> muss mindestens soviele Spalten
+       haben, wie das <parameter>assoc_array</parameter> Elemente.
       </para>
      </listitem>
     </varlistentry>
@@ -52,9 +70,9 @@
      <term><parameter>assoc_array</parameter></term>
      <listitem>
       <para>
-       Ein <type>array</type> dessen Indizes Feldnamen von
-       <parameter>table_name</parameter> sind und dessen Werte in die
-       entprechenden Spalten eingefügt werden.
+       Ein <type>array</type>, dessen Indizes die Feldnamen der Tabelle
+       <parameter>table_name</parameter> sind und dessen Werte die Werte sind,
+       die in die entprechenden Spalten eingefügt werden sollen.
       </para>
      </listitem>
     </varlistentry>
@@ -66,10 +84,11 @@
        <constant>PGSQL_DML_NO_CONV</constant>,
        <constant>PGSQL_DML_ESCAPE</constant>,
        <constant>PGSQL_DML_EXEC</constant>,
-       <constant>PGSQL_DML_ASYNC</constant> oder
-       <constant>PGSQL_DML_STRING</constant>. Falls <constant>PGSQL_DML_STRING</constant> bei den
-       <parameter>options</parameter> angegeben wurde, wird der Abfrage-String zurückgegeben.
-       Werden <constant>PGSQL_DML_NO_CONV</constant> oder
+       <constant>PGSQL_DML_ASYNC</constant> und
+       <constant>PGSQL_DML_STRING</constant>. Falls
+       <constant>PGSQL_DML_STRING</constant> bei den
+       <parameter>options</parameter> angegeben wurde, wird der Abfrage-String
+       zurückgegeben. Werden <constant>PGSQL_DML_NO_CONV</constant> oder
        <constant>PGSQL_DML_ESCAPE</constant> angegeben, wird
        <function>pg_convert</function> intern nicht aufgerufen.
       </para>
@@ -82,8 +101,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert bei Erfolg die Verbindungsressource zurück. &return.falseforfailure;
-   Falls die Konstante <constant>PGSQL_DML_STRING</constant> in den <parameter>options</parameter> übergeben wurde, wird ein <type>string</type> zurückgegeben.
+   Gibt bei Erfolg die Verbindungskennung zurück. &return.falseforfailure;
+   Falls die Konstante <constant>PGSQL_DML_STRING</constant> in den
+   <parameter>options</parameter> übergeben wurde, wird ein
+   <type>string</type> zurückgegeben.
   </para>
  </refsect1>
 
@@ -91,13 +112,15 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>pg_insert</function> Beispiel</title>
+    <title><function>pg_insert</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
   $dbconn = pg_connect('dbname=foo');
-  // Das ist sicher, da $_POST automatisch konvertiert wird
-  $res = pg_insert($dbconn, 'post_log', $_POST);
+  // Das ist einigermaßen sicher, da alle Werte maskiert werden.
+  // Allerdings unterstützt PostgreSQL JSON/Array. Diese sind nicht
+  // sicher, da sie Abfragen weder maskieren noch vorbereiten.
+  $res = pg_insert($dbconn, 'post_log', $_POST, PG_DML_ESCAPE);
   if ($res) {
       echo "Der Inhalt von $_POST wurde protokolliert\n";
   } else {
@@ -125,9 +148,9 @@
       <row>
        <entry>5.6.0</entry>
        <entry>
-        Außer wenn <constant>PGSQL_DML_STRING</constant> übergeben wird, liefert
-        die Funktion nun im Erfolgsfall die Verbindungsressource anstelle von
-        &true; zurück.
+        Außer wenn <constant>PGSQL_DML_STRING</constant> übergeben wird,
+        liefert die Funktion nun im Erfolgsfall die Verbindungsressource
+        anstelle von &true; zurück.
        </entry>
       </row>
       <row>
@@ -141,8 +164,8 @@
       <row>
        <entry>5.5.3/5.4.19</entry>
        <entry>
-        Direkte SQL-Injection in <parameter>table_name</parameter> und indirekte
-        SQL-Injection in Bezeichner wurden behoben.
+        Direkte SQL-Injection in <parameter>table_name</parameter> und
+        indirekte SQL-Injection in Bezeichner wurden behoben.
        </entry>
       </row>
      </tbody>
@@ -159,8 +182,8 @@
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

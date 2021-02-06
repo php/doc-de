@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 4501571c0db3a88528af1c5bcf8cb7193eec6961 Maintainer: conni Status: ready -->
+<!-- EN-Revision: aebf045bfb7f4f2350db5e1e908cf290be334075 Maintainer: conni Status: ready -->
 <refentry xml:id='function.pg-update' xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_update</refname>
-  <refpurpose>
-   Aktualisiert eine Tabelle
-  </refpurpose>
+  <refpurpose>Aktualisiert eine Tabelle</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -27,6 +25,29 @@
    wird <function>pg_convert</function> mit den angegebenen Flags auf
    <literal>data</literal> angewendet.
   </para>
+  <para>
+   <function>pg_update</function> aktualisiert Datensätze, die in
+   <literal>assoc_array</literal> durch <literal>field=>value</literal>
+   angegeben wurden.
+  </para>
+  <para>
+   Falls <literal>options</literal> angegeben wurde, wird
+   <function>pg_convert</function> mit den angegebenen Flags auf
+   <literal>assoc_array</literal> angewendet.
+  </para>
+  <para>
+   Standardmäßig übergibt <function>pg_update</function> Rohwerte. Die Werte
+   müssen entweder maskiert werden oder es muss die Option PGSQL_DML_ESCAPE
+   angegeben werden. PGSQL_DML_ESCAPE maskiert Parameter und Bezeichner und
+   setzt sie in Anführungszeichen. Daher muss bei Tabellen- und Spaltennamen
+   zwischen Groß- und Kleinschreibung unterschieden werden.
+  </para>
+  <para>
+   Es ist zu beachten, dass weder die Maskierung noch eine vorbereitete
+   Abfrage LIKE-Abfragen, JSON, Array, Regex usw. schützen können. Diese
+   Parameter sollten im Kontext behandelt werden, d.h. Werte maskieren und
+   validieren.
+  </para>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -37,7 +58,7 @@
      <term><parameter>connection</parameter></term>
      <listitem>
       <para>
-       PostgreSQL Verbindungskennung.
+       Die PostgreSQL-Verbindungskennung.
       </para>
      </listitem>
     </varlistentry>
@@ -45,7 +66,7 @@
      <term><parameter>table_name</parameter></term>
      <listitem>
       <para>
-       Name der Tabelle, die aktualisiert werden soll. 
+       Name der Tabelle, die aktualisiert werden soll.
       </para>
      </listitem>
     </varlistentry>
@@ -54,8 +75,8 @@
      <listitem>
       <para>
        Ein <type>array</type>, dessen Schlüssel Feldnamen von
-       <parameter>table_name</parameter> sind und mit dessen Werten die Tabelle
-       aktualisiert wird.
+       <parameter>table_name</parameter> sind und mit dessen Werten die
+       Tabelle aktualisiert wird.
       </para>
      </listitem>
     </varlistentry>
@@ -64,9 +85,8 @@
      <listitem>
       <para>
        Ein <type>array</type>, dessen Schlüssel Feldnamen von
-       <parameter>table_name</parameter> sind und das die Werte enthält, die in
-       <parameter>table_name</parameter> überschrieben werden sollen. (Die
-       Gleichheit dieser Werte ist die Bedingung zum Überschreiben.)
+       <parameter>table_name</parameter> sind und dessen Werte die Bedingungen
+       sind, die eine Zeile erfüllen muss, um aktualisiert zu werden.
       </para>
      </listitem>
     </varlistentry>
@@ -75,11 +95,14 @@
      <listitem>
       <para>
        Jede Kombination aus <constant>PGSQL_CONV_FORCE_NULL</constant>,
-       <constant>PGSQL_DML_NO_CONV</constant>, <constant>PGSQL_DML_ESCAPE</constant>,
-       <constant>PGSQL_DML_EXEC</constant>, <constant>PGSQL_DML_ASYNC</constant> oder <constant>PGSQL_DML_STRING</constant>. Falls
-       <constant>PGSQL_DML_STRING</constant> in den <parameter>options</parameter> enthalten ist, 
-       wird der Abfragestring zurückgegeben. Werden
-       <constant>PGSQL_DML_NO_CONV</constant> oder
+       <constant>PGSQL_DML_NO_CONV</constant>,
+       <constant>PGSQL_DML_ESCAPE</constant>,
+       <constant>PGSQL_DML_EXEC</constant>,
+       <constant>PGSQL_DML_ASYNC</constant> und
+       <constant>PGSQL_DML_STRING</constant>. Falls
+       <constant>PGSQL_DML_STRING</constant> in den
+       <parameter>options</parameter> enthalten ist, wird der Abfragestring
+       zurückgegeben. Werden <constant>PGSQL_DML_NO_CONV</constant> oder
        <constant>PGSQL_DML_ESCAPE</constant> angegeben, wird
        <function>pg_convert</function> intern nicht aufgerufen.
       </para>
@@ -97,19 +120,20 @@
    <parameter>options</parameter> übergeben wurde.
   </para>
  </refsect1>
- 
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>pg_update</function> Beispiel</title>
+    <title><function>pg_update</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
-<?php 
+<?php
   $db = pg_connect('dbname=foo');
   $data = array('field1'=>'AA', 'field2'=>'BB');
-  
-  // Das ist sicher, da $_POST automatisch konvertiert wird
+  // Das ist einigermaßen sicher, da alle Werte maskiert werden.
+  // Allerdings unterstützt PostgreSQL JSON/Array. Diese sind nicht
+  // sicher, da sie Abfragen weder maskieren noch vorbereiten.
   $res = pg_update($db, 'post_log', $_POST, $data);
   if ($res) {
       echo "Daten wurden aktualisiert: $res\n";
@@ -164,8 +188,8 @@
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
