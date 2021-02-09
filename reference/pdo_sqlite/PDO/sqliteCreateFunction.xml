@@ -1,11 +1,12 @@
-<?xml version='1.0' encoding='utf-8'?>
-<!-- $Revision: 318318 $ -->
-<!-- EN-Revision: 599a6e381eac09aabbd08ce7317d6ef8c71f19f4 Maintainer: lapistano Status: ready -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 9e0f03ac354d797d1d16c0fcc1663e5e170f2727 Maintainer: lapistano Status: ready -->
 <refentry xml:id="pdo.sqlitecreatefunction" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>PDO::sqliteCreateFunction</refname>
   <refpurpose>
-   Registriert eine benutzerdefinierte Funktion (UDF) zur Nutzung in SQL-Anfragen
+   Registriert eine benutzerdefinierte Funktion (UDF) zur Nutzung in
+   SQL-Anweisungen
   </refpurpose>
  </refnamediv>
 
@@ -19,15 +20,14 @@
    <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
   &warn.experimental.func;
-
   <para>
-   Diese Methode erlaubt es, eine PHP-Funktion als eine benutzerdefinierte Funktion 
-   (<acronym>UDF</acronym>) in SQLite zu registrieren, die dann in einer SQL-Anfrage 
-   aufgerufen werden kann.
+   Diese Methode ermöglicht es, in SQLite eine PHP-Funktion als eine
+   benutzerdefinierte Funktion (<acronym>UDF</acronym>) zu registrieren, die
+   dann in einer SQL-Anweisung aufgerufen werden kann.
   </para>
   <para>
-   Die UDF kann nun in jeder SQL-Anfrage genutzt werden, die Funktionen aufrufen kann, 
-   wie SELECT und UPDATE und auch in Triggern.
+   Die UDF kann nun in jeder SQL-Anweisung genutzt werden, die Funktionen
+   aufrufen kann, wie SELECT und UPDATE und auch in Triggern.
   </para>
  </refsect1>
 
@@ -39,7 +39,7 @@
      <term><parameter>function_name</parameter></term>
      <listitem>
       <para>
-       Der Name der Function, der in SQL-Anfragen genutzt wird.
+       Der Name der Funktion, der in SQL-Anweisungen genutzt wird.
       </para>
      </listitem>
     </varlistentry>
@@ -51,28 +51,28 @@
       </para>
       <note>
        <simpara>
-        Die Callback-Funktionen sollten einen Typen zurückgeben, der von SQLite 
-        verstanden wird, z.B. <link linkend="language.types.intro">Skalar Typ</link>.
+        Die Callback-Funktionen sollten einen Typ zurückgeben, der von SQLite 
+        verstanden wird, z.B. den <link linkend="language.types.intro">Skalar-Typ</link>.
        </simpara>
       </note>
       <para>
        Diese Funktion muss wie folgt definiert werden:
        <methodsynopsis>
         <type>mixed</type><methodname><replaceable>callback</replaceable></methodname>
-        <methodparam><type>mixed</type><parameter>value1</parameter></methodparam>
-        <methodparam choice="opt"><type>mixed</type><parameter>...</parameter></methodparam>
+        <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
+        <methodparam rep="repeat"><type>mixed</type><parameter>values</parameter></methodparam>
        </methodsynopsis>
        <variablelist>
         <varlistentry>
-         <term><parameter>value1</parameter></term>
+         <term><parameter>value</parameter></term>
          <listitem>
           <para>
-           Das erste Argument, dass an die SQL-Funktion übergeben wurde.
+           Das erste Argument, das an die SQL-Funktion übergeben wurde.
           </para>
          </listitem>
         </varlistentry>
         <varlistentry>
-         <term><parameter>...</parameter></term>
+         <term><parameter>values</parameter></term>
          <listitem>
           <para>
            Weitere Argumente, die an die SQL-Funktion übergeben wurden.
@@ -99,8 +99,8 @@
       <para>
        Eine bitweise Verknüpfung von Flags. Zurzeit wird nur
        <constant>PDO::SQLITE_DETERMINISTIC</constant> unterstützt, das angibt,
-       dass die Funktion für die selbe Eingabe immer das selbe Ergebnis
-       innerhalb einer einzelnen SQL-Abfrage zurückliefert.
+       dass die Funktion für dieselbe Eingabe immer dasselbe Ergebnis
+       innerhalb einer einzelnen SQL-Anweisung zurückgibt.
       </para>
      </listitem>
     </varlistentry>
@@ -129,7 +129,7 @@
      <row>
       <entry>7.1.4</entry>
       <entry>
-       Der <parameter>flags</parameter> Parameter wurde hinzugefügt.
+       Der Parameter <parameter>flags</parameter> wurde hinzugefügt.
       </entry>
      </row>
     </tbody>
@@ -145,49 +145,51 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-function md5_and_reverse($string) 
+function md5_und_umkehren($string) 
 {
     return strrev(md5($string));
 }
 
 $db = new PDO('sqlite:sqlitedb');
-$db->sqliteCreateFunction('md5rev', 'md5_and_reverse', 1);
-$rows = $db->query('SELECT md5rev(filename) FROM files')->fetchAll();
+$db->sqliteCreateFunction('md5rev', 'md5_und_umkehren', 1);
+$zeilen = $db->query('SELECT md5rev(dateiname) FROM dateien')->fetchAll();
 ?>
 ]]>
     </programlisting>
    </example>
   </para>
   <para>
-   In diesem Beispiel beschreiben wir eine Funktion, die die md5-Checksumme einer
-   Zeichenkette berechnet und anschließend wird die Checksumme umgekehrt. Aufgerufen
-   durch die SQL-Anfrage, gibt sie den durch die Funktion geänderten Dateinamen zurück.
-   Die Rückgabewerte der Funktion werden in <literal>$rows</literal> gespeichert.
+   In diesem Beispiel wird eine Funktion verwendet, die die md5-Checksumme
+   einer Zeichenkette berechnet und anschließend umgekehrt. Wenn die
+   SQL-Anweisung ausgeführt wird, gibt sie gibt sie den Wert des Dateinamens
+   zurück, der von unserer Funktion umgewandelt wurde. Die Rückgabewerte der
+   Funktion werden in <literal>$zeilen</literal> gespeichert.
   </para>
   <para>
-   Das Praktische an dieser Technik ist, dass das Ergebnis der Abfrage nicht in einer
-   &foreach;-Schleife nachbearbeitet werden muss.
+   Das Praktische an dieser Technik ist, dass das Ergebnis der Abfrage nicht
+   in einer &foreach;-Schleife nachbearbeitet werden muss.
   </para>
   <!-- not for PDO it doesn't, at least not yet 
   <para>
-   PHP registers a special function named <literal>php</literal> when the
-   database is first opened.  The php function can be used to call any PHP
-   function without having to register it first.
+   Wenn die Datenbank zum ersten Mal geöffnet wird, registriert PHP eine
+   spezielle Funktion namens <literal>php</literal>. Die Funktion php kann
+   verwendet werden, um jede PHP-Funktion aufzurufen, ohne sie vorher
+   registrieren zu müssen.
   </para>
   <para>
    <example>
-    <title>Example of using the PHP function</title>
+    <title>Beispiel für die Verwendung der PHP-Funktion</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$rows = $db->query("SELECT php('md5', filename) from files")->fetchAll();
+$zeilen = $db->query("SELECT php('md5', dateiname) from dateien")->fetchAll();
 ?>
 ]]>
     </programlisting>
     <para>
-     This example will call the <function>md5</function> on each
-     <literal>filename</literal> column in the database and return the result
-     into <parameter>$rows</parameter>
+     Dieses Beispiel ruft die Funktion <function>md5</function> für jede
+     <literal>dateiname</literal>-Spalte in der Datenbank auf und übergibt das
+     Ergebnis an <parameter>$zeilen</parameter>.
     </para>
    </example>
   </para>
@@ -195,17 +197,11 @@ $rows = $db->query("SELECT php('md5', filename) from files")->fetchAll();
   -->
   <tip>
    <para>
-    Sie können <xref linkend="pdo.sqlitecreatefunction" /> und
-    <xref linkend="pdo.sqlitecreateaggregate" /> nutzen, um SQLites
-    native SQL-Funktionen zu überschreiben.
+    Sie können <xref linkend="pdo.sqlitecreatefunction" /> und <xref
+    linkend="pdo.sqlitecreateaggregate" /> nutzen, um native
+    SQLite-SQL-Funktionen zu überschreiben.
    </para>
   </tip>
-  <note>
-   <para>
-    Diese Methode ist im SQLite2-Treiber nicht verfügbar.
-    Benutzen Sie stattdessen die alte SQLite-API.
-   </para>
-  </note>
  </refsect1>
 
  <refsect1 role="seealso">
@@ -220,7 +216,6 @@ $rows = $db->query("SELECT php('md5', filename) from files")->fetchAll();
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
