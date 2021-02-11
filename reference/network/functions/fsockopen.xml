@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8b5940cadeb4f1c8492f4a7f70743a2be807cf39 Maintainer: sammywg Status: ready -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.fsockopen">
+<!-- EN-Revision: 0c9c2dd669fe9395eaa73d487fbd160f9057429a Maintainer: sammywg Status: ready -->
+<refentry xml:id="function.fsockopen" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>fsockopen</refname>
   <refpurpose>Stellt eine Internet- oder Unix-Domain-Socket-Verbindung her</refpurpose>
@@ -11,34 +10,35 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>fsockopen</methodname>
+   <type class="union"><type>resource</type><type>false</type></type><methodname>fsockopen</methodname>
    <methodparam><type>string</type><parameter>hostname</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>port</parameter><initializer>-1</initializer></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter role="reference">errno</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter role="reference">errstr</parameter></methodparam>
-   <methodparam choice="opt"><type>float</type><parameter>timeout</parameter><initializer>ini_get("default_socket_timeout")</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter role="reference">error_code</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter role="reference">error_message</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>float</type><type>null</type></type><parameter>timeout</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Initialisiert eine Socket-Verbindung zu der in <parameter>hostname</parameter>
-   angegebenen Ressource.
+   Initialisiert eine Socket-Verbindung zu der in
+   <parameter>hostname</parameter> angegebenen Ressource.
   </para>
   <para>
-   PHP unterstützt Ziele im Internet und Unixdomänen, wie sie unter <xref linkend="transports"/>
-   beschrieben sind. Eine Liste unterstützter Transportarten können Sie auch
-   mittels <function>stream_get_transports</function> ermitteln.
+   PHP unterstützt Ziele in Internet- und Unixdomänen, wie sie unter <xref
+   linkend="transports"/> beschrieben sind. Eine Liste unterstützter
+   Transportarten können Sie auch mittels
+   <function>stream_get_transports</function> abrufen.
   </para>
   <para>
-   Der Socket wird standardmäßig im Blocking Mode geöffnet. Sie können auf den
-   Non-Blocking-Modus wechseln, indem Sie die Funktion <function>stream_set_blocking</function>
-   nutzen.
-   </para>
+   Der Socket wird standardmäßig im blockierenden Modus geöffnet. Sie können
+   mit der Funktion <function>stream_set_blocking</function> auf den
+   nichtblockierenden Modus wechseln.
+  </para>
   <para>
    Die Funktion <function>stream_socket_client</function> ist ähnlich, bietet
    aber eine reichhaltigere Auswahl von Optionen an, einschließlich
    blockierungsfreier Verbindungen und der Möglichkeit einen Streamkontext zu
    übergeben.
   </para>
-  </refsect1>
+ </refsect1>
 
  <refsect1 role="parameters">
   &reftitle.parameters;
@@ -48,10 +48,12 @@
      <term><parameter>hostname</parameter></term>
      <listitem>
       <para>
-       Ist OpenSSL-Support <link linkend="openssl.installation">installiert</link>, können Sie dem Parameter
+       Ist die OpenSSL-Unterstützung <link
+       linkend="openssl.installation">installiert</link>, können dem Parameter
        <parameter>hostname</parameter> entweder ein <literal>ssl://</literal>
-       oder ein <literal>tls://</literal> voranstellen, um eine SSL- oder TLS-Verbindung
-       aufzubauen, die via TCP/IP mit dem entfernten Server verbunden wird.
+       oder ein <literal>tls://</literal> vorangestellt werden, um bei der
+       Verbindung zum entfernten Host eine SSL- oder TLS-Clientverbindung über
+       TCP/IP zu verwenden.
       </para>
      </listitem>
     </varlistentry>
@@ -60,28 +62,30 @@
      <listitem>
       <para>
        Die Portnummer. Diese kann ausgelassen und mit <literal>-1</literal>
-       übersprungen werden, wenn der Transport keinen Port verwendet, so wie
+       übersprungen werden, wenn der Transport keinen Port verwendet, wie z.B.
        <literal>unix://</literal>.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>errno</parameter></term>
+     <term><parameter>error_code</parameter></term>
      <listitem>
       <para>
-       Sofern unterstützt, enthält der Parameter die Fehlernummer des Systemlevels,
-       die beim Aufruf der <literal>connect()</literal>-Funktion auftrat.
+       Falls angegeben, enthält der Parameter die Fehlernummer auf
+       Systemebene, die beim Aufruf der <literal>connect()</literal>-Funktion
+       auftrat.
       </para>
       <para>
-       Wenn der Rückgabewert von <parameter>errno</parameter> <literal>0</literal>
-       ist und die Funktion &false; zurückgibt, ist dies ein Zeichen, dass der
-       Fehler vor dem <literal>connect()</literal>-Aufruf auftrat. Dies ist meist
-       der Fall, wenn es ein Problem beim Initialisieren des Sockets gibt.
+       Wenn der Rückgabewert von <parameter>error_code</parameter>
+       <literal>0</literal> ist und die Funktion &false; zurückgibt, ist dies
+       ein Zeichen, dass der Fehler vor dem
+       <literal>connect()</literal>-Aufruf auftrat. Dies ist meist der Fall,
+       wenn es ein Problem beim Initialisieren des Sockets gibt.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>errstr</parameter></term>
+     <term><parameter>error_message</parameter></term>
      <listitem>
       <para>
        Die Fehlermeldung als String.
@@ -92,14 +96,15 @@
      <term><parameter>timeout</parameter></term>
      <listitem>
       <para>
-       Der Connection-Timeout in Sekunden.
+       Der Verbindungs-Timeout in Sekunden.
       </para>
       <note>
        <para>
         Wenn Sie einen Timeout für das Lesen oder Schreiben von Daten über den
-        Socket setzen wollen, verwenden Sie <function>stream_set_timeout</function>,
-        da der <parameter>timeout</parameter>-Parameter von <function>fsockopen</function>
-        nur für das reine Konnektieren des Sockets gedacht ist.
+        Socket setzen wollen, verwenden Sie
+        <function>stream_set_timeout</function>, da der Parameter
+        <parameter>timeout</parameter> von <function>fsockopen</function> nur
+        für den Verbindungsaufbau mit dem Socket gedacht ist.
        </para>
       </note>
      </listitem>
@@ -111,10 +116,11 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Die Funktion <function>fsockopen</function> gibt einen Zeiger auf eine Datei
-   zurück, der zusammen mit den anderen Dateifunktionen (wie <function>fgets</function>,
-   <function>fgetss</function>, <function>fwrite</function>, <function>fclose</function>
-   und <function>feof</function>) verwendet werden kann. Wenn der Aufruf
+   Die Funktion <function>fsockopen</function> gibt einen Zeiger auf eine
+   Datei zurück, der zusammen mit den anderen Dateifunktionen (wie
+   <function>fgets</function>, <function>fgetss</function>,
+   <function>fwrite</function>, <function>fclose</function> und
+   <function>feof</function>) verwendet werden kann. Wenn der Aufruf
    fehlschlägt, wird &false; zurückgegeben.
   </para>
  </refsect1>
@@ -127,7 +133,29 @@
   </para>
  </refsect1>
 
-  <refsect1 role="examples">
+ <refsect1 role="changelog"><!-- {{{ -->
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>timeout</parameter> is nullable now.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
+ <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
@@ -183,17 +211,18 @@ if (!$fp) {
   <note>
    <para>
     Abhängig von der Systemumgebung kann es vorkommen, dass die Unix-Domäne
-    oder der optionale Connection-Timeout nicht verfügbar sind.
+    oder der optionale Verbindungs-Timeout nicht verfügbar sind.
    </para>
   </note>
   <warning>
    <para>
-    UDP-Sockets werden manchmal ohne die Rückgabe eines Fehlermeldung geöffnet,
-    obwohl der entfernte Host nicht erreichbar ist. Der Fehler wird nur sichtbar,
-    wenn Sie Daten vom Socket lesen oder zum Socket schreiben wollen. Der Grund
-    dafür ist, dass UDP ein "verbindungsloses" Protokoll ist, das bedeutet,
-    dass das Betriebssystem nicht versucht, eine Verbindung zum Socket herzustellen,
-    solange es nicht wirklich Daten senden oder empfangen muss.
+    UDP-Sockets werden manchmal ohne die Rückgabe eines Fehlermeldung
+    geöffnet, obwohl der entfernte Host nicht erreichbar ist. Der Fehler wird
+    nur sichtbar, wenn Sie Daten vom Socket lesen oder zum Socket schreiben
+    wollen. Der Grund dafür ist, dass UDP ein "verbindungsloses" Protokoll
+    ist, was bedeutet, dass das Betriebssystem nicht versucht, eine Verbindung
+    zum Socket herzustellen, solange es nicht wirklich Daten senden oder
+    empfangen muss.
    </para>
   </warning>
   &ipv6.brackets;
@@ -219,8 +248,6 @@ if (!$fp) {
  </refsect1>
 
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
