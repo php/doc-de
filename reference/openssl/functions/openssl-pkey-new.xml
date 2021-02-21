@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5d5a8ef9cbe225d53f1b66b6ae369511d0f6170a Maintainer: jaenecke Status: ready -->
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-pkey-new">
+<!-- EN-Revision: 2e02eeb87167732c245530d970b79061b8aaa24a Maintainer: jaenecke Status: ready -->
+<refentry xml:id="function.openssl-pkey-new" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_pkey_new</refname>
   <refpurpose>Erzeugt einen neuen privaten Schlüssel</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>openssl_pkey_new</methodname>
-   <methodparam choice="opt"><type>array</type><parameter>configargs</parameter></methodparam>
+   <type class="union"><type>OpenSSLAsymmetricKey</type><type>false</type></type><methodname>openssl_pkey_new</methodname>
+   <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>options</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>openssl_pkey_new</function> erzeugt ein neues privates und
-   öffentliches Schlüsselpaar. Den öffentlichen Teil des Schlüssels können
-   Sie mit <function>openssl_pkey_get_public</function> erhalten.
+   <function>openssl_pkey_new</function> erzeugt einen neuen privaten
+   Schlüssel. Wie man den öffentlichen Teil des Schlüssels erhält, wird in
+   einem Beispiel unten gezeigt.
   </para>
   &note.openssl.cnf;
  </refsect1>
@@ -26,13 +26,13 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>configargs</parameter></term>
+     <term><parameter>options</parameter></term>
      <listitem>
       <para>
-       Die Schlüsselerzeugung können Sie mit <parameter>configargs</parameter>
-       feiner abstimmen (z.B. die Angabe der verwendeten Bits). Weitere
-       Informationen zu <parameter>configargs</parameter> entnehmen Sie bitte
-       der Dokumentation zu <function>openssl_csr_new</function>.
+       Die Schlüsselerzeugung kann mit <parameter>options</parameter> feiner
+       abgestimmt werden (z.B. die Angabe der verwendeten Bits). Weitere
+       Informationen über <parameter>options</parameter> sind der
+       Dokumentation zu <function>openssl_csr_new</function> zu entnehmen.
       </para>
      </listitem>
     </varlistentry>
@@ -43,8 +43,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt eine Resource für den privaten Schlüssel im Erfolgsfall zurück, andernfalls
-   &false;
+   Gibt bei Erfolg eine <classname>OpenSSLAsymmetricKey</classname>-Instanz
+   zurück oder &false;, wenn ein Fehler auftritt.
   </para>
  </refsect1>
 
@@ -60,10 +60,19 @@
     </thead>
     <tbody>
      <row>
+      <entry>8.0.0</entry>
+      <entry>
+       Bei Erfolg gibt diese Funktion nun eine
+       <classname>OpenSSLAsymmetricKey</classname>-Instanz zurück; vorher
+       wurde eine &resource; vom Typ <literal>OpenSSL-Schlüssel</literal>
+       zurückgegeben.
+      </entry>
+     </row>
+     <row>
       <entry>7.1.0</entry>
       <entry>
-       Das <parameter>curve_name</parameter> Konfigurationsargument wurde
-       hinzugefügt, so dass EC-Schlüssel erzeugt werden können.
+       Das Konfigurationsargument <parameter>curve_name</parameter> wurde
+       hinzugefügt, sodass EC-Schlüssel erzeugt werden können.
       </entry>
      </row>
     </tbody>
@@ -71,8 +80,40 @@
   </informaltable>
  </refsect1>
 
-</refentry>
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example xml:id="function.openssl-pkey-new.example.public-key">
+   <title>Aus einem privaten Schlüssel den öffentlichen Schlüssel gewinnen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$private_key = openssl_pkey_new();
+$public_key_pem = openssl_pkey_get_details($private_key)['key'];
+echo $public_key_pem;
+$public_key = openssl_pkey_get_public($public_key_pem);
+var_dump($public_key);
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArZFsmN2P6rx1Xt7YV95o
+gcdlal0k3ryiIhFNzjwtRNNTXfEfBr6lUuaIJYQ8/XqEBX0hpcfuuF6tTRlonA3t
+WLME0QFD93YVsAaXcy76YqjjqcRRodIBphAbYyyMI/lXkQAdn7kbAmr7neSOsMYJ
+El9Wo4Hl4oG6e52ZnYHyqW9dxh4hX93eupR2TmcCdVf+r9xoHewP0KJYSHt7vDUX
+AQlWYcQiWHIadFsmL0orr6mutlXFReoHbesgKY9/3YLOu0JfxflSjIZ2JeL1NTl1
+MsmODsUwgAUrwnWKKx+eQUP5g3GnSB3dPkRh9zRVRiLNWbCugyjrf3e6DgQWrW7j
+pwIDAQAB
+-----END PUBLIC KEY-----
+resource(5) of type (OpenSSL key)
+]]>
+   </screen>
+  </example>
+ </refsect1>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

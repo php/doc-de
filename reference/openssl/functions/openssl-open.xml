@@ -1,35 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: fa994a739c769e155f6b6848f66f1f9a24ec9eb0 Maintainer: nobody Status: ready -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-open">
+<!-- EN-Revision: d1e3ea622e5d4f542cd36eca59a9f22aa0142633 Maintainer: nobody Status: ready -->
+<refentry xml:id="function.openssl-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_open</refname>
-  <refpurpose>Öffne versiegelte Daten</refpurpose>
+  <refpurpose>Öffnet versiegelte Daten</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>openssl_open</methodname>
-   <methodparam><type>string</type><parameter>sealed_data</parameter></methodparam>
-   <methodparam><type>string</type><parameter role="reference">open_data</parameter></methodparam>
-   <methodparam><type>string</type><parameter>env_key</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>priv_key_id</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>method</parameter><initializer>"RC4"</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>iv</parameter></methodparam>
+   <methodparam><type>string</type><parameter>data</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">output</parameter></methodparam>
+   <methodparam><type>string</type><parameter>encrypted_key</parameter></methodparam>
+   <methodparam><type class="union"><type>OpenSSLAsymmetricKey</type><type>OpenSSLCertificate</type><type>array</type><type>string</type></type><parameter>private_key</parameter></methodparam>
+   <methodparam><type>string</type><parameter>cipher_algo</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>iv</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Die Funktion <function>openssl_open</function> öffnet (entschlüsselt)
-   <parameter>sealed_data</parameter> unter Verwendung des privaten
-   Schlüssels, der mit der Schlüsselkennung
-   <parameter>priv_key_id</parameter> und dem Umschlagschlüssel
-   <parameter>env_key</parameter> verknüpft ist und füllt <parameter>
-   open_data</parameter> mit den entschlüsselten Daten. Der
-   Umschlagschlüssel wird bei der Versiegelung erzeugt und kann
-   ausschlieslich für einen bestimmten privaten Schlüssel verwendet werden.
-   Mehr Informationen sind der Dokumentation zu
-   <function>openssl_seal</function> zu entnehmen.
+   <parameter>data</parameter> unter Verwendung des privaten Schlüssels, der
+   mit der Schlüsselkennung <parameter>private_key</parameter> und dem
+   Umschlagschlüssel <parameter>encrypted_key</parameter> verknüpft ist und
+   füllt <parameter>output</parameter> mit den entschlüsselten Daten. Der
+   Umschlagschlüssel wird bei der Versiegelung erzeugt und kann ausschließlich
+   für einen bestimmten privaten Schlüssel verwendet werden. Mehr
+   Informationen sind der Dokumentation zu <function>openssl_seal</function>
+   zu entnehmen.
   </para>
  </refsect1>
 
@@ -38,14 +36,14 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>sealed_data</parameter></term>
+     <term><parameter>data</parameter></term>
      <listitem>
       <para>
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>open_data</parameter></term>
+     <term><parameter>output</parameter></term>
      <listitem>
       <para>
        Bei erfolgreicher Ausführung werden die geöffneten Daten in diesem
@@ -54,24 +52,31 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>env_key</parameter></term>
+     <term><parameter>encrypted_key</parameter></term>
      <listitem>
       <para>
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>priv_key_id</parameter></term>
+     <term><parameter>private_key</parameter></term>
      <listitem>
       <para>
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>method</parameter></term>
+     <term><parameter>cipher_algo</parameter></term>
      <listitem>
       <para>
-       Die Chiffriermethode.
+       Die Verschlüsselungsmethode.
+       <caution>
+        <simpara>
+         Der Standardwert (<literal>'RC4'</literal>) wird als unsicher
+         eingestuft. Es wird dringend empfohlen, explizit eine sichere
+         Verschlüsselungsmethode anzugeben.
+        </simpara>
+       </caution>
       </para>
      </listitem>
     </varlistentry>
@@ -106,15 +111,20 @@
     </thead>
     <tbody>
      <row>
-      <entry>7.0.0</entry>
+      <entry>8.0.0</entry>
       <entry>
-       Der <parameter>iv</parameter> Parameter wurde hinzugefügt.
+       <parameter>private_key</parameter> akzeptiert nun eine
+       <classname>OpenSSLAsymmetricKey</classname>- oder
+       <classname>OpenSSLCertificate</classname>-Instanz; vorher wurde eine
+       &resource; vom Typ <literal>OpenSSL-Schlüssel</literal> oder
+       <literal>OpenSSL X.509 CSR</literal> akzeptiert.
       </entry>
      </row>
      <row>
-      <entry>5.3.0</entry>
+      <entry>8.0.0</entry>
       <entry>
-       Der <parameter>method</parameter> Parameter wurde hinzugefügt.
+       Der Parameter <parameter>cipher_algo</parameter> ist nicht mehr
+       optional.
       </entry>
      </row>
     </tbody>
@@ -126,7 +136,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>openssl_open</function> Beispiel</title>
+    <title><function>openssl_open</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -165,7 +175,6 @@ openssl_free_key($pkeyid);
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d91faeacc8fd631cd8cd45e5bbd89207bcacbbfa Maintainer: jaenecke Status: ready -->
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-seal">
+<!-- EN-Revision: d1e3ea622e5d4f542cd36eca59a9f22aa0142633 Maintainer: jaenecke Status: ready -->
+<refentry xml:id="function.openssl-seal" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_seal</refname>
   <refpurpose>Versiegelt (verschlüsselt) Daten</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>openssl_seal</methodname>
+   <type class="union"><type>int</type><type>false</type></type><methodname>openssl_seal</methodname>
    <methodparam><type>string</type><parameter>data</parameter></methodparam>
    <methodparam><type>string</type><parameter role="reference">sealed_data</parameter></methodparam>
-   <methodparam><type>array</type><parameter role="reference">env_keys</parameter></methodparam>
-   <methodparam><type>array</type><parameter>pub_key_ids</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>method</parameter><initializer>"RC4"</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter role="reference">iv</parameter></methodparam>
+   <methodparam><type>array</type><parameter role="reference">encrypted_keys</parameter></methodparam>
+   <methodparam><type>array</type><parameter>public_key</parameter></methodparam>
+   <methodparam><type>string</type><parameter>cipher_algo</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter role="reference">iv</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Die Funktion <function>openssl_seal</function> verschlüsselt
-   <parameter>data</parameter> unter Verwendung des angegebenen <parameter>method</parameter> mit einem zufällig
-   erzeugten geheimen Schlüssel. Dieser Schlüssel wird mit jedem öffentlichen
-   Schlüssel verschlüsselt, der mit der Kennung in
-   <parameter>pub_key_ids</parameter> verknüpft ist. Jeder verschlüsselte
-   Schlüssel wird in <parameter>env_keys</parameter>zurückgegeben. Das
-   bedeutet, daß Sie verschlüsselte Daten an mehrere Empfänger versenden
-   können (unter der Voraussetzung, daß Sie irgendwann die öffentlichen
-   Schlüssel der Empfänger erhalten haben). Jeder Empfänger muss sowohl die
-   verschlüsselten Daten als auch den entsprechenden Umschlagschlüssel 
-   erhalten, der mit dem öffentlichen Schlüssel des Empfängers versiegelt
-   wurde.
+   <parameter>data</parameter> unter Verwendung des angegebenen
+   <parameter>cipher_algo</parameter> mit einem zufällig erzeugten geheimen
+   Schlüssel. Dieser Schlüssel wird mit jedem öffentlichen Schlüssel
+   verschlüsselt, der mit der Kennung in <parameter>public_key</parameter>
+   verknüpft ist. Jeder verschlüsselte Schlüssel wird in
+   <parameter>encrypted_keys</parameter>zurückgegeben. Das bedeutet, dass Sie
+   verschlüsselte Daten an mehrere Empfänger versenden können (unter der
+   Voraussetzung, dass Sie irgendwann die öffentlichen Schlüssel der Empfänger
+   erhalten haben). Jeder Empfänger muss sowohl die verschlüsselten Daten als
+   auch den entsprechenden Umschlagschlüssel erhalten, der mit dem
+   öffentlichen Schlüssel des Empfängers versiegelt wurde.
   </para>
  </refsect1>
 
@@ -55,26 +55,34 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>env_keys</parameter></term>
+     <term><parameter>encrypted_keys</parameter></term>
      <listitem>
       <para>
-       Array verschlüsselter Schlüssel.
+       Das Array verschlüsselter Schlüssel.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>pub_key_ids</parameter></term>
+     <term><parameter>public_key</parameter></term>
      <listitem>
       <para>
-       Array von öffentlichen Schlüssel-Ressource-Kennungen.
+       Das Array von <classname>OpenSSLAsymmetricKey</classname>-Instanzen,
+       das öffentliche Schlüssel enthält.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>method</parameter></term>
+     <term><parameter>cipher_algo</parameter></term>
      <listitem>
       <para>
-       Die Chiffriermethode.
+       Die Verschlüsselungsmethode.
+       <caution>
+        <simpara>
+         Der Standardwert (<literal>'RC4'</literal>) wird als unsicher
+         betrachtet. Es wird dringend empfohlen, explizit eine sichere
+         Verschlüsselungsmethode anzugeben.
+        </simpara>
+       </caution>
       </para>
      </listitem>
     </varlistentry>
@@ -93,10 +101,11 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt bei Erfolg die Länge der verschlüsselten Daten zurück; in diesem Fall 
+   Gibt bei Erfolg die Länge der verschlüsselten Daten zurück; in diesem Fall
    sind die verschlüsselten Daten in <parameter>sealed_data</parameter>
-   enthalten und <parameter>env_keys</parameter> enthält die Umschlagschlüssel.
-   Sollte ein Fehler aufgetreten sein gibt die Funktion &false; zurück.
+   enthalten und <parameter>encrypted_keys</parameter> enthält die
+   Umschlagschlüssel. Sollte ein Fehler aufgetreten sein gibt die Funktion
+   &false; zurück.
   </para>
  </refsect1>
 
@@ -112,15 +121,25 @@
     </thead>
     <tbody>
      <row>
-      <entry>7.0.0</entry>
+      <entry>8.0.0</entry>
       <entry>
-       The <parameter>iv</parameter>-Parameter wurde hinzugefügt.
+       <parameter>public_key</parameter> akzeptiert nun ein &array; von
+       <classname>OpenSSLAsymmetricKey</classname>-Instanzen; vorher wurde ein
+       &array; von &resource;n vom Typ <literal>OpenSSL-Schlüssel</literal>
+       akzeptiert.
       </entry>
      </row>
      <row>
-      <entry>5.3.0</entry>
+      <entry>8.0.0</entry>
       <entry>
-       Der <parameter>method</parameter>-Parameter wurde hinzugefügt.
+       Der Parameter <parameter>cipher_algo</parameter> ist nicht mehr
+       optional.
+      </entry>
+     </row>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>iv</parameter> ist nun ein Nullable-Typ.
       </entry>
      </row>
     </tbody>
@@ -132,7 +151,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>openssl_seal</function> example</title>
+    <title><function>openssl_seal</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -175,7 +194,6 @@ openssl_free_key($pk2);
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

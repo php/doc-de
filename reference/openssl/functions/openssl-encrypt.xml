@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 89fe07a4a902cb36377b163d7a15817e2b82a5f5 Maintainer: cmb Status: ready -->
-
+<!-- EN-Revision: d1e3ea622e5d4f542cd36eca59a9f22aa0142633 Maintainer: cmb Status: ready -->
 <refentry xml:id="function.openssl-encrypt" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>openssl_encrypt</refname>
   <refpurpose>Verschlüsselt Daten</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>string</type><methodname>openssl_encrypt</methodname>
+   <type class="union"><type>string</type><type>false</type></type><methodname>openssl_encrypt</methodname>
    <methodparam><type>string</type><parameter>data</parameter></methodparam>
-   <methodparam><type>string</type><parameter>method</parameter></methodparam>
-   <methodparam><type>string</type><parameter>key</parameter></methodparam>
+   <methodparam><type>string</type><parameter>cipher_algo</parameter></methodparam>
+   <methodparam><type>string</type><parameter>passphrase</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>0</initializer></methodparam>
    <methodparam choice="opt"><type>string</type><parameter>iv</parameter><initializer>""</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter role="reference">tag</parameter><initializer>NULL</initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter role="reference">tag</parameter><initializer>&null;</initializer></methodparam>
    <methodparam choice="opt"><type>string</type><parameter>aad</parameter><initializer>""</initializer></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>tag_length</parameter><initializer>16</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Verschlüsselt die Daten mit der angegebenen Methode und Schlüssel. 
-   Die Rückgabe kann aus unbearbeiteten oder base64 kodierten Zeichenketten bestehen. 
+   Verschlüsselt die Daten mit den angegebenen Methode und Schlüssel. Die
+   Rückgabe kann aus unbearbeiteten oder base64-kodierten Zeichenketten
+   bestehen.
   </para>
  </refsect1>
- 
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -40,38 +40,40 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>method</parameter></term>
+     <term><parameter>cipher_algo</parameter></term>
      <listitem>
       <para>
-       Verschlüsselungsmethode.
+       Die Verschlüsselungsmethode.
        <function>openssl_get_cipher_methods</function> liefert eine Liste der
        verfügbaren Verschlüsselungsmethoden.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>key</parameter></term>
+     <term><parameter>passphrase</parameter></term>
      <listitem>
       <para>
-       Der Schlüssel.
+       Die Passphrase. Ist die Passphrase kürzer als erwartet, wird sie
+       stillschweigend mit <literal>NUL</literal>-Zeichen aufgefüllt; ist die
+       Passphrase länger als erwartet, wird sie stillschweigend abgeschnitten.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
       <term><parameter>options</parameter></term>
       <listitem>
-        <para>
-          <parameter>options</parameter> ist eine Bitmaske aus
-          <constant>OPENSSL_RAW_DATA</constant> und
-          <constant>OPENSSL_ZERO_PADDING</constant>.
-        </para>
+       <para>
+        <parameter>options</parameter> ist eine bitweise Verknüpfung der Flags
+        <constant>OPENSSL_RAW_DATA</constant> und
+        <constant>OPENSSL_ZERO_PADDING</constant>.
+       </para>
       </listitem>
     </varlistentry>
     <varlistentry>
      <term><parameter>iv</parameter></term>
      <listitem>
       <para>
-       Initialisierungsvektor (darf nicht NULL sein).
+       Der Initialisierungsvektor (darf nicht NULL sein).
       </para>
      </listitem>
     </varlistentry>
@@ -79,8 +81,8 @@
      <term><parameter>tag</parameter></term>
      <listitem>
       <para>
-       Das Authentifizierungskennzeichen das per Reference übergeben wird, wenn der AEAD
-       Verschlüsselungsmodus (GCM oder CCM) verwendet wird.
+       Das Authentifizierungskennzeichen das per Referenz übergeben wird, wenn
+       der AEAD-Verschlüsselungsmodus (GCM oder CCM) verwendet wird.
       </para>
      </listitem>
     </varlistentry>
@@ -96,34 +98,38 @@
      <term><parameter>tag_length</parameter></term>
      <listitem>
       <para>
-       Die Länge des Authentifizierungskennzeichens (<parameter>tag</parameter>).
-       Der Wert liegt zwischen 4 und 16 für den GCM-Modus. 
+       Die Länge des Authentifizierungskennzeichens
+       <parameter>tag</parameter>. Der Wert liegt beim GCM-Modus zwischen 4
+       und 16.
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsect1>
- 
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt nach erfolgreicher Verarbeitung die verschlüsselte Zeichenkette zurück. &return.falseforfailure;
+   Gibt nach erfolgreicher Verarbeitung die verschlüsselte Zeichenkette
+   zurück. &return.falseforfailure;
   </para>
  </refsect1>
- 
+
  <refsect1 role="errors">
   &reftitle.errors;
   <para>
-   Gibt einen <constant>E_WARNING</constant> Fehler aus, wenn eine unbekannte Verschlüsselungsmethode
-   über den <parameter>method</parameter> Parameter übergeben wurde.
+   Gibt einen Fehler der Stufe <constant>E_WARNING</constant> aus, wenn eine
+   unbekannte Verschlüsselungsmethode über den Parameter
+   <parameter>cipher_algo</parameter> übergeben wurde.
   </para>
   <para>
-   Gibt einen <constant>E_WARNING</constant> Fehler aus, wenn eine leere Zeichenkette
-   über den <parameter>iv</parameter> Parameter übergeben wurde.
+   Gibt einen Fehler der Stufe <constant>E_WARNING</constant> aus, wenn eine
+   leere Zeichenkette über den Parameter <parameter>iv</parameter> übergeben
+   wurde.
   </para>
  </refsect1>
- 
+
  <refsect1 role="changelog">
   &reftitle.changelog;
   <informaltable>
@@ -138,37 +144,26 @@
      <row>
       <entry>7.1.0</entry>
       <entry>
-       Die <parameter>tag</parameter>, <parameter>aad</parameter> und
-       <parameter>tag_length</parameter> Parameter wurden hinzugefügt.
-      </entry>
-     </row>
-     <row>
-      <entry>5.4.0</entry>
-      <entry>
-       Der <parameter>raw_output</parameter> wurde geändert zu <parameter>options</parameter>.
-      </entry>
-     </row>
-     <row>
-      <entry>5.3.3</entry>
-      <entry>
-       Der <parameter>iv</parameter> wurde hinzugefügt.
+       Die Parameter <parameter>tag</parameter>, <parameter>aad</parameter>
+       und <parameter>tag_length</parameter> wurden hinzugefügt.
       </entry>
      </row>
     </tbody>
    </tgroup>
   </informaltable>
  </refsect1>
- 
+
 
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title>AES Authenticated Encryption im GCM-Modus Beispiel für PHP 7.1+</title>
+    <title>AES Authenticated Encryption im GCM-Modus, Beispiel für PHP 7.1+</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// $key sollte zuvor auf eine kryptographisch sichere Weise erzeugt worden sein, z.B. per openssl_random_pseudo_bytes
+// $key sollte zuvor auf eine kryptographisch sichere Weise erzeugt worden
+// sein, z.B. per openssl_random_pseudo_bytes
 $plaintext = "zu verschlüsselnde Nachricht";
 $cipher = "aes-128-gcm";
 if (in_array($cipher, openssl_get_cipher_methods()))
@@ -186,11 +181,12 @@ if (in_array($cipher, openssl_get_cipher_methods()))
    </example>
 
    <example>
-    <title>AES Authenticated Encryption Beispiel für PHP 5.6+</title>
+    <title>AES Authenticated Encryption, Beispiel für PHP 5.6+</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// $key sollte zuvor auf eine kryptographisch sichere Weise erzeugt worden sein, z.B. per openssl_random_pseudo_bytes
+// $key sollte zuvor auf eine kryptographisch sichere Weise erzeugt worden
+// sein, z.B. per openssl_random_pseudo_bytes
 $plaintext = "zu verschlüsselnde Nachricht";
 $ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
 $iv = openssl_random_pseudo_bytes($ivlen);
@@ -226,9 +222,8 @@ if (hash_equals($hmac, $calcmac)) // PHP 5.6+ Rechenzeitangriff-sicherer Verglei
    </simplelist>
   </para>
  </refsect1>
- 
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

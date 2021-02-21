@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 904d0aeccde44f12b8e87e326febc091bf3466f9 Maintainer: nobody Status: ready -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.openssl-pkcs7-sign">
+<!-- EN-Revision: 9e8ce329fd5025766d9cf4d983435a373cf9666a Maintainer: nobody Status: ready -->
+<refentry xml:id="function.openssl-pkcs7-sign" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_pkcs7_sign</refname>
-  <refpurpose>Signiere eine S/MIME Nachricht</refpurpose>
+  <refpurpose>Signiert eine S/MIME-Nachricht</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>openssl_pkcs7_sign</methodname>
-   <methodparam><type>string</type><parameter>infilename</parameter></methodparam>
-   <methodparam><type>string</type><parameter>outfilename</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>signcert</parameter></methodparam>
-   <methodparam><type>mixed</type><parameter>privkey</parameter></methodparam>
-   <methodparam><type>array</type><parameter>headers</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>PKCS7_DETACHED</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>extracerts</parameter></methodparam>
+   <methodparam><type>string</type><parameter>input_filename</parameter></methodparam>
+   <methodparam><type>string</type><parameter>output_filename</parameter></methodparam>
+   <methodparam><type class="union"><type>OpenSSLCertificate</type><type>string</type></type><parameter>certificate</parameter></methodparam>
+   <methodparam><type class="union"><type>OpenSSLAsymmetricKey</type><type>OpenSSLCertificate</type><type>array</type><type>string</type></type><parameter>private_key</parameter></methodparam>
+   <methodparam><type class="union"><type>array</type><type>null</type></type><parameter>headers</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>PKCS7_DETACHED</constant></initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>untrusted_certificates_filename</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Die Funktion <function>openssl_pkcs7_sign</function> signiert die
-   Inhalte der Datei, angegeben durch den Pararmeter
-   <parameter>infilename</parameter>. Beim Signieren wird das Zertifikat,
-   angegeben durch <parameter>signcert</parameter>, und der dazu gehörige
-   private Schlüssel <parameter>privkey</parameter> benutzt.
+   Die Funktion <function>openssl_pkcs7_sign</function> nimmt den Inhalt der
+   durch <parameter>input_filename</parameter> angegebenen Datei und signiert
+   ihn. Verwendet werden dafür das Zertifikat, angegeben durch
+   <parameter>certificate</parameter>, und der dazugehörige private Schlüssel
+   <parameter>private_key</parameter>.
   </para>
  </refsect1>
 
@@ -34,7 +33,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>infilename</parameter></term>
+     <term><parameter>input_filename</parameter></term>
      <listitem>
       <para>
        Die Eingabedatei, die digital signiert werden soll.
@@ -42,7 +41,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>outfilename</parameter></term>
+     <term><parameter>output_filename</parameter></term>
      <listitem>
       <para>
        Die Datei, in die die digitale Signatur geschrieben werden soll.
@@ -50,23 +49,24 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>signcert</parameter></term>
+     <term><parameter>certificate</parameter></term>
      <listitem>
       <para>
-       Das X.509 Zertifikat, das für die digitale Signierung von infilename
-       verwendet werden soll. Gültige Werte sind dem Abschnitt <link
-       linkend="openssl.certparams">Schlüssel/Zertifikat Parameter</link> zu
+       Das X.509-Zertifikat, das für die digitale Signierung von
+       <parameter>input_filename</parameter> verwendet werden soll. Gültige
+       Werte sind dem Abschnitt <link
+       linkend="openssl.certparams">Schlüssel/Zertifikat-Parameter</link> zu
        entnehmen.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>privkey</parameter></term>
+     <term><parameter>private_key</parameter></term>
      <listitem>
       <para>
-       <parameter>privkey</parameter> ist der private Schlüssel, der zu signcert
-       gehört. Gültige Werte sind dem Abschnitt <link
-       linkend="openssl.certparams">Öffentliche/Private
+       <parameter>private_key</parameter> ist der private Schlüssel, der zu
+       <parameter>certificate</parameter> gehört. Gültige Werte sind dem
+       Abschnitt <link linkend="openssl.certparams">Öffentliche/Private
        Schlüssel-Parameter</link> zu entnehmen.
       </para>
      </listitem>
@@ -75,10 +75,10 @@
      <term><parameter>headers</parameter></term>
      <listitem>
       <para>
-       <parameter>headers</parameter> ist ein Array aus Headern die den Daten
-       vorangestellt werden, nachdem diese signiert wurden (Weitere
-       Informationen über das Format dieses Parameters sind der Dokumentation zu
-       <function>openssl_pkcs7_encrypt</function> zu entnehmen).
+       <parameter>headers</parameter> ist ein Array aus Headern, die den Daten
+       vorangestellt werden, nachdem diese signiert wurden (weitere
+       Informationen über das Format dieses Parameters sind der Dokumentation
+       zu <function>openssl_pkcs7_encrypt</function> zu entnehmen).
       </para>
      </listitem>
     </varlistentry>
@@ -86,20 +86,21 @@
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Der Parameter <parameter>flags</parameter> kann zur Änderung der Ausgabe
-       benutzt werden - siehe die
-       <link linkend="openssl.pkcs7.flags">PKCS7 Konstanten</link>.
+       <parameter>flags</parameter> kann zur Änderung der Ausgabe verwendet
+       werden - siehe die <link
+       linkend="openssl.pkcs7.flags">PKCS7-Konstanten</link>.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>extracerts</parameter></term>
+     <term><parameter>untrusted_certificates_filename</parameter></term>
      <listitem>
       <para>
-       Der Parameter <parameter>extracerts</parameter> gibt den Namen einer Datei
-       an, die ein oder mehrere extra Zertifikate enthält, die in die Signatur
-       mit eingefügt werden. Das kann zum Beispiel als Hilfe für einen Empfänger
-       dienen, das von Ihnen benutzte Zertifikat zu überprüfen.
+       <parameter>untrusted_certificates_filename</parameter> gibt den Namen
+       einer Datei an, die ein oder mehrere extra Zertifikate enthält, die in
+       die Signatur mit eingefügt werden. Das kann zum Beispiel als Hilfe für
+       einen Empfänger dienen, das von Ihnen verwendete Zertifikat zu
+       überprüfen.
       </para>
      </listitem>
     </varlistentry>
@@ -114,16 +115,50 @@
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>certificate</parameter> akzeptiert nun eine
+       <classname>OpenSSLCertificate</classname>-Instanz; vorher wurde eine
+       &resource; vom Typ <literal>OpenSSL X.509 CSR</literal> akzeptiert.
+      </entry>
+     </row>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>private_key</parameter> akzeptiert nun eine
+       <classname>OpenSSLAsymmetricKey</classname>- oder
+       <classname>OpenSSLCertificate</classname>-Instanz; vorher wurde eine
+       &resource; vom Typ <literal>OpenSSL-Schlüssel</literal> oder
+       <literal>OpenSSL X.509 CSR</literal> akzeptiert.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>openssl_pkcs7_sign</function> Beispiel</title>
+    <title><function>openssl_pkcs7_sign</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Die Nachricht die Sie unterschreiben möchten, damit der Empfänger sicher
-// sein kann, dass diese Nachricht von ihnen stammt.
+// Die Nachricht,  die Sie signieren möchten, damit der Empfänger sicher
+// sein kann, dass diese Nachricht von Ihnen stammt.
 
 $data = <<<EOD
 
@@ -135,7 +170,7 @@ EOD;
 $fp = fopen("msg.txt", "w");
 fwrite($fp, $data);
 fclose($fp);
-// verschlüsslen
+// Verschlüsseln
 if (openssl_pkcs7_sign("msg.txt", "signed.txt", "mycert.pem",
     array("file://mycert.pem", "mypassphrase"),
     array("To" => "joes@example.com", // keyed syntax
@@ -153,7 +188,6 @@ if (openssl_pkcs7_sign("msg.txt", "signed.txt", "mycert.pem",
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
