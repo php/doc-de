@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 46319b5952750bc2a5e030c0a216023b551b60c1 Maintainer: cmb Status: ready -->
-
+<!-- EN-Revision: 3742d36be1e1d0d9249ce7e093f4f05ead85b8e8 Maintainer: cmb Status: ready -->
 <refentry xml:id="mysqli.autocommit" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli::autocommit</refname>
   <refname>mysqli_autocommit</refname>
-  <refpurpose>Aktiviert oder deaktiviert automatisches Bestätigen von Datenbankänderungen</refpurpose>
+  <refpurpose>
+   Aktiviert oder deaktiviert das automatische Übertragen von Datenbankänderungen
+  </refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -23,11 +24,12 @@
    <methodparam><type>bool</type><parameter>mode</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Aktiviert oder deaktiviert den Autocommit-Modus für Abfragen an die Datenbankverbindung.
+   Aktiviert oder deaktiviert den Autocommit-Modus für Abfragen an die
+   Datenbankverbindung.
   </para>
   <para>
-   Um den aktuellen Zustand von Autocommit festzustellen, ist die SQL-Anweisung 
-   <literal>SELECT @@autocommit</literal> zu verwenden.
+   Um den aktuellen Zustand von Autocommit festzustellen, ist die
+   SQL-Anweisung <literal>SELECT @@autocommit</literal> zu verwenden.
   </para>
  </refsect1>
 
@@ -40,7 +42,7 @@
      <term><parameter>mode</parameter></term>
      <listitem>
       <para>
-       Ob Autocommit aktiviert werden soll oder nicht.
+       Legt fest, ob Autocommit aktiviert werden soll oder nicht.
       </para>
      </listitem>
     </varlistentry>
@@ -59,8 +61,8 @@
   &reftitle.notes;
   <note>
    <para>
-    Die Funktion kann nicht mit Tabellentypen, die keine Transaktionen
-    unterstützen (wie MyISAM oder ISAM), verwendet werden.
+    Die Funktion kann nicht mit Tabellentypen verwendet werden, die keine
+    Transaktionen unterstützen (wie MyISAM oder ISAM).
    </para>
   </note>
  </refsect1>
@@ -68,61 +70,144 @@
  <refsect1 role="examples">
   &reftitle.examples;
   <example>
-   <title><methodname>mysqli::autocommit</methodname> Beispiel</title>
+   <title><methodname>mysqli::autocommit</methodname>-Beispiel</title>
    <para>&style.oop;</para>
    <programlisting role="php">
 <![CDATA[
 <?php
+
+/* mysqli anweisen, eine Exception auszulösen, wenn ein Fehler auftritt */
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 $mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
+/* Die Tabellen-Engine muss Transaktionen unterstützen */
+$mysqli->query("CREATE TABLE IF NOT EXISTS language (
+    Code text NOT NULL,
+    Speakers int(11) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-/* Schaltet autocommit ein */
-$mysqli->autocommit(TRUE);
+/* autocommit ausschalten */
+$mysqli->autocommit(false);
 
-if ($result = $mysqli->query("SELECT @@autocommit")) {
+$result = $mysqli->query("SELECT @@autocommit");
+$row = $result->fetch_row();
+printf("Autocommit ist %s\n", $row[0]);
+
+try {
+    /* Insert-Anweisung vorbereiten */
+    $stmt = $mysqli->prepare('INSERT INTO language(Code, Speakers) VALUES (?,?)');
+    $stmt->bind_param('ss', $language_code, $native_speakers);
+
+    /* Ein paar Werte einfügen */
+    $language_code = 'DE';
+    $native_speakers = 50_123_456;
+    $stmt->execute();
+    $language_code = 'FR';
+    $native_speakers = 40_546_321;
+    $stmt->execute();
+
+    /* Übertragung der Daten in die Datenbank. Dies setzt nicht autocommit=true */
+    $mysqli->commit();
+    print "2 Zeilen in die Datenbank übertragen\n";
+
+    $result = $mysqli->query("SELECT @@autocommit");
     $row = $result->fetch_row();
     printf("Autocommit ist %s\n", $row[0]);
-    $result->free();
-}
 
-/* Schließt die Verbindung */
-$mysqli->close();
-?>
+    /* Versuchen, weitere Werte einzufügen */
+    $language_code = 'PL';
+    $native_speakers = 30_555_444;
+    $stmt->execute();
+    $language_code = 'DK';
+    $native_speakers = 5_222_444;
+    $stmt->execute();
+
+    /* Das Setzen von autocommit=true löst eine Übertragung aus */
+    $mysqli->autocommit(true);
+
+    print "2 weitere Zeilen in die Datenbank übertragen\n";
+} catch (mysqli_sql_exception $exception) {
+    $mysqli->rollback();
+
+    throw $exception;
+}
 ]]>
    </programlisting>
    <para>&style.procedural;</para>
    <programlisting role="php">
 <![CDATA[
 <?php
-$link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
-if (!$link) {
-    printf("Kann nicht mit localhost verbinden. Fehler: %s\n", mysqli_connect_error());
-    exit();
-}
+/* mysqli anweisen, eine Exception auszulösen, wenn ein Fehler auftritt */
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-/* Schaltet autocommit ein */
-mysqli_autocommit($link, TRUE);
+$mysqli = mysqli_connect("localhost", "my_user", "my_password", "world");
 
-if ($result = mysqli_query($link, "SELECT @@autocommit")) {
+/* Die Tabellen-Engine muss Transaktionen unterstützen */
+mysqli_query($mysqli, "CREATE TABLE IF NOT EXISTS language (
+    Code text NOT NULL,
+    Speakers int(11) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+/* autocommit ausschalten */
+mysqli_autocommit($mysqli, false);
+
+$result = mysqli_query($mysqli, "SELECT @@autocommit");
+    $row = mysqli_fetch_row($result);
+printf("Autocommit ist %s\n", $row[0]);
+
+try {
+    /* Insert-Anweisung vorbereiten */
+    $stmt = mysqli_prepare($mysqli, 'INSERT INTO language(Code, Speakers) VALUES (?,?)');
+    mysqli_stmt_bind_param($stmt, 'ss', $language_code, $native_speakers);
+
+    /* Ein paar Werte einfügen */
+    $language_code = 'DE';
+    $native_speakers = 50_123_456;
+    mysqli_stmt_execute($stmt);
+    $language_code = 'FR';
+    $native_speakers = 40_546_321;
+    mysqli_stmt_execute($stmt);
+
+    /* Übertragung der Daten in die Datenbank. Dies setzt nicht autocommit=true */
+    mysqli_commit($mysqli);
+    print "2 Zeilen in die Datenbank übertragen\n";
+
+    $result = mysqli_query($mysqli, "SELECT @@autocommit");
     $row = mysqli_fetch_row($result);
     printf("Autocommit ist %s\n", $row[0]);
-    mysqli_free_result($result);
-}
 
-/* Schließt die Verbindung */
-mysqli_close($link);
-?>
+    /* Versuchen, weitere Werte einzufügen */
+    $language_code = 'PL';
+    $native_speakers = 30_555_444;
+    mysqli_stmt_execute($stmt);
+    $language_code = 'DK';
+    $native_speakers = 5_222_444;
+    mysqli_stmt_execute($stmt);
+
+    /* Das Setzen von autocommit=true löst eine Übertragung aus */
+    mysqli_autocommit($mysqli, true);
+
+    print "2 weitere Zeilen in die Datenbank übertragen\n";
+} catch (mysqli_sql_exception $exception) {
+    mysqli_rollback($mysqli);
+
+    throw $exception;
+}
 ]]>
    </programlisting>
    &examples.outputs;
    <screen>
 <![CDATA[
-Autocommit ist 1
+Autocommit ist 0
+2 Zeilen in die Datenbank übertragen
+Autocommit ist 0
+2 weitere Zeilen in die Datenbank übertragen
+Autocommit ist 0
+2 Zeilen in die Datenbank übertragen
+Autocommit ist 0
+2 weitere Zeilen in die Datenbank übertragen
 ]]>
    </screen>
   </example>
@@ -140,7 +225,6 @@ Autocommit ist 1
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
