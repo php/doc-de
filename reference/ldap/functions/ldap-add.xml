@@ -1,24 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: bd8f8383a35547d9b19cbe75c05240e6a1ce6142 Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: 76f8c0151d9a99d2f96e154da050e64305862b21 Maintainer: nobody Status: ready -->
 <refentry xml:id="function.ldap-add" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ldap_add</refname>
-  <refpurpose>Einträge einem LDAP Verzeichnis hinzufügen</refpurpose>
+  <refpurpose>Fügt einem LDAP-Verzeichnis Einträge hinzu</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>ldap_add</methodname>
-   <methodparam><type>resource</type><parameter>link_identifier</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>ldap</parameter></methodparam>
    <methodparam><type>string</type><parameter>dn</parameter></methodparam>
    <methodparam><type>array</type><parameter>entry</parameter></methodparam>
-   <methodparam choice="opt"><type>array</type><parameter>serverctrls</parameter><initializer>array()</initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>controls</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Füge Einträge in ein LDAP Verzeichnis ein.
+   Fügt Einträge in ein LDAP-Verzeichnis ein.
   </para>
  </refsect1>
 
@@ -27,11 +26,11 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>link_identifier</parameter></term>
+     <term><parameter>ldap</parameter></term>
      <listitem>
       <para>
-      Eine LDAP Verbindungskennung, die von <function>ldap_connect</function>
-      zurückgegeben wurde.
+       Eine LDAP-Verbindungskennung, die von <function>ldap_connect</function>
+       zurückgegeben wurde.
       </para>
      </listitem>
     </varlistentry>
@@ -39,7 +38,7 @@
      <term><parameter>dn</parameter></term>
      <listitem>
       <para>
-       Der Distinguished Name eines LDAP Datenobjekts.
+       Der Distinguished Name eines LDAP-Datenobjekts.
       </para>
      </listitem>
     </varlistentry>
@@ -47,8 +46,8 @@
      <term><parameter>entry</parameter></term>
      <listitem>
       <para>
-       Ein Array, das die Informationen des Eintrags bestimmt. Die Werte in den
-       Einträgen werden durch individuelle Merkmale indiziert. Im Fall von
+       Ein Array, das die Informationen des Eintrags bestimmt. Die Werte in
+       den Einträgen werden durch individuelle Merkmale indiziert. Im Fall von
        mehreren Werten für ein Merkmal werden diese durch die Verwendung von
        Zahlen indiziert, die bei 0 beginnen.
        <informalexample>
@@ -66,10 +65,10 @@ $entry["merkmal2"][1] = "wert2";
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>serverctrls</parameter></term>
+     <term><parameter>controls</parameter></term>
      <listitem>
       <para>
-       Array von <link linkend="ldap.controls">LDAP-Steuerbefehlen</link>,
+       Ein Array von <link linkend="ldap.controls">LDAP-Steuerbefehlen</link>,
        die mit der Anfrage versendet werden sollen.
       </para>
      </listitem>
@@ -97,10 +96,12 @@ $entry["merkmal2"][1] = "wert2";
       </row>
      </thead>
      <tbody>
+      &ldap.changelog.controls-nullable;
       <row>
        <entry>7.3</entry>
        <entry>
-        Unterstützung für <parameter>serverctrls</parameter> hinzugefügt.
+        Die Unterstützung für <parameter>controls</parameter> wurde
+        hinzugefügt.
        </entry>
       </row>
      </tbody>
@@ -113,15 +114,15 @@ $entry["merkmal2"][1] = "wert2";
   &reftitle.examples;
   <para>
    <example>
-    <title>Komplettes Beispiel mit authentifiziertem bind</title>
+    <title>Komplettes Beispiel mit authentifizierter Verbindung</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$ds = ldap_connect("localhost");  // Annahme: der LDAP Server befindet
-                                // sich auf diesem Host
+$ds = ldap_connect("localhost");  // Annahme: der LDAP-Server befindet
+                                  // sich auf diesem Host
 
 if ($ds) {
-    // bind mit passendem dn für aktualisierenden Zugriff
+    // Verbindung mit passendem DN für aktualisierenden Zugriff
     $r = ldap_bind($ds,"cn=root, o=Meine Firma, c=DE", "geheim");
 
     // Daten vorbereiten
@@ -129,18 +130,18 @@ if ($ds) {
     $info["sn"] = "Mustermann";
     $info["objectclass"] = "person";
 
-    // hinzufügen der Daten zum Verzeichnis
+    // Hinzufügen der Daten zum Verzeichnis
     $r = ldap_add($ds, "cn=Hans Mustermann, o=Meine Firma, c=DE", $info);
 
     ldap_close($ds);
 } else {
-    echo "Verbindung zum LDAP Server nicht möglich!";
+    echo "Verbindung zum LDAP-Server nicht möglich!";
 }
 ?>
 ]]>
     </programlisting>
    </example>
-  </para> 
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
@@ -159,7 +160,6 @@ if ($ds) {
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
