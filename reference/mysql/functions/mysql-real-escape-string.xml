@@ -2,12 +2,13 @@
 <!-- $Revision$ -->
 <!-- EN-Revision: e41806c30bf6975e452c0d4ce35ab0984c2fa68c Maintainer: simp Status: ready -->
 <!-- Credits: sammywg -->
-
 <refentry xml:id="function.mysql-real-escape-string" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysql_real_escape_string</refname>
-  <refpurpose>Maskiert spezielle Zeichen innerhalb eines Strings für die
-   Verwendung in einer SQL-Anweisung</refpurpose>
+  <refpurpose>
+   Maskiert spezielle Zeichen innerhalb einer Zeichenkette für die Verwendung
+   in einer SQL-Anweisung
+  </refpurpose>
  </refnamediv>
 
  <refsynopsisdiv>
@@ -19,7 +20,7 @@
    </simplelist>
   </warning>
  </refsynopsisdiv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
@@ -28,34 +29,33 @@
    <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter><initializer>NULL</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Maskiert spezielle Zeichen im <parameter>unescaped_string</parameter> unter
+   Maskiert spezielle Zeichen in <parameter>unescaped_string</parameter> unter
    Berücksichtigung des aktuellen Zeichensatzes der Verbindung, so dass das
    Ergebnis ohne Probleme in <function>mysql_query</function> verwendet werden
-   kann. Wenn Sie Binärdaten einfügen wollen, müssen Sie die Funktion auf jeden
-   Fall verwenden.
+   kann. Wenn Sie Binärdaten einfügen wollen, müssen Sie die Funktion auf
+   jeden Fall verwenden.
   </para>
   <para>
    <function>mysql_real_escape_string</function> ruft die Funktion
    mysql_real_escape_string der MySQL-Bibliothek auf, die folgende Zeichen mit
-   einem Backslash ('\') versieht:
-   <literal>\x00</literal>, <literal>\n</literal>, <literal>\r</literal>,
-   <literal>\</literal>, <literal>'</literal>, <literal>"</literal> und
-   <literal>\x1a</literal>.
+   einem Backslash ('\') versieht: <literal>\x00</literal>,
+   <literal>\n</literal>, <literal>\r</literal>, <literal>\</literal>,
+   <literal>'</literal>, <literal>"</literal> und <literal>\x1a</literal>.
   </para>
   <para>
-   Die Funktion muss immer (mit wenigen Ausnahmen) verwendet werden, um Daten
-   abzusichern, bevor sie per Query an MySQL übermittelt werden.
+   Die Funktion muss (mit wenigen Ausnahmen) immer verwendet werden, um Daten
+   abzusichern, bevor sie per Abrage an MySQL übermittelt werden.
   </para>
-  
+
   <caution>
    <title>Sicherheit: Der Standardzeichensatz</title>
    <para>
     Der Zeichensatz muss entweder auf Ebene des Servers oder mittels der
-    API-Funktion <function>mysql_set_charset</function> gesetzt werden,
-    damit dieser <function>mysql_real_escape_string</function>
-    beeinflusst. Sehen sie das Grundlagenkapitel zum Thema
-    <link linkend="mysqlinfo.concepts.charset">Zeichensätze</link> für
-    mehr Informationen.
+    API-Funktion <function>mysql_set_charset</function> gesetzt werden, damit
+    dieser <function>mysql_real_escape_string</function> beeinflusst. Siehe
+    das Grundlagenkapitel zum Thema <link
+    linkend="mysqlinfo.concepts.charset">Zeichensätze</link> für mehr
+    Informationen.
    </para>
   </caution>
  </refsect1>
@@ -68,7 +68,7 @@
      <term><parameter>unescaped_string</parameter></term>
      <listitem>
       <para>
-       Der zu maskierende String.
+       Die zu maskierende Zeichenkette.
       </para>
      </listitem>
     </varlistentry>
@@ -80,7 +80,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt einen maskierten String oder im Fehlerfall &false; zurück.
+   Gibt eine maskierte Zeichenkette zurück oder im Fehlerfall &false;.
   </para>
  </refsect1>
 
@@ -88,8 +88,8 @@
   &reftitle.errors;
   <para>
    Wird diese Funktion ohne MySQL-Verbindung ausgeführt, werden ebenfalls
-   PHP-Fehler der Stufe <constant>E_WARNUNG</constant> ausgelöst. Diese Funktion
-   sollte nur mit einer gültigen MySQL-Verbindung verwendet werden.
+   PHP-Fehler der Stufe <constant>E_WARNUNG</constant> ausgelöst. Diese
+   Funktion sollte nur mit einer gültigen MySQL-Verbindung verwendet werden.
   </para>
  </refsect1>
   <refsect1 role="examples">
@@ -104,7 +104,7 @@
 $link = mysql_connect('mysql_host', 'mysql_user', 'mysql_password')
     OR die(mysql_error());
 
-// Anfrage erstellen
+// Abfrage erstellen
 $query = sprintf("SELECT * FROM users WHERE user='%s' AND password='%s'",
             mysql_real_escape_string($user),
             mysql_real_escape_string($password));
@@ -117,8 +117,8 @@ $query = sprintf("SELECT * FROM users WHERE user='%s' AND password='%s'",
    <example>
     <title><function>mysql_real_escape_string</function> benötigt eine Verbindung</title>
     <para>
-     Diese Beispiel verdeutlicht was geschieht, wenn keine MySQL-Verbindung
-     vorhanden ist, wenn diese Funktion aufgerufen wird.
+     Diese Beispiel verdeutlicht, was geschieht, wenn beim Aufruf dieser
+     Funktion keine MySQL-Verbindung vorhanden ist.
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -149,13 +149,12 @@ string(41) "SELECT * FROM actors WHERE last_name = ''"
   </para>
   <para>
    <example>
-    <title>Ein beispielhafter SQL Injection Angriff</title>
+    <title>Ein beispielhafter SQL-Injection-Angriff</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Wir haben $_POST['password'] nicht geprüft, dies könnte
-// ein beliebiger Wert sein den der Benutzer will
-// Zum Beispiel:
+// Wir haben $_POST['password'] nicht überprüft, es könnte
+// jeder beliebiger Wert sein, den der Benutzer will!
 $_POST['username'] = 'aidan';
 $_POST['password'] = "' OR ''='";
 
@@ -177,7 +176,7 @@ SELECT * FROM users WHERE user='aidan' AND password='' OR ''=''
 ]]>
     </screen>
     <para>
-     Dies würde jedermann erlauben, sich ohne valides Passwort einzuloggen.
+     Dies würde jedem erlauben, sich ohne valides Passwort einzuloggen.
     </para>
    </example>
   </para>
@@ -188,33 +187,33 @@ SELECT * FROM users WHERE user='aidan' AND password='' OR ''=''
   <note>
    <para>
     Sie müssen eine Verbindung zu MySQL geöffnet haben, bevor Sie
-    <function>mysql_real_escape_string</function> verwenden, ansonsten erhalten
-    Sie einen Fehler vom Typ <constant>E_WARNING</constant> und der Rückgabewert
-    wird zu &false;. Ist <parameter>link_identifier</parameter> nicht angegeben,
-    wird die letzte MySQL-Verbindung verwendet.
+    <function>mysql_real_escape_string</function> verwenden, ansonsten
+    erhalten Sie einen Fehler vom Typ <constant>E_WARNING</constant> und der
+    Rückgabewert wird zu &false;. Ist <parameter>link_identifier</parameter>
+    nicht angegeben, wird die letzte MySQL-Verbindung verwendet.
    </para>
   </note>
   <note>
    <para>
-    Ist <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link> aktiviert,
-    wenden Sie zuerst <function>stripslashes</function> auf die Daten an. Das
-    Bearbeiten bereits in irgend einer Form maskierter Daten durch
-    mysql_real_escape_string führt ansonsten dazu, dass bereits Maskiertes
-    doppelt maskiert wird.
+    Ist <link linkend="ini.magic-quotes-gpc">magic_quotes_gpc</link>
+    aktiviert, wenden Sie zuerst <function>stripslashes</function> auf die
+    Daten an. Das Bearbeiten bereits in irgend einer Form maskierter Daten
+    durch mysql_real_escape_string führt ansonsten dazu, dass bereits
+    Maskiertes doppelt maskiert wird.
    </para>
   </note>
   <note>
    <para>
-    Wenn die Funktion nicht verwendet wird, um die Daten zu maskieren, ist der
-    Query anfällig für <link linkend="security.database.sql-injection">SQL
-    Injection Angriffe</link>.
+    Wenn die Funktion nicht verwendet wird, um die Daten zu maskieren, ist die
+    Abfrage anfällig für
+    <link linkend="security.database.sql-injection">SQL-Injection-Angriffe</link>.
    </para>
   </note>
   <note>
    <simpara>
     <function>mysql_real_escape_string</function> maskiert weder
-    <literal>%</literal> noch <literal>_</literal>. Diese Zeichen werden in MySQL
-    als Platzhalter interpretiert, wenn sie mit <literal>LIKE</literal>,
+    <literal>%</literal> noch <literal>_</literal>. Diese Zeichen werden in
+    MySQL als Platzhalter interpretiert, wenn sie mit <literal>LIKE</literal>,
     <literal>GRANT</literal> oder <literal>REVOKE</literal> kombiniert werden.
    </simpara>
   </note>
@@ -235,8 +234,6 @@ SELECT * FROM users WHERE user='aidan' AND password='' OR ''=''
  </refsect1>
 
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

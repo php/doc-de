@@ -1,35 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8a4247cc1b7daf4daaaec8701d46d1daa1c0b886 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 684a3c40c755f2a70e57df478a5d37d6c0f30ef9 Maintainer: simp Status: ready -->
 <!-- Credits: hholzgra -->
-
 <refentry xml:id="function.mysql-db-query" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysql_db_query</refname>
-  <refpurpose>Selektiert ein Schema und führt in ihm Anfrage aus</refpurpose>
+  <refpurpose>Wählt eine Datenbank aus und führt darauf eine Abfrage aus</refpurpose>
  </refnamediv>
 
  <refsynopsisdiv>
   <warning>
    &mysql.alternative.note.5-3-0;
    <simplelist role="alternatives">
-    <member><function>mysqli_select_db</function> gefolgt vom Query</member>
+    <member><function>mysqli_select_db</function> then the query</member>
     <member><methodname>PDO::__construct</methodname></member>
    </simplelist>
   </warning>
  </refsynopsisdiv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>mysql_db_query</methodname>
+   <type class="union"><type>resource</type><type>bool</type></type><methodname>mysql_db_query</methodname>
    <methodparam><type>string</type><parameter>database</parameter></methodparam>
    <methodparam><type>string</type><parameter>query</parameter></methodparam>
    <methodparam choice="opt"><type>resource</type><parameter>link_identifier</parameter><initializer>NULL</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>mysql_db_query</function> selektiert ein Schema und führt in ihm
-   eine Anfrage aus.
+   <function>mysql_db_query</function> wählt eine Datenbank aus und führt eine
+   Abfrage darauf aus.
   </para>
  </refsect1>
 
@@ -41,7 +40,7 @@
      <term><parameter>database</parameter></term>
      <listitem>
       <para>
-       Der Name des zu selektierenden Schemas.
+       Der Name der auszuwählenden Datenbank.
       </para>
      </listitem>
     </varlistentry>
@@ -49,10 +48,10 @@
      <term><parameter>query</parameter></term>
      <listitem>
       <para>
-       Die MySQL Abfrage.
+       Die MySQL-Abfrage.
       </para>
       <para>
-       Daten innerhalb der Abfrage sollten
+       Die Daten innerhalb der Abfrage sollten
        <link linkend="function.mysql-real-escape-string">korrekt maskiert
        sein</link>.
       </para>
@@ -66,34 +65,11 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Rückgabewert: Eine positive MySQL Ergebnis-Resource für das
-   Anfrageergebnis, oder &false; im Fehlerfall. Diese Funktion gibt
-   für <literal>INSERT</literal>/<literal>UPDATE</literal>/<literal>DELETE</literal>
-   Queries ebenfalls &true;/&false; zurück, um Erfolg/Misserfolg anzuzeigen.
-  </para>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.3.0</entry>
-       <entry>
-        Diese Funktion löst nun eine E_DEPRECATED Warnung aus.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
+   Gibt eine positive MySQL-Ergebnisressource für das Abfrageergebnis zurück
+   oder &false; im Fehlerfall. Diese Funktion gibt für
+   <literal>INSERT</literal>-, <literal>UPDATE</literal>- und
+   <literal>DELETE</literal>-Abfragen ebenfalls &true;/&false; zurück, um
+   Erfolg/Misserfolg anzuzeigen.
   </para>
  </refsect1>
 
@@ -101,7 +77,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>mysql_db_query</function> Alternativbeispiel</title>
+    <title><function>mysql_db_query</function>-Alternativbeispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -112,7 +88,7 @@ if (!$link = mysql_connect('mysql_host', 'mysql_user', 'mysql_password')) {
 }
 
 if (!mysql_select_db('mysql_dbname', $link)) {
-    echo 'Konnte Schema nicht selektieren';
+    echo 'Konnte die Datenbank nicht auswählen';
     exit;
 }
 
@@ -120,7 +96,7 @@ $sql    = 'SELECT foo FROM bar WHERE id = 42';
 $result = mysql_query($sql, $link);
 
 if (!$result) {
-    echo "DB Fehler, konnte die Datenbank nicht abfragen\n";
+    echo "DB-Fehler, konnte die Datenbank nicht abfragen\n";
     echo 'MySQL Error: ' . mysql_error();
     exit;
 }
@@ -143,15 +119,14 @@ mysql_free_result($result);
   <note>
    <para>
     Beachten Sie, dass diese Funktion <emphasis role="strong">NICHT</emphasis>
-    zu der Datenbank zurückwechselt, mit der Sie sich zuvor verbunden
-    hatten. In anderen Worten ausgedrückt: Sie können diese Funktion nicht
-    benutzen, um <emphasis>temporär</emphasis> eine SQL-Query auf einer
-    anderen Datenbank auszuführen. Sie müssen selbst (manuell) sicherstellen,
-    dass Sie wieder Ihre vorherige Datenbank benutzen. Sie sollten sich
-    angewöhnen in Ihren SQL-Queries die Schreibweise
-    <literal>schema.tabelle</literal>
-    oder <function>mysql_select_db</function> zu verwenden statt diese
-    Funktion zu benutzen.
+    zu der Datenbank zurückwechselt, mit der Sie sich zuvor verbunden hatten.
+    Mit anderen Worten ausgedrückt: Sie können diese Funktion nicht verwenden,
+    um <emphasis>temporär</emphasis> eine SQL-Abfrage auf einer anderen
+    Datenbank auszuführen. Sie müssen selbst (manuell) sicherstellen, dass Sie
+    wieder Ihre vorherige Datenbank verwenden. Sie sollten sich angewöhnen,
+    statt dieser Funktion in Ihren SQL-Abfragen die Schreibweise
+    <literal>datenbank.tabelle</literal> oder die Funktion
+    <function>mysql_select_db</function> zu verwenden.
    </para>
   </note>
  </refsect1>
@@ -167,7 +142,6 @@ mysql_free_result($result);
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

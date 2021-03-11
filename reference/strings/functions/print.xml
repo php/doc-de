@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3d974bf87ef32d933ca1d40828711a8da4b594f1 Maintainer: sammywg Status: ready -->
-
+<!-- EN-Revision: eea9c73ba47da81155ed5baa979dd2a085c3b874 Maintainer: sammywg Status: ready -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.print">
  <refnamediv>
   <refname>print</refname>
@@ -12,20 +11,20 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>print</methodname>
-   <methodparam><type>string</type><parameter>arg</parameter></methodparam>
+   <methodparam><type>string</type><parameter>expression</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Gibt <parameter>arg</parameter> aus.
+   Gibt <parameter>expression</parameter> aus.
   </para>
   <para>
-   <literal>print</literal> ist keine wirkliche Funktion (sondern ein
-   Sprachkonstrukt), weshalb Sie beim Aufruf nicht unbedingt
-   Klammern um die Argumentliste setzen müssen.
+   <literal>print</literal> ist keine Funktion, sondern ein Sprachkonstrukt.
+   Sein Argument ist der Ausdruck, der auf das Schlüsselwort
+   <literal>print</literal> folgt, und wird nicht durch Klammern abgegrenzt.
   </para>
   <para>
    Der Hauptunterschied zu <literal>echo</literal> besteht darin, dass
-   <literal>print</literal> nur ein einziges Argument entgegen nimmt, und
-   immer 1 zurückgibt.
+   <literal>print</literal> nur ein einziges Argument entgegennimmt, und
+   immer <literal>1</literal> zurückgibt.
   </para>
  </refsect1>
 
@@ -34,10 +33,13 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>arg</parameter></term>
+     <term><parameter>expression</parameter></term>
      <listitem>
       <para>
-       Die Eingabedaten.
+       Der Ausdruck, der ausgegeben werden soll. Nicht-String-Werte werden in
+       Strings umgewandelt, auch wenn  <link
+       linkend="language.types.declarations.strict">die Direktive
+       <literal>strict_types</literal></link> aktiviert ist.
       </para>
      </listitem>
     </varlistentry>
@@ -60,42 +62,38 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-print("Hallo Welt");
+print "print benötigt keine Klammern.";
 
-print "print() funktioniert auch ohne Klammern.";
+// Es wird kein Zeilenumbruch oder Leerzeichen eingefügt; das Folgende gibt
+// "HalloWelt" in einer Zeile aus
+print "Hallo";
+print "Welt";
 
-print "Dies umfasst
-mehrere Zeilen. Die Zeilenumbrüche werden
-ebenfalls ausgegeben";
+print "Dieser String umfasst
+mehrere Zeilen. Die Zeilenumbrüche
+werden mit ausgegeben.";
 
-print "Dies umfasst\nmehrere Zeilen. Die Zeilenumbrüche werden\nebenfalls ausgegeben.";
+print "Dieser String umfasst\nmehrere Zeilen. Die Zeilenumbrüche\nwerden mit ausgegeben.";
 
-print "Escape-Zeichen werden \"so\" geschrieben.";
+// Das Argument kann ein beliebiger Ausdruck sein, der einen String erzeugt
+$foo = "ein Beispiel";
+print "foo ist $foo"; // foo ist ein Beispiel
 
-// Sie können in einer print-Anweisung auch Variablen benutzen
-$foo = "foobar";
-$bar = "barbaz";
+$fruechte = ["Zitrone", "Orange", "Banane"];
+print implode(" und ", $fruechte); // Zitrone und Orange und Banane
 
-print "foo ist $foo"; // foo ist foobar
+// Nicht-String-Ausdrücke werden in String umgewandelt, auch wenn
+// declare(strict_types=1) verwendet wird
+print 6 * 7; // 42
 
-// Sie können auch Arrays verwenden
-$bar = array("value" => "foo");
+// Da print einen Rückgabewert hat, kann es in Ausdrücken verwendet werden
+// Das Folgende gibt "Hallo Welt" aus
+if ( print "Hallo" ) {
+    echo " Welt";
+}
 
-print "Das ist {$bar['value']} !"; // Das ist foo !
-
-// Einfache Anführungsstriche geben den Variablennamen aus, nicht den Inhalt
-print 'foo ist $foo'; // foo ist $foo
-
-// Benutzen Sie keine anderen Zeichen, können Sie auch nur
-// Variablen ausgeben
-print $foo;          // foobar
-
-print <<<END
-Dies verwendet die "here document" Syntax zur Ausgabe von
-mehreren Zeilen mit $Variablen-Interpolation. Beachten Sie,
-dass das "here document" Endezeichen in einer Zeile nur mit
-einem Semikolon ohne Whitespaces stehen muss!
-END;
+// Das Folgende gibt "wahr" aus
+( 1 === 1 ) ? print 'wahr' : print 'falsch';
 ?>
 ]]>
     </programlisting>
@@ -105,6 +103,82 @@ END;
 
  <refsect1 role="notes">
   &reftitle.notes;
+  <note>
+   <title>Die Verwendung mit Klammern</title>
+   <para>
+    Wenn das Argument in Klammern an <literal>print</literal> übergeben wird,
+    löst das keinen Syntaxfehler aus und erzeugt eine Syntax, die wie ein
+    normaler Funktionsaufruf aussieht. Dies kann jedoch irreführend sein, denn
+    die Klammern sind tatsächlich Teil des auszugebenden Ausdrucks und nicht
+    Teil der <literal>print</literal>-Syntax selbst.
+   </para>
+   <para>
+    <example>
+     <title/>
+     <programlisting role="php">
+<![CDATA[
+<?php
+print "Hallo";
+// gibt "Hallo" aus
+
+print("Hallo");
+// gibt auch "Hallo" aus, weil ("Hallo") ein gültiger Ausdruck ist
+
+print(1 + 2) * 3;
+// gibt "9" aus; die Klammern bewirken, dass zuerst 1+2 ausgewertet wird, dann 3*3
+// Die print-Anweisung sieht den gesamten Ausdruck als ein Argument
+
+if ( print("Hallo") && false ) {
+    print " - inside if";
+}
+else {
+    print " - inside else";
+}
+// gibt " - inside if" aus
+// Der Ausdruck ("Hallo") && false wird zuerst ausgewertet und ergibt false
+// Dies wird in die leere Zeichenkette "" umgewandelt und gedruckt
+// Das print-Konstrukt gibt dann 1 zurück, also wird der Code im if-Block ausgeführt
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    Wenn <literal>print</literal> in einem größeren Ausdruck verwendet wird,
+    könnte es nötig sein, sowohl das Schlüsselwort als auch sein Argument in
+    Klammern zu setzen, um das gewünschte Ergebnis zu erhalten:
+   </para>
+   <para>
+    <example>
+     <title/>
+     <programlisting role="php">
+<![CDATA[
+<?php
+if ( (print "Hallo") && false ) {
+    print " - inside if";
+}
+else {
+    print " - inside else";
+}
+// gibt "Hallo - inside else" aus
+// Im Gegensatz zum vorherigen Beispiel wird der Ausdruck (print "Hallo")
+// zuerst ausgewertet
+// Nach der Ausgabe von "Hallo" gibt print 1 zurück
+// Da 1 && false falsch ist, wird der Code im else-Block ausgeführt
+
+print "Hallo " && print "Welt";
+// gibt "Welt1" aus; print "Welt" wird zuerst ausgewertet,
+// dann wird der Ausdruck "Hallo " && 1 an den linken print übergeben
+
+(print "Hallo ") && (print "Welt");
+// gibt "Hallo Welt" aus; die Klammern erzwingen, dass die print-Ausdrücke
+// vor dem && ausgewertet werden.
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+  </note>
   &note.language-construct;
  </refsect1>
 
@@ -115,7 +189,7 @@ END;
     <member><function>echo</function></member>
     <member><function>printf</function></member>
     <member><function>flush</function></member>
-    <member><link linkend="language.types.string.syntax.heredoc">Heredoc-Syntax</link></member>
+    <member><link linkend="language.types.string" >Möglichkeiten literale Strings anzugeben</link></member>
    </simplelist>
   </para>
  </refsect1>

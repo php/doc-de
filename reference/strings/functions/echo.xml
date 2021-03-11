@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9e0f03ac354d797d1d16c0fcc1663e5e170f2727 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: ede9d209f64d4cd71bf22fcfaed14c6fc269523c Maintainer: sammywg Status: ready -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.echo">
  <refnamediv>
   <refname>echo</refname>
@@ -11,27 +11,25 @@
   &reftitle.description;
   <methodsynopsis>
    <type>void</type><methodname>echo</methodname>
-   <methodparam><type>string</type><parameter>arg</parameter></methodparam>
-   <methodparam rep="repeat"><type>string</type><parameter>args</parameter></methodparam>
+   <methodparam rep="repeat"><type>string</type><parameter>expressions</parameter></methodparam>
   </methodsynopsis>
   <simpara>
-    Gibt alle Parameter aus. Es wird kein zusätzlicher Zeilenumbruch angehängt.
+    Gibt einen oder mehrere Ausdrücke ohne zusätzliche Zeilenumbrüche oder
+    Leerzeichen aus.
   </simpara>
   <para>
-   <literal>echo</literal> ist nicht wirklich eine Funktion sondern
-   ein Sprach-Konstrukt, daher ist es nicht notwendig, Klammern zu verwenden.
-   <literal>echo</literal> verhält sich im Gegensatz zu einigen anderen
-   Sprach-Konstrukten nicht wie eine Funktion, deshalb kann es nicht immer
-   in einem Funktionskontext verwendet werden. Hinzu kommt, dass bei der
-   Angabe mehrerer Parameter für <literal>echo</literal> diese nicht
-   von Klammern umschlossen sein dürfen.
+   <literal>echo</literal> ist keine Funktion, sondern ein Sprachkonstrukt.
+   Seine Argumente sind eine Liste von Ausdrücken, die dem Schlüsselwort
+   <literal>echo</literal> folgen und nicht durch Kommas getrennt und durch
+   Klammern abgegrenzt sind. Im Gegensatz zu einigen anderen Sprachkonstrukten
+   hat <literal>echo</literal> keinen Rückgabewert, sodass es nicht im
+   Zusammenhang mit einem Ausdruck verwendet werden kann.
   </para>
   <para>
-   <literal>echo</literal> besitzt zusätzlich eine Syntax-Kurzform, Sie
-   können also ein öffnendes PHP-Tag von einem Gleichheitszeichen gefolgt
-   notieren. Vor PHP 5.4.0 funktioniert diese Syntax-Kurzform nur, wenn <link
-   linkend="ini.short-open-tag">short_open_tag</link> in der php.ini
-   eingeschaltet ist.
+   <literal>echo</literal> besitzt zusätzlich eine Syntax-Kurzform, bei der
+   Sie ein Gleichheitszeichen direkt nach einem öffnenden PHP-Tag anfügen.
+   Diese Syntax ist auch bei deaktivierter Konfigurationseinstellung
+   <link linkend="ini.short-open-tag">short_open_tag</link> verfügbar.
    <informalexample>
     <programlisting role="php">
 <![CDATA[
@@ -42,7 +40,7 @@ Ich habe <?=$foo?> foo.
   </para>
   <para>
    Der Hauptunterschied zu <literal>print</literal> ist, dass
-   <literal>echo</literal> eine Liste von Argumenten entgegennimmt, und keinen
+   <literal>echo</literal> mehrere Argumente entgegennimmt, und keinen
    Rückgabewert hat.
   </para>
  </refsect1>
@@ -52,17 +50,14 @@ Ich habe <?=$foo?> foo.
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>arg</parameter></term>
+     <term><parameter>expressions</parameter></term>
      <listitem>
       <para>
-       Der auszugebende Parameter.
-      </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>args</parameter></term>
-     <listitem>
-      <para>
+       Ein oder mehrere durch Kommas getrennte String-Ausdrücke, die
+       ausgegeben werden sollen. Nicht-String-Werte werden in Strings
+       umgewandelt, auch wenn  <link
+       linkend="language.types.declarations.strict">die Direktive
+       <literal>strict_types</literal></link> aktiviert ist.
       </para>
      </listitem>
     </varlistentry>
@@ -85,21 +80,48 @@ Ich habe <?=$foo?> foo.
     <programlisting role="php">
 <![CDATA[
 <?php
-echo "Hallo Welt";
+echo "echo benötigt keine Klammern.";
 
-// Zeichenketten können entweder individuell als mehrere Argumente oder
+// Strings können entweder individuell als mehrere Argumente oder
 // miteinander verbunden als einzelnes Argument übergeben werden
-echo 'Dieser ', 'String ', 'besteht ', 'aus ', 'mehreren Parametern.', chr(10);
+echo 'Dieser ', 'String ', 'besteht ', 'aus ', 'mehreren Parametern.', "\n";
 echo 'Dieser  ' . 'String ' . 'wurde ' . 'mit ' . 'Stringverkettung erzeugt.' . "\n";
 
-// Da echo sich nicht wie eine Funktion verhält, ist der folgende Code ungültig.
+// Es wird kein Zeilenumbruch oder Leerzeichen eingefügt; das Folgende gibt
+// "HalloWelt" in einer Zeile aus
+echo "Hallo";
+echo "Welt";
+
+// Dasselbe wie oben
+echo "Hallo", "Welt";
+
+echo "Dieser String umfasst
+mehrere Zeilen. Die Zeilenumbrüche
+werden mit ausgegeben.";
+
+echo "Dieser String umfasst\nmehrere Zeilen. Die Zeilenumbrüche\nwerden mit ausgegeben.";
+
+// Das Argument kann ein beliebiger Ausdruck sein, der einen String erzeugt
+$foo = "ein Beispiel";
+echo "foo ist $foo"; // foo ist ein Beispiel
+
+$fruechte = ["Zitrone", "Orange", "Banane"];
+echo implode(" und ", $fruechte); // Zitrone und Orange und Banane
+
+// Nicht-String-Ausdrücke werden in String umgewandelt, auch wenn
+// declare(strict_types=1) verwendet wird
+echo 6 * 7; // 42
+
+// Da echo sich nicht wie ein Ausdruck verhält, ist der folgende Code ungültig.
 ($eine_variable) ? echo 'true' : echo 'false';
 
 // Folgende Beispiele funktionieren hingegen:
-($eine_variable) ? print 'true': print 'false'; // print ist ebenfalls ein
-                         // Konstrukt, aber es verhält sich wie eine Funktion,
-                         // so dass es in diesem Kontext verwendet werden kann
-echo $eine_variable ? 'true': 'false'; // Das Statement herumgedreht
+($eine_variable) ? print 'true' : print 'false'; // print ist auch ein Konstrukt,
+                         // aber es ist ein gültiger Ausdruck, der 1 zurückgibt,
+                         // also kann es in diesem Kontext verwendet werden.
+
+echo $eine_variable ? 'true': 'false'; // den Ausdruck zuerst auswerten und dann an
+                                       // echo übergeben
 ?>
 ]]>
     </programlisting>
@@ -110,32 +132,83 @@ echo $eine_variable ? 'true': 'false'; // Das Statement herumgedreht
  <refsect1 role="notes">
   &reftitle.notes;
   &note.language-construct;
+  <note>
+   <title>Die Verwendung mit Klammern</title>
+   <para>
+    Wenn ein einzelnes Argument in Klammern an <literal>echo</literal>
+    übergeben wird, löst das keinen Syntaxfehler aus und erzeugt eine Syntax,
+    die wie ein normaler Funktionsaufruf aussieht. Dies kann jedoch
+    irreführend sein, denn die Klammern sind tatsächlich Teil des
+    auszugebenden Ausdrucks und nicht Teil der <literal>echo</literal>-Syntax
+    selbst.
+   </para>
+   <para>
+    <example>
+     <title/>
+     <programlisting role="php">
+<![CDATA[
+<?php
+echo "Hallo";
+// gibt "Hallo" aus
+
+echo("Hallo");
+// gibt auch "Hallo" aus, weil ("Hallo") ein gültiger Ausdruck ist
+
+echo(1 + 2) * 3;
+// gibt "9" aus; die Klammern bewirken, dass zuerst 1+2 ausgewertet wird, dann 3*3
+// Die echo-Anweisung sieht den gesamten Ausdruck als ein Argument
+
+echo "Hallo", " Welt";
+// gibt "Hallo Welt" aus
+
+echo("Hallo"), (" Welt");
+// gibt "Hallo Welt" aus; the parentheses are part of each expression
+
+echo("Hallo", " Welt");
+// löst eine Syntaxfehler aus, weil ("Hallo", " Welt") kein gültiger Ausdruck ist
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  </note>
   <tip>
    <para>
-    Ein Vorteil beim Übergeben mehrerer Argumente gegenüber der Verwendung von
-    Zeichenkettenverknüpfung in <function>echo</function> betrifft die Rangfolge
-    des Punkt-Operators in PHP. Werden mehrere Argumente übergeben, dann sind
-    die Klammern nicht nötig, um die richtige Rangfolge zu gewährleisten:
+    Die Übergabe mehrerer Argumente an <literal>echo</literal> kann
+    Schwierigkeiten vermeiden, die durch den Vorrang des Verkettungsoperators
+    in PHP entstehen. Zum Beispiel hat der Verkettungsoperator eine höhere
+    Priorität als der Ternäre und vor PHP 8.0.0 hatte er die gleiche Rangfolge
+    wie die Addition und die Subtraktion:
    </para>
    <programlisting role="php">
 <![CDATA[
 <?php
-echo "Summe: ", 1 + 2;
-echo "Hallo ", isset($name) ? $name : "Max Mustermann", "!";
+// Im Folgenden wird der Ausdruck 'Hallo ' . isset($name) zuerst ausgewertet
+// und ist immer wahr, daher ist das Argument für echo immer $name
+echo 'Hallo ' . isset($name) ? $name : 'Max Mustermann' . '!';
+
+// Das beabsichtigte Verhalten erfordert zusätzliche Klammern
+echo 'Hallo ' . (isset($name) ? $name : 'Max Mustermann') . '!';
+
+// Vor PHP 8.0.0 gibt das folgende "2" aus, statt "Summe: 3"
+echo 'Sum: ' . 1 + 2;
+
+// Auch hier stellt das Hinzufügen von Klammern die beabsichtigte Reihenfolge
+// der Auswertung sicher
+echo 'Summe: ' . (1 + 2);
 ]]>
    </programlisting>
-
    <para>
-    Im Fall von Zeichenkettenverknüpfung hat der Punkt-Operator dieselbe
-    Rangfolge wie der Additionsoperator, aber eine höhere Rangfolge als der
-    ternäre Operator, so dass für das korrekte Verhalten Klammern verwendet
-    werden müssen:
+    Falls mehrere Argumente übergeben werden, dann sind Klammern nicht
+    erforderlich, um die Vorrangigkeit zu erzwingen, da jeder Ausdruck für
+    sich steht:
    </para>
    <programlisting role="php">
 <![CDATA[
 <?php
-echo 'Summe: ' . (1 + 2);
-echo 'Hallo ' . (isset($name) ? $name : 'Max Mustermann') . '!';
+echo "Hallo ", isset($name) ? $name : "Max Mustermann", "!";
+
+echo "Summe: ", 1 + 2;
 ]]>
    </programlisting>
   </tip>
@@ -148,7 +221,7 @@ echo 'Hallo ' . (isset($name) ? $name : 'Max Mustermann') . '!';
     <member><function>print</function></member>
     <member><function>printf</function></member>
     <member><function>flush</function></member>
-    <member><link linkend="language.types.string.syntax.heredoc">Heredoc-Syntax</link></member>
+    <member><link linkend="language.types.string" >Möglichkeiten literale Strings anzugeben</link></member>
    </simplelist>
   </para>
  </refsect1>
