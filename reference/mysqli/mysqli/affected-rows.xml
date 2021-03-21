@@ -1,34 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: f5beedad8a6331fc6d88c5425f21aca35424c60a Maintainer: tihox Status: ready -->
+<!-- EN-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Maintainer: tihox Status: ready -->
 <!-- Reviewed: no -->
-
 <refentry xml:id="mysqli.affected-rows" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli::$affected_rows</refname>
   <refname>mysqli_affected_rows</refname>
-  <refpurpose>Ermittelt die Anzahl der betroffenen Zeilen in einem vorherigen MySQL Vorgang</refpurpose>
+  <refpurpose>
+   Liefert die Anzahl der Datensätze, die vom letzten MySQL-Vorgang betroffen waren
+  </refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <para>&style.oop;</para>
-  <fieldsynopsis><type>int</type><varname linkend="mysqli.affected-rows">mysqli->affected_rows</varname></fieldsynopsis>
+  <fieldsynopsis><type>int</type><varname linkend="mysqli.affected-rows">mysqli-&gt;affected_rows</varname></fieldsynopsis>
   <para>&style.procedural;</para>
   <methodsynopsis>
-   <type>int</type><methodname>mysqli_affected_rows</methodname>
-   <methodparam><type>mysqli</type><parameter>link</parameter></methodparam>
+   <type class="union"><type>int</type><type>string</type></type><methodname>mysqli_affected_rows</methodname>
+   <methodparam><type>mysqli</type><parameter>mysql</parameter></methodparam>
   </methodsynopsis>
   <para>
    Gibt die Anzahl der von der letzten <literal>INSERT</literal>-,
-   <literal>UPDATE</literal>-,<literal>REPLACE</literal>- oder <literal>DELETE</literal>-Abfrage 
-   betroffenen Zeilen zurück.
+   <literal>UPDATE</literal>-,<literal>REPLACE</literal>- oder
+   <literal>DELETE</literal>-Abfrage betroffenen Datensätze zurück.
   </para>
   <para>
-   Für SELECT-Anweisungen entspricht <function>mysqli_affected_rows</function> <function>mysqli_num_rows</function>
+   <function>mysqli_affected_rows</function> entspricht bei SELECT-Anweisungen
+   <function>mysqli_num_rows</function>.
   </para>
  </refsect1>
- 
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -41,16 +43,18 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Eine Ganzzahl größer als Null zeigt die Anzahl der betroffenen oder abgerufenen
-   Zeilen an.
-   Null gibt an, dass keine Datensätze für eine UPDATE-Anweisung aktualisiert wurden,
-   keine Zeilen mit der  <literal>WHERE</literal>-Klausel übereinstimmen oder,dass die Datenbankabfrage noch
-   nicht aufgeführt worden ist. -1 gibt an, dass die Datenbankabfrage einen Fehler zurückgegeben hat.
+   Eine Ganzzahl größer als Null zeigt die Anzahl der betroffenen oder
+   abgerufenen Datensätze an. Null gibt an, dass keine Datensätze für eine
+   UPDATE-Anweisung aktualisiert wurden, keine Datensätze mit der
+   <literal>WHERE</literal>-Klausel übereinstimmen oder, dass die
+   Datenbankabfrage noch nicht aufgeführt wurde. -1 gibt an, dass die
+   Datenbankabfrage einen Fehler zurückgegeben hat.
   </para>
   <note>
    <para>
-    Ist die Anzahl der betroffenen Datensätze größer als der maximale Integer-Wert(<constant> PHP_INT_MAX </constant>), wird die 
-    Anzahl der betroffenen Datensätze als String zurückgegeben.
+    Ist die Anzahl der betroffenen Datensätze größer als der maximale
+    Integer-Wert(<constant> PHP_INT_MAX </constant>), wird die Anzahl der
+    betroffenen Datensätze als Zeichenkette zurückgegeben.
    </para>
   </note>
  </refsect1>
@@ -58,7 +62,7 @@
  <refsect1 role="examples">
   &reftitle.examples;
   <example>
-   <title><varname>$mysqli->affected_rows</varname> example</title>
+   <title><varname>$mysqli-&gt;affected_rows</varname>-Beispiel</title>
    <para>&style.oop;</para>
    <programlisting role="php">
 <![CDATA[
@@ -67,27 +71,27 @@ $mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
 /* Verbindung überprüfen */
 if (mysqli_connect_errno()) {
-    printf("Connect failed: %s\n", mysqli_connect_error());
+    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
     exit();
 }
 
 /* Datensätze einfügen */
 $mysqli->query("CREATE TABLE Language SELECT * from CountryLanguage");
-printf("Affected rows (INSERT): %d\n", $mysqli->affected_rows);
+printf("Betroffene Datensätze (INSERT): %d\n", $mysqli->affected_rows);
 
 $mysqli->query("ALTER TABLE Language ADD Status int default 0");
 
-/* Datensätze updaten */
+/* Datensätze ändern */
 $mysqli->query("UPDATE Language SET Status=1 WHERE Percentage > 50");
-printf("Affected rows (UPDATE): %d\n", $mysqli->affected_rows);
+printf("Betroffene Datensätze (UPDATE): %d\n", $mysqli->affected_rows);
 
 /* Datensätze löschen */
 $mysqli->query("DELETE FROM Language WHERE Percentage < 50");
-printf("Affected rows (DELETE): %d\n", $mysqli->affected_rows);
+printf("Betroffene Datensätze (DELETE): %d\n", $mysqli->affected_rows);
 
 /* Alle Datensätze auswählen */
 $result = $mysqli->query("SELECT CountryCode FROM Language");
-printf("Affected rows (SELECT): %d\n", $mysqli->affected_rows);
+printf("Betroffene Datensätze (SELECT): %d\n", $mysqli->affected_rows);
 
 $result->close();
 
@@ -106,27 +110,27 @@ $mysqli->close();
 $link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
 if (!$link) {
-    printf("Can't connect to localhost. Error: %s\n", mysqli_connect_error());
+    printf("Kann nicht mit localhost verbinden. Fehler: %s\n", mysqli_connect_error());
     exit();
 }
 
 /* Datensätze einfügen */
 mysqli_query($link, "CREATE TABLE Language SELECT * from CountryLanguage");
-printf("Affected rows (INSERT): %d\n", mysqli_affected_rows($link));
+printf("Betroffene Datensätze (INSERT): %d\n", mysqli_affected_rows($link));
 
 mysqli_query($link, "ALTER TABLE Language ADD Status int default 0");
 
-/* Datensätze aktualisieren */
+/* Datensätze ändern */
 mysqli_query($link, "UPDATE Language SET Status=1 WHERE Percentage > 50");
-printf("Affected rows (UPDATE): %d\n", mysqli_affected_rows($link));
+printf("Betroffene Datensätze (UPDATE): %d\n", mysqli_affected_rows($link));
 
 /* Datensätze löschen */
 mysqli_query($link, "DELETE FROM Language WHERE Percentage < 50");
-printf("Affected rows (DELETE): %d\n", mysqli_affected_rows($link));
+printf("Betroffene Datensätze (DELETE): %d\n", mysqli_affected_rows($link));
 
 /* Alle Datensätze auswählen */
 $result = mysqli_query($link, "SELECT CountryCode FROM Language");
-printf("Affected rows (SELECT): %d\n", mysqli_affected_rows($link));
+printf("Betroffene Datensätze (SELECT): %d\n", mysqli_affected_rows($link));
 
 mysqli_free_result($result);
 
@@ -141,10 +145,10 @@ mysqli_close($link);
    &examples.outputs;
    <screen>
 <![CDATA[
-Affected rows (INSERT): 984
-Affected rows (UPDATE): 168
-Affected rows (DELETE): 815
-Affected rows (SELECT): 169
+Betroffene Datensätze (INSERT): 984
+Betroffene Datensätze (UPDATE): 168
+Betroffene Datensätze (DELETE): 815
+Betroffene Datensätze (SELECT): 169
 ]]>
    </screen>
   </example>
@@ -161,7 +165,6 @@ Affected rows (SELECT): 169
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

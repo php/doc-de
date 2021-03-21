@@ -4,7 +4,7 @@
 <refentry xml:id="function.ingres-unbuffered-query" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ingres_unbuffered_query</refname>
-  <refpurpose>Sendet eine SQL-Abfrage an Ingres, ohne die Ergebniszeilen zu puffern</refpurpose>
+  <refpurpose>Sendet eine ungepufferte SQL-Abfrage an Ingres</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -21,28 +21,30 @@
    <parameter>query</parameter> an den Ingres-Server.
   </para>
   <para>
-   Die Abfrage wird Teil der aktuell geöffneten Transaktion. Falls es aktuell
-   keine offene Transaktion gibt, wird mit <function>ingres_unbuffered_query</function>
-   eine geöffnet. Geschlossen wird sie entweder mit <function>ingres_commit</function>,
-   wobei die gemachten Änderungen in die Datenbank geschrieben werden, oder
-   mit <function>ingres_rollback</function>, wobei die Änderungen verworfen
-   werden. Wenn das Skript zuende ist, wird jede geöffnete Transaktion zurückgesetzt
-   (indem die <function>ingres_rollback</function> aufgerufen wird). Sie können
-   vor dem Öffnen einer neuen Transaktion <function>ingres_autocommit</function>
-   ausführen, danach werden alle Änderungen sofort nach der Ausführung einer
-   SQL-Abfrage committet.
+   Die Abfrage wird zu einem Teil der aktuell offenen Transaktion. Falls keine
+   Transaktion geöffnet ist, öffnet
+   <function>ingres_unbuffered_query</function> eine neue Transaktion. Um
+   diese Transaktion zu schließen, kann entweder
+   <function>ingres_commit</function> aufgerufen werden, um die gemachten
+   Änderungen in die Datenbank zu übertragen, oder
+   <function>ingres_rollback</function>, um diese Änderungen zu verwerfen.
+   Wenn das Skript endet, werden alle offenen Transaktionen zurückgesetzt
+   (indem die Funktion <function>ingres_rollback</function> aufgerufen wird).
+   Vor dem Öffnen einer neuen Transaktion kann auch
+   <function>ingres_autocommit</function> aufgerufen werden, sodass alle
+   Änderungen sofort nach der Ausführung einer SQL-Abfrage übertragen werden.
    Ingres erlaubt zum selben Zeitpunkt nur eine einzige aktive ungepufferte
    Abfrage. Jede andere aktive ungepufferte Abfrage wird geschlossen, bevor
-   noch eine SQL-Abfrage gesendet werden kann. Außerdem kann der Datensatzzeiger
-   vor dem Auslesen nicht mit <function>ingres_result_seek</function> positioniert
-   werden.
+   noch eine SQL-Abfrage gesendet werden kann. Außerdem kann der
+   Datensatzzeiger vor dem Auslesen nicht mit
+   <function>ingres_result_seek</function> positioniert werden.
   </para>
-
   <note>
    <title>Verwandte Konfigurationen</title>
    <para>
-    Siehe auch die Direktiven <link linkend="ini.ingres.describe">ingres.describe</link>
-    und <link linkend="ini.ingres.utf8">ingres.utf8</link> der
+    Siehe auch die Direktiven
+    <link linkend="ini.ingres.describe">ingres.describe</link> und
+    <link linkend="ini.ingres.utf8">ingres.utf8</link> der
     <link linkend="ingres.configuration">Laufzeit-Konfiguration</link>.
    </para>
   </note>
@@ -56,7 +58,7 @@
      <term><parameter>link</parameter></term>
      <listitem>
       <para>
-       Die Verbindungskennung
+       Die Verbindungskennung.
       </para>
      </listitem>
     </varlistentry>
@@ -65,14 +67,14 @@
      <listitem>
       <para>
        Eine gültige SQL-Abfrage (siehe im <emphasis>SQL reference
-       guide</emphasis> der Ingres-Dokumentation).
-       Bei der Funktion <function>ingres_query</function> finden Sie bei
-       dem Parameter <link linkend="function.ingres-query.query">query</link>
-       eine Liste der SQL-Kommandos, die nicht mit
+       guide</emphasis> der Ingres-Dokumentation). Bei der Funktion
+       <function>ingres_query</function> finden Sie beim Parameter
+       <link linkend="function.ingres-query.query">query</link> eine Liste
+       der SQL-Kommandos, die nicht mit
        <function>ingres_unbuffered_query</function> ausgeführt werden können.
       </para>
       <para>
-       Daten in der Abfrage sollten
+       Die Daten in der Abfrage sollten
        <link linkend="function.ingres-escape-string">ordnungsgemäß maskiert</link>
        werden.
       </para>
@@ -82,7 +84,7 @@
      <term><parameter>params</parameter></term>
      <listitem>
       <para>
-       Ein Array mit den Parameterwerten für die Abfrage
+       Ein Array mit den Parameterwerten für die Abfrage.
       </para>
      </listitem>
     </varlistentry>
@@ -91,11 +93,11 @@
      <listitem>
       <para>
        Ein String, der eine Folge von Datentypen für die übergebenen
-       Parameterwerte enthält. Eine Liste der Typ-Codes finden Sie bei
-       der Funktion <function>ingres_query</function>.
-       Bei der Funktion <function>ingres_query</function> finden Sie bei
-       dem Parameter <link
-       linkend="function.ingres-query.types">types</link> eine Liste der Typ-Codes.
+       Parameterwerte enthält. Eine Liste der Typ-Codes finden Sie bei der
+       Funktion <function>ingres_query</function>. Bei der Funktion
+       <function>ingres_query</function> finden Sie beim Parameter
+       <link linkend="function.ingres-query.types">types</link> eine Liste der
+       Typ-Codes.
       </para>
      </listitem>
     </varlistentry>
@@ -106,12 +108,13 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   <function>ingres_unbuffered_query</function> gibt eine Ergebniskennung zurück,
-   sofern Zeilen gelesen werden können, anderenfalls wird &false; zurückgegeben.
-   Das ist beispielsweise bei einem INSERT-, UPDATE- oder DELETE-Kommando der
-   Fall. Um festzustellen, ob es einen Fehler gab, benutzt man die Funktionen
-   <function>ingres_errno</function>, <function>ingres_error</function> oder
-   <function>ingres_errsqlstate</function>.
+   <function>ingres_unbuffered_query</function> gibt eine Ergebniskennung
+   zurück, sofern Zeilen gelesen werden können, anderenfalls wird &false;
+   zurückgegeben. Das ist beispielsweise bei einem INSERT-, UPDATE- oder
+   DELETE-Kommando der Fall. Um festzustellen, ob es einen Fehler gab, sind
+   die Funktionen <function>ingres_errno</function>,
+   <function>ingres_error</function> oder
+   <function>ingres_errsqlstate</function> zu verwenden.
   </para>
  </refsect1>
 
@@ -205,7 +208,6 @@ if (ingres_errno())
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
