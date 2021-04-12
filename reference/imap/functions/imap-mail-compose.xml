@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c598ef89271774850c51a33135908662f1dd5912 Maintainer: hholzgra Status: ready -->
-
+<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.imap-mail-compose" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>imap_mail_compose</refname>
   <refpurpose>Erzeugt eine MIME-Nachricht aus Kopf- und Nachrichtenelementen</refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>string</type><methodname>imap_mail_compose</methodname>
+   <type class="union"><type>string</type><type>false</type></type><methodname>imap_mail_compose</methodname>
    <methodparam><type>array</type><parameter>envelope</parameter></methodparam>
-   <methodparam><type>array</type><parameter>body</parameter></methodparam>
+   <methodparam><type>array</type><parameter>bodies</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Erzeugt eine MIME-konforme Nachricht aus den in 
-   <parameter>envelope</parameter> gegebenen Kopfelementen
-   und den Nachrichtenteilen aus <parameter>body</parameter>.
+   Erzeugt eine MIME-konforme Nachricht aus den in
+   <parameter>envelope</parameter> gegebenen Kopfelementen und den
+   Nachrichtenteilen aus <parameter>bodies</parameter>.
   </para>
  </refsect1>
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -28,41 +29,157 @@
      <term><parameter>envelope</parameter></term>
      <listitem>
       <para>
-       Ein assoziatives Array von Kopfzeilenfeldern. Gültige Schlüssel sind: <literal>"remail"</literal>,
-       <literal>"return_path"</literal>, <literal>"date"</literal>, <literal>"from"</literal>, <literal>"reply_to"</literal>, <literal>"in_reply_to"</literal>, <literal>"subject"</literal>,
-       <literal>"to"</literal>, <literal>"cc"</literal>, <literal>"bcc"</literal>, <literal>"message_id"</literal> und <literal>"custom_headers"</literal> (das ein
-       Array von anderen Kopfzeilen enthält, z.B. <code>["User-Agent: My Mail Client"]</code>).
+       Ein assoziatives Array von Kopfzeilenfeldern. Gültige Schlüssel sind:
+       <literal>"remail"</literal>, <literal>"return_path"</literal>,
+       <literal>"date"</literal>, <literal>"from"</literal>,
+       <literal>"reply_to"</literal>, <literal>"in_reply_to"</literal>,
+       <literal>"subject"</literal>, <literal>"to"</literal>,
+       <literal>"cc"</literal>, <literal>"bcc"</literal> und
+       <literal>"message_id"</literal>, die die jeweiligen Kopfzeilen zum
+       angegebenen &string; definieren. Um zusätzliche Kopfzeilen zu
+       definieren, kann der Schlüssel <literal>"custom_headers"</literal>
+       verwendet werden, der ein Array von anderen Kopfzeilen erwartet, z.B.
+       <code>["User-Agent: Mein Mail-Client"]</code>).
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>body</parameter></term>
+     <term><parameter>bodies</parameter></term>
      <listitem>
       <para>
-       Die Teile des Mailkörpers als indiziertes Array.
+       Ein Array mit dem Textkörper. Das erste Element des Arrays ist der
+       zentrale Teil der Nachricht. Nur wenn er vom Typ
+       <constant>TYPEMULTIPART</constant> ist, werden die weiteren Elemente
+       verarbeitet. Die verarbeiteten Elemente bilden die Teile des Körpers.
       </para>
       <para>
-       Jeder Teil des Mailkörpers ist ein assoziatives Array
-       mit folgenden möglichen Elementen: <literal>"type"</literal>, <literal>"encoding"</literal>, <literal>"charset"</literal>, <literal>"type.parameters"</literal>,
-       <literal>"subtype"</literal>, <literal>"id"</literal>, <literal>"description"</literal>, <literal>"disposition.type"</literal>, <literal>"disposition"</literal>, <literal>"contents.data"</literal>,
-       <literal>"lines"</literal>, <literal>"bytes"</literal> und <literal>"md5"</literal>.
+       <table>
+        <title>Der Aufbau des Körper-Arrays</title>
+        <tgroup cols="2">
+         <thead>
+          <row>
+           <entry>Schlüssel</entry>
+           <entry>Typ</entry>
+           <entry>Beschreibung</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry><literal>type</literal></entry>
+           <entry><type>int</type></entry>
+           <entry>
+            Der MIME-Typ. Entweder <constant>TYPETEXT</constant> (Standard),
+            <constant>TYPEMULTIPART</constant>,
+            <constant>TYPEMESSAGE</constant>,
+            <constant>TYPEAPPLICATION</constant>,
+            <constant>TYPEAUDIO</constant>, <constant>TYPEIMAGE</constant>,
+            <constant>TYPEMODEL</constant> oder
+            <constant>TYPEOTHER</constant>.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>encoding</literal></entry>
+           <entry><type>int</type></entry>
+           <entry>
+            Das <literal>Content-Transfer-Encoding</literal>. Entweder
+            <constant>ENC7BIT</constant> (Standard),
+            <constant>ENC8BIT</constant>, <constant>ENCBINARY</constant>,
+            <constant>ENCBASE64</constant>,
+            <constant>ENCQUOTEDPRINTABLE</constant> oder
+            <constant>ENCOTHER</constant>.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>charset</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>Der Zeichensatz-Parameter des MIME-Typs.</entry>
+          </row>
+          <row>
+           <entry><literal>type.parameters</literal></entry>
+           <entry><type>array</type></entry>
+           <entry>
+            Ein assoziatives &array; von
+            <literal>Content-Type</literal>-Parameternamen und deren Werten.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>subtype</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>
+            Der MIME-Subtyp, z.B. <literal>'jpeg'</literal> für
+            <constant>TYPEIMAGE</constant>.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>id</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>Die <literal>Content-ID</literal>.</entry>
+          </row>
+          <row>
+           <entry><literal>description</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>Die <literal>Content-Description</literal>.</entry>
+          </row>
+          <row>
+           <entry><literal>disposition.type</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>
+            Die <literal>Content-Disposition</literal>, z.B.
+            <literal>'attachment'</literal>.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>disposition</literal></entry>
+           <entry><type>array</type></entry>
+           <entry>
+            Ein assoziatives &array; von
+            <literal>Content-Disposition</literal>-Parameternamen und deren
+            Werten.
+           </entry>
+          </row>
+          <row>
+           <entry><literal>contents.data</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>Der Inhalt.</entry>
+          </row>
+          <row>
+           <entry><literal>lines</literal></entry>
+           <entry><type>int</type></entry>
+           <entry>Die Größe des Inhalts in Zeilen.</entry>
+          </row>
+          <row>
+           <entry><literal>bytes</literal></entry>
+           <entry><type>int</type></entry>
+           <entry>Die Größe des Inhalts in Bytes.</entry>
+          </row>
+          <row>
+           <entry><literal>md5</literal></entry>
+           <entry><type>string</type></entry>
+           <entry>Die MD5-Prüfsumme des Inhalts.</entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert eine MIME-konforme Nachricht
+   Gibt eine MIME-konforme Nachricht als &string; zurück.
+   &return.falseforfailure;
   </para>
  </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>imap_mail_compose</function> Beispiel</title>
+    <title><function>imap_mail_compose</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -102,8 +219,8 @@ echo nl2br(imap_mail_compose($envelope, $body));
    </example>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 40667918dcff1d5c9f7ecdc88b5caca24ba0686c Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 5c3589b9b8175cb5d60729a7a6af51ebb74fb246 Maintainer: cmb Status: ready -->
 <refentry xml:id="mysqli-stmt.bind-param" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli_stmt::bind_param</refname>
@@ -29,8 +29,9 @@
    <methodparam rep="repeat"><type>mixed</type><parameter role="reference">vars</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Bindet Variablen an die Parameter-Platzhalter einer SQL-Anweisung, die an
-   <function>mysqli_prepare</function> übergeben wurde.
+   Bindet Variablen an die Parameter-Platzhalter einer SQL-Anweisung, die mit
+   <function>mysqli_prepare</function> oder
+   <function>mysqli_stmt_prepare</function> vorbereitet wurde.
   </para>
   <note>
    <para>
@@ -124,17 +125,14 @@
  <refsect1 role="examples">
   &reftitle.examples;
   <example>
-   <title>&style.oop;</title>
+   <title><methodname>mysqli_stmt::bind_param</methodname>-Beispiel</title>
+   <para>&style.oop;</para>
    <programlisting role="php">
 <![CDATA[
 <?php
-$mysqli = new mysqli('localhost', 'my_user', 'my_password', 'world');
 
-/* prüfe Verbindung */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli('localhost', 'my_user', 'my_password', 'world');
 
 $stmt = $mysqli->prepare("INSERT INTO CountryLanguage VALUES (?, ?, ?, ?)");
 $stmt->bind_param('sssd', $code, $language, $official, $percent);
@@ -144,36 +142,22 @@ $language = 'Bavarian';
 $official = "F";
 $percent = 11.2;
 
-/* führe Anweisung aus */
 $stmt->execute();
 
 printf("Datenätze eingefügt: %d.\n", $stmt->affected_rows);
 
-/* schließe Anweisung  */
-$stmt->close();
-
 /* bereinige die Tabelle CountryLanguage */
 $mysqli->query("DELETE FROM CountryLanguage WHERE Language='Bavarian'");
 printf("Datensätze gelöscht: %d.\n", $mysqli->affected_rows);
-
-/* schließe Verbindung */
-$mysqli->close();
-?>
 ]]>
    </programlisting>
-  </example>
-  <example>
-   <title>&style.procedural;</title>
+   <para>&style.procedural;</para>
    <programlisting role="php">
 <![CDATA[
 <?php
-$link = mysqli_connect('localhost', 'my_user', 'my_password', 'world');
 
-/* prüfe Verbindung */
-if (!$link) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$link = mysqli_connect('localhost', 'my_user', 'my_password', 'world');
 
 $stmt = mysqli_prepare($link, "INSERT INTO CountryLanguage VALUES (?, ?, ?, ?)");
 mysqli_stmt_bind_param($stmt, 'sssd', $code, $language, $official, $percent);
@@ -183,21 +167,13 @@ $language = 'Bavarian';
 $official = "F";
 $percent = 11.2;
 
-/* führe Anweisung aus */
 mysqli_stmt_execute($stmt);
 
 printf("Datenätze eingefügt: %d.\n", mysqli_stmt_affected_rows($stmt));
 
-/* schließe Anweisung */
-mysqli_stmt_close($stmt);
-
 /* bereinige die Tabelle CountryLanguage */
 mysqli_query($link, "DELETE FROM CountryLanguage WHERE Language='Bavarian'");
 printf("Datensätze gelöscht: %d.\n", mysqli_affected_rows($link));
-
-/* schließe Verbindung */
-mysqli_close($link);
-?>
 ]]>
    </programlisting>
    &examples.outputs;
@@ -205,6 +181,36 @@ mysqli_close($link);
 <![CDATA[
 Datensätze eingefügt: 1.
 Datensätze gelöscht: 1.
+]]>
+   </screen>
+  </example>
+  <example>
+   <title>Argumente mittels <literal>...</literal> übergeben</title>
+   <para>
+    Der Operator <literal>...</literal> kann verwendet werden, um eine Liste
+    von Argumenten mit variabler Länge zu übergeben, z.B. in einer
+    <literal>WHERE IN</literal>-Bedingung.
+   </para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli('localhost', 'my_user', 'my_password', 'world');
+
+$stmt = $mysqli->prepare("SELECT Language FROM CountryLanguage WHERE CountryCode IN (?, ?)");
+/* Argumente mittels ... übergeben */
+$stmt->bind_param('ss', ...['DEU', 'POL']);
+$stmt->execute();
+$stmt->store_result();
+
+printf("%d Datensätze gefunden.\n", $stmt->num_rows());
+]]>
+   </programlisting>
+   &examples.outputs;
+   <screen>
+<![CDATA[
+10 Datensätze gefunden.
 ]]>
    </screen>
   </example>

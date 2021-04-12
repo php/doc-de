@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9af43469f46843451955b8926fe470a9f3d45034 Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: nobody Status: ready -->
 <refentry xml:id="function.imap-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>imap_open</refname>
-  <refpurpose>Öffnet einen <acronym>IMAP</acronym>-Stream zu einem Mailserver-Postfach</refpurpose>
+  <refpurpose>Öffnet einen <acronym>IMAP</acronym>-Stream zu einem Postfach</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>imap_open</methodname>
+   <type class="union"><type>resource</type><type>false</type></type><methodname>imap_open</methodname>
    <methodparam><type>string</type><parameter>mailbox</parameter></methodparam>
-   <methodparam><type>string</type><parameter>username</parameter></methodparam>
+   <methodparam><type>string</type><parameter>user</parameter></methodparam>
    <methodparam><type>string</type><parameter>password</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>0</initializer></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>n_retries</parameter><initializer>0</initializer></methodparam>
-   <methodparam choice="opt"><type>array</type><parameter>params</parameter><initializer>array()</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>0</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>retries</parameter><initializer>0</initializer></methodparam>
+   <methodparam choice="opt"><type>array</type><parameter>options</parameter><initializer>[]</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Öffnet einen <acronym>IMAP</acronym>-Stream zum Postfach <parameter>mailbox</parameter>.
+   Öffnet einen <acronym>IMAP</acronym>-Stream zum Postfach
+   <parameter>mailbox</parameter>.
   </para>
   <para>
-   Diese Funktion kann neben IMAP auch <acronym>POP3</acronym> und <acronym>NNTP</acronym> Verbindungen aufbauen,
-   einige Funktionen und Eigenschaften sind aber nur in <acronym>IMAP</acronym> Verbindungen
-   verfügbar.
+   Diese Funktion kann auch verwendet werden, um Streams zu
+   <acronym>POP3</acronym>- und <acronym>NNTP</acronym>-Servern zu öffnen,
+   einige Funktionen und Eigenschaften sind aber nur bei
+   <acronym>IMAP</acronym>-Verbindungen verfügbar.
   </para>
  </refsect1>
 
@@ -37,62 +38,61 @@
      <term><parameter>mailbox</parameter></term>
      <listitem>
       <para>
-       Ein Postfachname besteht aus einer Angabe des Servers und aus dem
-       Pfad zum Postfach auf diesem Server. Der reservierte Name 
-       <literal>INBOX</literal> steht für das persönliche Postfach 
-       des aktuellen Benutzers. Enthält der Name des Postfach internationale
-       Zeichen außerhalb des druckbaren ASCII Bereichs so müssen diese
-       mit <function>imap_utf7_encode</function> kodiert werden.
+       Ein Postfachname besteht aus einer Serveradresse und dem Pfad zum
+       Postfach auf diesem Server. Der reservierte Name
+       <literal>INBOX</literal> steht für das persönliche Postfach des
+       aktuellen Benutzers. Enthält der Name des Postfachs internationale
+       Zeichen außerhalb des druckbaren ASCII-Bereichs, so müssen diese mit
+       <function>imap_utf7_encode</function> kodiert werden.
       </para>
       &imap.mailboxname.insecure;
       <para>
-       Der Serverteil wird in '{' und '}' eingebettet, er besteht aus dem
+       Der Serverteil wird in '{' und '}' eingebettet und besteht aus dem
        Namen oder der IP-Adresse des Servers, einer optionalen Portnummer
-       (eingeleitet mit ':' und einer optionalen Protokollangabe 
-       (eingeleitet mit '/').
+       (eingeleitet mit ':') und einer optionalen Protokollangabe (eingeleitet
+       mit '/').
       </para>
       <para>
        Die Angabe des Serverteils ist immer zwingend.
       </para>
       <para>
-       Alle Namen, die mit <literal>{</literal> beginnen, bezeichnen Serverdienste
-       und werden in der Form 
-       <literal>"{" remote_system_name [":" port] [flags] "}[mailbox_name]"</literal>
-       angegeben: 
+       Alle Namen, die mit <literal>{</literal> beginnen, bezeichnen
+       Serverdienste und werden in der Form <literal>"{" remote_system_name
+       [":" port] [flags] "}"[mailbox_name]</literal> angegeben:
        <itemizedlist>
         <listitem>
          <simpara>
-          <literal>remote_system_name</literal> - DNS Servername oder 
-          IP-Adresse des Servers in eckigen Klammern
+          <literal>remote_system_name</literal> - der Internet-Domain-Name
+          oder die in Klammern gesetzte IP-Adresse des Servers
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <literal>port</literal> - optionale Portnummer, Standard ist der
+          <literal>port</literal> - die optionale Portnummer, Standard ist der
           jeweilige Standardport des gewählten Protokolls
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <literal>flags</literal> - Optionsflags, s.u.
+          <literal>flags</literal> - optionale Flags, siehe folgende Tabelle
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <literal>mailbox_name</literal> - Name des gewünschten Serverpostfachs,
-          Standard ist "INBOX"
+          <literal>mailbox_name</literal> - der Name des gewünschten
+          Serverpostfachs, Standard ist "INBOX"
          </simpara>
         </listitem>
        </itemizedlist>
       </para>
       <para>
        <table>
-        <title>Optional flags for names</title>
+        <title>Optionale Flags</title>
         <tgroup cols="2">
          <thead>
           <row>
            <entry>Flag</entry>
-           <entry>Description</entry>
+           <entry>Beschreibung</entry>
           </row>
          </thead>
          <tbody>
@@ -102,12 +102,15 @@
           </row>
           <row>
            <entry><literal>/user=</literal><emphasis>user</emphasis></entry>
-           <entry>Benutzername für die Anmeldung auf dem Mailserver</entry>
+           <entry>Benutzername für die Anmeldung am Mailserver</entry>
           </row>
           <row>
            <entry><literal>/authuser=</literal><emphasis>user</emphasis></entry>
-           <entry>Benutzername für die Remote-Authentifizierung; falls angegeben,
-           ist dies der Benutzername dessen Passwort verwendet wird (z.B. administrator)</entry>
+           <entry>
+            Benutzername für die Remote-Authentifizierung; falls angegeben,
+            ist dies der Benutzername dessen Passwort verwendet wird (z.B.
+            administrator)
+           </entry>
           </row>
           <row>
            <entry><literal>/anonymous</literal></entry>
@@ -115,16 +118,20 @@
           </row>
           <row>
            <entry><literal>/debug</literal></entry>
-           <entry>Protokollausgaben in das Fehlerlog des Webservers leiten</entry>
+           <entry>
+            Protokollausgaben in das Fehlerlog des Webservers leiten
+           </entry>
           </row>
           <row>
            <entry><literal>/secure</literal></entry>
            <entry>Übertragung von Klartext-Passwörtern wird verhindert</entry>
           </row>
           <row>
-           <entry><literal>/imap</literal>, <literal>/imap2</literal>,
+           <entry>
+            <literal>/imap</literal>, <literal>/imap2</literal>,
             <literal>/imap2bis</literal>, <literal>/imap4</literal>,
-            <literal>/imap4rev1</literal></entry>
+            <literal>/imap4rev1</literal>
+           </entry>
            <entry>Kurzform für <literal>/service=imap</literal></entry>
           </row>
           <row>
@@ -137,38 +144,50 @@
           </row>
           <row>
            <entry><literal>/norsh</literal></entry>
-           <entry>Für eine vorauthentifizierte IMAP Verbindung soll weder rsh 
-            noch ssh verwendet werden</entry>
+           <entry>
+            Für eine vorauthentifizierte IMAP-Verbindung soll weder rsh noch
+            ssh verwendet werden
+           </entry>
           </row>
           <row>
            <entry><literal>/ssl</literal></entry>
-           <entry><literal>Secure Socket Layer</literal> (SSL) zur Verschlüsselung der Verbindung 
-           verwenden</entry>
+           <entry>
+            <literal>Secure Socket Layer</literal> (SSL) zur Verschlüsselung
+            der Verbindung verwenden
+           </entry>
           </row>
           <row>
            <entry><literal>/validate-cert</literal></entry>
-           <entry>TLS/SSL Zertifikate verifizieren (Standardverhalten)</entry>
+           <entry>TLS/SSL-Zertifikate verifizieren (Standardverhalten)</entry>
           </row>
           <row>
            <entry><literal>/novalidate-cert</literal></entry>
-           <entry>TLS/SSL Zertifikate nicht verifizieren, wird für 
-            selbstsignierte Zertifikate benötigt </entry>
+           <entry>
+            TLS/SSL-Zertifikate nicht verifizieren; wird für selbstsignierte
+            Zertifikate benötigt
+           </entry>
           </row>
           <row>
            <entry><literal>/tls</literal></entry>
-           <entry><literal>start-TLS</literal> Verschlüsselung erzwingen, Verbindungen von Servern
-            die dies nicht unterstützen ablehnen.</entry>
+           <entry>
+            <literal>start-TLS</literal>-Verschlüsselung erzwingen,
+            Verbindungen von Servern die dies nicht unterstützen ablehnen
+           </entry>
           </row>
           <row>
            <entry><literal>/notls</literal></entry>
-           <entry><literal>start-TLS</literal> nicht verwenden, auch wenn es der Server 
-            unterstützt</entry>
+           <entry>
+            <literal>start-TLS</literal> nicht verwenden, auch wenn es der
+            Server unterstützt
+           </entry>
           </row>
           <row>
            <entry><literal>/readonly</literal></entry>
-           <entry>Nur lesender Zugriff auf den Server ohne serverseitige
-            Änderung von Daten (nur für IMAP, NNTP ignoriert dies,
-            POP3 und SMTP verweigern readonly Verbindungen)</entry>
+           <entry>
+            Nur lesender Zugriff auf den Server ohne serverseitige Änderung
+            von Daten (nur für IMAP, NNTP ignoriert dies, POP3 und SMTP
+            verweigern readonly-Verbindungen)
+           </entry>
           </row>
          </tbody>
         </tgroup>
@@ -177,7 +196,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>username</parameter></term>
+     <term><parameter>user</parameter></term>
      <listitem>
       <para>
        Der Benutzername
@@ -188,20 +207,20 @@
      <term><parameter>password</parameter></term>
      <listitem>
       <para>
-       Das Passwort von <parameter>username</parameter>
+       Das Passwort von <parameter>user</parameter>
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Der Parameter <parameter>options</parameter> kann sich als Bitmaske
-       aus folgenden Werten zusammensetzen:
+       Der Parameter <parameter>flags</parameter> kann sich als Bitmaske aus
+       folgenden Werten zusammensetzen:
        <itemizedlist>
         <listitem>
          <simpara>
-          <constant>OP_READONLY</constant> - Nur lesende Zugriffe
+          <constant>OP_READONLY</constant> - nur lesende Zugriffe
          </simpara>
         </listitem>
         <listitem>
@@ -213,41 +232,45 @@
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_HALFOPEN</constant> - Verbindung zum Server öffnen
-          aber noch kein Postfach auswählen (nur <acronym>IMAP</acronym> und <acronym>NNTP</acronym>).
+          <constant>OP_HALFOPEN</constant> - Verbindung zum Server öffnen,
+          aber noch kein Postfach auswählen (nur <acronym>IMAP</acronym> und
+          <acronym>NNTP</acronym>)
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CL_EXPUNGE</constant> - Zum löschen markierte Nachrichten
-           beim Schließen des Postfachs automatisch entfernen (siehe auch
-           <function>imap_delete</function> und <function>imap_expunge</function>)
+          <constant>CL_EXPUNGE</constant> - zum Löschen markierte Nachrichten
+          beim Schließen des Postfachs automatisch entfernen (siehe auch
+          <function>imap_delete</function> und
+          <function>imap_expunge</function>)
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_DEBUG</constant> - Debug Protokoll 
+          <constant>OP_DEBUG</constant> - Debug-Protokoll 
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_SHORTCACHE</constant> - verkürztes Cacheing
+          <constant>OP_SHORTCACHE</constant> - kurzes Caching (nur
+          <literal>elt</literal>)
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_SILENT</constant> - Ereignisse nicht weitergeben 
-           (interne Einstellung)
+          <constant>OP_SILENT</constant> - Ereignisse nicht weitergeben
+          (interne Einstellung)
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_PROTOTYPE</constant> - Driver Prototyp zurückgeben
+          <constant>OP_PROTOTYPE</constant> - Treiber-Prototyp zurückgeben
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_SECURE</constant> - Keine unsichere Verbindung zum Server öffnen
+          <constant>OP_SECURE</constant> - keine unsichere Verbindung zum
+          Server öffnen
          </simpara>
         </listitem>
        </itemizedlist>
@@ -255,7 +278,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>n_retries</parameter></term>
+     <term><parameter>retries</parameter></term>
      <listitem>
       <para>
        Maximale Anzahl der Verbindungsversuche
@@ -263,15 +286,16 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>params</parameter></term>
+     <term><parameter>options</parameter></term>
      <listitem>
       <para>
-       Verbindungsparameter. Die folgenden (Zeichenketten-)Schlüssel können
-       verwendet werden, um einen oder mehrere Verbindungsparameter anzugeben:
+       Verbindungsparameter; die folgenden (String-)Schlüssel können verwendet
+       werden, um einen oder mehrere Verbindungsparameter anzugeben:
        <itemizedlist>
         <listitem>
          <simpara>
-          <literal>DISABLE_AUTHENTICATOR</literal> - Deaktiviere Authentifizierungs-Eigenschaften
+          <literal>DISABLE_AUTHENTICATOR</literal> - Deaktiviere
+          Authentifizierungs-Eigenschaften
          </simpara>
         </listitem>
        </itemizedlist>
@@ -285,7 +309,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert einen IMAP Stream oder &false; bei Fehlern.
+   Gibt einen IMAP-Stream zurück oder &false; bei Fehlern.
   </para>
  </refsect1>
 
@@ -293,35 +317,35 @@
   &reftitle.examples;
   <para>
    <example>
-    <title>Verschiedene <function>imap_open</function> Aufrufe</title>
+    <title>Verschiedene <function>imap_open</function>-Aufrufe</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Verbindung zu einem IMAP server auf Port 143 des lokalen Rechners 
+// Verbindung zu einem IMAP-Server auf Port 143 des lokalen Rechners 
 $mbox = imap_open("{localhost:143}INBOX", "user_id", "password");
 
-// Verbindung zu einem POP3 server auf Port 110 des lokalen Rechners 
+// Verbindung zu einem POP3-Server auf Port 110 des lokalen Rechners 
 $mbox = imap_open ("{localhost:110/pop3}INBOX", "user_id", "password");
 
-// Für SSL verschlüsselte Verbindungen wird /ssl an die 
+// Für SSL-verschlüsselte Verbindungen wird /ssl an die 
 // Protokollspezifikation angefügt
 $mbox = imap_open ("{localhost:993/imap/ssl}INBOX", "user_id", "password");
 
-// Zur SSL Verbindung mit Servern mit selbstsignierten Zertifikaten 
+// Zur SSL-Verbindung mit Servern mit selbstsignierten Zertifikaten 
 // muss zusätzlich /novalidate-cert angefügt werden
 $mbox = imap_open ("{localhost:995/pop3/ssl/novalidate-cert}", "user_id", "password");
 
-// Verbindung zu einem NNTP server auf Port 119 des lokalen Rechners 
+// Verbindung zu einem NNTP-Server auf Port 119 des lokalen Rechners 
 $nntp = imap_open ("{localhost:119/nntp}comp.test", "", "");
 
-// Für Verbindungen zu anderen Servern ersetzen Sie "localhost" mit
-// dem Namen oder der IP-Adresse des Servers
+// Für Verbindungen zu anderen Servern wird "localhost" mit dem Namen
+// oder der IP-Adresse des Servers ersetzt
 ?>
 ]]>
     </programlisting>
    </example>
    <example>
-    <title><function>imap_open</function> Beispiel</title>
+    <title><function>imap_open</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -367,7 +391,6 @@ imap_close($mbox);
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

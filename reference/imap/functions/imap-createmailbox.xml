@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: ca35bb0ee60fdbf44956427c44c4eee7b1ea0fdb Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.imap-createmailbox" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>imap_createmailbox</refname>
-  <refpurpose>Anlegen eines neuen Postfachs</refpurpose>
+  <refpurpose>Legt ein neues Postfach an</refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>imap_createmailbox</methodname>
-   <methodparam><type>resource</type><parameter>imap_stream</parameter></methodparam>
+   <methodparam><type>resource</type><parameter>imap</parameter></methodparam>
    <methodparam><type>string</type><parameter>mailbox</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Legt ein neues Postfach mit dem Namen <parameter>mailbox</parameter> an. 
+   Legt ein neues Postfach mit dem Namen <parameter>mailbox</parameter> an.
   </para>
  </refsect1>
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -26,10 +28,9 @@
      <term><parameter>mailbox</parameter></term>
      <listitem>
       <para>
-       Der Postfachname, siehe <function>imap_open</function> für
-       nähere Informationen. Namen die nicht-ASCII Zeichen enthalten
-       sollten mit <function>imap_utf7_encode</function> kodiert
-       werden.
+       Der Name des Postfachs, siehe <function>imap_open</function> für nähere
+       Informationen. Namen, die nicht-ASCII-Zeichen enthalten, sollten mit
+       <function>imap_utf7_encode</function> kodiert werden.
       </para>
       &imap.mailboxname.insecure;
      </listitem>
@@ -37,62 +38,64 @@
    </variablelist>
   </para>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
    &return.success;
   </para>
  </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>imap_createmailbox</function> Beispiel</title>
+    <title><function>imap_createmailbox</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 $mbox = imap_open("{imap.example.org}", "username", "password", OP_HALFOPEN)
-     or die("can't connect: " . imap_last_error());
+     or die("Kann keine Verbindung aufbauen: " . imap_last_error());
 
 $name1 = "phpnewbox";
 $name2 = imap_utf7_encode("phpnewböx"); // phpnewb&w7Y-x
 
 $newname = $name1;
 
-echo "Newname will be '$name1'<br />\n";
+echo "Der neue Name wird '$name1' sein<br />\n";
 
-// we will now create a new mailbox "phptestbox" in your inbox folder,
-// check its status after creation and finaly remove it to restore
-// your inbox to its initial state
+// Legen wir nun ein neues Postfach "phptestbox" in Ihrem Posteingangsordner an,
+// überprüfen seinen Status nach der Erstellung und löschen es schließlich,
+// um den Posteingang wieder in den Ausgangszustand zu versetzen.
 
 if (@imap_createmailbox($mbox, imap_utf7_encode("{imap.example.org}INBOX.$newname"))) {
     $status = @imap_status($mbox, "{imap.example.org}INBOX.$newname", SA_ALL);
     if ($status) {
-        echo "your new mailbox '$name1' has the following status:<br />\n";
-        echo "Messages:   " . $status->messages    . "<br />\n";
-        echo "Recent:     " . $status->recent      . "<br />\n";
-        echo "Unseen:     " . $status->unseen      . "<br />\n";
+        echo "Ihr neues Postfach '$name1' hat den folgenden Status:<br />\n";
+        echo "Nachrichten:   " . $status->messages    . "<br />\n";
+        echo "Neueste:     " . $status->recent      . "<br />\n";
+        echo "Ungelesen:     " . $status->unseen      . "<br />\n";
         echo "UIDnext:    " . $status->uidnext     . "<br />\n";
         echo "UIDvalidity:" . $status->uidvalidity . "<br />\n";
 
         if (imap_renamemailbox($mbox, "{imap.example.org}INBOX.$newname", "{imap.example.org}INBOX.$name2")) {
-            echo "renamed new mailbox from '$name1' to '$name2'<br />\n";
+            echo "Neues Postfach von '$name1' in '$name2' umbenannt<br />\n";
             $newname = $name2;
         } else {
-            echo "imap_renamemailbox on new mailbox failed: " . imap_last_error() . "<br />\n";
+            echo "imap_renamemailbox bei neuem Postfach fehlgeschlagen: " . imap_last_error() . "<br />\n";
         }
     } else {
-        echo "imap_status on new mailbox failed: " . imap_last_error() . "<br />\n";
+        echo "imap_status bei neuem Postfach fehlgeschlagen: " . imap_last_error() . "<br />\n";
     }
 
     if (@imap_deletemailbox($mbox, "{imap.example.org}INBOX.$newname")) {
-        echo "new mailbox removed to restore initial state<br />\n";
+        echo "Neues Postfach gelöscht, um den Ausgangszustand wiederherzustellen<br />\n";
     } else {
-        echo "imap_deletemailbox on new mailbox failed: " . implode("<br />\n", imap_errors()) . "<br />\n";
+        echo "imap_deletemailbox bei neuem Postfach fehlgeschlagen: " . implode("<br />\n", imap_errors()) . "<br />\n";
     }
 
 } else {
-    echo "could not create new mailbox: " . implode("<br />\n", imap_errors()) . "<br />\n";
+    echo "Konnte kein neues Postfach anlegen: " . implode("<br />\n", imap_errors()) . "<br />\n";
 }
 
 imap_close($mbox);
@@ -102,6 +105,7 @@ imap_close($mbox);
    </example>
   </para>
  </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -111,8 +115,8 @@ imap_close($mbox);
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

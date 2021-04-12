@@ -1,86 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: ac9f8fcf00acafbd6c2aca0b6327fbd96a115c26 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.imap-delete" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>imap_delete</refname>
-  <refpurpose>Nachrichten im aktuellen Postfach zur Löschung markieren</refpurpose>
+  <refpurpose>Markiert eine Nachricht im aktuellen Postfach zur Löschung</refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>imap_delete</methodname>
-   <methodparam><type>resource</type><parameter>imap_stream</parameter></methodparam>
-   <methodparam><type>int</type><parameter>msg_number</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>0</initializer></methodparam>
+   <methodparam><type>resource</type><parameter>imap</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message_num</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Die mit <parameter>msg_number</parameter> angegebene Nachricht oder 
-   Liste von Nachrichten wird zur Löschung vorgemerkt. Entsprechend
-   markierte Nachrichten bleiben zunächst im Postfach erhalten, erst
-   beim Aufruf von <function>imap_expunge</function> oder beim Schließen
-   der Verbingung mit <function>imap_close</function> und der 
-   <constant>CL_EXPUNGE</constant> Option werden sie tatsächlich 
-   endgültig gelöscht.
+   Die mit <parameter>message_num</parameter> angegebenen Nachrichten werden
+   zur Löschung vorgemerkt. Entsprechend markierte Nachrichten bleiben im
+   Postfach erhalten, bis entweder <function>imap_expunge</function>
+   aufgerufen wird oder <function>imap_close</function> mit der Option
+   <constant>CL_EXPUNGE</constant> beim Schließen der Verbindung.
   </para>
  </refsect1>
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
    <variablelist>
     &imap.imap-stream.description;
     <varlistentry>
-     <term><parameter>msg_number</parameter></term>
+     <term><parameter>message_num</parameter></term>
      <listitem>
       <para>
-       Die Nachrichtennummer 
+       Die Nummer der Nachricht
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Mit Hilfe der Option <constant>FT_UID</constant> kann
-       festgelegt werden das <parameter>msg_number</parameter>
-       an Stelle von Nachrichtennummern <literal>UID</literal>s 
-       enthält.
+       Mit Hilfe der Option <constant>FT_UID</constant> kann festgelegt
+       werden, dass <parameter>message_num</parameter> <literal>UID</literal>s
+       anstelle der Nachrichtennummern enthält.
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Returns &true;.
+   Gibt &true; zurück.
   </para>
  </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>imap_delete</function> Beispiel</title>
+    <title><function>imap_delete</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 
 $mbox = imap_open("{imap.example.org}INBOX", "username", "password")
-    or die("Can't connect: " . imap_last_error());
+    or die("Kann keine Verbindung aufbauen: " . imap_last_error());
 
 $check = imap_mailboxmsginfo($mbox);
-echo "Messages before delete: " . $check->Nmsgs . "<br />\n";
+echo "Anzahl der Nachrichten vor imap_delete: " . $check->Nmsgs . "<br />\n";
 
 imap_delete($mbox, 1);
 
 $check = imap_mailboxmsginfo($mbox);
-echo "Messages after  delete: " . $check->Nmsgs . "<br />\n";
+echo "Anzahl der Nachrichten nach imap_delete: " . $check->Nmsgs . "<br />\n";
 
 imap_expunge($mbox);
 
 $check = imap_mailboxmsginfo($mbox);
-echo "Messages after expunge: " . $check->Nmsgs . "<br />\n";
+echo "Anzahl der Nachrichten nach imap_expunge: " . $check->Nmsgs . "<br />\n";
 
 imap_close($mbox);
 ?>
@@ -89,18 +90,20 @@ imap_close($mbox);
    </example>
   </para>
  </refsect1>
+
  <refsect1 role="notes">
   &reftitle.notes;
   <note>
    <para>
-    Für IMAP Postfächer kann das Löschen-Flag nicht serverseitig
-    zwischen Verbindungen gespeichert werden; markierte Nachrichten
-    sollten daher noch wärend der aktuellen Verbindung mit
-    <function>imap_expunge</function> entfernt werden, ansonsten
-    bleiben sie möglicherweise ohne Löschmarkierung weiter erhalten.
+    Bei IMAP-Postfächern können Nachrichten-Flags serverseitig nicht zwischen
+    Verbindungen gespeichert werden; markierte Nachrichten sollten daher noch
+    während der aktuellen Verbindung mit <function>imap_expunge</function>
+    entfernt werden, ansonsten bleiben sie möglicherweise ohne Löschmarkierung
+    weiter erhalten.
    </para>
   </note>
  </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -111,8 +114,8 @@ imap_close($mbox);
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

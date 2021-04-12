@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: bab0d03aac3a3e6e0d18b8132ddc97d276ce3941 Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: nobody Status: ready -->
 <refentry xml:id="function.imap-search" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>imap_search</refname>
-  <refpurpose>Liefert ein Array von Nachrichten, die den gegebenen Suchkriterien entsprechen</refpurpose>
+  <refpurpose>
+   Liefert ein Array von Nachrichten, die den gegebenen Suchkriterien entsprechen
+  </refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>array</type><methodname>imap_search</methodname>
-   <methodparam><type>resource</type><parameter>imap_stream</parameter></methodparam>
+   <type class="union"><type>array</type><type>false</type></type><methodname>imap_search</methodname>
+   <methodparam><type>resource</type><parameter>imap</parameter></methodparam>
    <methodparam><type>string</type><parameter>criteria</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>SE_FREE</initializer></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>charset</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>SE_FREE</constant></initializer></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>charset</parameter><initializer>""</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>imap_search</function> durchsucht die Nachrichten
-   des aktuellen Postfachs.
+   Diese Funktion durchsucht die Nachrichten des aktuellen Postfachs auf dem
+   angegebenen <acronym>IMAP</acronym>-Stream.
   </para>
   <para>
-   Der Suchstring um z.B. nach allen unbeantworteten Nachrichten von 
-   Mutter zu suchen wäre "UNANSWERED FROM Mutter". Die Suche unterscheidet
-   nicht nach Groß- und Kleinschreibung. Die folgende Liste von
-   Suchkriterien wurde aus dem Sourcecode des UW c-client erstellt,
-   sie ist daher nicht unbedingt vollständig oder in allen Einzelheiten
-   korrekt (siehe auch <link xlink:href="&url.rfc;1176">RFC1176</link>, 
-   Abschnitt "tag SEARCH search_criteria").
+   Der Suchstring, um z.B. nach allen unbeantworteten Nachrichten von Mutter
+   zu suchen, wäre "UNANSWERED FROM Mutter". Die Suche unterscheidet nicht
+   nach Groß- und Kleinschreibung. Die folgende Liste von Suchkriterien wurde
+   aus dem Sourcecode des UW-c-client erstellt und ist daher nicht unbedingt
+   vollständig oder in allen Einzelheiten korrekt (siehe auch
+   <link xlink:href="&url.rfc;1176">RFC1176</link>, Abschnitt "tag SEARCH
+   search_criteria").
   </para>
  </refsect1>
 
@@ -40,85 +42,89 @@
      <term><parameter>criteria</parameter></term>
      <listitem>
       <para>
-       Eine aus mit Leerzeichen getrennten Schlüsselworten und Argumenten bestehende Zeichenkette.
-       Argumente, die selbt Leerzeichen enthalten, müssen in doppelte
-       Anführungszeichen gefasst werden (z.B. <literal>FROM "Hans Müller"</literal>).
-       Es existieren folgende Schlüsselworte:
+       Ein String, in dem die folgenden durch Leerzeichen getrennten
+       Schlüsselwörter erlaubt sind. Argumente, die selbt Leerzeichen
+       enthalten, müssen in doppelte Anführungszeichen gefasst werden (z.B.
+       <literal>FROM "Hans Müller"</literal>). Die Ergebnisse müssen mit allen
+       Einträgen in <parameter>criteria</parameter> übereinstimmen.
        <itemizedlist>
         <listitem>
          <simpara>
-          ALL - liefere alle Nachrichten, die den übrigen Kriterien entsprechen
+          ALL - gebe alle Nachrichten zurück, die den übrigen Kriterien
+          entsprechen
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          ANSWERED - die gesuchten Nachrichten wurden beantwortet
+          ANSWERED - sucht Nachrichten mit dem Flag \\ANSWERED
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          BCC "text" - die gesuchten Nachrichten enthalten "text" im Bcc: Feld
+          BCC "text" - sucht Nachrichten mit "text" im Bcc:-Feld
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          BEFORE "datum" - die gesuchten Nachrichten wurden vor "datum" gesendet
+          BEFORE "datum" - sucht Nachrichten, die vor "datum" gesendet wurden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          BODY "text" -  der Nachrichtenkörper enthält "text"
+          BODY "text" - sucht Nachrichten mit "text" im Nachrichtenkörper
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          CC "text" - die gesuchten Nachrichten enthalten "text" im Cc: Feld
+          CC "text" - sucht Nachrichten mit "text" im Cc:-Feld
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          DELETED - die gesuchten Nachrichten sind zur Löschung vorgemerkt
+          DELETED - sucht Nachrichten, die zur Löschung vorgemerkt sind
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          FLAGGED - suche Nachrichten mit dem \\FLAGGED (manchmal auch als
-          wichtig oder dringend bezeichnet) Flag
+          FLAGGED - sucht Nachrichten mit dem Flag \\FLAGGED (manchmal auch
+          als wichtig oder dringend bezeichnet)
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          FROM "text" - sucht Nachrichten mit "text" im Absender (From:)
+          FROM "text" - sucht Nachrichten mit "text" im From:-Feld
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          KEYWORD "text" - sucht Nachrichten mit Schlüsselwort "text"
+          KEYWORD "text" - sucht Nachrichten mit dem Schlüsselwort "text"
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          NEW - die gesuchten Nachrichten sind neu
+          NEW - sucht neue Nachrichten
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          OLD - die gesuchten Nachrichten sind nicht neu
+          OLD - sucht alte Nachrichten
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          ON "datum" - die Nachrichten wurden am angegebenen "datum" gesendet
+          ON "datum" - sucht Nachrichten, die am angegebenen "datum" gesendet
+          wurden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          RECENT - sucht Nachrichten deren \\RECENT Flag nocht gesetzt ist
+          RECENT - sucht Nachrichten mit dem Flag \\RECENT
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          SEEN - sucht bereits gelesene Nachrichten (das \\SEEN Flag ist gesetzt)
+          SEEN - sucht bereits gelesene Nachrichten (das Flag \\SEEN ist
+          gesetzt)
          </simpara>
         </listitem>
         <listitem>
@@ -138,7 +144,7 @@
         </listitem>
         <listitem>
          <simpara>
-          TO "text" - sucht Nachrichten mit "text" im Empfänger (To:)
+          TO "text" - sucht Nachrichten mit "text" im To:-Feld
          </simpara>
         </listitem>
         <listitem>
@@ -153,12 +159,12 @@
         </listitem>
         <listitem>
          <simpara>
-          UNFLAGGED - sucht Nachrichten die nicht als wichtig markiert sind
+          UNFLAGGED - sucht Nachrichten, die nicht als wichtig markiert sind
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          UNKEYWORD "text" - sucht Nachrichten in deren Schlüsselwörtern
+          UNKEYWORD "text" - sucht Nachrichten, in deren Schlüsselwörtern
           "text" nicht enthalten ist
          </simpara>
         </listitem>
@@ -172,12 +178,12 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Der Parameter <parameter>options</parameter> kann
-       auf <constant>SE_UID</constant> gesetzt werden,
-       um UIDs statt Nachrichtennummern zurückzuerhalten.
+       Gültige Werte für <parameter>flags</parameter> sind
+       <constant>SE_UID</constant>, was bewirkt, dass das zurückgegebene Array
+       UIDs anstelle von Nachrichtennummern enthält.
       </para>
      </listitem>
     </varlistentry>
@@ -185,7 +191,7 @@
      <term><parameter>charset</parameter></term>
      <listitem>
       <para>
-       Der bei der Zeichenkettesuche zu verwendende MIME-Zeichensatz.
+       Der bei der Stringsuche zu verwendende MIME-Zeichensatz.
       </para>
      </listitem>
     </varlistentry>
@@ -196,19 +202,18 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert ein Array mit Nachrichtennummern oder UIDs.
+   Gibt ein Array mit Nachrichtennummern oder UIDs zurück.
   </para>
   <para>
-   Wenn die Suchkriterien nicht verstanden, oder 
-   keine Nachrichten gefunden wurden, wird &false;
-   zurückgegeben.
+   Wenn die Suchkriterien nicht verstanden wurden oder keine Nachrichten
+   gefunden wurden, wird &false; zurückgegeben.
   </para>
  </refsect1>
 
  <refsect1 role="examples">
   &reftitle.examples;
   <example xml:id="imap-search.examples">
-   <title><function>imap_search</function> Beispiel</title>
+   <title><function>imap_search</function>-Beispiel</title>
    <programlisting role="php">
 <![CDATA[
 <?php
@@ -266,7 +271,6 @@ Array
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
