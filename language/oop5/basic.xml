@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 4528db2d91279a8f120bacfd84e48f7e2281d923 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Maintainer: wiesemann Status: ready -->
 
  <sect1 xml:id="language.oop5.basic" xmlns="http://docbook.org/ns/docbook">
   <title>Die Grundlagen</title>
@@ -51,26 +51,18 @@ class SimpleClass
     Die Pseudovariable
     <varname>$this</varname> ist verfügbar, falls eine Methode aus einem 
     Objektkontext heraus aufgerufen wird. <varname>$this</varname> ist eine
-    Referenz auf das aufrufende Objekt (üblicherweise das Objekt, zu dem die 
-    Methode gehört, aber möglicherweise ein anderes Objekt, falls 
-    die Methode <link linkend="language.oop5.static">statisch</link> aus dem
-    Kontext eines zusätzlichen Objektes aufgerufen wird).
-    Von PHP 7.0.0 an führt das statische Aufrufen nicht-statischer Methoden aus
-    einem inkompatiblen Kontext dazu, dass $this innerhalb der Methode nicht
-    definiert ist. Der statische Aufruf einer nicht-statischen Methode aus einem
-    inkompatiblen Kontext wurde von PHP 5.6.0 an missbilligt. Von PHP 7.0.0 an
-    ist der statische Aufruf einer nicht-statischen Methode allgemein
-    missbilligt (auch wenn sie aus einem kompatiblen Kontext aufgerufen wird).
-    Vor PHP 5.6.0 lösten solche Aufrufe bereits eine Strict-Notice aus.
+    Referenz auf das aufgerufene Objekt.
    </para>
-   <para>
+   <warning>
+    <para>
+     Wird eine nicht-statische Methode statisch aufgerufen, so
+     wird ein <classname>Error</classname> ausgelöst.
+     Vor PHP 8.0.0 wurde hierbei ein Hinweis über das veraltete
+     Verhalten ausgegeben und <varname>$this</varname> war
+     nicht definiert.
+    </para>
     <example xml:id="language.oop5.basic.class.this">
      <title>Einige Beispiele für die <varname>$this</varname>-Pseudovariable</title>
-     <simpara>
-      Wir nehmen an, dass error_reporting für dieses Beispiel deaktiviert ist;
-      andernfalls würde der folgende Code Deprecated- bzw. Strict-Notices
-      auslösen, je nach verwendeter PHP-Version.
-     </simpara>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -108,26 +100,36 @@ B::bar();
 ?>
 ]]>
      </programlisting>
-     &example.outputs.5;
-     <screen>
-<![CDATA[
-$this ist definiert (A)
-$this ist nicht definiert.
-$this ist definiert (B)
-$this ist nicht definiert.
-]]>
-     </screen>
      &example.outputs.7;
      <screen>
 <![CDATA[
-$this ist defined (A)
-$this ist nicht defined.
-$this ist nicht defined.
-$this ist nicht defined.
+$this is defined (A)
+
+Deprecated: Non-static method A::foo() should not be called statically in %s  on line 27
+$this is not defined.
+
+Deprecated: Non-static method A::foo() should not be called statically in %s  on line 20
+$this is not defined.
+
+Deprecated: Non-static method B::bar() should not be called statically in %s  on line 32
+
+Deprecated: Non-static method A::foo() should not be called statically in %s  on line 20
+$this is not defined.
+]]>
+     </screen>
+     &example.outputs.8;
+     <screen>
+<![CDATA[
+$this is defined (A)
+
+Fatal error: Uncaught Error: Non-static method A::foo() cannot be called statically in %s :27
+Stack trace:
+#0 {main}
+  thrown in %s  on line 27
 ]]>
      </screen>
     </example>
-   </para>
+   </warning>
   </sect2>
 
   <sect2 xml:id="language.oop5.basic.new">
@@ -143,7 +145,7 @@ $this ist nicht defined.
    <para>
     Wenn ein <type>string</type> mit dem Namen einer Klasse mit <literal>new</literal>
     genutzt wird, wird eine neue Instanz dieser Klasse erzeugt. Falls sich die Klasse
-    in einem Namensraum befindet, muss der vollqualifizierte Name hierfür genutzt werden.
+    in einem Namensraum befindet, muss der voll qualifizierte Name hierfür genutzt werden.
    </para>
    
    <note>
@@ -213,8 +215,7 @@ object(SimpleClass)#1 (1) {
     </screen>
    </example>
    <para>
-    Mit PHP 5.3.0 wurden neue Möglichkeiten zur Erzeugung von Instanzen eines
-    Objekts eingeführt:
+    Es ist auf verschiedene Arten möglich, Instanzen eines Objekts zu erzeugen:
    </para>
    <example>
     <title>Erzeugen neuer Objekte</title>
@@ -254,7 +255,7 @@ bool(true)
     </screen>
    </example>
    <para>
-    PHP 5.4.0 führte die Möglichkeit ein, auf ein Mitglied eines neu erzeugten
+    Es ist möglich, auf ein Mitglied eines neu erzeugten
     Objekts in einem einzigen Ausdruck zuzugreifen:
    </para>
    <example>
@@ -323,8 +324,8 @@ Methode
     linkend="functions.anonymous">anonymen Funktion</link>, die einer
     Eigenschaft zugewiesen wurde, nicht direkt möglich ist. Statt dessen muss
     beispielsweise die Eigenschaft zunächst einer Variablen zugewiesen werden.
-    Von PHP 7.0.0 an ist es möglich, eine solche Eigenschaft direkt aufzurufen,
-    indem man sie in Klammern einschließt.
+    Es ist möglich, eine solche Eigenschaft direkt aufzurufen, indem man sie in 
+    Klammern einschließt.
    </para>
    <example>
     <title>Aufruf einer anonymen Funktion, die in einer Eigenschaft gespeichert ist</title>
@@ -344,12 +345,6 @@ class Foo
 
 $obj = new Foo();
 
-// von PHP 5.3.0 an:
-$func = $obj->bar;
-echo $func(), PHP_EOL;
-
-
-// alternativ, von PHP 7.0.0 an:
 echo ($obj->bar)(), PHP_EOL;
 ]]>
     </programlisting>
@@ -363,15 +358,17 @@ echo ($obj->bar)(), PHP_EOL;
   </sect2>
 
   <sect2 xml:id="language.oop5.basic.extends">
+   <!-- TODO Example about class constant redefinition -->
+   <!-- TODO Split into it's own page? -->
    <title>extends</title>
    <para>
-    Eine Klasse kann Methoden und Eigenschaften einer anderen Klasse erben, indem
+    Eine Klasse kann die Konstanten, Methoden und Eigenschaften einer anderen Klasse erben, indem
     man das <literal>extends</literal>-Schlüsselwort in der Deklaration benutzt.
     Es ist nicht möglich, mehrere Klassen zu erweitern; eine Klasse kann nur eine
     einzige Basisklasse beerben.
    </para>
    <para>
-    Die geerbten Methoden und Eigenschaften können durch eine Neudeklaration
+    Die geerbten Konstanten, Methoden und Eigenschaften können durch eine Neudeklaration
     mit dem gleichen Namen wie in der Elternklasse überschrieben werden. Falls
     die Elternklasse eine Methode als <link linkend="language.oop5.final">final</link>
     definiert hat, kann diese Methode nicht überschrieben werden. Es ist möglich,
@@ -379,12 +376,6 @@ echo ($obj->bar)(), PHP_EOL;
     wenn diese mittels
     <link linkend="language.oop5.paamayim-nekudotayim">parent::</link>
     referenziert werden.
-   </para>
-   <para>
-    Wenn Methoden überschrieben werden, sollte die Parametersignatur gleich
-    bleiben; andernfalls wird PHP einen <constant>E_STRICT</constant>-Fehler
-    generieren. Dies gilt nicht für den Konstruktor, der das Überschreiben
-    mit unterschiedlichen Parameter erlaubt.
    </para>
    <example>
     <title>Einfache Vererbung</title>
@@ -414,6 +405,170 @@ ein Standardwert
 ]]>
     </screen>
    </example>
+   
+   <sect3 xml:id="language.oop.lsp">
+    <title>Regeln zur Signaturkompatibilität</title>
+    <para>
+     Wenn eine Methode überschrieben wird, so muss deren Signatur mit derjenigen
+     der Elternmethode kompatibel sein. Andernfalls wird ein fataler Fehler 
+     hervorgerufen oder, vor PHP 8.0.0, eine Warnung der Stufe 
+     <constant>E_WARNING</constant> ausgegeben. Eine Signatur ist kompatibel,
+     wenn sie die Regeln zur <link linkend="language.oop5.variance">Varianz</link>
+     berücksichtigt, einen notwendigen Parameter optional macht und alle neuen
+     Parameter optional sind. Dies ist als das Liskovsche Substitutionsprinzip,
+     kurz LSP, bekannt. 
+     Der <link linkend="language.oop5.decon.constructor">Konstruktor</link> sowie
+     <literal>private</literal> Methoden sind von diesen Regeln zur 
+     Signaturkompatibilität ausgenommen, weshalb kein fataler Fehler in solchen
+     Fällen der Signaturinkompatibilität hervorgerufen wird.     
+    </para>
+    <example>
+     <title>Kompatible Kindmethoden</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+
+class Base
+{
+    public function foo(int $a) {
+        echo "Gültig\n";
+    }
+}
+
+class Extend1 extends Base
+{
+    function foo(int $a = 5)
+    {
+        parent::foo($a);
+    }
+}
+
+class Extend2 extends Base
+{
+    function foo(int $a, $b = 5)
+    {
+        parent::foo($a);
+    }
+}
+
+$extended1 = new Extend1();
+$extended1->foo();
+$extended2 = new Extend2();
+$extended2->foo(1);
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+Gültig
+Gültig
+]]>
+     </screen>
+    </example>
+
+    <para>
+     Das folgende Beispiel demonstriert, dass eine Kindmethode nicht zur Elternmethode kompatibel ist,
+     wenn sie einen Parameter entfernt oder einen optionalen Parameter notwendig macht.
+    </para>
+    <example>
+     <title>Fataler Fehler, wenn eine Kindmethode einen Parameter entfernt</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+
+class Base
+{
+    public function foo(int $a = 5) {
+        echo "Gültig\n";
+    }
+}
+
+class Extend extends Base
+{
+    function foo()
+    {
+        parent::foo(1);
+    }
+}
+]]>
+     </programlisting>
+     &example.outputs.8.similar;
+     <screen>
+<![CDATA[
+Fatal error: Declaration of Extend::foo() must be compatible with Base::foo(int $a = 5) in /in/evtlq on line 13
+]]>
+     </screen>
+    </example>
+    <example>
+     <title>Fataler Fehler, wenn eine Kindmethode einen optionalen Parameter notwendig macht</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+
+class Base
+{
+    public function foo(int $a = 5) {
+        echo "Gültig\n";
+    }
+}
+
+class Extend extends Base
+{
+    function foo(int $a)
+    {
+        parent::foo($a);
+    }
+}
+]]>
+     </programlisting>
+     &example.outputs.8.similar;
+     <screen>
+<![CDATA[
+Fatal error: Declaration of Extend::foo(int $a) must be compatible with Base::foo(int $a = 5) in /in/qJXVC on line 13
+]]>
+     </screen>
+    </example>
+
+    <warning>
+     <para>
+      Die Umbenennung eines Parameters einer Methode in einer Kindklasse führt 
+      nicht zur Inkompatibilität. Dies ist jedoch nicht empfohlen, da es zu
+      Fehlern der Stufe <classname>Error</classname> führt, wenn 
+      <link linkend="functions.named-arguments">benannte Parameter</link>
+      verwendet werden.
+     </para>
+     <example>
+      <title>Fehler, wenn benannte Parameter verwendet und diese in der Kindklasse umbenannt werden</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+
+class A {
+    public function test($foo, $bar) {}
+}
+
+class B extends A {
+    public function test($a, $b) {}
+}
+
+$obj = new B;
+
+// Pass parameters according to A::test() contract
+$obj->test(foo: "foo", bar: "bar"); // ERROR!
+]]>
+      </programlisting>
+      &example.outputs.similar;
+      <screen>
+<![CDATA[
+Fatal error: Uncaught Error: Unknown named parameter $foo in /in/XaaeN:14
+Stack trace:
+#0 {main}
+  thrown in /in/XaaeN on line 14
+]]>
+      </screen>
+     </example>
+    </warning>
+   </sect3>   
   </sect2>
 
  <sect2 xml:id="language.oop5.basic.class.class">
@@ -421,9 +576,9 @@ ein Standardwert
 
    <para>
     Das Schlüsselwort <literal>class</literal> kann auch für die
-    Namensauflösung einer Klasse verwendet werden. Man erhält den vollständig
-    qualifizierten Namen der Klasse <literal>ClassName</literal> durch
-    Verwendung von <literal>ClassName::class</literal>. Dies ist vor allem
+    Namensauflösung einer Klasse verwendet werden. Um den vollständig
+    qualifizierten Namen der Klasse <literal>ClassName</literal> zu erhalten,
+    kann <literal>ClassName::class</literal> verwendet werden. Dies ist vor allem
     dann praktisch, wenn mit
     <link linkend="language.namespaces">Namensräumen</link> gearbeitet wird.    
    </para>
