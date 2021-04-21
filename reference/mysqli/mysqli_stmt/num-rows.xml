@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: e994a8d5be2529d508f6ee45fb53ca60502a7c9e Maintainer: nobody Status: ready -->
 <!-- Reviewed: no -->
 <refentry xml:id="mysqli-stmt.num-rows" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli_stmt::$num_rows</refname>
   <refname>mysqli_stmt::num_rows</refname>
   <refname>mysqli_stmt_num_rows</refname>
-  <refpurpose>Liefert die Anzahl der Datensätze einer Ergebnismenge</refpurpose>
+  <refpurpose>Liefert die Anzahl der vom Server abgerufenen Datensätze</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -24,14 +24,14 @@
    <methodparam><type>mysqli_stmt</type><parameter>statement</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Gibt die Anzahl der Datensätze einer Ergebnismenge zurück. Die Verwendung
-   von <function>mysqli_stmt_num_rows</function> hängt davon ab, ob
-   <function>mysqli_stmt_store_result</function> verwendet wurde, um die
-   gesamte Ergebnismenge im Anweisungs-Handle zwischenzuspeichern.
+   Gibt die Anzahl der Datensätze zurück, die im Anweisungshandle gepuffert
+   sind. Diese Funktion funktioniert erst, wenn die gesamte Ergebnismenge mit
+   <function>mysqli_stmt_store_result</function> in einem Anweisungshandle
+   gepuffert wurde.
   </para>
   <para>
-   Wenn <function>mysqli_stmt_store_result</function> verwendet wurde, kann
-   <function>mysqli_stmt_num_rows</function> sofort aufgerufen werden.
+   Diese Funktion gibt <literal>0</literal> zurück, solange nicht alle
+   Datensätze vom Server abgerufen wurden.
   </para>
  </refsect1>
 
@@ -47,8 +47,9 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt einen Integer zurück, der die Anzahl der Datensätze in der
-   Ergebnismenge angibt.
+   Gibt die Anzahl der gepufferten Zeilen als <type>int</type> zurück. Gibt im
+   ungepufferten Modus <literal>0</literal> zurück, solange nicht alle
+   Datensätze vom Server abgerufen wurden.
   </para>
  </refsect1>
 
@@ -59,33 +60,18 @@
    <programlisting role="php">
 <![CDATA[
 <?php
-/* Datenbankverbindung öffnen */
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
-/* Datenbankverbindung prüfen */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
-
 $query = "SELECT Name, CountryCode FROM City ORDER BY Name LIMIT 20";
-if ($stmt = $mysqli->prepare($query)) {
+$stmt = $mysqli->prepare($query);
+$stmt->execute();
 
-    /* Abfrage ausführen */
-    $stmt->execute();
+/* Das Ergebnis im internen Puffer speichern */
+$stmt->store_result();
 
-    /* Ergebnis abrufen */
-    $stmt->store_result();
-
-    printf("Die Anzahl der Datensätze: %d.\n", $stmt->num_rows);
-
-    /* Abfrage-Objekt schließen */
-    $stmt->close();
-}
-
-/* Verbindung schließen */
-$mysqli->close();
-?>
+printf("Die Anzahl der Datensätze: %d.\n", $stmt->num_rows);
 ]]>
    </programlisting>
   </example>
@@ -94,33 +80,18 @@ $mysqli->close();
    <programlisting role="php">
 <![CDATA[
 <?php
-/* Datenbankverbindung öffnen */
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
-/* Datenbankverbindung prüfen */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
-
 $query = "SELECT Name, CountryCode FROM City ORDER BY Name LIMIT 20";
-if ($stmt = mysqli_prepare($link, $query)) {
+$stmt = mysqli_prepare($link, $query);
+mysqli_stmt_execute($stmt);
 
-    /* Abfrage ausführen */
-    mysqli_stmt_execute($stmt);
+/* Das Ergebnis im internen Puffer speichern */
+mysqli_stmt_store_result($stmt);
 
-    /* Ergebnis abrufen */
-    mysqli_stmt_store_result($stmt);
-
-    printf("Die Anzahl der Datensätze: %d.\n", mysqli_stmt_num_rows($stmt));
-
-    /* Abfrage-Objekt schließen */
-    mysqli_stmt_close($stmt);
-}
-
-/* Verbindung schließen */
-mysqli_close($link);
-?>
+printf("Die Anzahl der Datensätze: %d.\n", mysqli_stmt_num_rows($stmt));
 ]]>
    </programlisting>
    &examples.outputs;
@@ -136,9 +107,9 @@ Die Anzahl der Datensätze: 20.
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>mysqli_stmt_store_result</function></member>
     <member><function>mysqli_stmt_affected_rows</function></member>
     <member><function>mysqli_prepare</function></member>
-    <member><function>mysqli_stmt_store_result</function></member>
    </simplelist>
   </para>
  </refsect1>
