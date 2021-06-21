@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: eb5cb175e88d9b15509fc0dc241ea6135bd36ebb Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: 8e732e84a1425cf0ab3a5b0da8fe113c7a6da85e Maintainer: nobody Status: ready -->
 <sect1 xml:id="install.windows.manual" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Manuelle PHP-Installation auf Windows</title>
  <sect2>
   <title>Web-Server wählen</title>
-  <para>
-   <itemizedlist spacing="compact">
-    <listitem>
-     <para>
-      IIS ist in Windows eingebaut.
-      Auf Windows Server verwenden Sie den Server Manager, um die IIS-Funktion hinzuzufügen.
-      Achten Sie darauf, das CGI-Rollen-Feature hinzuzufügen.
-      Verwenden Sie auf dem Windows-Desktop die Systemsteuerung unter Software, um IIS hinzuzufügen.
-      Siehe: <link xlink:href="https://msdn.microsoft.com/en-us/library/ms181052%28v=vs.80%29.aspx?f=255&amp;MSPPError=-2147217396">https://msdn.microsoft.com/en-us/library/ms181052%28v=vs.80%29.aspx?f=255&amp;MSPPError=-2147217396</link>
-      Für Desktop-Webanwendungen und Web-Entwicklung können Sie auch IIS/Express oder PHP Desktop verwenden.
-
-      <example>
-       <title>Kommandozeilen-Konfiguration von IIS und PHP</title>
-       <programlisting>
+  <sect3>
+   <title>IIS</title>
+   <para>
+    Der IIS ist in Windows eingebaut. Auf Windows Server kann die IIS-Rolle
+    über den Server-Manager hinzugefügt werden. Das CGI-Rollen-Feature muss
+    enthalten sein. Auf Windows-Desktop muss der IIS über die Systemsteuerung
+    unter Software hinzugefügt werden. In der Microsoft-Dokumentation finden
+    Sie eine
+    <link xlink:href="https://docs.microsoft.com/en-us/previous-versions/ms181052(v=vs.80)">ausführliche Anleitung</link>.
+    Für Desktop-Webanwendungen und Web-Entwicklung kann auch IIS/Express oder
+    PHP Desktop verwendet werden.
+    <example>
+     <title>Kommandozeilen-Konfiguration von IIS und PHP</title>
+     <programlisting>
 <![CDATA[
 
 @echo off
 
-REM Zip-Datei des PHP build von http://windows.php.net/downloads/ herunter laden
+REM Zip-Datei des PHP-Builds von http://windows.php.net/downloads/ herunterladen
 REM Pfad des Ordners in den die PHP-Zip-Datei entpackt wurde (ohne abschließendes \)
 set phppath=c:\php
 
@@ -43,45 +42,54 @@ REM Konfiguration der FastCGI-Variablen
 %windir%\system32\inetsrv\appcmd set config -section:system.webServer/fastCgi /[fullPath='%phppath%\php-cgi.exe'].instanceMaxRequests:10000
 %windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHP_FCGI_MAX_REQUESTS',value='10000']"
 %windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHPRC',value='%phppath%\php.ini']"
-
 ]]>
-       </programlisting>
-      </example>
+     </programlisting>
+    </example>
+   </para>
+  </sect3>
 
-      <link linkend="install.windows.legacy.iis7">Manuelle Konfiguration von IIS</link>
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      Es gibt mehrere Versionen von Apache2 für Windows.
-      Wir unterstützen ApacheLounge, aber zu den weiteren Optionen gehören XAMPP, WampServer und BitNami, die automatische Installationswerkzeuge bereitstellen.
-      Sie können mod_php oder mod_fastcgi verwenden, um PHP auf Apache zu laden.
-      Wenn Sie mod_php verwenden, MÜSSEN Sie einen TS-Build von Apache verwenden, der mit derselben Version von Visual C und derselben CPU (x86 oder x64) erstellt wurde.
-      <link linkend="install.windows.legacy.apache2">Wie man Apache2 manuell konfiguriert</link>
-     </para>
-    </listitem>
-   </itemizedlist>
-  </para>
+  <sect3>
+   <title>Apache</title>
+   <para>
+    Es gibt mehrere Builds von Apache2 für Windows. Empfohlen werden die
+    Apache-Builds von ApacheLounge, aber es gibt auch andere Optionen wie
+    XAMPP, WampServer und BitNami, die automatische Installationsprogramme zur
+    Verfügung stellen. PHP kann mit dem Apache über mod_php oder mod_fastcgi
+    verwendet werden. mod_php erfordert ein TS-Build von Apache, der mit
+    derselben Version von Visual C und derselben CPU (x86 oder x64) kompiliert
+    wurde.
+   </para>
+  </sect3>
  </sect2>
 
  <sect2>
   <title>Build wählen</title>
   <para>
-   PHP-Produktionsversionen herunterladen von <link xlink:href="http://windows.php.net/download/">http://windows.php.net/download/</link>.
-   Bei den Snapshot- und Qa-Releases wurde bereits eine Menge getestet und optimiert, aber Sie können uns gerne dabei helfen, noch mehr zu tun.
-   Es gibt 4 Arten von PHP-Builds:
+   Windows-Builds könnenn von
+   <link xlink:href="http://windows.php.net/download/">http://windows.php.net/download/</link>
+   heruntergeladen werden. Alle Builds sind optimiert (<abbrev>PGO</abbrev>),
+   und QA- und GA-Versionen sind gründlich getestet.
    <itemizedlist spacing="compact">
     <listitem>
-     <para>Thread-Safe(TS) - Verwendung für Einzelprozess-Webserver, wie Apache mit mod_php</para>
+     <para>
+      Thread-Safe(TS) - für Einzelprozess-Webserver, wie Apache mit mod_php
+     </para>
     </listitem>
     <listitem>
-     <para>Non-Thread-Safe(NTS) - Verwendung für IIS und andere FastCGI-Webserver (Apache mit mod_fastcgi) und empfohlen für Befehlszeilen-Skripte</para>
+     <para>
+      Non-Thread-Safe(NTS) - für IIS und andere FastCGI-Webserver (Apache mit
+      mod_fastcgi) und empfohlen für Befehlszeilen-Skripte
+     </para>
     </listitem>
     <listitem>
-     <para>x86 - produktiver Einsatz von PHP 5.5 oder 5.6 oder 7.0.</para>
+     <para>
+      x86 - für 32-Bit-Systeme
+     </para>
     </listitem>
     <listitem>
-     <para>x64 - produktiver Einsatz von PHP 7.0+, sofern es sich nicht um eine reine 32-Bit-Version von Windows handelt. 5.5 und 5.6 x64 sind experimentell.</para>
+     <para>
+      x64 - für 64-Bit-Systeme
+     </para>
     </listitem>
    </itemizedlist>
   </para>
