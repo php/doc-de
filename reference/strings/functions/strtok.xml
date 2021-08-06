@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 2f4863e1f6066a7bc7802164a8f46cd46b067132 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: d335ba69a16f4013280de8e3e71d9ba19fe3cb3c Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes Maintainer: samesch -->
 <refentry xml:id="function.strtok" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>strtok</refname>
@@ -22,13 +23,12 @@
    <methodparam><type>string</type><parameter>token</parameter></methodparam>
   </methodsynopsis>
   <para>
-   <function>strtok</function> zerlegt einen String
-   (<parameter>string</parameter>) in kürzere Strings (Token), wobei jeder
-   Token von im Parameter <parameter>token</parameter> festgelegten Zeichen
-   begrenzt wird. Das bedeutet, dass, wenn Sie eine Zeichenkette wie "Dies ist
-   ein Beispiel-String" haben, Sie ihn in seine einzelnen Worte zerlegen
-   können, wenn Sie das Leerzeichen als <parameter>token</parameter>
-   verwenden.
+   <function>strtok</function> zerlegt den String
+   <parameter>string</parameter> in kürzere Strings (Token), wobei jeder Token
+   durch ein beliebiges Zeichen aus <parameter>token</parameter> getrennt
+   wird. Das bedeutet, wenn Sie einen String wie "Dies ist ein
+   Beispiel-String" haben, können Sie ihn in seine einzelnen Worte zerlegen,
+   indem Sie das Leerzeichen als <parameter>token</parameter> verwenden.
   </para>
   <para>
    Beachten Sie, dass nur der erste Aufruf von strtok das
@@ -42,6 +42,23 @@
    an jeder Stelle zerlegt, an der eines der im
    <parameter>token</parameter>-Argument angegebenen Zeichen gefunden wird.
   </para>
+  <note>
+   <para>
+    Diese Funktion verhält sich etwas anders, als man es vielleicht erwartet,
+    wenn man mit <function>explode</function> vertraut ist. Zunächst wird eine
+    Folge von zwei oder mehr zusammenhängenden
+    <parameter>token</parameter>-Zeichen in der ausgewerteten Zeichenkette als
+    ein einzelnes Trennzeichen betrachtet. Außerdem wird ein
+    <parameter>token</parameter>, das sich am Anfang oder Ende der
+    Zeichenkette befindet, ignoriert. Wenn zum Beispiel eine Zeichenkette
+    <literal>";aaa;;bbb;"</literal> verwendet wird, würden aufeinanderfolgende
+    Aufrufe von <function>strtok</function> mit <literal>";"</literal> als
+    <parameter>token</parameter> die Zeichenketten "aaa" und "bbb" und dann
+    &false; zurückgeben. Als Ergebnis wird die Zeichenkette in nur zwei
+    Elemente aufgeteilt, während <literal>explode(";", $string)</literal> ein
+    Array mit 5 Elementen zurückgeben würde.
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -52,7 +69,7 @@
      <term><parameter>string</parameter></term>
      <listitem>
       <para>
-       Der <type>String</type>, der in kleinere Zeichenketten (Token) zerlegt
+       Der <type>&string;</type>, der in kleinere Zeichenketten (Token) zerlegt
        werden soll.
       </para>
      </listitem>
@@ -73,8 +90,8 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Der aktuelle <type>String</type>-Token oder &false;, falls keine weiteren
-   Token mehr vorhanden sind
+   Der aktuelle <type>&string;</type>-Token oder &false;, falls keine weiteren
+   Token mehr vorhanden sind.
   </para>
  </refsect1>
 
@@ -121,6 +138,35 @@ var_dump($erster_token, $zweiter_token);
     </screen>
    </example>
   </para>
+  <para>
+   <example>
+    <title>Der Unterschied zwischen <function>strtok</function> und <function>explode</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$string = ";aaa;;bbb;";
+
+$parts = [];
+$tok = strtok($string, ";");
+while ($tok !== false) {
+    $parts[] = $tok;
+    $tok = strtok(";");
+}
+echo json_encode($parts),"\n";
+
+$parts = explode(";", $string);
+echo json_encode($parts),"\n";
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+["aaa","bbb"]
+["","aaa","","bbb",""]
+]]>
+    </screen>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
@@ -133,7 +179,6 @@ var_dump($erster_token, $zweiter_token);
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><function>split</function></member>
     <member><function>explode</function></member>
    </simplelist>
   </para>

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6f2a633c724ec85d782aa19349987258b7b13557 Maintainer: fa Status: ready -->
+<!-- EN-Revision: 84e8f0960b841a5ebca9d81cd2c2311b6504a371 Maintainer: fa Status: ready -->
+<!-- Reviewed: yes Maintainer: samesch -->
 
 <chapter xml:id="pdo.prepared-statements" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Prepared Statements und Stored Procedures</title>
  <para>
   Viele der ausgereifteren Datenbanken unterstützen das Konzept der Prepared
   Statements. Was ist das? Man kann sie sich als eine Art von kompiliertem
-  Template für SQL das eine Anwendung ausführen will vorstellen, 
-  das durch variable Parameter angepasst werden
-  kann. Prepared Statements haben zwei wichtige Vorteile:
+  Template für das SQL, das eine Anwendung ausführen will, vorstellen, das
+  durch variable Parameter angepasst werden kann. Prepared Statements haben
+  zwei wichtige Vorteile:
  </para>
  <itemizedlist>
   <listitem>
@@ -30,17 +31,17 @@
    <simpara>
     Die Parameter für Prepared Statements müssen nicht maskiert werden. Der
     Treiber übernimmt das automatisch. Wenn eine Anwendung ausschließlich
-    Prepared Statements benutzt, kann sich der Entwickler sicher sein, dass keine
-    SQL-Injection auftreten wird. (Wenn aber trotzdem andere Teile der
-    Abfrage aus nicht zuverlässigen Eingaben generiert werden, ist dies
-    immer noch möglich.)
+    Prepared Statements benutzt, kann sich der Entwickler sicher sein, dass
+    keine SQL-Injection auftreten wird. (Wenn aber trotzdem andere Teile der
+    Abfrage aus nicht zuverlässigen Eingaben generiert werden, ist dies immer
+    noch möglich.)
    </simpara>
   </listitem>
  </itemizedlist>
  <para>
   Prepared Statements sind so nützlich, dass sie das einzige Feature sind, das
   PDO auch für Treiber emulieren wird, die diese nicht unterstützen. Das
-  garantiert, dass eine Anwendung unabhängig von den Möglichkeiten der 
+  garantiert, dass eine Anwendung unabhängig von den Möglichkeiten der
   Datenbank dieselbe Art des Datenzugriffs nutzen kann.
  </para>
  <para>
@@ -113,10 +114,9 @@ $stmt->execute();
 <![CDATA[
 <?php
 $stmt = $dbh->prepare("SELECT * FROM REGISTRY where name = ?");
-if ($stmt->execute(array($_GET['name']))) {
-  while ($row = $stmt->fetch()) {
-    print_r($row);
-  }
+$stmt->execute([$_GET['name']]);
+foreach ($stmt as $row) {
+  print_r($row);
 }
 ?>
 ]]>
@@ -127,13 +127,14 @@ if ($stmt->execute(array($_GET['name']))) {
   <example>
    <title>Eine Stored Procedure mit einem Ausgabeparameter aufrufen</title>
    <simpara>
-    Wenn es der Datenbanktreiber unterstützt, kann eine Anwendung auch Parameter für die
-    Ausgabe einführen, ähnlich der Eingabe. Ausgabeparameter werden typischerweise
-    benutzt, um Werte von Stored Procedures abzurufen. Ausgabeparameter sind
-    etwas komplexer in der Verwendung als Eingabeparameter, weil die Entwickler wissen
-    muss, wie groß ein gegebener Parameter sein könnte, wenn sie ihn einführen.
-    Wenn der Wert sich als größer herausstellt als die vorgeschlagene Größe,
-    wird eine Fehlermeldung erzeugt.
+    Wenn es der Datenbanktreiber unterstützt, kann eine Anwendung auch
+    Parameter für die Ausgabe einführen, ähnlich der Eingabe. Ausgabeparameter
+    werden typischerweise benutzt, um Werte von Stored Procedures abzurufen.
+    Ausgabeparameter sind etwas komplexer in der Verwendung als
+    Eingabeparameter, weil der Entwickler wissen muss, wie groß ein gegebener
+    Parameter sein könnte, wenn er ihn einführt. Wenn der Wert sich als
+    größer herausstellt als die vorgeschlagene Größe, wird eine Fehlermeldung
+    erzeugt.
    </simpara>
    <programlisting role="php">
 <![CDATA[
@@ -156,11 +157,11 @@ print "Rückgabewert der Stored Procedure: $return_value\n";
    <title>Eine Stored Procedure mit einem Eingabe-/Ausgabe-Parameter
     aufrufen</title>
    <simpara>
-    Entwickler können auch Parameter angeben, die Werte für Eingabe und Ausgabe
-    enthalten. Die Syntax ist ähnlich den Ausgabeparametern. In diesem nächsten
-    Beispiel wird die Zeichenkette 'hallo' der Stored Procedure übergeben. Wenn
-    diese etwas zurückgibt, wird 'hallo' durch den Rückgabewert der Stored
-    Procedure ersetzt.
+    Entwickler können auch Parameter angeben, die Werte für Eingabe und
+    Ausgabe enthalten. Die Syntax ist ähnlich den Ausgabeparametern. In diesem
+    nächsten Beispiel wird die Zeichenkette 'hallo' der Stored Procedure
+    übergeben. Wenn diese etwas zurückgibt, wird 'hallo' durch den
+    Rückgabewert der Stored Procedure ersetzt.
    </simpara>
    <programlisting role="php">
 <![CDATA[
@@ -185,11 +186,11 @@ print "Rückgabewert der Stored Procedure: $value\n";
 <![CDATA[
 <?php
 $stmt = $dbh->prepare("SELECT * FROM REGISTRY where name LIKE '%?%'");
-$stmt->execute(array($_GET['name']));
+$stmt->execute([$_GET['name']]);
 
 // Platzhalter müssen anstelle des ganzen Wertes verwendet werden
 $stmt = $dbh->prepare("SELECT * FROM REGISTRY where name LIKE ?");
-$stmt->execute(array("%$_GET[name]%"));
+$stmt->execute(["%$_GET[name]%"]);
 ?>
 ]]>
    </programlisting>

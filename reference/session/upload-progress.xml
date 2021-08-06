@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
 <!-- EN-Revision: 184f3f7bd45643cb80f828d0bb001991ec3a5fad Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes Maintainer: samesch -->
 <!-- Credits: tihox -->
 
 <chapter xml:id="session.upload-progress" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
- <title>Session-Upload-Fortschritt</title>
+ <title>Fortschritt eines Uploads in einer Session</title>
 
  <para>
-  Wenn die
+  Wenn die Ini-Option
   <link linkend="ini.session.upload-progress.enabled">session.upload_progress.enabled</link>
-  Ini-Option aktiviert ist, kann PHP den Upload-Fortschritt der hochgeladenen Dateien verarbeiten.
-  Die von PHP bereitgestellten Daten sind für den eigentlichen Upload-Vorgang nicht nutzbar.
-  Um den Status des Uploads zu verarbeiten, muss die Anwendung eine POST-Anfrage an einen 
-  separaten Endpunkt (zum Beispiel via <acronym>XHR</acronym>) ausführen.
+  aktiviert ist, kann PHP den Upload-Fortschritt der einzelnen hochgeladenen
+  Dateien verfolgen. Die von PHP bereitgestellten Daten sind für den
+  eigentlichen Upload-Vorgang selbst nicht nutzbar, aber während des
+  Datei-Uploads kann eine Anwendung eine POST-Anfrage an einen separaten
+  Endpunkt senden (z. B. über <acronym>XHR</acronym>), um den
+  Status zu ermitteln.
  </para>
  <para>
-  Der Upload-Fortschritt steht in der Superglobalen <varname>$_SESSION</varname> zur
-  Verfügung, wenn der Upload-Vorgang stattfindet und wenn ein POST-Feld, mit dem in der
-  Ini-Konfiguration 
+  Der Upload-Fortschritt steht während des Upload-Vorgangs in der
+  Superglobalen <varname>$_SESSION</varname> zur Verfügung und bei einer
+  POST-Anfrage nach der Variablen mit dem in der ini-Konfiguration
   <link linkend="ini.session.upload-progress.name">session.upload_progress.name</link>
-  hinterlegten Namen, enthalten ist. Wenn PHP eine solche POST-Anfrage erkennt, wird ein
-  Array mit Informationen in der <varname>$_SESSION</varname> hinterlegt. Die Information
-  wird mit dem aus den Ini-Konfigurationen
+  hinterlegten Namen. Wenn PHP eine solche POST-Anfrage erkennt, wird ein
+  Array mit Informationen in der <varname>$_SESSION</varname> hinterlegt. Die
+  Informationen werden mit dem aus den ini-Konfigurationen
   <link linkend="ini.session.upload-progress.prefix">session.upload_progress.prefix</link>
   und
   <link linkend="ini.session.upload-progress.name">session.upload_progress.name</link>
-  zusammengesetzten Index gespeichert. Der Schlüssel wird dabei typischerweise aus den 
-  Ini-Konfigurationen zusammengesetzt, zum Beispiel:
+  zusammengesetzten Index gespeichert. Der Schlüssel wird dabei typischerweise
+  aus den ini-Konfigurationen zusammengesetzt, zum Beispiel:
   <informalexample>
    <programlisting role="php">
 <![CDATA[
@@ -39,13 +42,14 @@ var_dump($_SESSION[$key]);
   </informalexample>
  </para>
  <para>
-  Es ist auch möglich, den Upload-Vorgang, durch setzen des Session-Wertes
-  <literal>$_SESSION[$key]["cancel_upload"]</literal> auf &true;,
-  <emphasis>abzubrechen</emphasis>. Wenn mehrere Dateien in der gleichen
-  Anfrage übertragen werden, wird dabei nur die in der Verarbeitung befindliche Datei und 
-  alle ausstehenden Dateien abgebrochen. Bereits erfolgreich übertragene Dateien werden nicht
-  entfernt. Wenn ein Upload auf diese Weise abgebrochen wird, enthält der <literal>error</literal>
-  Schlüssel des <varname>$_FILES</varname> Array den Wert
+  Es ist auch möglich, den Upload-Vorgang <emphasis>abzubrechen</emphasis>,
+  indem der Session-Wert <literal>$_SESSION[$key]["cancel_upload"]</literal>
+  auf &true; gesetzt wird. Wenn mehrere Dateien in der gleichen Anfrage
+  übertragen werden, werden dabei nur der Upload der in der Verarbeitung
+  befindlichen Datei und alle ausstehenden Datei-Uploads abgebrochen. Bereits
+  erfolgreich übertragene Dateien werden nicht entfernt. Wenn ein Upload auf
+  diese Weise abgebrochen wird, enthält der <literal>error</literal>-Schlüssel
+  des <varname>$_FILES</varname>-Arrays den Wert
   <constant>UPLOAD_ERR_EXTENSION</constant>.
  </para>
  <para>
@@ -53,9 +57,9 @@ var_dump($_SESSION[$key]);
   <link linkend="ini.session.upload-progress.freq">session.upload_progress.freq</link>
   und
   <link linkend="ini.session.upload-progress.min-freq">session.upload_progress.min_freq</link>
-  steuern, wie häufig die Upload-Fortschrittsinformationen neu berechnet werden sollen.
-  Mit angemessenen Einstellungen bei diesen zwei Optionen ist der Aufwand für diese Funktion
-  sehr gering.
+  steuern, wie häufig die Upload-Fortschrittsinformationen neu berechnet
+  werden sollen. Mit angemessenen Einstellungen bei diesen zwei Optionen ist
+  der Aufwand für diese Funktion sehr gering.
  </para>
  <para>
   <example>
@@ -81,21 +85,21 @@ var_dump($_SESSION[$key]);
 <?php
 $_SESSION["upload_progress_123"] = array(
  "start_time" => 1234567890,   // Anfragezeitpunkt
- "content_length" => 57343257, // POST Gesamtdatenmenge (in Bytes)
+ "content_length" => 57343257, // POST-Gesamtdatenmenge (in Bytes)
  "bytes_processed" => 453489,  // Menge der empfangenen und verabreiteten Daten (in Bytes)
- "done" => false,              // true, wenn die POST Datenverarbeitung beendet ist (erfolgreich oder nicht)
+ "done" => false,              // true, wenn die POST-Datenverarbeitung beendet ist (erfolgreich oder nicht)
  "files" => array(
   0 => array(
-   "field_name" => "file1",       // Name des <input/> Feldes
+   "field_name" => "file1",       // Name des <input/>-Feldes
    // Die nächsten drei Elemente entsprechen den Angaben in $_FILES
    "name" => "foo.avi",
    "tmp_name" => "/tmp/phpxxxxxx",
    "error" => 0,
-   "done" => true,                // true wenn die POST Datenverarbeitung dieser Datei beendet ist
-   "start_time" => 1234567890,    // Zeitpunkt, wann die Verarbeitung der Datei begonnen hat
-   "bytes_processed" => 57343250, // Menge der empfangenen und verarbeiteten Daten dieser Datei (in Bytes)
+   "done" => true,                // true, wenn die POST-Datenverarbeitung dieser Datei beendet ist
+   "start_time" => 1234567890,    // Zeitpunkt, an dem die Verarbeitung der Datei begonnen hat
+   "bytes_processed" => 57343250, // Anzahl der empfangenen und verarbeiteten Daten dieser Datei (in Bytes)
   ),
-  // Eine weitere, noch nicht Komplett hochgeladene Datei, der selben Anfrage
+  // Eine weitere Datei, die noch nicht komplett hochgeladen ist, in derselben Anfrage
   1 => array(
    "field_name" => "file2",
    "name" => "bar.avi",
@@ -111,18 +115,21 @@ $_SESSION["upload_progress_123"] = array(
    </programlisting>
   </example>
  </para>
-<warning>
+ <warning>
   <para>
-   In der Anfrage des Servers muss Pufferung deaktiviert sein, damit dies richtig
-   funktioniert. Server wie z.B. Nginx sind bekannt dafür, große Anfragen zu puffern.
+   Damit dies richtig funktioniert, muss die Anfragepufferung des Webservers
+   deaktiviert sein, sonst sieht PHP den Datei-Upload möglicherweise erst,
+   wenn er abgeschlossen ist. Server wie Nginx sind bekannt dafür, große
+   Anfragen zu puffern.
   </para>
  </warning>
  <caution>
   <para>
-   Die Upload-Fortschrittsinformationen werden in die Session geschrieben, bevor
-   irgendein Skript ausgeführt wird. Daher führt die Änderung des Session-Namens
-   per <function>ini_set</function> oder <function>session_name</function> zu
-   einer Session ohne die Upload-Fortschrittsinformationen.
+   Die Upload-Fortschrittsinformationen werden in die Session geschrieben,
+   bevor irgendein Skript ausgeführt wird. Daher führt die Änderung des
+   Session-Namens per <function>ini_set</function> oder
+   <function>session_name</function> zu einer Session ohne die
+   Upload-Fortschrittsinformationen.
   </para>
  </caution>
 
