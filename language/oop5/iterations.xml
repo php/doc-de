@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c2aae8928b69ed28b4e61bd7aadb869e5ccb64d8 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 1fb0ef23d7be0d8ecd9604fce16ee1e0842c6ef6 Maintainer: simp Status: ready -->
  <sect1 xml:id="language.oop5.iterations" xmlns="http://docbook.org/ns/docbook">
   <title>Objektiteration</title>
   <para>
-   PHP 5 bietet eine Möglichkeit Objekte so zu definieren, dass es möglich ist
+   PHP bietet eine Möglichkeit Objekte so zu definieren, dass es möglich ist
    eine Liste von Elementen zu durchlaufen, z.B. mit einem &foreach;-Statement.
    Standardmäßig werden alle <link linkend="language.oop5.visibility">sichtbaren</link>
    Eigenschaften für die Iteration benutzt.
@@ -64,192 +64,23 @@ private => private var
   </example>
 
  <para>
-  Wie die Ausgabe zeigt, lief das &foreach; über alle <link 
-  linkend="language.oop5.visibility">sichtbaren</link> Eigenschaften, auf die
-  zugegriffen werden kann. 
+  Wie die Ausgabe zeigt, durchläuft das &foreach; alle 
+  <link linkend="language.oop5.visibility">sichtbaren</link>
+  Eigenschaften, auf die zugegriffen werden kann.
  </para>
- <para>
-  Um es einen Schritt weiter zu treiben, kann man eines der PHP 5
-  internen <link linkend="language.oop5.interfaces">Interfaces</link>, 
-  nämlich <interfacename>Iterator</interfacename>, implementieren. 
-  Dies erlaubt es dem Objekt vorzugeben wie es iteriert wird und welche Werte
-  in jeder Iteration verfügbar sind.
- </para>
-
-  <example>
-   <title>Objektiteration mit implementiertem Iterator</title>
-   <programlisting role="php">
-<![CDATA[
-<?php
-class MyIterator implements Iterator
-{
-    private $var = array();
-
-    public function __construct($array)
-    {
-        if (is_array($array)) {
-            $this->var = $array;
-        }
-    }
-
-    public function rewind() {
-        echo "zurückspulen\n";
-        reset($this->var);
-    }
-
-    public function current() {
-        $var = current($this->var);
-        echo "aktuell: $var\n";
-        return $var;
-    }
-
-    public function key() {
-        $var = key($this->var);
-        echo "key: $var\n";
-        return $var;
-    }
-
-    public function next() {
-        $var = next($this->var);
-        echo "nächstes: $var\n";
-        return $var;
-    }
-
-    public function valid() {
-        $var = $this->current() !== false;
-        echo "gültig: {$var}\n";
-        return $var;
-    }
-}
-
-$values = array(1,2,3);
-$it = new MyIterator($values);
-
-foreach ($it as $a => $b) {
-    print "$a: $b\n";
-}
-?>
-]]>
-   </programlisting>
-   &example.outputs;
-   <screen role="php">
-<![CDATA[
-zurückspulen
-aktuell: 1
-gültig: 1
-aktuell: 1
-key: 0
-0: 1
-nächstes: 2
-aktuell: 2
-gültig: 1
-aktuell: 2
-key: 1
-1: 2
-nächstes: 3
-aktuell: 3
-gültig: 1
-aktuell: 3
-key: 2
-2: 3
-nächstes:
-aktuell:
-gültig:
-]]>
-   </screen>
-
-  </example>
-
+  
+ <simplesect role="seealso">
+  &reftitle.seealso;
   <para>
-   Das <interfacename>IteratorAggregate</interfacename>-<link
-   linkend="language.oop5.interfaces">Interface</link> kann als
-   Alternative zur Implementierung aller Methoden von
-   <interfacename>Iterator</interfacename> verwendet werden.
-   <interfacename>IteratorAggregate</interfacename> erfordert nur die
-   Implementierung einer einzigen Methode, 
-   <methodname>IteratorAggregate::getIterator</methodname>, welche 
-   eine Instanz einer Klasse, die <interfacename>Iterator</interfacename>
-   implementiert, zurückgeben sollte.
+   <simplelist>
+    <member><link linkend="language.generators">Generatoren</link></member>
+    <member><interfacename>Iterator</interfacename></member>
+    <member><interfacename>IteratorAggregate</interfacename> </member>
+    <member><link linkend="spl.iterators">Iteratoren</link></member>
+   </simplelist>
   </para>
-
-  <example>
-   <title>Objektiteration mit implementiertem IteratorAggregate</title>
-   <programlisting role="php">
-<![CDATA[
-<?php
-class MyCollection implements IteratorAggregate
-{
-    private $items = array();
-    private $count = 0;
-
-    // benötigte Funktion des IteratorAggregate Interface
-    public function getIterator() {
-        return new MyIterator($this->items);
-    }
-
-    public function add($value) {
-        $this->items[$this->count++] = $value;
-    }
-}
-
-$coll = new MyCollection();
-$coll->add('Wert 1');
-$coll->add('Wert 2');
-$coll->add('Wert 3');
-
-foreach ($coll as $key => $val) {
-    echo "key/value: [$key -> $val]\n\n";
-}
-?>
-]]>
-   </programlisting>
-   &example.outputs;  
-   <screen role="php">
-<![CDATA[
-zurückspulen
-aktuell: Wert 1
-gültig: 1
-aktuell: Wert 1
-key: 0
-key/value: [0 -> Wert 1]
-
-nächstes: Wert 2
-aktuell: Wert 2
-gültig: 1
-aktuell: Wert 2
-key: 1
-key/value: [1 -> Wert 2]
-
-nächstes: Wert 3
-aktuell: Wert 3
-gültig: 1
-aktuell: Wert 3
-key: 2
-key/value: [2 -> Wert 3]
-
-nächstes:
-aktuell:
-gültig:
-]]>
-   </screen>
-
-  </example>
-
-  <note>
-   <para>
-    Für mehr Beispiele für die Benutzung von Iteratoren siehe auch
-    <link linkend="spl.iterators">SPL Erweiterung</link>.
-   </para>
-  </note> 
-
-  <note>
-   <para>
-    Anwender von PHP 5.5 oder später sollten auch die Verwendung von
-    <link linkend="language.generators">Generatoren</link> prüfen, welche
-    eine Alternative zur Erzeugung von Iteratoren anbieten.
-   </para>
-  </note> 
-    
+ </simplesect>  
+  
  </sect1>
 
 <!-- Keep this comment at the end of the file
