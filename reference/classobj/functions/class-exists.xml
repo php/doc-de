@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 53bdffa6b9f8ce5ffdaf476c9d450f7cd0d1afa2 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 04df229c536daf299b51e16479f017ac68556038 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.class-exists" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>class_exists</refname>
@@ -10,7 +10,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type>bool</type><methodname>class_exists</methodname>
-   <methodparam><type>string</type><parameter>class_name</parameter></methodparam>
+   <methodparam><type>string</type><parameter>class</parameter></methodparam>
    <methodparam choice="opt"><type>bool</type><parameter>autoload</parameter><initializer>&true;</initializer></methodparam>
   </methodsynopsis>
   <para>
@@ -22,7 +22,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>class_name</parameter></term>
+     <term><parameter>class</parameter></term>
      <listitem>
       <para>
        Der Klassenname. Groß- und Kleinschreibung wird beim Vergleich
@@ -44,7 +44,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt &true; zurück falls die Klasse <parameter>class_name</parameter>
+   Gibt &true; zurück falls die Klasse <parameter>class</parameter>
    definiert ist, sonst &false;.
   </para>
  </refsect1>
@@ -71,17 +71,16 @@ if (class_exists('MyClass')) {
     <programlisting role="php">
 <![CDATA[
 <?php
-function __autoload($class)
-{
-    include($class . '.php');
+spl_autoload_register(function ($class_name) {
+    include $class_name . '.php';
 
     // Prüft ob die includierte Datei die Klasse tatsächlich definiert
-    if (!class_exists($class, false)) {
-        trigger_error("Die Klasse $class kann nicht geladen werden", E_USER_WARNING);
+    if (!class_exists($class_name, false)) {
+        throw new LogicException("Die Klasse $class kann nicht geladen werden");
     }
-}
+});
 
-if (class_exists('MyClass')) {
+if (class_exists(MyClass::class)) {
     $myclass = new MyClass();
 }
 
@@ -102,7 +101,6 @@ if (class_exists('MyClass')) {
   </para>
  </refsect1>
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
