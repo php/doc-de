@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 508e255fff6c604c31d5617fe9ddf6d776a3b43d Maintainer: nobody Status: ready -->
-
+<!-- EN-Revision: a7421437b658dc4e0455ba8ea7e37a39a530845e Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes Maintainer: samesch -->
 <refentry xml:id="function.exif-read-data" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>exif_read_data</refname>
@@ -11,22 +11,24 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>array</type><methodname>exif_read_data</methodname>
-   <methodparam><type>mixed</type><parameter>stream</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>sections</parameter><initializer>&null;</initializer></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>arrays</parameter><initializer>&false;</initializer></methodparam>
-   <methodparam choice="opt"><type>bool</type><parameter>thumbnail</parameter><initializer>&false;</initializer></methodparam>
+   <type class="union"><type>array</type><type>false</type></type><methodname>exif_read_data</methodname>
+   <methodparam><type class="union"><type>resource</type><type>string</type></type><parameter>file</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>required_sections</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>as_arrays</parameter><initializer>&false;</initializer></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>read_thumbnail</parameter><initializer>&false;</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>exif_read_data</function> liest die
-   <acronym>EXIF</acronym>-Header aus einer Bilddatei aus. Auf diese Weise können die
-   Metadaten ausgelesen werden, die mit Digitalkameras erzeugt wurden.
+   <acronym>EXIF</acronym>-Header aus einer Bilddatei aus. Auf diese Weise
+   können die Metadaten ausgelesen werden, die mit Digitalkameras erzeugt
+   wurden.
   </para>
   <para>
-   <acronym>EXIF</acronym>-Header kommen normalerweise bei JPEG/TIFF-Bildern vor, die von
-   Digitalkameras gemacht wurden. Leider hat jeder Kamerahersteller eine
-   andere Vorstellung davon, wie man die Bilder beschreibt, so dass man sich
-   also nicht darauf verlassen kann, das ein bestimmter Exif-Header vorhanden ist.
+   <acronym>EXIF</acronym>-Header kommen normalerweise bei JPEG/TIFF-Bildern
+   vor, die von Digitalkameras gemacht wurden. Leider hat jeder
+   Kamerahersteller eine andere Vorstellung davon, wie man die Bilder
+   beschreibt, sodass man sich nicht darauf verlassen kann, das ein bestimmter
+   Exif-Header vorhanden ist.
   </para>
   <para>
    <literal>Height</literal> und <literal>Width</literal> werden genauso wie
@@ -38,28 +40,32 @@
   <para>
    Wenn ein Exif-Header einen Copyrightvermerk beinhaltet, kann dieser selbst
    aus zwei Werten bestehen. Da die Lösung im Exif-2.10 -Standard nicht
-   konsistent ist, liefert der COMPUTED-Bereich die beiden Einträge
-   <literal>Copyright.Photographer</literal> und <literal>Copyright.Editor</literal>,
-   während der <literal>IFD</literal>-Bereich aus einem Byte-Array besteht, in dem die beiden Werte
-   durch ein NULL-Zeichen getrennt sind. Wenn der Datentyp falsch ist, ist nur der
-   erste Eintrag vorhanden (normales Verhalten von Exif). <literal>COMPUTED</literal> beinhaltet
-   auch einen <literal>Copyright</literal>-Eintrag. Dieser entspricht entweder
-   dem originalen Copyright-String oder er besteht aus einer kommaseparierten
+   konsistent ist, liefert der <literal>COMPUTED</literal>-Bereich die beiden
+   Einträge <literal>Copyright.Photographer</literal> und
+   <literal>Copyright.Editor</literal>, während die
+   <literal>IFD</literal>-Bereiche aus einem Byte-Array besteht, in dem die
+   beiden Werte durch ein NULL-Zeichen getrennt sind. Wenn der Datentyp falsch
+   ist, ist nur der erste Eintrag vorhanden (normales Verhalten von Exif).
+   <literal>COMPUTED</literal> beinhaltet auch einen
+   <literal>Copyright</literal>-Eintrag. Dieser entspricht entweder dem
+   originalen Copyright-String oder er besteht aus einer kommaseparierten
    Liste von Foto- und Herausgeber-Copyright.
   </para>
   <para>
-   Der Tag <literal>UserComment</literal> hat das gleiche Problem, wie das Copyright-Tag. Er
-   kann zwei Werte speichern. Als erstes die benutze Kodierung und als zweites
-   den Wert selbst. Wenn dem so ist, enthält der <literal>IFD</literal>-Bereich nur die Kodierung oder
-   ein Byte-Array. Der <literal>COMPUTED</literal>-Bereich speichert die beiden Einträge
+   Der Tag <literal>UserComment</literal> hat das gleiche Problem, wie das
+   Copyright-Tag. Er kann zwei Werte speichern. Als erstes die verwendete
+   Kodierung und als zweites den Wert selbst. Wenn dem so ist, enthält der
+   <literal>IFD</literal>-Bereich nur die Kodierung oder ein Byte-Array. Der
+   <literal>COMPUTED</literal>-Bereich speichert beide in den Einträgen
    <literal>UserCommentEncoding</literal> und <literal>UserComment</literal>.
    Der Eintrag <literal>UserComment</literal> ist in beiden Fällen verfügbar.
-   Er sollte also dem Eintrag im <literal>IFD0</literal>-Bereich vorgezogen werden.
+   Er sollte also dem Eintrag im <literal>IFD0</literal>-Bereich vorgezogen
+   werden.
   </para>
   <para>
-   <function>exif_read_data</function> validiert auch EXIF-Datentags entsprechend
-   der EXIF-Spezifikationen (<link xlink:href="&url.exifspec;">&url.exifspec;</link>,
-   Seite 20).
+   <function>exif_read_data</function> validiert auch EXIF-Datentags
+   entsprechend der EXIF-Spezifikationen
+   (<link xlink:href="&url.exifspec;">&url.exifspec;</link>, Seite 20).
   </para>
  </refsect1>
 
@@ -68,22 +74,23 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>stream</parameter></term>
+     <term><parameter>file</parameter></term>
      <listitem>
       <para>
        Der Ort der Bilddatei. Dies kann entweder der Pfad der Datei
        (Stream-Wrapper werden wie üblich ebenso unterstützt) oder eine
-       Stream-<type>resource</type> sein.
+       Stream-<type>&resource;</type> sein.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>sections</parameter></term>
+     <term><parameter>required_sections</parameter></term>
      <listitem>
       <para>
-       Ist eine kommaseparierte List von Bereichen, die in der Datei vorhanden
-       sein muss, um das Rückgabe-<type>array</type> zu erzeugen. Wenn keine
-       der geforderten Bereiche gefunden werden kann, wird &false; zurückgegeben.
+       Ist eine kommaseparierte Liste von Bereichen, die in der Datei
+       vorhanden sein müssen, um das Rückgabe-<type>&array;</type> zu
+       erzeugen. Wenn keiner der geforderten Bereiche gefunden werden kann,
+       wird &false; zurückgegeben.
        <informaltable>
         <tgroup cols="2">
          <tbody>
@@ -94,29 +101,35 @@
           <row>
            <entry>COMPUTED</entry>
            <entry>
-            html, Width, Height, IsColor und andere, wenn vorhanden. Height und
-            Width werden genauso wie <function>getimagesize</function> berechnet.
-            Diese Werte dürfen also nicht Teil von irgendwelchen Headern sein,
-            die zurückgegeben werden. Ferner ist <literal>html</literal> ein Höhen/Breiten-Textstring
-            für den Gebrauch in normalem <acronym>HTML</acronym>.
+            html, Width, Height, IsColor und andere, wenn vorhanden. Height
+            und Width werden genauso wie <function>getimagesize</function>
+            berechnet. Diese Werte dürfen also nicht Teil von irgendwelchen
+            Headern sein, die zurückgegeben werden. Ferner ist
+            <literal>html</literal> ein Höhen/Breiten-Textstring für den
+            Gebrauch in normalem <acronym>HTML</acronym>.
            </entry>
           </row>
           <row>
            <entry>ANY_TAG</entry>
-           <entry>Jegliche Informationen, die ein Tag besitzen, wie z.B. <literal>IFD0</literal>, <literal>EXIF</literal>, ...</entry>
+           <entry>
+            Jegliche Informationen, die ein Tag besitzen, z. B.
+            <literal>IFD0</literal>, <literal>EXIF</literal>, ...
+           </entry>
           </row>
           <row>
            <entry>IFD0</entry>
            <entry>
-            Alle IFD0-Daten mit Tag. In normalen Bilddateien beinhalten diese Bildgröße usw.
+            Alle IFD0-Daten mit Tag. In normalen Bilddateien beinhalten diese
+            die Bildgröße usw.
            </entry>
           </row>
           <row>
            <entry>THUMBNAIL</entry>
            <entry>
-            Eine Datei sollte ein Miniaturbild enthalten, wenn es einen zweiten
-            <literal>IFD</literal> besitzt. Alle Informationen mit Tags über das eingebettete
-            Miniaturbild werden in diesem Bereich gespeichert.
+            Wenn eine Datei ein zweites <literal>IFD</literal> enthält, wird
+            angenommen, dass sie ein Miniaturbild enthält. Alle Informationen
+            mit Tags über das eingebettete Miniaturbild werden in diesem
+            Bereich gespeichert.
            </entry>
           </row>
           <row>
@@ -126,9 +139,9 @@
           <row>
            <entry>EXIF</entry>
            <entry>
-            Der EXIF-Bereich ist ein Unterbereich von <literal>IFD0</literal>. Er enthält
-            detailliertere Information über das Bild. Die meisten dieser
-            Einträge beziehen sich auf die Digitalkamera.
+            Der EXIF-Bereich ist ein Unterbereich von <literal>IFD0</literal>.
+            Er enthält detailliertere Information über das Bild. Die meisten
+            dieser Einträge beziehen sich auf die Digitalkamera.
            </entry>
           </row>
          </tbody>
@@ -138,11 +151,11 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>arrays</parameter></term>
+     <term><parameter>as_arrays</parameter></term>
       <listitem>
       <para>
        Definiert ob jeder Bereich ein Array wird oder nicht. Die
-       <parameter>sections</parameter> <literal>COMPUTED</literal>,
+       <parameter>required_sections</parameter> <literal>COMPUTED</literal>,
        <literal>THUMBNAIL</literal> und <literal>COMMENT</literal> werden
        immer zu Arrays, da die Namen der Werte mit denen anderer Bereiche
        kollidieren können.
@@ -150,7 +163,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>thumbnail</parameter></term>
+     <term><parameter>read_thumbnail</parameter></term>
      <listitem>
       <para>
        Bei &true; wird das Miniaturbild ausgelesen, ansonsten nur die Daten
@@ -165,10 +178,20 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt ein assoziatives <type>array</type> zurück, bei dem der Arrayindex den
-   Headernamen entspricht und der Arraywert die Werte enthält, die mit diesen
-   Headern in Verbindung stehen. Wenn keine Daten zurückgeliefert werden können,
-   liefert <function>exif_read_data</function> &false;.
+   Gibt ein assoziatives <type>&array;</type> zurück, bei dem der Arrayindex
+   den Headernamen entspricht und der Arraywert die Werte enthält, die mit
+   diesen Headern in Verbindung stehen. Wenn keine Daten zurückgegeben werden
+   können, gibt <function>exif_read_data</function> &false; zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <para>
+   Fehler der Stufe <constant>E_WARNING</constant> und/oder
+   <constant>E_NOTICE</constant> können bei nicht unterstützten Tags oder
+   anderen potentiellen Fehlerbedingungen ausgelöst werden, aber die Funktion
+   versucht trotzdem, alle verständlichen Informationen zu lesen.
   </para>
  </refsect1>
 
@@ -185,10 +208,16 @@
      </thead>
      <tbody>
       <row>
+       <entry>8.0.0</entry>
+       <entry>
+        <parameter>required_sections</parameter> ist jetzt nullable
+        (akzeptiert den &null;-Wert).
+       </entry>
+      </row>
+      <row>
        <entry>7.2.0</entry>
        <entry>
-        Der Parameter <parameter>filename</parameter> wurde in 
-        <parameter>stream</parameter> umbenannt, und unterstützt nun sowohl
+        Der Parameter <parameter>file</parameter> unterstützt jetzt sowohl
         lokale Dateien als auch Stream-Ressourcen.
        </entry>
       </row>
@@ -284,7 +313,8 @@ foreach ($exif as $key => $section) {
 ]]>
     </programlisting>
     <para>
-     Der erste Aufruf schlägt fehl, da das Bild keine Headerinformationen hat.
+     Der erste Aufruf schlägt fehl, da das Bild keine Headerinformationen
+     enthält.
     </para>
     &example.outputs.similar;
     <screen role="php">
@@ -377,22 +407,21 @@ EXIF Header:
   <note>
    <para>
     Ist <link linkend="ref.mbstring">mbstring</link> aktiviert, wird exif
-    versuchen den unicode zu verarbeiten, und einen Zeichensatz gemäß <link
-    linkend="ini.exif.decode-unicode-motorola">exif.decode_unicode_motorola</link>
-    und <link
-    linkend="ini.exif.decode-unicode-intel">exif.decode_unicode_intel</link> zu
-    wählen. Die exif Erweiterung versucht nicht, die Kodierung selbst zu
+    versuchen den Unicode zu verarbeiten, und einen Zeichensatz gemäß
+    <link linkend="ini.exif.decode-unicode-motorola">exif.decode_unicode_motorola</link>
+    und <link linkend="ini.exif.decode-unicode-intel">exif.decode_unicode_intel</link>
+    zu wählen. Die exif-Erweiterung versucht nicht, die Kodierung selbst zu
     ermitteln, so dass es die Aufgabe des Benutzers ist, die gewünschte
-    Kodierung durch Setzen einer der beiden ini Direktiven anzugeben, bevor
+    Kodierung durch Setzen einer der beiden ini-Direktiven anzugeben, bevor
     <function>exif_read_data</function> aufgerufen wird.
    </para>
   </note>
   <note>
    <para>
-    Wird der Parameter <parameter>stream</parameter> verwendet, um einen Stream
-    an diese Funktion zu übergeben, dann muss der Stream suchbar sein. Es ist zu
-    beachten, dass die Position des Dateizeigers nach dem Aufruf dieser Funktion
-    unverändert ist.
+    Wird der Parameter <parameter>file</parameter> verwendet, um einen Stream
+    an diese Funktion zu übergeben, dann muss der Stream suchbar sein. Es ist
+    zu beachten, dass die Position des Dateizeigers nach dem Aufruf dieser
+    Funktion unverändert ist.
    </para>
   </note>
  </refsect1>
@@ -409,7 +438,6 @@ EXIF Header:
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
