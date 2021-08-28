@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: dcd5448282973a659f62e4240fb6e50aae0eb78b Maintainer: sammywg Status: ready -->
-
+<!-- EN-Revision: 2e8ef0a1bd98243cb2c6c5c627a195bb53a7a440 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
  <chapter xml:id="language.exceptions" xmlns="http://docbook.org/ns/docbook">
-  <title>Ausnahmebehandlung (Exception-Handling)</title>
+  <title>Exceptions (Ausnahmen)</title>
 
   <sect1 xml:id="language.exceptions.extending">
    <title>Exceptions erweitern</title>
@@ -18,7 +19,7 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-class Exception extends Throwable
+class Exception implements Throwable
 {
     protected $message = 'Unknown exception';   // Exceptionmitteilung
     private   $string;                          // __toString-Cache
@@ -28,69 +29,68 @@ class Exception extends Throwable
     private   $trace;                           // Rückverfolgung
     private   $previous;                        // Vorherige Exception, falls verschachtelte Exception
 
-    public function __construct($message = null, $code = 0, Exception $previous = null);
+    public function __construct($message = '', $code = 0, Throwable $previous = null);
 
     final private function __clone();           // Verhindert klonen von Exceptions
 
-    final public function getMessage();         // Mitteilung der Exception
-    final public function getCode();            // Fehlercode der Exception
-    final public function getFile();            // Quelldateiname
-    final public function getLine();            // Quelldateizeile
-    final public function getTrace();           // Array zum Rückverfolgen
-    final public function getPrevious();        // Vorherige Exception
-    final public function getTraceAsString();   // Formatierter String der Rückverfolgung
+    final public  function getMessage();        // Mitteilung der Exception
+    final public  function getCode();           // Fehlercode der Exception
+    final public  function getFile();           // Quelldateiname
+    final public  function getLine();           // Quelldateizeile
+    final public  function getTrace();          // Array zum Rückverfolgen
+    final public  function getPrevious();       // Vorherige Exception
+    final public  function getTraceAsString();  // Formatierter String der Rückverfolgung
 
     // Überschreibbar
-    public function __toString();               // Formatierter String für
-                                                // Ausgabe
+    public function __toString();               // Formatierter String für die Ausgabe
 }
 ?>
 ]]>
     </programlisting>
    </example>
    <para>
-    Wenn eine Klasse die eingebaute Exceptionklasse erweitert und den <link
-    linkend="language.oop5.decon">Konstruktor</link> neu definiert, ist es
-    dringend empfohlen, dass der Konstruktor der Klasse <link
-    linkend="language.oop5.paamayim-nekudotayim">parent::__construct()</link>
+    Wenn eine Klasse die eingebaute Exceptionklasse erweitert und den
+    <link linkend="language.oop5.decon">Konstruktor</link> neu definiert, ist
+    es dringend empfohlen, dass der Konstruktor der Klasse
+    <link linkend="language.oop5.paamayim-nekudotayim">parent::__construct()</link>
     aufruft, um sicherzustellen, dass alle verfügbaren Daten korrekt
-    zugewiesen wurden. Die <link
-    linkend="language.oop5.magic">__toString()</link>-Methode kann
-    überschrieben werden, um eine maßgeschneiderte Ausgabe anzubieten, wenn
+    zugewiesen wurden. Die
+    <link linkend="language.oop5.magic">__toString()</link>-Methode kann
+    überschrieben werden, um eine benutzerdefinierte Ausgabe anzubieten, wenn
     das Objekt durch eine Zeichenkette repräsentiert werden soll.
    </para>
    <note>
     <para>
-     Exceptions können nicht geklont werden. Der Versuch eine Exception zu
-     <link linkend="language.oop5.cloning">klonen</link> wird einen fatalen
+     Exceptions können nicht geklont werden. Der Versuch, eine Exception zu
+     <link linkend="language.oop5.cloning">klonen</link>, wird einen fatalen
      <constant>E_ERROR</constant>-Fehler zur Folge haben.
     </para>
    </note>
    <example>
-    <title>Die Exceptionklasse erweitern (PHP 5.3.0+)</title>
+    <title>Die Exceptionklasse erweitern</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 /**
- * Eine maßgeschneiderte Exceptionklasse definieren
+ * Eine eigene Exceptionklasse definieren
  */
 class MyException extends Exception
 {
     // Die Exception neu definieren, damit die Mitteilung nicht optional ist
-    public function __construct($message, $code = 0, Exception $previous = null) {
+    public function __construct($message, $code = 0, Throwable $previous = null) {
         // etwas Code
 
         // sicherstellen, dass alles korrekt zugewiesen wird
         parent::__construct($message, $code, $previous);
     }
 
-    // maßgeschneiderte Stringdarstellung des Objektes
+    // benutzerdefinierte Stringdarstellung des Objektes
     public function __toString() {
         return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
     }
 
     public function customFunction() {
-        echo "Eine eigene Funktion dieses Exceptiontyps\n";
+        echo "Eine eigene Funktion für diesen Exceptiontyp\n";
     }
 }
 
@@ -110,7 +110,7 @@ class TestException
 
         switch ($avalue) {
             case self::THROW_CUSTOM:
-                // eigene Exception werfen
+                // eigene Exception auslösen
                 throw new MyException('1 ist ein ungültiger Parameter', 5);
                 break;
 
@@ -120,7 +120,7 @@ class TestException
                 break;
 
             default:
-                // Keine Exception, das Objekt wird erzeugt
+                // Keine Exception; das Objekt wird erzeugt
                 $this->var = $avalue;
                 break;
         }
@@ -183,123 +183,147 @@ echo "\n\n";
 ?>
 ]]>
     </programlisting>
-    <note>
-     <para>
-      PHP 5-Versionen vor PHP 5.3.0 unterstützen keine verschachtelten
-      Exceptions. Für das Beispiel kann der folgende Code-Schnipsel als Ersatz
-      für die Klasse MyException verwendet werden.
-     </para>
-     <programlisting role="php">
-<![CDATA[
-<?php
-/**
- * Eine maßgeschneiderte Exceptionklasse definieren
- */
-class MyException extends Exception
-{
-    // Die Exception neu definieren, damit die Mitteilung nicht optional ist
-    public function __construct($message, $code = 0) {
-        // etwas Code
-
-        // sicherstellen, dass alles korrekt zugewiesen wird
-        parent::__construct($message, $code);
-    }
-
-    // maßgeschneiderte Stringdarstellung des Objektes
-    public function __toString() {
-        return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
-    }
-
-    public function customFunction() {
-        echo "Eine eigene Funktion dieses Exceptiontyps\n";
-    }
-}
-?>
-]]>
-     </programlisting>
-    </note>
    </example>
   </sect1>
 
   <simplesect xml:id="language.exceptions.introduction">
    <para>
-    PHP hat ein Exceptionmodell ähnlich dem anderer Programmiersprachen.
-    Eine Exception kann in PHP geworfen (&throw;) und abgefangen (&catch;)
-    werden. Um das Abfangen potentieller Exceptions zu ermöglichen, sollte der
+    PHP hat ein Exceptionmodell ähnlich dem anderer Programmiersprachen. Eine
+    Exception kann in PHP ausgelöst (&throw;) und abgefangen (&catch;) werden.
+    Um das Abfangen potentieller Exceptions zu ermöglichen, sollte der
     jeweilige Code von einem &try;-Block umschlossen werden. Jeder &try;-Block
     muss mindestens einen zugehörigen &catch;- oder &finally;-Block besitzen.
    </para>
    <para>
-    Das geworfene Objekt muss eine Instanz der Klasse
+    Wenn eine Exception ausgelöst wird und der aktuelle Funktionsbereich
+    keinen &catch;-Block hat, steigt die Exception im Aufrufstapel bis zur
+    aufrufenden Funktion auf, bis sie einen passenden &catch;-Block findet.
+    Alle &finally;-Blöcke, auf die sie unterwegs trifft, werden ausgeführt.
+    Wenn der Aufrufstapel bis in den globalen Bereich abgewickelt ist, ohne
+    auf einen passenden &catch;-Block zu stoßen, bricht das Programm mit einem
+    fatalen Fehler ab, es sei denn, es wurde ein globaler Exception-Handler
+    gesetzt.
+   </para>
+   <para>
+    Das ausgelöste Objekt muss eine Instanz der Klasse
     <classname>Exception</classname> oder einer Unterklasse von
-    <classname>Exception</classname> sein. Der Versuch ein Objekt zu werfen,
+    <classname>Exception</classname> sein. Der Versuch ein Objekt auszulösen,
     das das nicht ist, wird einen fatalen PHP-Fehler zur Folge haben.
+   </para>
+   <para>
+    Seit PHP 8.0.0 ist das Schlüsselwort &throw; ein Ausdruck und kann in
+    jedem Ausdruckskontext verwendet werden. In früheren Versionen war es eine
+    Anweisung und musste in einer eigenen Zeile stehen.
    </para>
   </simplesect>
 
   <simplesect xml:id="language.exceptions.catch">
    <title><literal>catch</literal></title>
    <para>
-    Mehrere &catch;-Blöcke können verwendet werden, um verschiedene Klassen
-    von Exceptions abzufangen. Die normale Programmausführung (wenn keine
-    Exception innerhalb des &try;-Blockes geworfen wird) wird nach dem
-    letzten in Folge definierten &catch;-Block fortgesetzt. Exceptions können
-    innerhalb eines &catch;-Blockes geworfen (oder weitergeworfen) werden.
+    Ein &catch;-Block definiert, wie auf eine ausgelöste Exception reagiert
+    werden soll. Ein &catch;-Block definiert eine oder mehrere Arten von
+    Exceptions oder Fehlern, die er behandeln kann, und optional eine
+    Variable, der die Exception zugewiesen werden soll. (Die Variable war vor
+    PHP 8.0.0 erforderlich.) Der erste &catch;-Block, auf den eine ausgelöste
+    Exception oder ein Fehler trifft, der mit dem Typ des ausgelösten Objekts
+    übereinstimmt, behandelt das Objekt.
    </para>
    <para>
-    Wenn eine Exception geworfen wird, führt PHP den Programmcode hinter der
+    Mehrere &catch;-Blöcke können verwendet werden, um verschiedene Klassen
+    von Exceptions abzufangen. Wenn innerhalb des &try;-Blocks keine Exception
+    ausgelöst wird, wird die normale Programmausführung nach dem letzten in
+    Folge definierten &catch;-Block fortgesetzt. Exceptions können innerhalb
+    eines &catch;-Blocks ausgelöst (oder erneut ausgelöst) werden. Falls
+    nicht, wird die Ausführung nach dem &catch;-Block, der ausgelöst wurde,
+    fortgesetzt.
+   </para>
+   <para>
+    Wenn eine Exception ausgelöst wird, führt PHP den Programmcode hinter der
     auslösenden Anweisung nicht aus, sondern versucht, den ersten passenden
     &catch;-Block zu finden. Falls eine Exception nicht abgefangen wird, wird
     ein fataler Fehler mit einer
-    "<literal>Uncaught Exception ...</literal>"-Nachricht ausgegeben, wenn
+    "<literal>Uncaught Exception ...</literal>"-Nachricht ausgegeben, sofern
     keine Behandlung mittels <function>set_exception_handler</function>
     definiert wurde.
    </para>
    <para>
-    In PHP 7.1 und später kann ein &catch;-Block mehrere Exceptions getrennt
-    durch Pipe-Zeichen (<literal>|</literal>) angeben. Dies ist nützlich, wenn
-    unterschiedliche Exceptions von unterschiedlichen Klassenhierarchien gleich
-    behandelt werden sollen.
+    Seit PHP 7.1.0 kann ein &catch;-Block mehrere Exceptions getrennt durch
+    Pipe-Zeichen (<literal>|</literal>) angeben. Dies ist nützlich, wenn
+    unterschiedliche Exceptions von unterschiedlichen Klassenhierarchien
+    gleich behandelt werden sollen.
+   </para>
+   <para>
+    Seit PHP 8.0.0 ist der Variablenname für eine abgefangene Exception
+    optional. Wird er nicht angegeben, wird der &catch;-Block trotzdem
+    ausgeführt, hat aber keinen Zugriff auf das ausgelöste Objekt.
    </para>
   </simplesect>
 
   <simplesect xml:id="language.exceptions.finally">
    <title><literal>finally</literal></title>
    <para>
-    Ab PHP 5.5 darf nach den &catch;-Blöcken oder stattdessen auch ein
-    &finally;-Block definiert werden. Egal, ob eine Exception geworfen wurde,
-    wird der Code innerhalb des &finally;-Blocks immer nach den &try;- und
-    &catch;-Blöcken ausgeführt, bevor die normale Ausführung fortgesetzt wird.
+    Ein &finally;-Block kann auch nach den &catch;-Blöcken oder stattdessen
+    definiert werden. Egal, ob eine Exception ausgelöst wurde, wird der Code
+    innerhalb des &finally;-Blocks immer nach den &try;- und &catch;-Blöcken
+    ausgeführt, bevor die normale Ausführung fortgesetzt wird.
    </para>
    <para>
-    Eine bemerkenswerte Wechselwirkung besteht zwischen dem &finally; Block und einer
-    &return; Anweisung. Wird eine &return; Anweisung innerhalb der &try; oder &catch;
-    Blöcke angetroffen, wird der &finally; Block dennoch ausgeführt. Außerdem wird die
-    &return; Anweisung ausgewertet, wenn sie angetroffen wird, aber das Ergebnis wird
-    erst nach dem &finally; Block zurückgegeben. Des Weiteren wird, wenn der &finally;
-    Block ebenfalls eine &return; Anweisung enthält, der Wert aus dem &finally; Block
-    zurückgegeben.
+    Eine erwähnenswerte Wechselwirkung besteht zwischen dem &finally;-Block
+    und einer &return;-Anweisung. Wird eine &return;-Anweisung innerhalb der
+    &try;- oder &catch;-Blöcke angetroffen, wird der &finally;-Block dennoch
+    ausgeführt. Außerdem wird die &return;-Anweisung ausgewertet, wenn sie
+    angetroffen wird, aber das Ergebnis wird erst nach dem &finally;-Block
+    zurückgegeben. Des Weiteren wird, wenn der &finally;-Block ebenfalls eine
+    &return;-Anweisung enthält, der Wert aus dem &finally;-Block zurückgegeben.
    </para>
   </simplesect>
 
-  <simplesect xml:id="language.exceptions.notes">
+ <simplesect xml:id="language.exceptions.exception-handler">
+  <title><literal>Globaler Exception-Handler</literal></title>
+  <para>
+   Wenn eine Exception in den globalen Bereich aufsteigen darf, kann sie durch
+   einen globalen Exception-Handler abgefangen werden, falls gesetzt. Die
+   Funktion <function>set_exception_handler</function> kann eine Funktion
+   festlegen, die anstelle eines &catch;-Blocks aufgerufen wird, wenn kein
+   anderer Block aufgerufen wird. Der Effekt ist im Wesentlichen derselbe, als
+   ob das gesamte Programm in einen &try;-&catch;-Block mit dieser Funktion
+   als &catch; verpackt wäre.
+  </para>
+ </simplesect>
+
+ <simplesect xml:id="language.exceptions.notes">
    &reftitle.notes;
 
    <note>
     <para>
-     Interne PHP-Funktionen verwenden in den meisten Fällen <link
-     linkend="ini.error-reporting">Error-Reporting</link>, nur moderne <link
-     linkend="language.oop5">objektorientierte</link> Extensions nutzen
-     Exceptions. Fehler können allerdings einfach mittels <link
-     linkend="class.errorexception">ErrorException</link> in eine Exception
-     umgewandelt werden.
+     Interne PHP-Funktionen verwenden in den meisten Fällen
+     <link linkend="ini.error-reporting">Error-Reporting</link>, nur moderne
+     <link linkend="language.oop5">objektorientierte</link> Erweiterungen
+     nutzen Exceptions. Fehler können allerdings einfach mittels
+     <link linkend="class.errorexception">ErrorException</link> in eine
+     Exception umgewandelt werden. Diese Technik funktioniert jedoch nur bei
+     nicht-fatalen Fehlern.
     </para>
+    <example>
+     <title>Fehlermeldungen in Exceptions umwandeln</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function exceptions_error_handler($severity, $message, $filename, $lineno) {
+    throw new ErrorException($message, 0, $severity, $filename, $lineno);
+}
+
+set_error_handler('exceptions_error_handler');
+?>
+]]>
+     </programlisting>
+    </example>
    </note>
    <tip>
     <para>
      Die <link linkend="intro.spl">Standard PHP Library (SPL)</link> bietet
-     eine große Anzahl <link
-     linkend="spl.exceptions">eingebauter Exceptions</link>.
+     eine große Anzahl
+     <link linkend="spl.exceptions">eingebauter Exceptions</link>.
     </para>
    </tip>
   </simplesect>
@@ -308,7 +332,7 @@ class MyException extends Exception
    &reftitle.examples;
 
    <example>
-    <title>Eine Exception werfen</title>
+    <title>Eine Exception auslösen</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -425,7 +449,7 @@ class Test {
             try {
                 throw new MyException('foo!');
             } catch (MyException $e) {
-                // weiterwerfen der Exception
+                // Exception erneut auslösen
                 throw $e;
             }
         } catch (Exception $e) {
@@ -448,7 +472,7 @@ string(4) "foo!"
     </screen>
    </example>
    <example>
-    <title>Multi catch exception handling</title>
+    <title>Behandlung mehrerer Exceptions in einem Catch-Block</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -479,6 +503,50 @@ $foo->testing();
 string(11) "MyException"
 ]]>
     </screen>
+   </example>
+   <example>
+    <title>Catch-Block ohne Angabe einer Variablen</title>
+    <para>Erst ab PHP 8.0.0 erlaubt.</para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class SpecificException extends Exception {}
+
+function test() {
+    throw new SpecificException('Oopsie');
+}
+
+try {
+    test();
+} catch (SpecificException) {
+    print "Eine SpecificException wurde ausgelöst, aber die Details interessieren uns nicht.";
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Als Ausdruck Auslösen</title>
+    <para>Erst ab PHP 8.0.0 erlaubt.</para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class SpecificException extends Exception {}
+
+function test() {
+    do_something_risky() or throw new Exception('Es hat nicht funktioniert');
+}
+
+try {
+    test();
+} catch (Exception $e) {
+    print $e->getMessage();
+}
+?>
+]]>
+    </programlisting>
    </example>
   </simplesect>
 

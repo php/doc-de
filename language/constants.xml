@@ -1,50 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 0853ac91680817a11b8e87a9a4beb12dd2bbcaef Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 5a945dfef09a9595c83855cdb858ffa4a96af305 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
  <chapter xml:id="language.constants" xmlns="http://docbook.org/ns/docbook">
   <title>Konstanten</title>
 
   <simpara>
    Eine Konstante ist ein Bezeichner (Name) für einen einfachen Wert. Wie der
    Name bereits nahelegt, kann der Wert einer Konstanten zur Laufzeit des
-   Skripts nicht verändert werden (ausgenommen die <link
-   linkend="language.constants.predefined">Magischen Konstanten</link>, die aber
-   keine wirklichen Konstanten sind.) Eine Konstante unterscheidet standardmäßig
-   zwischen Groß- und Kleinschreibung (case-sensitive). Nach gängiger
-   Konvention werden Konstanten immer in Großbuchstaben geschrieben.
+   Skripts nicht verändert werden (außer bei
+   <link linkend="language.constants.magic">Magischen Konstanten</link>, die
+   nicht wirklich Konstanten sind). Konstanten unterscheiden standardmäßig
+   zwischen Groß- und Kleinschreibung. Nach gängiger Konvention werden
+   Konstanten immer in Großbuchstaben geschrieben.
   </simpara>
+
+  <note>
+   <para>
+    Vor PHP 8.0.0 konnten Konstanten, die mit der Funktion
+    <function>define</function> definiert wurden, ohne Berücksichtigung der
+    Groß- und Kleinschreibung verwendet werden.
+   </para>
+  </note>
+
   <para>
    Der Name einer Konstanten folgt den gleichen Regeln wie alle anderen
-   Bezeichner in PHP. Ein gültiger Name beginnt mit einem Buchstaben oder einem
-   Unterstrich, gefolgt von beliebig vielen Buchstaben, Ziffern oder
+   Bezeichner in PHP. Ein gültiger Name beginnt mit einem Buchstaben oder
+   einem Unterstrich, gefolgt von beliebig vielen Buchstaben, Ziffern oder
    Unterstrichen. Als regulärer Ausdruck könnte das so beschrieben werden:
    <code>^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$</code>
   </para>
   <para>
-   Es ist möglich Konstanten mit reservierten oder gar ungültigen Namen mittels
-   <function>define</function> zu definieren, deren Wert (nur) mittels 
-   <function>constant</function> gelesen werden kann. Allerdings wird dies
-   nicht empfohlen.
+   Es ist möglich, Konstanten mit reservierten oder gar ungültigen Namen
+   mittels <function>define</function> zu definieren, deren Wert nur mit der
+   Funktion <function>constant</function> gelesen werden kann. Allerdings wird
+   dies nicht empfohlen.
   </para>
   &tip.userlandnaming;
   <para>
+<!-- TODO Move into syntax section? -->
    <example>
     <title>Gültige und ungültige Namen für Konstanten</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 
-// Gueltige Namen fuer Konstanten
+// Gültige Namen für Konstanten
 define("FOO",     "irgendwas");
 define("FOO2",    "etwas anderes");
 define("FOO_BAR", "irgendwas ganz anderes");
 
-// Ungueltige Namen fuer Konstanten
+// Ungültige Namen für Konstanten
 define("2FOO",    "irgendwas");
 
 // Folgendes ist korrekt, sollte aber vermieden werden:
-// PHP koennte eines Tages eine Magische Konstante unterstuetzen
-// die Ihr Skript nicht mehr wie gewuenscht funktionieren laesst
+// PHP könnte eines Tages eine magische Konstante unterstützen,
+// die Ihr Skript nicht mehr wie gewünscht funktionieren lässt
 define("__FOO__", "irgendwas");
 
 ?>
@@ -54,51 +66,57 @@ define("__FOO__", "irgendwas");
   </para>
   <note>
    <simpara>
-    Für unsere Zwecke ist ein Buchstabe a-z, A-Z und die ASCII-Zeichen
+    Für unsere Zwecke ist hier ein Buchstabe a-z, A-Z und die ASCII-Zeichen
     von 128 bis 255 (0x80-0xff).
    </simpara>
   </note>
 
   <simpara>
-   Wie bei &link.superglobals; ist der Gültigkeitsbereich einer Konstanten
-   global. Unabhängig vom Gültigkeitsbereich können Sie in Ihrem Skript überall
-   auf eine Konstante zugreifen. Für mehr Information zum Gültigkeitsbereich
-   lesen Sie bitte den Abschnitt über den <link
-   linkend="language.variables.scope">Geltungsbereich von Variablen</link>.
+   Wie bei &link.superglobals; ist der Geltungsbereich einer Konstanten
+   global. Unabhängig vom Geltungsbereich kann in einem Skript überall auf
+   eine Konstante zugegriffen werden. Für mehr Information zum Geltungsbereich
+   lesen Sie bitte den Abschnitt über den
+   <link linkend="language.variables.scope">Geltungsbereich von Variablen</link>.
   </simpara>
+
+  <note>
+   <simpara>
+    Seit PHP 7.1.0 können Klassenkonstanten eine Sichtbarkeit von protected
+    oder private deklarieren, wodurch sie nur im hierarchischen Bereich der
+    Klasse zur Verfügung stehen, in der sie definiert sind.
+   </simpara>
+  </note>
 
   <sect1 xml:id="language.constants.syntax">
    <title>Syntax</title>
    <simpara>
-    Sie können eine Konstante definieren, indem Sie entweder die
-    <function>define</function>-Funktion oder ab PHP 5.3.0 das Schlüsselwort
-    <literal>const</literal> außerhalb einer Klassendefinition verwenden.
-    Während <function>define</function> es ermöglicht eine Konstante auf einen
-    beliebigen Wert zu definieren, hat das <literal>const</literal>
-    Schlüsselwort Einschränkungen, die im nächsten Absatz beschrieben werden.
-    Einmal
-    definiert, kann eine Konstante weder verändert noch gelöscht werden.
+    Konstanten können mit dem Schlüsselwort <literal>const</literal> oder mit
+    der Funktion <function>defined</function> definiert werden. Während
+    <function>define</function> es ermöglicht, eine Konstante auf einen
+    beliebigen Wert zu definieren, hat das Schlüsselwort
+    <literal>const</literal> Einschränkungen, die im nächsten Absatz
+    beschrieben werden. Einmal definiert, kann eine Konstante weder verändert
+    noch gelöscht werden.
    </simpara>
    <simpara>
-    Wenn das <literal>const</literal> Schlüsselwort verwendet wird,
-    können Konstanten vor PHP 5.6 nur skalare Daten (<type>boolean</type>,
-    <type>integer</type>, <type>float</type> und <type>string</type>) enthalten.
-    Von PHP 5.6 an ist es möglich eine Konstante als skalaren Ausdruck zu
-    definieren, und es ist ebenfalls möglich eine <type>Array</type> Konstante zu definieren.
-    Es ist möglich, Konstanten vom Typ <type>resource</type> zu definieren,
-    dies sollte allerdings vermieden werden, da es zu unerwarteten Ergebnissen
-    führen kann.
+    Wenn das Schlüsselwort <literal>const</literal> verwendet wird, werden nur
+    skalare Ausdrücke (<type>bool</type>, <type>int</type>, <type>float</type>
+    und <type>string</type>) und konstante <type>Array</type>s, die nur
+    skalare Ausdrücke enthalten, akzeptiert. Es ist möglich, Konstanten vom
+    Typ <type>resource</type> zu definieren, dies sollte allerdings vermieden
+    werden, da es zu unerwarteten Ergebnissen führen kann.
    </simpara>
    <simpara>
-    Den Wert einer Konstanten erhalten Sie durch die einfache Angabe ihres
-    Namens. Im Gegensatz zu Variablen sollten Sie einer Konstanten
-    <emphasis>kein</emphasis> <literal>$</literal> voranstellen.
-    Ebenso können Sie die Funktion <function>constant</function> benutzen, um
-    den Wert einer Konstanten auszulesen, wenn Sie den Namen der Konstanten
-    dynamisch erhalten wollen.
-    Benutzen Sie <function>get_defined_constants</function>, um eine Liste
-    aller definierten Konstanten zu erhalten.
+    Auf den Wert einer Konstanten wird einfach durch die Angabe ihres Namens
+    zugegriffen. Im Gegensatz zu Variablen wird einer Konstanten
+    <emphasis>kein</emphasis> <literal>$</literal> vorangestellt. Ebenso kann
+    die Funktion <function>constant</function> verwendet werden, um den Wert
+    einer Konstanten auszulesen, wenn der Name der Konstanten dynamisch
+    ermittelt wird. Mit der Funktion
+    <function>get_defined_constants</function> erhält man eine Liste aller
+    definierten Konstanten.
    </simpara>
+
    <note>
     <simpara>
      Konstanten und (globale) Variablen befinden sich in unterschiedlichen
@@ -106,27 +124,34 @@ define("__FOO__", "irgendwas");
      <varname>$TRUE</varname> etwas völlig Verschiedenes sind.
     </simpara>
    </note>
+
    <simpara>
-    Falls Sie eine undefinierte Konstante verwenden, nimmt PHP an, dass
-    Sie den Namen der Konstanten selbst meinen, so als ob Sie sie als einen
-    <type>string</type> (CONSTANT vs "CONSTANT") aufgerufen hätten.
-    Dieses Rückfallverhalten ist von PHP 7.2.0 an missbilligt, und ein Fehler
-    der Stufe <constant>E_WARNING</constant> wird ausgelöst, wenn es dazu kommt
-    (zuvor wurde ein Fehler der Stufe <constant>E_NOTICE</constant> ausgelöst).
-    Lesen Sie ebenfalls
-    den entsprechenden Manualabschnitt, der erklärt, warum <link
-    linkend="language.types.array.foo-bar">$foo[bar]</link> falsch ist
-    (zumindest solange Sie nicht zuvor <literal>bar</literal> mittels
-    <function>define</function> als Konstante definiert haben).
-    Dies gilt nicht für <link linkend="language.namespaces.rules">(vollständig)
-    qualifizierte Konstanten</link>, die einen fatalen Fehler erzeugen, wenn sie
+    Falls eine undefinierte Konstante verwendet wird, wird ein
+    <classname>Error</classname> ausgelöst. Vor PHP 8.0.0 wurden undefinierte
+    Konstanten als einfaches <type>&string;</type>-Wort (d. h. CONSTANT vs
+    "CONSTANT") interpretiert. Dieses Rückfallverhalten ist von PHP 7.2.0 an
+    missbilligt, und ein Fehler der Stufe <constant>E_WARNING</constant> wird
+    ausgelöst, wenn es dazu kommt. Vor PHP 7.2.0 wurde stattdessen ein Fehler
+    der Stufe
+    <link linkend="ref.errorfunc">E_NOTICE</link><constant>E_NOTICE</constant>
+    ausgelöst. Siehe auch den Abschnitt im Handbuch, der erklärt, warum
+    <link linkend="language.types.array.foo-bar">$foo[bar]</link> falsch ist
+    (es sei denn, <literal>bar</literal> ist eine Konstante). Dies gilt nicht
+    für
+    <link linkend="language.namespaces.rules">(vollständig) qualifizierte Konstanten</link>,
+    die immer einen <classname>Error</classname> auslösen, wenn sie
     undefiniert sind.
-    Möchten Sie
-    einfach nur nachprüfen, ob eine Konstante definiert ist, benutzen Sie die
-    Funktion <function>defined</function>.
    </simpara>
+
+   <note>
+    <simpara>
+     Um zu prüfen, ob eine Konstante gesetzt ist, kann die Funktion
+     <function>defined</function> verwendet werden.
+    </simpara>
+   </note>
+
    <para>
-    Das hier sind die Unterschiede zwischen Konstanten und Variablen:
+    Dies sind die Unterschiede zwischen Konstanten und Variablen:
     <itemizedlist>
      <listitem>
       <simpara>
@@ -135,31 +160,20 @@ define("__FOO__", "irgendwas");
      </listitem>
      <listitem>
       <simpara>
-       Vor PHP 5.3 können Konstanten nur über die Funktion <function>define</function>
-       definiert werden, nicht durch einfache Zuweisung;
+       Konstanten können überall definiert werden und auf Ihren Wert kann ohne
+       Rücksicht auf die Regeln des Geltungsbereichs von Variablen zugegriffen
+       werden;
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Konstanten können überall definiert werden, und auf Ihren Wert können Sie
-       ohne Rücksicht auf Namensraumregeln von Variablen zugreifen;
+       Sobald Konstanten definiert sind, können sie nicht neu definiert oder
+       gelöscht werden; und
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Sobald Konstanten definiert sind, können sie nicht neu definiert
-       oder gelöscht werden; und
-      </simpara>
-     </listitem>
-     <listitem>
-      <simpara>
-       Konstanten können nur skalare Werte haben. Ab PHP 5.6.0 ist es möglich,
-       Array-Konstanten mit dem <literal>const</literal> Schlüsselwort zu
-       definieren; ab PHP 7 können Array-Konstanten ebenfalls mit
-       <function>define</function> definiert werden.
-       In konstanten skalaren Ausdrücken können Arrays
-       verwendet werden (z.B. <literal>const FOO = array(1, 2, 3)[0];</literal>),
-       aber das Endergebnis muss ein Wert eines erlaubten Typs sein.
+       Konstanten können nur als skalare Werte oder Arrays ausgewertet werden.
       </simpara>
      </listitem>
     </itemizedlist>
@@ -173,7 +187,9 @@ define("__FOO__", "irgendwas");
 <?php
 define("KONSTANTE", "Hallo Welt.");
 echo KONSTANTE;     // Ausgabe: "Hallo Welt."
-echo Konstante;     // Ausgabe: "Konstante" und eine Notice.
+echo Konstante;     // Gibt einen Fehler aus: Undefined Constant "Konstante"
+                    // Vor PHP 8.0.0 wird "Konstante" ausgegeben und eine
+                    // Warnung angezeigt.
 ?>
 ]]>
      </programlisting>
@@ -182,25 +198,23 @@ echo Konstante;     // Ausgabe: "Konstante" und eine Notice.
 
    <para>
     <example>
-     <title>Definition von Konstanten unter Verwendung des
-      <literal>const</literal>-Keywords</title>
-      <programlisting role="php">
+     <title>Definition von Konstanten unter Verwendung des Schlüsselworts <literal>const</literal></title>
+     <programlisting role="php">
 <![CDATA[
 <?php
-// Funktioniert seit PHP 5.3.0
+// Einfacher skalarer Wert
 const KONSTANTE = 'Hallo Welt';
 
 echo KONSTANTE;
 
-// Funktioniert seit PHP 5.6.0
+// Skalarer Ausdruck
 const ANDERE_KONSTANTE = KONSTANTE . '; Ade Welt';
-
 echo ANDERE_KONSTANTE;
 
 const ANIMALS = array('Hund', 'Katze', 'Maus');
 echo ANIMALS[1]; // gibt "Katze" aus
 
-// Funktioniert seit PHP 7
+// Array-Konstante
 define('ANIMALS', array(
     'Hund',
     'Katze',
@@ -216,59 +230,58 @@ echo ANIMALS[1]; // gibt "Katze" aus
    <note>
     <para>
      Im Gegensatz zu Konstanten, welche mit <function>define</function>
-     erstellt werden, müssen über <literal>const</literal> definierte Konstanten
-     im Top-Level Scope erstellt werden, weil sie zur Compile Zeit definiert
-     werden. Das heißt, dass sie nicht innerhalb von Funktionen, Schleifen,
-     <literal>if</literal> Statements oder <literal>try</literal>/<literal>catch</literal>
-     Blöcken definiert werden können.
+     erstellt werden, müssen über <literal>const</literal> definierte
+     Konstanten auf der höchsten Ebene erstellt werden, weil sie bei der
+     Kompilierung definiert werden. Das heißt, dass sie nicht innerhalb von
+     Funktionen, Schleifen, <literal>if</literal>-Anweisungen oder
+     <literal>try</literal>/<literal>catch</literal>-Blöcken definiert werden
+     können.
     </para>
    </note>
 
-   <note>
+   <sect2 role="seealso">
+    &reftitle.seealso;
     <para>
-     Konstanten, die mittels des <literal>const</literal> Schlüsselworts definiert
-     wurden, sind immer case-sensitive (Groß-/Kleinschreibung wird unterschieden),
-     während Konstanten, die mittels <function>define</function> definiert wurden,
-     case-insensitive (Groß-/Kleinschreibung spielt keine Rolle) sein können.
+     <simplelist>
+      <member><link linkend="language.oop5.constants">Klassenkonstanten</link></member>
+     </simplelist>
     </para>
-   </note>
-
-   <simpara>
-    Lesen Sie ebenfalls den Abschnitt über <link
-    linkend="language.oop5.constants">Klassenkonstanten</link>.
-   </simpara>
+   </sect2>
   </sect1>
 
   <sect1 xml:id="language.constants.predefined">
-   <title>Magische Konstanten</title>
+   <title>Vordefinierte Konstanten</title>
 
    <simpara>
-    PHP stellt jedem Skript zur Laufzeit eine Vielzahl von <link
-    linkend="reserved.constants">vordefinierten Konstanten</link>
-    zur Verfügung. Viele dieser Konstanten werden jedoch von verschiedenen
+    PHP stellt jedem Skript zur Laufzeit eine Vielzahl von
+    <link linkend="reserved.constants">vordefinierten Konstanten</link> zur
+    Verfügung. Viele dieser Konstanten werden jedoch von verschiedenen
     Erweiterungen definiert, die nur zur Verfügung stehen, wenn diese
-    Erweiterungen selbst zur Verfügung stehen, d.h. entweder über dynamisches
+    Erweiterungen selbst zur Verfügung stehen, d. h. entweder über dynamisches
     Laden zur Laufzeit oder Einkompilieren.
    </simpara>
+  </sect1>
 
+  <sect1 xml:id="language.constants.magic">
+   <title>Magische Konstanten</title>
    <para>
     Es gibt neun magische Konstanten, die, abhängig davon, wo sie eingesetzt
-    werden, einen unterschiedlichen Wert haben. Zum Beispiel hängt
-    der Wert der Konstanten <constant>__LINE__</constant> davon ab, in welcher
-    Zeile ihres Skripts Sie diese Konstante verwenden.
-    Alle diese "magischen" Konstanten werden während der Kompilierzeit aufgelöst, im
-    Gegensatz zu regulären Konstanten, die während der Laufzeit aufgelöst werden.
-    Diese besonderen
-    Konstanten sind unabhängig von Groß-/Kleinschreibung und sind folgende:
+    werden, einen unterschiedlichen Wert haben. Zum Beispiel hängt der Wert
+    der Konstanten <constant>__LINE__</constant> davon ab, in welcher Zeile
+    des Skripts diese Konstante verwendet wird. Alle diese "magischen"
+    Konstanten werden während der Kompilierzeit aufgelöst, im Gegensatz zu
+    regulären Konstanten, die während der Laufzeit aufgelöst werden. Diese
+    besonderen Konstanten sind unabhängig von Groß-/Kleinschreibung und sind
+    folgende:
    </para>
    <para>
     <table>
-     <title>Einige "magische" PHP-Konstanten</title>
+     <title>PHP's magische Konstanten</title>
      <tgroup cols="2">
       <thead>
        <row>
-        <entry>Name</entry>
-        <entry>Beschreibung</entry>
+        <entry>&Name;</entry>
+        <entry>&Description;</entry>
        </row>
       </thead>
       <tbody>
@@ -281,42 +294,43 @@ echo ANIMALS[1]; // gibt "Katze" aus
        <row xml:id="constant.file">
         <entry><constant>__FILE__</constant></entry>
         <entry>
-         Der vollständige Pfad- und Dateiname einer Datei wobei Symlinks
-         aufgelöst wurden. Wird diese Konstante
-         innerhalb einer nachgeladenen Datei verwendet, wird der Name
-         dieser eingebundenen Datei zurückgegeben.
+         Der vollständige Pfad- und Dateiname einer Datei mit aufgelösten
+         Symlinks. Wird diese Konstante innerhalb einer nachgeladenen Datei
+         verwendet, wird der Name dieser eingebundenen Datei zurückgegeben.
         </entry>
        </row>
        <row xml:id="constant.dir">
         <entry><constant>__DIR__</constant></entry>
-        <entry>Der Name des Verzeichnisses, in dem sich die Datei befindet. Wird
-         die Konstante innerhalb eines Includes verwendet, wird das Verzeichnis
+        <entry>
+         Der Name des Verzeichnisses, in dem sich die Datei befindet. Wird die
+         Konstante innerhalb eines Includes verwendet, wird das Verzeichnis
          der eingebundenen Datei zurückgegeben. Dies entspricht dem Verhalten
-         von <literal>dirname(__FILE__)</literal>. Der Verzeichnisname hat keinen
-         beendenden Schrägstrich, sofern es sich nicht um das Rootverzeichnis
-         handelt.
+         von <literal>dirname(__FILE__)</literal>. Der Verzeichnisname hat
+         keinen beendenden Schrägstrich, sofern es sich nicht um das
+         Rootverzeichnis handelt.
         </entry>
        </row>
        <row xml:id="constant.function">
         <entry><constant>__FUNCTION__</constant></entry>
         <entry>
-         Der Name der Funktion, oder <literal>{closure}</literal> für anonyme Funktionen.
+         Der Name der Funktion, oder <literal>{closure}</literal> für anonyme
+         Funktionen.
         </entry>
        </row>
        <row xml:id="constant.class">
         <entry><constant>__CLASS__</constant></entry>
         <entry>
-         Der Name einer Klasse. Der Klassenname enthält auch den Namen
-         des Namespaces in dem er deklariert wurde (z.B. <literal>Foo\Bar</literal>).
-         __CLASS__ kann seit PHP 5.4 auch in Traits verwendet werden, in welchem Fall
-         Name der Klasse welche den Trait verwendet zurückgegeben wird.
+         Der Name einer Klasse. Der Klassenname enthält den Namen des
+         Namensraums, in dem sie deklariert wurde (z. B.
+         <literal>Foo\Bar</literal>). Bei Verwendung in einer Trait-Methode,
+         ist __CLASS__ der Name der Klasse, in der der Trait verwendet wird.
         </entry>
        </row>
        <row xml:id="constant.trait">
         <entry><constant>__TRAIT__</constant></entry>
         <entry>
-         Der Trait Name. Dieser enthält auch den
-         Namespace in welchem der Trait definiert wurde (z.B. <literal>Foo\Bar</literal>).
+         Der Name eines Traits. Dieser enthält auch den Namensraum, in welchem
+         der Trait definiert wurde (z. B. <literal>Foo\Bar</literal>).
         </entry>
        </row>
        <row xml:id="constant.method">
@@ -328,71 +342,33 @@ echo ANIMALS[1]; // gibt "Katze" aus
        <row xml:id="constant.namespace">
         <entry><constant>__NAMESPACE__</constant></entry>
         <entry>
-         Der Name des aktuellen Namespace.
+         Der Name des aktuellen Namensraums.
         </entry>
        </row>
        <row xml:id="constant.coloncolonclass">
-        <entry><constant>ClassName::class</constant></entry>
+        <entry><constant><replaceable>ClassName</replaceable>::class</constant></entry>
         <entry>
-         Der vollständig qualifizierte Klassenname. Siehe auch
-         <link linkend="language.oop5.basic.class.class">::class</link>.
+         Der vollständig qualifizierte Klassenname.
         </entry>
        </row>
       </tbody>
      </tgroup>
     </table>
    </para>
-<!-- <link linkend="language.oop5.basic.class.class">::class</link> -->
-   <para>
-    Siehe auch
-    <function>get_class</function>,
-    <function>get_object_vars</function>,
-    <function>file_exists</function>&listendand;
-    <function>function_exists</function>.
-   </para>
 
-   <sect2 xml:id="language.constants.predefined.changelog">
-    &reftitle.changelog;
-
+   <sect2 role="seealso">
+    &reftitle.seealso;
     <para>
-     <informaltable>
-      <tgroup cols="2">
-       <thead>
-        <row>
-         <entry>&Version;</entry>
-         <entry>&Description;</entry>
-        </row>
-       </thead>
-       <tbody>
-        <row>
-         <entry>5.5.0</entry>
-         <entry>
-          Magische <constant>::class</constant> Konstante hinzugefügt
-         </entry>
-        </row>
-        <row>
-         <entry>5.4.0</entry>
-         <entry>
-          <constant>__TRAIT__</constant> Konstante hinzugefügt
-         </entry>
-        </row>
-        <row>
-         <entry>5.3.0</entry>
-         <entry>
-          <constant>__DIR__</constant> und <constant>__NAMESPACE__</constant> Konstanten hinzugefügt
-         </entry>
-        </row>
-        <row>
-         <entry>5.0.0</entry>
-         <entry>
-          <constant>__METHOD__</constant> Konstante hinzugefügt
-         </entry>
-        </row>
-       </tbody>
-      </tgroup>
-     </informaltable>
+     <simplelist>
+      <member><link linkend="language.oop5.basic.class.class">::class</link></member>
+      <member><function>get_class</function></member>
+      <member><function>get_object_vars</function></member>
+      <member><function>file_exists</function></member>
+      <member><function>function_exists</function></member>
+     </simplelist>
     </para>
    </sect2>
+
   </sect1>
  </chapter>
 
