@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e296d2443b197fce63a9752dc6d58c0fdcf0c5cc Maintainer: cmb Status: in progress -->
+<!-- EN-Revision: 06126805f490aba6f6c107980f673eada0c79e6c Maintainer: cmb Status: wip -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
 <!-- r351733 and r351885 have not been translated -->
-
  <chapter xml:id="language.functions" xmlns="http://docbook.org/ns/docbook">
   <title>Funktionen</title>
 
   <sect1 xml:id="functions.user-defined">
    <title>Benutzerdefinierte Funktionen</title>
-
    <para>
     Eine Funktion kann wie folgt definiert werden:
    </para>
-
    <para>
     <example>
      <title>Pseudocode zur Demonstration der Nutzung von Funktionen</title>
@@ -30,7 +27,6 @@ function foo($arg_1, $arg_2, ..., $arg_n)
      </programlisting>
     </example>
    </para>
-
    <simpara>
     Jeder beliebige korrekte PHP-Code kann in einer Funktion
     vorkommen, sogar andere Funktionen und <link
@@ -152,7 +148,6 @@ bar();
     <function>func_get_arg</function> und
     <function>func_get_args</function> für weitere Informationen.
    </simpara>
-
    <para>
     Es ist in PHP möglich, Funktionen rekursiv aufzurufen.
     <example>
@@ -183,22 +178,22 @@ function recursion($a)
 
   <sect1 xml:id="functions.arguments">
    <title>Funktionsparameter</title>
-
    <simpara>
     Mit einer Parameterliste kann man Informationen an eine Funktion
-    übergeben. Die Parameterliste ist eine durch Kommas getrennte
-    Liste von Ausdrücken. 
-    Die Parameter werden von links nach rechts ausgewertet.
+    übergeben. Die Parameterliste ist eine durch Kommas getrennte Liste von
+    Ausdrücken. Die Parameter werden von links nach rechts ausgewertet, bevor
+    die eigentliche Funktion aufgerufen wird, d. h. mit der sog.
+    <emphasis>eager</emphasis> Evaluation (dt. eifrige Auswertung).
    </simpara>
    <para>
-    PHP unterstützt die Weitergabe von Parametern als Werte (das ist
-    der Standard), als <link
-    linkend="functions.arguments.by-reference">Verweise</link> und
-    als <link linkend="functions.arguments.default">Vorgabewerte</link>.
-    <link linkend="functions.variable-arg-list">Eine variable Anzahl
-    von Parametern</link> wird ebenfalls unterstützt.
+    PHP unterstützt die Weitergabe von Parametern als Werte (das ist der
+    Standard), als
+    <link linkend="functions.arguments.by-reference">Verweise</link> und als
+    <link linkend="functions.arguments.default">Vorgabewerte</link>. Eine
+    <link linkend="functions.variable-arg-list">variable Anzahl von Parametern</link>
+    und <link linkend="functions.named-arguments">benannte Argumente</link>
+    werden ebenfalls unterstützt.
    </para>
-
    <para>
     <example>
      <title>Arrays an Funktionen übergeben</title>
@@ -215,12 +210,13 @@ function nimm_array($eingabe)
     </example>
    </para>
    <para>
-    As of PHP 8.0.0, the list of function arguments may include a trailing comma, which
-    will be ignored.  That is particularly useful in cases where the list of arguments is
-    long or contains long variable names, making it convenient to list arguments vertically.
+    Seit PHP 8.0.0 kann die Liste der Funktionsargumente ein nachgestelltes
+    Komma enthalten, das ignoriert wird.  Das ist besonders nützlich in Fällen,
+    in denen die Liste der Argumente lang ist oder lange Variablennamen
+    enthält, so dass es praktisch ist, die Argumente vertikal aufzulisten.
    </para>
    <example>
-    <title>Function Argument List with trailing Comma</title>
+    <title>Liste von Funktionsargumenten mit nachgestelltem Komma</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -229,7 +225,8 @@ function takes_many_args(
     $second_arg,
     $a_very_long_argument_name,
     $arg_with_default = 5,
-    $again = 'a default string', // This trailing comma was not permitted before 8.0.0.
+    $again = 'a default string', // Dieses nachgestellte Komma war vor 8.0.0
+                                 // nicht erlaubt.
 )
 {
     // ...
@@ -239,23 +236,24 @@ function takes_many_args(
     </programlisting>
    </example>
    <para>
-    As of PHP 8.0.0, passing mandatory arguments after optional arguments
-    is deprecated. This can generally be resolved by dropping the default value.
-    One exception to this rule are arguments of the form
-    <code>Type $param = null</code>, where the &null; default makes the type implicitly
-    nullable. This usage remains allowed, though it is recommended to use an
-    explicit nullable type instead.
+    Seit PHP 8.0.0 wird die Übergabe von obligatorischen Argumenten nach
+    optionalen Argumenten missbilligt. Dies kann im Allgemeinen durch das
+    Weglassen des Standardwertes gelöst werden. Eine Ausnahme von dieser Regel
+    sind Argumente der Form <code>Type $param = null</code>, wobei der
+    Standardwert  &null; den Typ implizit nullbar macht. Diese Verwendung
+    bleibt erlaubt, obwohl empfohlen wird, stattdessen einen explizit
+    löschbaren Typ zu verwenden.
    </para>
    <example>
-    <title>Passing optional arguments after mandatory arguments</title>
+    <title>Weitergabe von optionalen Argumenten nach obligatorischen Argumenten</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-function foo($a = [], $b) {} // Before
-function foo($a, $b) {}      // After
+function foo($a = [], $b) {} // vorher
+function foo($a, $b) {}      // nachher
 
-function bar(A $a = null, $b) {} // Still allowed
-function bar(?A $a, $b) {}       // Recommended
+function bar(A $a = null, $b) {} // noch erlaubt
+function bar(?A $a, $b) {}       // empfohlen
 ?>
 ]]>
     </programlisting>
@@ -272,13 +270,11 @@ function bar(?A $a, $b) {}       // Recommended
      der Funktion sichtbar wird, müssen Sie die Parameter als Verweise
      (Referenzen) übergeben.
     </simpara>
-
     <para>
      Wenn eine Funktion einen Parameter generell als Verweis behandeln
      soll, setzt man in der Funktionsdefinition ein kaufmännisches Und
      (&amp;) vor den Parameternamen:
     </para>
-
     <para>
      <example>
       <title>Übergeben von Funktionsparametern als Verweis</title>
@@ -297,9 +293,11 @@ echo $str; // Ausgabe: 'Dies ist ein String, und etwas mehr.'
       </programlisting>
      </example>
     </para>
-
+    <para>
+     Es ist ein Fehler, einen Wert als Argument zu übergeben, der eigentlich
+     als Referenz übergeben werden müsste.
+    </para>
    </sect2>
-
    <sect2 xml:id="functions.arguments.default">
     <title>Vorgabewerte für Parameter</title>
 
@@ -307,7 +305,6 @@ echo $str; // Ausgabe: 'Dies ist ein String, und etwas mehr.'
      Eine Funktion kann C++-artige Vorgabewerte für skalare Parameter
      wie folgt definieren:
     </para>
-
     <para>
      <example>
       <title>Einsatz von Vorgabeparametern in Funktionen</title>
@@ -334,7 +331,6 @@ Ich mache eine Tasse Espresso.
       </screen>
      </example>
     </para>
-
     <para>
      PHP gestattet es, <type>Array</type>s und den speziellen Typ &null; als
      Vorgabewert zu nutzen, zum Beispiel:
@@ -357,7 +353,6 @@ echo makecoffee(array("cappuccino", "lavazza"), "teapot");
       </programlisting>
      </example>
     </para>
-
     <simpara>
      Der Vorgabewert muss ein konstanter Ausdruck sein, darf also zum
      Beispiel keine Variable, Eigenschaft einer Klasse oder ein
@@ -368,7 +363,6 @@ echo makecoffee(array("cappuccino", "lavazza"), "teapot");
      Parametern ohne Vorgabewert stehen müssen - sonst wird es nicht
      funktionieren. Betrachten Sie folgendes Beispiel:
     </para>
-
     <para>
      <example>
       <title>Ungültige Anwendung von Vorgabewerten</title>
@@ -394,11 +388,9 @@ Mache einen Becher Brombeer -joghurt.
       </screen>
      </example>
     </para>
-
     <para>
      Nun vergleichen Sie bitte obiges Beispiel mit folgendem:
     </para>
-
     <para>
      <example>
      <title>Richtiger Einsatz von Vorgabewerten</title>
@@ -422,7 +414,6 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
       </screen>
      </example>
     </para>
-
     <note>
      <simpara>
       Das Setzen von Standardwerten für Argumente, die als Referenz
@@ -430,7 +421,6 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
       unterstützt.
      </simpara>
     </note>
-
    </sect2>
 
    <sect2 xml:id="functions.variable-arg-list">
@@ -524,7 +514,7 @@ echo add(...$a);
       <link linkend="language.types.declarations">Typdeklaration</link> voran zu
       stellen. Ist dies der Fall, müssen alle Werte, die für <literal>...</literal>
       relevant sind, vom entsprechenden Typ sein.
-      
+
       <example>
        <title>Variable Parameter mit Typdeklaration</title>
        <programlisting role="php">
@@ -577,7 +567,7 @@ Catchable fatal error: Argument 2 passed to total_intervals() must be an instanc
      <para>
       Das erste Beispiel von weiter oben würde in alten PHP-Versionen so
       umgesetzt werden können:
-      
+
       <example>
        <title>Zugriff auf variable Parameter in alten PHP-Versionen</title>
        <programlisting role="php">
@@ -649,34 +639,30 @@ function_name($variableStoringParamName: $value);
 array_fill(0, 100, 50);
 
 // Using named arguments:
-array_fill(start_index: 0, num: 100, value: 50);
+array_fill(start_index: 0, count: 100, value: 50);
 ?>
 ]]>
      </programlisting>
     </example>
-
     <para>
      The order in which the named arguments are passed does not matter.
     </para>
-
     <example>
      <title>Same example as above with a different order of parameters</title>
      <programlisting role="php">
       <![CDATA[
 <?php
-array_fill(value: 50, num: 100, start_index: 0);
+array_fill(value: 50, count: 100, start_index: 0);
 ?>
 ]]>
      </programlisting>
     </example>
-
     <para>
      Named arguments can be combined with positional arguments. In this case,
      the named arguments must come after the positional arguments.
      It is also possible to specify only some of the optional arguments of a
      function, regardless of their order.
     </para>
-
     <example>
      <title>Combining named arguments with positional arguments</title>
      <programlisting role="php">
@@ -689,11 +675,9 @@ htmlspecialchars($string, ENT_COMPAT | ENT_HTML401, 'UTF-8', false);
 ]]>
      </programlisting>
     </example>
-
     <para>
      Passing the same parameter multiple times results in an Error exception.
     </para>
-
     <example>
      <title>Error exception when passing the same parameter multiple times</title>
      <programlisting role="php">
@@ -709,14 +693,11 @@ foo(1, param: 2);
 ]]>
      </programlisting>
     </example>
-
    </sect2>
-
   </sect1>
 
   <sect1 xml:id="functions.returning-values">
    <title>Rückgabewerte</title>
-
    <para>
     Sie können Werte mit der optionalen return-Anweisung zurückgeben.
     Es können Variablen jeden Typs zurückgegeben werden, auch Arrays
@@ -731,7 +712,7 @@ foo(1, param: 2);
      zurückgegeben.
     </para>
    </note>
-   
+
    <sect2>
     <title>Einsatz von return</title>
    <para>
@@ -757,7 +738,6 @@ echo quadrat(4);   // gibt '16' aus.
     Ein ähnliches Resultat kann man aber durch die Rückgabe eines Arrays
     erreichen.
    </para>
-
    <para>
     <example>
     <title>Rückgabe mehrerer Werte als Array</title>
@@ -766,9 +746,14 @@ echo quadrat(4);   // gibt '16' aus.
 <?php
 function kleine_zahlen()
 {
-   return array (0, 1, 2);
+   return [0, 1, 2];
 }
-list ($null, $eins, $zwei) = kleine_zahlen();
+// Bei der Umstrukturierung von Arrays wird jedes Element des Arrays einzeln erfasst.
+[$null, $eins, $zwei] = kleine_zahlen();
+
+// Vor 7.1.0 ist die einzige gleichwertige Alternative die Verwendung des list()-Konstrukts
+list($null, $eins, $zwei) = kleine_zahlen();
+
 ?>
 ]]>
      </programlisting>
@@ -779,7 +764,6 @@ list ($null, $eins, $zwei) = kleine_zahlen();
     den Referenz-Operator &amp; sowohl in der Funktionsdeklaration,
     als auch bei der Zuweisung des zurückgegebenen Wertes verwenden:
    </para>
-
    <para>
     <example>
      <title>Rückgabe von Referenzen aus Funktionen</title>
@@ -803,7 +787,7 @@ $neuereferenz =& returniere_referenz();
    </simpara>
   </sect2>
   </sect1>
- 
+
   <sect1 xml:id="functions.variable-functions">
    <title>Variablenfunktionen</title>
 
@@ -1071,10 +1055,10 @@ $greet('PHP');
 ]]>
     </programlisting>
    </example>
-   
+
    <simpara>
     Closures können ebenfalls Variablen aus dem Eltern-Gültigkeitsbereich erben.
-    Jede solche Variable muss an das <literal>use</literal>-Sprachkonstrukt übergeben werden. 
+    Jede solche Variable muss an das <literal>use</literal>-Sprachkonstrukt übergeben werden.
     Von PHP 7.1 an dürfen diese Variablen keine &link.superglobals;,
     <varname>$this</varname> oder Variablen mit dem gleichen Name wie ein
     Parameter sein.
@@ -1169,22 +1153,22 @@ class Cart
     const PRICE_EGGS    = 6.95;
 
     protected $products = array();
-    
+
     public function add($product, $quantity)
     {
         $this->products[$product] = $quantity;
     }
-    
+
     public function getQuantity($product)
     {
         return isset($this->products[$product]) ? $this->products[$product] :
                FALSE;
     }
-    
+
     public function getTotal($tax)
     {
         $total = 0.00;
-        
+
         $callback =
             function ($quantity, $product) use ($tax, &$total)
             {
@@ -1192,7 +1176,7 @@ class Cart
                     strtoupper($product));
                 $total += ($pricePerItem * $quantity) * ($tax + 1.0);
             };
-        
+
         array_walk($this->products, $callback);
         return round($total, 2);
     }
@@ -1212,7 +1196,7 @@ print $my_cart->getTotal(0.05) . "\n";
 ]]>
     </programlisting>
    </example>
-   
+
    <example>
     <title>Automatisches Binden von <literal>$this</literal></title>
     <programlisting role="php">
@@ -1232,7 +1216,7 @@ class Test
 $object = new Test;
 $function = $object->testing();
 $function();
-    
+
 ?>
 ]]>
     </programlisting>
@@ -1311,7 +1295,7 @@ Warning: Cannot bind an instance to a static closure in %s on line %d
      </example>
     </para>
    </sect2>
-   
+
    <sect2 role="changelog">
     &reftitle.changelog;
     <para>
@@ -1389,7 +1373,7 @@ Warning: Cannot bind an instance to a static closure in %s on line %d
 <?php
 
 $y = 1;
- 
+
 $fn1 = fn($x) => $x + $y;
 // gleichwertig zur Verwendung von $y per Wertübergabe:
 $fn2 = function ($x) use ($y) {
@@ -1478,7 +1462,7 @@ var_export($x);  // gibt 1 aus
      </programlisting>
     </example>
    </para>
-   
+
    <sect2 role="changelog">
     &reftitle.changelog;
     <para>
@@ -1516,7 +1500,7 @@ var_export($x);  // gibt 1 aus
   </sect1>
 
  </chapter>
- 
+
  <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml

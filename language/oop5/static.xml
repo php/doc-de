@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7e52ec86851a62d1d00109ccffa5dab5c73e5cc2 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 8e7cce7b98ed33cda72ce0a77b1368ab396f6e09 Maintainer: hholzgra Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.static" xmlns="http://docbook.org/ns/docbook">
-  <title>Static-Schlüsselwort</title>
+  <title>Das Schlüsselwort static</title>
 
   <tip>
    <simpara>
-    Diese Seite beschreibt die Verwendung des <literal>static</literal>
-    Schlüsselworts, um statische Methoden und Eigenschaften zu definieren.
-    <literal>static</literal> kann ebenfalls benutzt werden, um
+    Diese Seite beschreibt die Verwendung des Schlüsselworts
+    <literal>static</literal>, mit dem statische Methoden und Eigenschaften
+    definiert werden. <literal>static</literal> kann ebenfalls benutzt werden,
+    um
     <link linkend="language.variables.scope.static">statische Variablen zu definieren</link>
     und für
     <link linkend="language.oop5.late-static-bindings">späte statische Bindung</link>.
@@ -19,46 +22,35 @@
   </tip>
 
   <para>
-   Klassenmember oder -methoden als statisch zu deklarieren macht diese 
-   zugänglich, ohne dass man die Klasse instantiieren muss. Auf eine als statisch
-   deklarierte Eigenschaft kann nicht mit einem instantiierten Klassenobjekt
-   zugegriffen werden (auf eine statische Methode jedoch schon).
-  </para>
-
-  <para>
-   Für die Abwärtskompatibilität zu PHP 4 werden Eigenschaften oder Methoden behandelt,
-   als ob diese als <literal>public static</literal> deklariert wären, wenn
-   keine <link linkend="language.oop5.visibility">Sichtbarkeit</link> 
-   deklariert wird.
+   Klasseneigenschaften oder -methoden als statisch zu deklarieren, macht
+   diese zugänglich, ohne dass man die Klasse instantiieren muss. Auch
+   innerhalb eines instantiierten Klassenobjekts kann statisch auf sie
+   zugegriffen werden.
   </para>
 
   <sect2 xml:id="language.oop5.static.methods">
    <title>Statische Methoden</title>
 
    <para>
-     Weil statische Methoden ohne die Instanz eines erzeugten Objektes aufrufbar
-     sind, ist die Pseudovariable <varname>$this</varname> nicht innerhalb von
-     der als statisch deklarierten Methode verfügbar.
-    </para>
-  
-   <caution>
-    <simpara>
-     In PHP 5 erzeugt ein statischer Aufruf von nicht-statischen Methoden eine
-     Warnung der Stufe <constant>E_STRICT</constant>.
-    </simpara>
-   </caution>
+    Weil statische Methoden ohne die Instanz eines erzeugten Objektes aufrufbar
+    sind, ist die Pseudovariable <varname>$this</varname> nicht innerhalb von
+    Methoden verfügbar, die als statisch deklariert wurden.
+   </para>
 
    <warning>
-    <simpara>
-     In PHP 7 ist der statische Aufruf von nicht-statischen Methoden missbilligt,
-     und erzeugt eine Warnung der Stufe <constant>E_DEPRECATED</constant>.
-     Die Unterstützung von statischen Aufrufen nicht-statischer Methoden kann in
-     der Zukunft entfernt werden.
-    </simpara>
+    <para>
+     Der Aufruf von nicht-statischen Methoden löst einen
+     <classname>Error</classname> aus.
+    </para>
+    <para>
+     Vor PHP 8.0.0 wird der statische Aufruf von nicht-statischen Methoden
+     missbilligt und erzeugt eine Warnung der Stufe
+     <constant>E_DEPRECATED</constant>.
+    </para>
    </warning>
 
    <example>
-    <title>Statisches Methoden-Beispiel</title>
+    <title>Beispiel für statische Methoden</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -70,37 +62,29 @@ class Foo {
 
 Foo::aStaticMethod();
 $classname = 'Foo';
-$classname::aStaticMethod(); // Von PHP 5.3.0 an
-?> 
+$classname::aStaticMethod();
+?>
 ]]>
      </programlisting>
    </example>
   </sect2>
-  
+
   <sect2 xml:id="language.oop5.static.properties">
    <title>Statische Eigenschaften</title>
 
    <para>
-    Auf statische Eigenschaften kann nicht durch das Objekt mittels des
-    Pfeiloperators -&gt; zugegriffen werden.
-   </para>
-  
-   <para>
-    Wie bei jeder anderen statischen PHP-Variablen können
-    als Initialwerte für statische Eigenschaften nur Zeichenketten
-    und Konstanten zugewiesen werden, die Zuweisung berechneter Ausdrücke
-    ist nicht möglich. In PHP 5.6 und später gelten die Regeln für &const; Ausdrücke:
-    einige beschränkte Ausdrücke sind möglich, vorausgesetzt dass sie zur
-    Kompilierzeit ausgewertet werden können.
+    Auf statische Eigenschaften wird mit dem
+    <link linkend="language.oop5.paamayim-nekudotayim">Operator zur Auflösung des Gültigkeitsbereichs (::)</link>
+    zugegriffen. Es kann nicht über den Objektoperator
+    (<literal>-&gt;</literal>) darauf zugegriffen werden.
    </para>
 
    <para>
-    Beginnend mit PHP 5.3.0 kann die Klasse über eine Variable
-    referenziert werden. Der Variablenwert kann dabei kein Schlüsselwort
-    (wie <literal>self</literal>,  <literal>parent</literal> oder 
-    <literal>static</literal>) sein.
+    Die Klasse kann über eine Variable referenziert werden. Der Variablenwert
+    darf dabei kein Schlüsselwort (wie <literal>self</literal>,
+    <literal>parent</literal> oder <literal>static</literal>) sein.
    </para>
- 
+
    <example>
     <title>Beispiel für statische Eigenschaften</title>
     <programlisting role="php">
@@ -127,11 +111,11 @@ print Foo::$my_static . "\n";
 
 $foo = new Foo();
 print $foo->staticValue() . "\n";
-print $foo->my_static . "\n";      // Undefinierte "Eigenschaft" my_static 
+print $foo->my_static . "\n";      // Undefinierte "Eigenschaft" my_static
 
 print $foo::$my_static . "\n";
 $classname = 'Foo';
-print $classname::$my_static . "\n"; // Von PHP 5.3.0 an
+print $classname::$my_static . "\n";
 
 print Bar::$my_static . "\n";
 $bar = new Bar();
@@ -139,11 +123,25 @@ print $bar->fooStatic() . "\n";
 ?>
 ]]>
     </programlisting>
+    &example.outputs.8.similar;
+    <screen>
+<![CDATA[
+foo
+foo
+
+Notice: Accessing static property Foo::$my_static as non static in /in/V0Rvv on line 23
+
+Warning: Undefined property: Foo::$my_static in /in/V0Rvv on line 23
+
+foo
+foo
+foo
+foo
+]]>
+    </screen>
    </example>
   </sect2>
-
  </sect1>
- 
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
