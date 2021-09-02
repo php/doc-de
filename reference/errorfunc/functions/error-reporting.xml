@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b824e2b1086e94a1077bd071964547283616030a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: de9c65c91ff1710d8b2d2ec955caea0162679305 Maintainer: hholzgra Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.error-reporting" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>error_reporting</refname>
@@ -11,15 +13,17 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>error_reporting</methodname>
-   <methodparam choice="opt"><type>int</type><parameter>level</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>error_level</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Mit <function>error_reporting</function> wird die <link linkend="ini.error-reporting">error_reporting</link>
-   Direktive zur Laufzeit des Programms gesetzt. In PHP gibt es viele
-   Stufen für die Anzeige von Fehlermeldungen, die mit dieser
-   Funktion für die Dauer der Programmausführung eingestellt werden kann. 
-   Wenn das optionale <parameter>level</parameter> Argument nicht übergeben wird,
-   gibt <function>error_reporting</function> das aktuelle Error Level zurück.
+   Mit <function>error_reporting</function> wird die Direktive
+   <link linkend="ini.error-reporting">error_reporting</link> zur Laufzeit des
+   Programms gesetzt. In PHP gibt es viele Stufen für die Anzeige von
+   Fehlermeldungen, die mit dieser Funktion für die Dauer (Laufzeit) des
+   Skripts eingestellt werden kann. Wenn das optionale Argument
+   <parameter>error_level</parameter> nicht übergeben wird, gibt
+   <function>error_reporting</function> die aktuelle Stufe der Fehlermeldungen
+   zurück.
   </para>
  </refsect1>
 
@@ -28,20 +32,23 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>level</parameter></term>
+     <term><parameter>error_level</parameter></term>
      <listitem>
       <para>
-       Das neue <link linkend="ini.error-reporting">error_reporting</link>
-       Level. Es können sowohl eine numerische Bitmaske als auch benannte Konstanten
-       übergeben werden. Der Einsatz benannter Konstanten wird empfohlen
-       um die Kompatibilität mit zukünftigen Versionen sicherzustellen.
-       Wann immer Error Level Konstanten hinzugefügt werden erweitert
-       sich der genutzte Integerbereich so das ältere Integerkonstanten
-       nicht unbedingt weiter das erwartete Verhalten zeigen.
+       Die neue Stufe von
+       <link linkend="ini.error-reporting">error_reporting</link>. Es können
+       sowohl eine numerische Bitmaske als auch benannte Konstanten übergeben
+       werden. Der Einsatz benannter Konstanten wird empfohlen, um die
+       Kompatibilität mit zukünftigen Versionen sicherzustellen. Wann immer
+       Konstanten für Fehlerstufen hinzugefügt werden, erweitert sich der
+       genutzte Integerbereich, sodass ältere Integerkonstanten nicht
+       unbedingt weiter das erwartete Verhalten zeigen.
       </para>
       <para>
-       Die verfügbaren Konstanten und die Bedeutungen der jeweiligen Error Level
-       sind im Abschnitt <link linkend="errorfunc.constants">Vordefinierte Konstanten</link> beschrieben.
+       Die verfügbaren Konstanten und die Bedeutungen der jeweiligen
+       Fehlerstufe sind im Abschnitt
+       <link linkend="errorfunc.constants">Vordefinierte Konstanten</link>
+       beschrieben.
       </para>
      </listitem>
     </varlistentry>
@@ -52,70 +59,62 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den bisherigen <link linkend="ini.error-reporting">error_reporting</link> Wert zurück
-   oder das aktuelle Level, wenn <parameter>level</parameter> nicht übergeben wurde.
+   Gibt den bisherigen Wert von
+   <link linkend="ini.error-reporting">error_reporting</link> zurück oder das
+   aktuelle Level, wenn <parameter>error_level</parameter> nicht übergeben
+   wurde.
   </para>
  </refsect1>
 
  <refsect1 role="changelog">
   &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.4.0</entry>
-       <entry><constant>E_STRICT</constant> ist nun in <constant>E_ALL</constant> enthalten.</entry>
-      </row>
-      <row>
-       <entry>5.3.0</entry>
-       <entry>
-        <constant>E_DEPRECATED</constant> und <constant>E_USER_DEPRECATED</constant> 
-        wurden hinzugefügt.
-       </entry>
-      </row>
-      <row>
-       <entry>5.2.0</entry>
-       <entry><constant>E_RECOVERABLE_ERROR</constant> wurde hinzugefügt.</entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-  </para>
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>error_level</parameter> ist jetzt nullable (akzeptiert den
+       &null;-Wert).
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>error_reporting</function> Beispiel</title>
+    <title><function>error_reporting</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 
-// Error Reporting komplett abschalten
+// Fehlermeldungen komplett abschalten
 error_reporting(0);
 
 // Nur einfache Fehler melden
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-// E_NOTICE ist sinnvoll um uninitialisierte oder
+// E_NOTICE ist sinnvoll, um uninitialisierte oder
 // falsch geschriebene Variablen zu entdecken
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 
 // Melde alle Fehler außer E_NOTICE
 error_reporting(E_ALL & ~E_NOTICE);
 
-// Melde alle PHP Fehler (siehe Changelog)
+// Melde alle PHP-Fehler
 error_reporting(E_ALL);
 
-// Melde alle PHP Fehler
+// Melde alle PHP-Fehler
 error_reporting(-1);
 
 // Dies entspricht error_reporting(E_ALL);
@@ -130,19 +129,12 @@ ini_set('error_reporting', E_ALL);
 
  <refsect1 role="notes">
   &reftitle.notes;
-  <warning>
-   <simpara>
-    Der Großteil der <constant>E_STRICT</constant> Fehler werden zur Compile-Zeit
-    generiert und werden somit nicht angezeigt, wenn <constant>E_STRICT</constant> zur
-    Laufzeit zu <link linkend="ini.error-reporting">error_reporting</link>
-    hinzugefügt wird (und auch andersrum).
-   </simpara>
-  </warning>
   <tip>
    <simpara>
-    Durch Übergeben des Wertes <literal>-1</literal> werden alle möglichen Fehler angezeigt,
-    auch wenn neue Level in zukünftigen PHP-Versionen hinzugefügt werden. Die
-    <constant>E_ALL</constant> Konstante verhält sich seit PHP 5.4 ebenfalls so.
+    Durch Übergeben des Wertes <literal>-1</literal> werden alle möglichen
+    Fehler angezeigt, auch wenn neue Level in zukünftigen PHP-Versionen
+    hinzugefügt werden. Das Verhalten ist äquivalent zur Übergabe der
+    Konstante <constant>E_ALL</constant>.
    </simpara>
   </tip>
  </refsect1>
@@ -151,15 +143,15 @@ ini_set('error_reporting', E_ALL);
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member>Die <link linkend="ini.display-errors">display_errors</link> Direktive</member>
-    <member>Die <link linkend="ini.html-errors">html_errors</link> Direktive</member>
-    <member>Die <link linkend="ini.xmlrpc-errors">xmlrpc_errors</link> Direktive</member>
+    <member>Die Direktive <link linkend="ini.display-errors">display_errors</link></member>
+    <member>Die Direktive <link linkend="ini.html-errors">html_errors</link></member>
+    <member>Die Direktive <link linkend="ini.xmlrpc-errors">xmlrpc_errors</link></member>
     <member><function>ini_set</function></member>
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
