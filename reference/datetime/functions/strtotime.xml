@@ -1,42 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 53bdffa6b9f8ce5ffdaf476c9d450f7cd0d1afa2 Maintainer: sammywg Status: ready -->
-
+<!-- EN-Revision: 8cdc6621f9826d04abc3e50438c010804d7e8683 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.strtotime" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>strtotime</refname>
-  <refpurpose>Wandelt ein beliebiges in englischer Textform angegebenes Datum
-   in einen UNIX-Zeitstempel (Timestamp) um</refpurpose>
+  <refpurpose>Wandelt ein beliebiges in englischer Textform angegebenes Datum in einen UNIX-Zeitstempel um</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>strtotime</methodname>
+   <type class="union"><type>int</type><type>false</type></type><methodname>strtotime</methodname>
    <methodparam><type>string</type><parameter>datetime</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>now</parameter><initializer>time()</initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>baseTimestamp</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <simpara>
-   Diese Funktion erwartet einen String mit einem Datum im Englischen
-   Datumsformat und versucht, dieses Format in einen Unix-Timestamp (die Anzahl
-   der Sekunden seit dem 01. Januar 1970 00:00:00 UTC) zu übersetzen. Die Angabe
-   wird relativ zum im <parameter>now</parameter>-Parameter übergebenen
-   Timestamp oder der aktuellen Zeit, sofern <parameter>now</parameter> nicht
-   übergeben wurde, ausgewertet.
+   Diese Funktion erwartet eine Zeichenkette mit einem Datum im englischen
+   Datumsformat und versucht, dieses Format in einen Unix-Zeitstempel (die
+   Anzahl der Sekunden seit dem 1. Januar 1970 00:00:00 UTC) zu übersetzen.
+   Die Angabe wird relativ zum Zeitstempel, der im Parameter
+   <parameter>baseTimestamp</parameter> übergebenen wurde, ausgewertet oder,
+   falls <parameter>baseTimestamp</parameter> nicht übergeben wurde, relativ
+   zur aktuellen Zeit.
   </simpara>
   <warning>
    <para>
-    Der Unix-Zeitstempel, den diese Funktion zurückgibt, enthält keine Informationen
-    über Zeitzonen. Um Berechnungen mit Datum/Zeit-Werten durchzuführen, sollte das
-    leistungsfähigere <classname>DateTimeImmutable</classname> verwendet werden.
+    Der Unix-Zeitstempel, den diese Funktion zurückgibt, enthält keine
+    Informationen über Zeitzonen. Um Berechnungen mit Datums/Zeit-Werten
+    durchzuführen, sollte das leistungsfähigere
+    <classname>DateTimeImmutable</classname> verwendet werden.
    </para>
   </warning>
   <para>
-   Jeder Parameter dieser Funktion verwendet die Standard-Zeitzone, es sei denn
-   eine Zeitzone wird in diesem Parameter angegeben. Es ist darauf zu achten,
-   nicht etwa verschiedene Zeitzonen je Parameter zu verwenden, außer wenn das
-   beabsichtigt ist. Die verschiedenen Möglichkeiten die Standard-Zeitzone zu
-   definieren sind <function>date_default_timezone_get</function> zu entnehmen.
+   Jeder Parameter dieser Funktion verwendet die Standard-Zeitzone, es sei
+   denn, eine Zeitzone wird in diesem Parameter angegeben. Es ist darauf zu
+   achten, nicht etwa verschiedene Zeitzonen je Parameter zu verwenden, außer
+   wenn das beabsichtigt ist. Die verschiedenen Möglichkeiten, die
+   Standard-Zeitzone zu definieren, sind
+   <function>date_default_timezone_get</function> zu entnehmen.
   </para>
  </refsect1>
 
@@ -51,10 +54,10 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>now</parameter></term>
+     <term><parameter>baseTimestamp</parameter></term>
      <listitem>
       <para>
-       Der Timestamp, der als Basis zur Berechnung relativer Daten verwendet
+       Der Zeitstempel, der als Basis zur Berechnung relativer Daten verwendet
        wird.
       </para>
      </listitem>
@@ -66,8 +69,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt im Erfolgsfall einen Timestamp, andernfalls &false; zurück. Vor PHP 5.1.0
-   gab die Funktion <literal>-1</literal> im Fehlerfall zurück.
+   Gibt im Erfolgsfall einen Zeitstempel zurück, andernfalls &false;.
   </para>
  </refsect1>
 
@@ -76,6 +78,31 @@
 
    &date.timezone.errors.description;
 
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>8.0.0</entry>
+       <entry>
+        <parameter>baseTimestamp</parameter> ist jetzt nullable (akzeptiert
+        den &null;-Wert).
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
  </refsect1>
 
  <refsect1 role="examples">
@@ -106,9 +133,8 @@ echo strtotime("last Monday"), "\n";
 <?php
 $str = 'Not Good';
 
-// vor PHP 5.1.0 wuerden Sie -1 statt false als Rueckgabewert erhalten
 if (($timestamp = strtotime($str)) === false) {
-    echo "Die Zeichenkette ($str) ist nicht parsebar.";
+    echo "Die Zeichenkette ($str) ist fehlerhaft.";
 } else {
     echo "$str == " . date('l dS \o\f F Y h:i:s A', $timestamp);
 }
@@ -123,31 +149,22 @@ if (($timestamp = strtotime($str)) === false) {
   &reftitle.notes;
   <note>
    <para>
-    Wenn die Jahreszahlenangabe zweistellig erfolgt, werden Werte zwischen 00
-    und 69 auf die Jahre 2000 bis 2069 gemappt, die Werte 70-99 ergeben die
-    Jahreszahlen 1970-1999. Beachten Sie die folgenden Anmerkungen bezüglich der
-    Unterschiede auf 32-Bit-Systemen (das Datum endet möglicherweise am
+    Wenn die Angabe der Jahreszahl zweistellig erfolgt, werden Werte zwischen
+    00 und 69 den Jahren 2000 bis 2069 zugeordnet, die Werte 70-99 ergeben die
+    Jahreszahlen 1970-1999. Beachten Sie die folgenden Anmerkungen bezüglich
+    der Unterschiede auf 32-Bit-Systemen (das Datum endet möglicherweise am
     2038-01-19 03:14:07).
    </para>
   </note>
   <note>
    <para>
-    Der gültige Bereich eines Timestamp liegt typischerweise zwischen
-    Fri, 13 Dec 1901 20:45:54 UTC und Tue, 19 Jan 2038 03:14:07 UTC.
-    (Das sind die Datumsangaben, die dem minimalen und maximalen Wert eines
-    vorzeichenbehafteten 32-bit Integer entsprechen.)
+    Der gültige Bereich eines Zeitstempels liegt typischerweise zwischen
+    Fri, 13 Dec 1901 20:45:54 UTC und Tue, 19 Jan 2038 03:14:07 UTC
+    (das sind die Datumsangaben, die dem minimalen und maximalen Wert eines
+    vorzeichenbehafteten 32-bit Integer entsprechen).
    </para>
    <para>
-    Vor PHP 5.1.0
-    unterstützen nicht alle Plattformen negative Werte eines Timestamps,
-    deshalb könnte der Wertebereich eines Datums durch den Beginn der Unix
-    Epoche begrenzt sein. Das bedeutet, dass z.B. Zeitangaben vor dem
-    1. Januar 1970 auf Windowssystemen, einigen
-    Linuxdistributionen und einigen anderen Betriebssytemen nicht
-    funktionieren.
-   </para>
-   <para>
-    Für 64 Bit Versionen von PHP ist der gültige Bereich für Timestamps
+    Für 64-Bit-Versionen von PHP ist der gültige Bereich für Zeitstempel
     praktisch unendlich groß, da 64 Bit etwa 293 Milliarden Jahre in beide
     Richtungen darstellen können.
    </para>
@@ -155,27 +172,26 @@ if (($timestamp = strtotime($str)) === false) {
   <note>
    <para>
     Daten im Format <literal>m/d/y</literal> oder <literal>d-m-y</literal>
-    werden unterschieden anhand des genutzten Trennzeichens: Wenn ein Slash
-    (<literal>/</literal>) genutzt wird, wird das Amerikanische Format
-    <literal>m/d/y</literal> angenommen; wird stattdessen ein Minus
-    (<literal>-</literal>) oder ein Punkt (<literal>.</literal>) genutzt,
-    wird das Europäische Format <literal>d-m-y</literal> angenommen.
-    Wird das Jahr allerdings in einem zweistelligen Format angegeben und das
-    Trennzeichen ist ein Minus (<literal>-</literal>), dann wird das Datum als
-    <literal>y-m-d</literal> geparst.
+    werden unterschieden anhand des genutzten Trennzeichens: Wenn ein
+    Schrägstrich (<literal>/</literal>) genutzt wird, wird das amerikanische
+    Format <literal>m/d/y</literal> angenommen; wird stattdessen ein Minus
+    (<literal>-</literal>) oder ein Punkt (<literal>.</literal>) genutzt, wird
+    das europäische Format <literal>d-m-y</literal> angenommen. Wird das Jahr
+    allerdings in einem zweistelligen Format angegeben und das Trennzeichen
+    ist ein Minus (<literal>-</literal>), dann wird das Datum als
+    <literal>y-m-d</literal> ausgewertet.
    </para>
    <para>
-    Um Mehrdeutigkeiten zu vermeiden sollten am besten ISO 8601 Daten
-    (<literal>YYYY-MM-DD</literal>) genutzt werden oder aber die Methode
-    <methodname>DateTime::createFromFormat</methodname> verwendet werden.
+    Um Mehrdeutigkeiten zu vermeiden, sollten am besten ISO-8601-Daten
+    (<literal>YYYY-MM-DD</literal>) verwendet werden oder, wenn möglich, die
+    Methode <methodname>DateTime::createFromFormat</methodname>.
    </para>
   </note>
   <note>
    <para>
     Die Verwendung dieser Funktion für mathematische Berechnungen ist nicht
-    zu empfehlen. Es ist besser <methodname>DateTime::add</methodname> und
-    <methodname>DateTime::sub</methodname> in PHP 5.3 und neuer, oder
-    <methodname>DateTime::modify</methodname> in PHP 5.2 zu verwenden.
+    zu empfehlen. Es ist besser, <methodname>DateTime::add</methodname> und
+    <methodname>DateTime::sub</methodname> zu verwenden.
    </para>
   </note>
  </refsect1>
@@ -193,8 +209,6 @@ if (($timestamp = strtotime($str)) === false) {
  </refsect1>
 
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
