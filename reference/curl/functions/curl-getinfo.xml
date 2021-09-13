@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: be5b0f33a18415823da76389915b49aae4ee6835 Maintainer: jaenecke Status: ready -->
-<refentry xml:id='function.curl-getinfo' xmlns="http://docbook.org/ns/docbook">
+<!-- EN-Revision: f9c4a68ef4f89e51e6d9b905ad3ddb6492386dd3 Maintainer: jaenecke Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<refentry xml:id="function.curl-getinfo" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>curl_getinfo</refname>
-  <refpurpose>Informationen zu einem bestimmten Transfer abfragen</refpurpose>
+  <refpurpose>Ruft Informationen zu einem bestimmten Transfer ab</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
    <type>mixed</type><methodname>curl_getinfo</methodname>
-   <methodparam><type>resource</type><parameter>ch</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>opt</parameter></methodparam>
+   <methodparam><type>CurlHandle</type><parameter>handle</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>option</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Gibt Informationen über den letzen Transfer zurück. 
+   Gibt Informationen über den letzen Transfer zurück.
   </para>
  </refsect1>
 
@@ -25,196 +27,234 @@
    <variablelist>
     &curl.ch.description;
     <varlistentry>
-     <term><parameter>opt</parameter></term>
+     <term><parameter>option</parameter></term>
      <listitem>
       <para>
-       Eine der folgenden Konstanten:
+       Dies kann eine der folgenden Konstanten sein:
        <itemizedlist>
         <listitem>
          <simpara>
-          <constant>CURLINFO_EFFECTIVE_URL</constant> - Letzter effektiver URL
+          <constant>CURLINFO_EFFECTIVE_URL</constant> - Die letzte
+          erfolgreiche URL
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_HTTP_CODE</constant> - Der letzte Response-Code.
-          Von PHP 5.5.0 und cURL 7.10.8 an ist dies ein veralteter Alias von
+          <constant>CURLINFO_HTTP_CODE</constant> - Der letzte Antwortcode.
+          Von cURL 7.10.8 an ist dies ein veralteter Alias von
           <constant>CURLINFO_RESPONSE_CODE</constant>
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_FILETIME</constant> - Letzte Änderung des Dokuments, bei aktivierter <constant>CURLOPT_FILETIME</constant> Option; wenn -1 zurückgegeben wird ist die Zeit unbekannt
+          <constant>CURLINFO_FILETIME</constant> - Die (Server-) Zeit der
+          letzten Änderung des abgerufenen Dokuments, wenn die Option
+          <constant>CURLOPT_FILETIME</constant> aktiviert ist; wenn -1
+          zurückgegeben wird, ist die Zeit unbekannt
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_TOTAL_TIME</constant> - Gesamtdauer des letzten Transfers in Sekunden
+          <constant>CURLINFO_TOTAL_TIME</constant> - Die Gesamtdauer des
+          letzten Transfers in Sekunden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_NAMELOOKUP_TIME</constant> - Zeit in Sekunden zur Auflösung des Hostnamens
+          <constant>CURLINFO_NAMELOOKUP_TIME</constant> - Die Zeit in
+          Sekunden, bis die Auflösung des Hostnamens abgeschlossen war.
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONNECT_TIME</constant> - Dauer des Verbindungsaufbaus in Sekunden
+          <constant>CURLINFO_CONNECT_TIME</constant> - Die Dauer des
+          Verbindungsaufbaus in Sekunden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PRETRANSFER_TIME</constant> - Zeit in Sekunden zwischen dem Start und dem eigentlichen Beginn des Empfangs
+          <constant>CURLINFO_PRETRANSFER_TIME</constant> - Die Zeit in
+          Sekunden zwischen dem Start und dem eigentlichen Beginn des Empfangs
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_STARTTRANSFER_TIME</constant> - Zeit in Sekunden bis zur Übertragung des ersten Bytes
+          <constant>CURLINFO_STARTTRANSFER_TIME</constant> - Die Zeit in
+          Sekunden bis zur Übertragung des ersten Bytes
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_REDIRECT_COUNT</constant> - Anzahl der Weiterleitungen,
-          bei aktivierter <constant>CURLOPT_FOLLOWLOCATION</constant> Option
+          <constant>CURLINFO_REDIRECT_COUNT</constant> - Die Anzahl der
+          Weiterleitungen, wenn die Option
+          <constant>CURLOPT_FOLLOWLOCATION</constant> aktiviert ist
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_REDIRECT_TIME</constant> - Zeit in Sekunden, die von allen Umleitungsschritten 
-          beansprucht wird, bevor der eigentliche Transfer beginnt
+          <constant>CURLINFO_REDIRECT_TIME</constant> - Die Zeit in Sekunden,
+          die von allen Weiterleitungsschritten beansprucht wird, bevor der
+          eigentliche Transfer beginnt, wenn die Option
+          <constant>CURLOPT_FOLLOWLOCATION</constant> aktiviert ist
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_REDIRECT_URL</constant> -
-          Bei deaktivierter <constant>CURLOPT_FOLLOWLOCATION</constant>:
-          die Weiterleitungs-URL, die in der letzten Transaktion gefunden wurde,
-          und die als nächstes manuell angefordert werden sollte.
-          Bei aktivierter <constant>CURLOPT_FOLLOWLOCATION</constant> Option
-          ist dies immer leer. Die Weiterleitungs-URL ist in diesem Fall in
+          <constant>CURLINFO_REDIRECT_URL</constant> - Bei deaktivierter
+          <constant>CURLOPT_FOLLOWLOCATION</constant>-Option: die
+          Weiterleitungs-URL, die in der letzten Transaktion gefunden wurde
+          und als nächstes manuell angefordert werden sollte. Bei aktivierter
+          <constant>CURLOPT_FOLLOWLOCATION</constant>-Option ist dies immer
+          leer. Die Weiterleitungs-URL ist in diesem Fall in
           <constant>CURLINFO_EFFECTIVE_URL</constant> verfügbar
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PRIMARY_IP</constant> - Die IP-Adresse der jüngsten Verbindung
+          <constant>CURLINFO_PRIMARY_IP</constant> - Die IP-Adresse der
+          jüngsten Verbindung
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PRIMARY_PORT</constant> - Ziel-Port der jüngsten Verbindung
+          <constant>CURLINFO_PRIMARY_PORT</constant> - Der Ziel-Port der
+          jüngsten Verbindung
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_LOCAL_IP</constant> - lokale (Quell-) IP-Adresse der jüngsten Verbindung
+          <constant>CURLINFO_LOCAL_IP</constant> - Die lokale (Quell-)
+          IP-Adresse der jüngsten Verbindung
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_LOCAL_PORT</constant> - lokaler (Quell-) Port der jüngsten Verbindung
+          <constant>CURLINFO_LOCAL_PORT</constant> - Der lokale (Quell-) Port
+          der jüngsten Verbindung
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SIZE_UPLOAD</constant> - Anzahl der gesendeten Bytes
+          <constant>CURLINFO_SIZE_UPLOAD</constant> - Die Anzahl der
+          gesendeten Bytes
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SIZE_DOWNLOAD</constant> - Anzahl der empfangenen Bytes
+          <constant>CURLINFO_SIZE_DOWNLOAD</constant> - Die Anzahl der
+          empfangenen Bytes
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SPEED_DOWNLOAD</constant> - Durchschnittliche Download-Geschwindigkeit
+          <constant>CURLINFO_SPEED_DOWNLOAD</constant> - Die durchschnittliche
+          Download-Geschwindigkeit
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SPEED_UPLOAD</constant> - Durchschnittliche Upload-Geschwindigkeit
+          <constant>CURLINFO_SPEED_UPLOAD</constant> - Die durchschnittliche
+          Upload-Geschwindigkeit
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_HEADER_SIZE</constant> - Gesamtgröße aller empfangenen Header
+          <constant>CURLINFO_HEADER_SIZE</constant> - Die Gesamtgröße aller
+          empfangenen Header
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_HEADER_OUT</constant> - Der gesendete Request.
-          Damit dies funktioniert, muss die <constant>CURLINFO_HEADER_OUT</constant> Option
-          durch Aufruf von <function>curl_setopt</function> zum Handle hinzugefügt werden
+          <constant>CURLINFO_HEADER_OUT</constant> - Die gesendete Anfrage.
+          Damit dies funktioniert, muss die Option
+          <constant>CURLINFO_HEADER_OUT</constant> durch Aufruf von
+          <function>curl_setopt</function> zum Handle hinzugefügt werden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-        <constant>CURLINFO_REQUEST_SIZE</constant> - Gesamtgröße aller Abfragen, momentan nur für HTTP verfügbar
+          <constant>CURLINFO_REQUEST_SIZE</constant> - Die Gesamtgröße aller
+          Anfragen; momentan nur für HTTP verfügbar
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SSL_VERIFYRESULT</constant> - Ergebnis der SSL-Zertifikat-Überprüfung,  
-          angefordert durch das Setzen von CURLOPT_SSL_VERIFYPEER
+          <constant>CURLINFO_SSL_VERIFYRESULT</constant> - Das Ergebnis der
+          Überprüfung des SSL-Zertifikats, angefordert durch das Setzen von
+          <constant>CURLOPT_SSL_VERIFYPEER</constant>
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONTENT_LENGTH_DOWNLOAD</constant> - Die Größe des Downloads, ermittelt aus dem Content-Length-Header
+          <constant>CURLINFO_CONTENT_LENGTH_DOWNLOAD</constant> - Die Größe
+          des Downloads, ermittelt aus dem
+          <literal>Content-Length:</literal>-Header
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONTENT_LENGTH_UPLOAD</constant> - Festgesetzte Größe des Uploads
+          <constant>CURLINFO_CONTENT_LENGTH_UPLOAD</constant> - Die
+          festgesetzte Größe des Uploads
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONTENT_TYPE</constant> - <literal>Content-Type:</literal> des angeforderten Dokuments.
-          NULL zeigt an, dass der Server keinen gültigen <literal>Content-Type:</literal> Header gesendet hat
+          <constant>CURLINFO_CONTENT_TYPE</constant> - Der
+          <literal>Content-Type:</literal> des angeforderten Dokuments. NULL
+          zeigt an, dass der Server keinen gültigen
+          <literal>Content-Type:</literal>-Header gesendet hat
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PRIVATE</constant> - Private Daten, die mit diesem cURL Handle zugehörig sind,
-          und die zuvor mit der <constant>CURLOPT_PRIVATE</constant> Option von <function>curl_setopt</function> gesetzt wurden
+          <constant>CURLINFO_PRIVATE</constant> - Private Daten, die zu diesem
+          cURL-Handle gehören und zuvor mit der Option
+          <constant>CURLOPT_PRIVATE</constant> der Funktion
+          <function>curl_setopt</function> gesetzt wurden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_RESPONSE_CODE</constant> - Der letzte Response-Code
+          <constant>CURLINFO_RESPONSE_CODE</constant> - Der letzte Antwortcode
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_HTTP_CONNECTCODE</constant> - Der CONNECT Response-Code
+          <constant>CURLINFO_HTTP_CONNECTCODE</constant> - Der
+          CONNECT-Antwortcode
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_HTTPAUTH_AVAIL</constant> - Eine Bitmaske, die die verfügbaren
-          Authentifikationsmethode(n) gemäß der vorherigen Response anzeigt
+          <constant>CURLINFO_HTTPAUTH_AVAIL</constant> - Eine Bitmaske, die
+          die verfügbaren Authentifizierungsmethode(n) gemäß der vorherigen
+          Antwort anzeigt
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PROXYAUTH_AVAIL</constant> - Eine Bitmaske, die die verfügbaren
-          Proxy-Authentifikationsmethode(n) gemäß der vorherigen Response anzeigt
+          <constant>CURLINFO_PROXYAUTH_AVAIL</constant> - Eine Bitmaske, die
+          die verfügbaren Proxy-Authentifikationsmethode(n) gemäß der
+          vorherigen Antwort anzeigt
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_OS_ERRNO</constant> - Errno eines Verbindungsfehlers. Die Zahl ist OS- und systemabhängig.
+          <constant>CURLINFO_OS_ERRNO</constant> - Die Fehlernummer (Errno)
+          eines Verbindungsfehlers. Die Zahl ist OS- und systemabhängig.
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_NUM_CONNECTS</constant> - Die Anzahl der Verbindungen, die cURL erzeugen musste, um die vorherigen Übertragung durchzuführen
+          <constant>CURLINFO_NUM_CONNECTS</constant> - Die Anzahl der
+          Verbindungen, die cURL erzeugen musste, um die vorherigen
+          Übertragung durchzuführen
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SSL_ENGINES</constant> - Die unterstützten OpenSSL Crypto-Engines
+          <constant>CURLINFO_SSL_ENGINES</constant> - Die unterstützten
+          OpenSSL-Crypto-Engines
          </simpara>
         </listitem>
         <listitem>
@@ -224,133 +264,176 @@
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_FTP_ENTRY_PATH</constant> - Entry-Pfad des FTP-Server
+          <constant>CURLINFO_FTP_ENTRY_PATH</constant> - Der Entry-Pfad des
+          FTP-Servers
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_APPCONNECT_TIME</constant> - Die Zeitdauer in Sekunden, die bis zum
-           SSL/SSH-Verbindungsaufbau/Handshake zum entfernten Server verstrichen ist
+          <constant>CURLINFO_APPCONNECT_TIME</constant> - Die Zeitdauer in
+          Sekunden, die bis zum SSL/SSH-Verbindungsaufbau/Handshake zum
+          entfernten Server verstrichen ist
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CERTINFO</constant> - Die TLS Zertifikatskette
+          <constant>CURLINFO_CERTINFO</constant> - Die TLS-Zertifikatskette
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONDITION_UNMET</constant> - Info über eine nicht eingehaltene Zeitbedingung
+          <constant>CURLINFO_CONDITION_UNMET</constant> - Die Info über eine
+          nicht eingehaltene Zeitbedingung
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_RTSP_CLIENT_CSEQ</constant> - Die nächste CSeq des RTSP-Clients
+          <constant>CURLINFO_RTSP_CLIENT_CSEQ</constant> - Die nächste CSeq
+          des RTSP-Clients
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_RTSP_CSEQ_RECV</constant> - Die zuletzt empfangene CSeq
+          <constant>CURLINFO_RTSP_CSEQ_RECV</constant> - Die zuletzt
+          empfangene CSeq
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_RTSP_SERVER_CSEQ</constant> - Die nächste CSeq des RTSP-Servers
+          <constant>CURLINFO_RTSP_SERVER_CSEQ</constant> - Die nächste CSeq des
+          RTSP-Servers
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_RTSP_SESSION_ID</constant> - Die RTSP Session-ID
+          <constant>CURLINFO_RTSP_SESSION_ID</constant> - Die RTSP-Session-ID
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONTENT_LENGTH_DOWNLOAD_T</constant> - Die Länge des Download-Rumpfs. Das ist der Wert, der aus dem <literal>Content-Type:</literal> Feld gelesen wurde. -1 wenn die Größe nicht bekannt ist
+          <constant>CURLINFO_CONTENT_LENGTH_DOWNLOAD_T</constant> - Die
+          inhaltliche Länge des Downloads. Das ist der Wert, der aus dem
+          <literal>Content-Type:</literal>-Feld gelesen wurde. -1, wenn die
+          Größe nicht bekannt ist
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONTENT_LENGTH_UPLOAD_T</constant> - Die angegebene Größe des Uploads. -1 wenn die Größe nicht bekannt ist
+          <constant>CURLINFO_CONTENT_LENGTH_UPLOAD_T</constant> - Die
+          angegebene Größe des Uploads. -1, wenn die Größe nicht bekannt ist
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_HTTP_VERSION</constant> - Die Version, die in der letzten HTTP-Verbindung verwendet wurde. Der Rückgabewert ist eine der definierten <constant>CURL_HTTP_VERSION_*</constant> Konstanten oder 0, wenn die Version nicht ermittelt werden kann
+          <constant>CURLINFO_HTTP_VERSION</constant> - Die Version, die in der
+          letzten HTTP-Verbindung verwendet wurde. Der Rückgabewert ist eine
+          der definierten <constant>CURL_HTTP_VERSION_*</constant>-Konstanten
+          oder 0, wenn die Version nicht ermittelt werden kann
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PROTOCOL</constant> - Das Protokoll, das in der letzten HTTP-Verbindung verwendet wurde. Der Rückgabewert ist genau einer der <constant>CURLPROTO_*</constant> Werte
+          <constant>CURLINFO_PROTOCOL</constant> - Das Protokoll, das in der
+          letzten HTTP-Verbindung verwendet wurde. Der Rückgabewert ist genau
+          einer der <constant>CURLPROTO_*</constant>-Werte
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PROXY_SSL_VERIFYRESULT</constant> - Das Ergebnis der Zertifikatsprüfung, die angefordert wurde (durch Verwendung der <constant>CURLOPT_PROXY_SSL_VERIFYPEER</constant> Option). Nur für HTTPS-Proxies verwendet
+          <constant>CURLINFO_PROXY_SSL_VERIFYRESULT</constant> - Das Ergebnis
+          der Zertifikatsprüfung, die angefordert wurde (durch Verwendung der
+          Option <constant>CURLOPT_PROXY_SSL_VERIFYPEER</constant>). Wird nur
+          für HTTPS-Proxies verwendet
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SCHEME</constant> - Das URL-Schema, das für die jüngste Verbindung verwendet wurde
+          <constant>CURLINFO_SCHEME</constant> - Das URL-Schema, das für die
+          jüngste Verbindung verwendet wurde
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SIZE_DOWNLOAD_T</constant> - Die Gesamtanzahl von Bytes, die heruntergeladen wurden. Die Anzahl betrifft nur die letzte Übertragung, und wird für jede neue Übertragung zurückgesetzt
+          <constant>CURLINFO_SIZE_DOWNLOAD_T</constant> - Die Gesamtanzahl von
+          Bytes, die heruntergeladen wurden. Die Anzahl betrifft nur die
+          letzte Übertragung, und wird für jede neue Übertragung zurückgesetzt
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SIZE_UPLOAD_T</constant> - Die Gesamtanzahl von Bytes, die hochgeladen wurden
+          <constant>CURLINFO_SIZE_UPLOAD_T</constant> - Die Gesamtanzahl von
+          Bytes, die hochgeladen wurden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SPEED_DOWNLOAD_T</constant> - Die durchschnittliche Download-Geschwindigkeit in Bytes pro Sekunde, die CURL für den vollständigen Download gemessen hat
+          <constant>CURLINFO_SPEED_DOWNLOAD_T</constant> - Die
+          durchschnittliche Download-Geschwindigkeit in Bytes pro Sekunde, die
+          CURL für den vollständigen Download gemessen hat
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_SPEED_UPLOAD_T</constant> - Die durchschnittliche Upload-Geschwindigkeit in Bytes pro Sekunde, die CURL für den vollständigen Upload gemessen hat
+          <constant>CURLINFO_SPEED_UPLOAD_T</constant> - Die durchschnittliche
+          Upload-Geschwindigkeit in Bytes pro Sekunde, die CURL für den
+          vollständigen Upload gemessen hat
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_APPCONNECT_TIME_T</constant> - Die Zeit in Mikrosekunden, die vom Beginn bis zur Vollendung des SSL/SSH-Verbindung/Handshake zum Remote-Host vergangen ist
+          <constant>CURLINFO_APPCONNECT_TIME_T</constant> - Die Zeit in
+          Mikrosekunden, die vom Beginn bis zur Vollendung der
+          SSL/SSH-Verbindung/des Handshakes zum Remote-Host vergangen ist
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_CONNECT_TIME_T</constant> - Die Gesamtdauer in Mikrosekunden, vom Beginn bis zur Vollendung der Verbindung zum Remote-Host (oder Proxy)
+          <constant>CURLINFO_CONNECT_TIME_T</constant> - Die Gesamtdauer in
+          Mikrosekunden, vom Beginn bis zur Vollendung der Verbindung zum
+          Remote-Host (oder Proxy)
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_FILETIME_T</constant> - Letzte Änderung des abgerufenen Dokuments (als Unix-Zeitstempel); eine Alternative zu <constant>CURLINFO_FILETIME</constant>, die es Systemen mit 32-Bit Ganzzahlvariablen ermöglicht, Daten außerhalb des 32-Bit-Zeitstempelbereichs zu extrahieren
+          <constant>CURLINFO_FILETIME_T</constant> - Die letzte Änderung des
+          abgerufenen Dokuments (als Unix-Zeitstempel); eine Alternative zu
+          <constant>CURLINFO_FILETIME</constant>, die es Systemen mit
+          32-Bit-Ganzzahlvariablen ermöglicht, Daten außerhalb des
+          32-Bit-Zeitstempelbereichs zu extrahieren
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_NAMELOOKUP_TIME_T</constant> - Dauer in Mikrosekunden vom Beginn bis zur Vervollständigung der Namensauflösung
+          <constant>CURLINFO_NAMELOOKUP_TIME_T</constant> - Die Dauer in
+          Mikrosekunden vom Beginn bis zur Vervollständigung der Namensauflösung
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_PRETRANSFER_TIME_T</constant> - benötigte Zeit vom Beginn bis zum eigentlichen Beginn der Dateiübertragung
+          <constant>CURLINFO_PRETRANSFER_TIME_T</constant> - Die benötigte
+          Zeit vom Beginn bis zum eigentlichen Beginn der Dateiübertragung in
+          Mikrosekunden
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_REDIRECT_TIME_T</constant> - Gesamtdauer in Mikrosekunden, für alle Weiterleitungsschritte, einschließlich Namenslookup, Verbindung, Vorübertragung und Übertragung, bis zum Beginn der eigentlichen Transaktion
+          <constant>CURLINFO_REDIRECT_TIME_T</constant> - Die Gesamtdauer in
+          Mikrosekunden für alle Weiterleitungsschritte einschließlich
+          Namenslookup, Verbindung, Vorübertragung und Übertragung, bis zum
+          Beginn der eigentlichen Transaktion
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_STARTTRANSFER_TIME_T</constant> - benötigte Zeit in Mikrosekunden vom Beginn bis zum Empfang des ersten Bytes
+          <constant>CURLINFO_STARTTRANSFER_TIME_T</constant> - Die benötigte
+          Zeit in Mikrosekunden vom Beginn bis zum Empfang des ersten Bytes
          </simpara>
         </listitem>
         <listitem>
          <simpara>
-          <constant>CURLINFO_TOTAL_TIME_T</constant> - Gesamtdauer in Mikrosekunden für die vorhergehende Übertragung, einschließlich Namensauflösung, TCP-Verbindung usw.
+          <constant>CURLINFO_TOTAL_TIME_T</constant> - Die Gesamtdauer in
+          Mikrosekunden für die vorhergehende Übertragung einschließlich
+          Namensauflösung, TCP-Verbindung usw.
          </simpara>
         </listitem>
        </itemizedlist>
@@ -364,10 +447,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Wird der Parameter <parameter>opt</parameter> angegeben, wird der entsprechende
-   Wert zurückgegeben. Andernfalls liefert die Funktion ein assoziatives
-   Array mit den folgenden Elementen zurück (analog dem Parameter <parameter>opt</parameter>),
-   oder &false; im Fehlerfall:
+   Wird der Parameter <parameter>option</parameter> angegeben, wird der
+   entsprechende Wert zurückgegeben. Andernfalls liefert die Funktion ein
+   assoziatives Array mit den folgenden Elementen zurück (analog zum Parameter
+   <parameter>option</parameter>), oder &false; im Fehlerfall:
    <itemizedlist>
     <listitem>
      <simpara>
@@ -501,13 +584,15 @@
     </listitem>
     <listitem>
      <simpara>
-      "request_header" (Dies ist nur gesetzt, wenn die <constant>CURLINFO_HEADER_OUT</constant>
-      durch einen vorherigen Aufruf von <function>curl_setopt</function> gesetzt wurde)
+      "request_header" (Dies ist nur gesetzt, wenn die Option
+      <constant>CURLINFO_HEADER_OUT</constant> durch einen vorherigen Aufruf
+      von <function>curl_setopt</function> gesetzt wurde)
      </simpara>
     </listitem>
    </itemizedlist>
-   Es ist zu beachten, dass private Daten nicht im assoziativen Array enthalten sind,
-   sondern individuell durch <constant>CURLINFO_PRIVATE</constant> Option abgerufen werden müssen.
+   Es ist zu beachten, dass private Daten nicht im assoziativen Array
+   enthalten sind, sondern individuell mit der Option
+   <constant>CURLINFO_PRIVATE</constant> abgerufen werden müssen.
   </para>
  </refsect1>
 
@@ -523,11 +608,19 @@
       </row>
      </thead>
      <tbody>
+      &curl.changelog.handle-param;
+      <row>
+       <entry>8.0.0</entry>
+       <entry>
+        <parameter>option</parameter> ist jetzt nullable (akzeptiert den
+        &null;-Wert); vorher war der Vorgabewert <literal>0</literal>.
+       </entry>
+      </row>
       <row>
        <entry>7.3.0</entry>
        <entry>
         <constant>CURLINFO_CONTENT_LENGTH_DOWNLOAD_T</constant>,
-        <constant>CURLINFO_CONTENT_LENGTH_UPLOAD_T</constant>, 
+        <constant>CURLINFO_CONTENT_LENGTH_UPLOAD_T</constant>,
         <constant>CURLINFO_HTTP_VERSION</constant>,
         <constant>CURLINFO_PROTOCOL</constant>,
         <constant>CURLINFO_PROXY_SSL_VERIFYRESULT</constant>,
@@ -551,7 +644,7 @@
    </informaltable>
   </para>
  </refsect1>
- 
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -560,21 +653,19 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Eine cURL-Resource erstellen
+// Eine cURL-Ressource erstellen
 $ch = curl_init('http://www.example.com/');
 
 // ausführen
 curl_exec($ch);
 
 // prüfen, ob ein Fehler aufgetreten ist
-if(!curl_errno($ch))
-{
-    $info = curl_getinfo($ch);
-
-    echo 'Es wurden ' . $info['total_time'] . ' Sekunden benötigt für einen Request an ' . $info['url'];
+if (!curl_errno($ch)) {
+  $info = curl_getinfo($ch);
+  echo 'Es wurden ', $info['total_time'], ' Sekunden benötigt für eine Anfrage an ', $info['url'], "\n";
 }
 
-// Resource schliessen
+// Ressource schliessen
 curl_close($ch);
 ?>
 ]]>
@@ -583,11 +674,11 @@ curl_close($ch);
   </para>
   <para>
    <example>
-    <title><function>curl_getinfo</function>-Beispiel mit <parameter>opt</parameter> Parameter</title>
+    <title><function>curl_getinfo</function>-Beispiel mit dem Parameter <parameter>option</parameter></title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Eine cURL-Resource erstellen
+// Eine cURL-Ressource erstellen
 $ch = curl_init('http://www.example.com/');
 
 // ausführen
@@ -599,11 +690,11 @@ if (!curl_errno($ch)) {
     case 200:  # OK
       break;
     default:
-      echo 'Unerwarter HTTP-Code: ', $http_code, "\n";
+      echo 'Unerwarteter HTTP-Code: ', $http_code, "\n";
   }
 }
 
-// Resource schliessen
+// Ressource schliessen
 curl_close($ch);
 ?>
 ]]>
@@ -618,13 +709,13 @@ curl_close($ch);
    <para>
     Informationen, die mit dieser Funktion gesammelt wurden, bleiben erhalten,
     wenn das Handle wiederverwendet wird. Das bedeutet, dass außer wenn eine
-    Statistik von dieser Funktion intern überschrieben wird, die vorherige Info
-    zurück gebeben wird.
+    Statistik intern von dieser Funktion überschrieben wird, die vorherige Info
+    zurückgegeben wird.
    </para>
   </note>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

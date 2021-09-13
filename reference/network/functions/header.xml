@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 0c9c2dd669fe9395eaa73d487fbd160f9057429a Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: f32912d04f3da53ad720bd782ad5a2483a1d79a0 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.header">
  <refnamediv>
   <refname>header</refname>
@@ -64,7 +66,7 @@ exit;
        Header, der mit "<literal>HTTP/</literal>" beginnt (ob Groß- oder
        Kleinschreibung ist nicht relevant). Dieser Header wird verwendet, um
        den zu sendenden HTTP-Statuscode anzugeben. Wenn Sie zum Beispiel
-       Apache konfiguriert haben, um ein PHP-Skript zum Bearbeiten von
+       Apache konfiguriert haben, ein PHP-Skript zum Bearbeiten von
        Anforderungen fehlender Dateien (mittels der
        <literal>ErrorDocument</literal>-Direktive) zu verwenden, möchten Sie
        bestimmt sicherstellen, dass Ihr Skript den passenden Statuscode
@@ -75,7 +77,13 @@ exit;
         <programlisting role="php">
 <![CDATA[
 <?php
-header("HTTP/1.0 404 Not Found");
+// Dieses Beispiel veranschaulicht den Spezialfall "HTTP/".
+// Bessere Alternativen für typische Anwendungsfälle sind
+// 1. header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+//    (um http-Statusmeldungen für Clients, die noch HTTP/1.0 verwenden,
+//    zu überschreiben)
+// 2. http_response_code(404); (um die Standardmeldung zu verwenden)
+header("HTTP/1.1 404 Not Found");
 ?>
 ]]>
         </programlisting>
@@ -84,7 +92,7 @@ header("HTTP/1.0 404 Not Found");
       <para>
        Der zweite Spezialfall ist der "Location:"-Header. Es wird nicht nur
        der Header an den Browser geschickt, sondern auch ein
-       <literal>REDIRECT</literal> (302) Statuscode, wenn nicht bereits der
+       <literal>REDIRECT</literal>-Statuscode (302), wenn nicht bereits der
        <literal>201</literal>- oder ein <literal>3xx</literal>-Statuscode
        gesendet wurde.
       </para>
@@ -151,14 +159,22 @@ header('WWW-Authenticate: NTLM', false);
   </para>
  </refsect1>
 
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <para>
+   Wenn der Header nicht gesendet werden kann, gibt <function>header</function>
+   einen Fehler der Stufe <constant>E_WARNING</constant> aus.
+  </para>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
     <title>Download-Dialog</title>
     <para>
-     Wollen Sie den Benutzer auffordern, die von Ihnen gesendeten Daten wie
-     z. B. eine generierte PDF-Datei zu speichern, können Sie den Header
+     Wollen Sie den Benutzer auffordern, die von Ihnen gesendeten Daten, z. B.
+     eine generierte PDF-Datei, zu speichern, können Sie den Header
      <link xlink:href="&url.rfc;2183">Content-Disposition</link> verwenden, um
      einen empfohlenen Dateinamen anzubieten und den Browser zu zwingen, den
      Dialog zum Speichern anzuzeigen.
@@ -169,10 +185,10 @@ header('WWW-Authenticate: NTLM', false);
 // Wir werden eine PDF-Datei ausgeben
 header('Content-Type: application/pdf');
 
-// Es wird downloaded.pdf benannt
+// Sie wird downloaded.pdf genannt
 header('Content-Disposition: attachment; filename="downloaded.pdf"');
 
-// Die originale PDF-Datei heißt original.pdf
+// Die ursprüngliche PDF-Datei heißt original.pdf
 readfile('original.pdf');
 ?>
 ]]>
@@ -200,7 +216,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Datum in der Vergangenheit
      <note>
       <para>
        Es könnte auch sein, dass Ihre Seiten nicht zwischengespeichert werden,
-       auch wenn Sie obigen Header nicht ausgeben. Es gibt eine Anzahl
+       auch wenn Sie die obigen Header nicht ausgeben. Es gibt eine Reihe von
        Optionen, welche die Benutzer in ihrem Browser einstellen können, um
        das standardmäßige Caching-Verhalten zu verändern. Durch das Senden
        obiger Header sollten Sie jedwede Einstellungen, die die Ausgabe Ihres
@@ -210,7 +226,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Datum in der Vergangenheit
        Weiterhin können Sie <function>session_cache_limiter</function> und die
        Konfigurationsoption <literal>session.cache_limiter</literal>
        verwenden, um die korrekten Header bezüglich Caching automatisch
-       generieren zu lassen, sollten Sie Sessions verwenden.
+       generieren zu lassen, wenn Sessions verwendet werden sollen.
       </para>
      </note>
     </para>
@@ -225,12 +241,12 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Datum in der Vergangenheit
    <para>
     Sie können die Limitierung, dass Header vor jeglicher Ausgabe gesendet
     werden müssen, umgehen, indem Sie die Ausgabepufferung verwenden, mit dem
-    Overhead, dass Ihre gesamten Ausgaben an den Browser auf dem Server
-    gepuffert werden, bis Sie diese senden. Sie können dies tun, indem Sie in
-    Ihrem Skript <function>ob_start</function> und
-    <function>ob_end_flush</function> verwenden, oder indem Sie die
-    Konfigurationsdirektive <literal>output_buffering</literal> in der
-    &php.ini; bzw. in den Server-Konfigurationsdateien auf "On" setzen.
+    Overhead, dass alle Ausgaben an den Browser auf dem Server gepuffert
+    werden, bis Sie diese senden. Sie können dies tun, indem Sie in Ihrem
+    Skript <function>ob_start</function> und <function>ob_end_flush</function>
+    verwenden, oder indem Sie die Konfigurationsdirektive
+    <literal>output_buffering</literal> in der &php.ini; bzw. in den
+    Server-Konfigurationsdateien auf "On" setzen.
    </para>
   </note>
   <note>
@@ -244,19 +260,10 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Datum in der Vergangenheit
   </note>
   <note>
    <para>
-    Der Microsoft Internet Explorer 4.01 hat einen Bug, der diese
-    Funktionalität verhindert, und es gibt keinen Workaround. Auch im
-    Microsoft Internet Explorer 5.5 existiert ein Bug, der dies behindert,
-    dieser kann jedoch mittels eines Upgrades auf Service Pack 2 oder höher
-    behoben werden.
-   </para>
-  </note>
-  <note>
-   <para>
     Die meisten zeitgemäßen Clients akzeptieren relative
-    <acronym>URI</acronym>s als Argument für <link
-    xlink:href="&spec.http1.1;#section-7.1.2">Location:</link>, aber einige
-    ältere Clients benötigen einen absoluten URI inklusive dem Schema,
+    <acronym>URI</acronym>s als Argument für
+    <link xlink:href="&spec.http1.1;#section-7.1.2">Location:</link>, aber
+    einige ältere Clients benötigen einen absoluten URI inklusive dem Schema,
     Hostnamen und absoluten Pfad. Gewöhnlich können Sie mittels
     <varname>$_SERVER['HTTP_HOST']</varname>,
     <varname>$_SERVER['PHP_SELF']</varname> und <function>dirname</function>
@@ -265,7 +272,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Datum in der Vergangenheit
      <programlisting role="php">
 <![CDATA[
 <?php
-/* Redirect auf eine andere Seite im aktuell angeforderten Verzeichnis */
+/* Weiterleitung auf eine andere Seite im aktuell angeforderten Verzeichnis */
 $host  = $_SERVER['HTTP_HOST'];
 $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 $extra = 'mypage.php';
@@ -295,6 +302,7 @@ exit;
     <member><function>setcookie</function></member>
     <member><function>http_response_code</function></member>
     <member><function>header_remove</function></member>
+    <member><function>header_list</function></member>
     <member>
      Den Abschnitt über
      <link linkend="features.http-auth">HTTP-Authentifizierung mit PHP</link>
