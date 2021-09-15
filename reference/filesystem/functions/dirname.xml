@@ -1,6 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: af6fdf16ab44bcf4d045407963e43c3d9dd2ff29 Maintainer: khp Status: ready -->
+<!-- EN-Revision: 714d8e584c8425a0139b082a7771961734e0ece9 Maintainer: khp Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <!-- CREDITS: florianschmidt -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.dirname">
  <refnamediv>
@@ -22,17 +24,24 @@
   </para>
   <note>
    <para>
-    <function>dirname</function> arbeitet nur mit der Eingabe Zeichenkette
+    <function>dirname</function> arbeitet nur mit der Eingabezeichenkette
     und beachtet nicht das eigentliche Dateisystem oder Pfadbestandteile wie
     etwa "<literal>..</literal>".
    </para>
   </note>
   <caution>
    <para>
-    <function>dirname</function> beachtet die Spracheinstellungen (locale);
-    soll sie daher die korrekte Namensbasis in Pfaden mit einem
-    Mehrbytezeichensatz erkennen, muss die passende Spracheinstellung (locale)
-    mit der <function>setlocale</function> Funktion gesetzt werden.
+    Unter Windows geht <function>dirname</function> von der aktuell
+    eingestellten Codepage aus. Damit diese Funktion also bei Pfaden mit
+    Mehrbytezeichen den korrekten Verzeichnisnamen erkennt, muss die passende
+    Codepage gesetzt sein. Wenn <parameter>path</parameter> Zeichen enthält,
+    die für die aktuelle Codepage ungültig sind, ist das Verhalten von
+    <function>dirname</function> undefiniert.
+   </para>
+   <para>
+    Auf anderen Systemen nimmt <function>dirname</function> an, dass
+    <parameter>path</parameter> in einer ASCII-kompatiblen Kodierung vorliegen
+    muss. Andernfalls ist das Verhalten der Funktion undefiniert.
    </para>
   </caution>
  </refsect1>
@@ -59,10 +68,11 @@
      <term><parameter>levels</parameter></term>
      <listitem>
       <para>
-       Die Anzahl an übergeordneten Ebenen
+       Die Anzahl an übergeordneten Verzeichnissen, die aufgestiegen werden
+       soll.
       </para>
       <para>
-       Dies muss eine Zahl größer 0 sein.
+       Dies muss eine ganze Zahl größer 0 sein.
       </para>
      </listitem>
     </varlistentry>
@@ -75,10 +85,10 @@
   <para>
    Gibt den Pfad eines übergeordneten Verzeichnisses zurück. Sind keine
    Pfadtrenner in <parameter>path</parameter>, wird ein Punkt
-   ('<literal>.</literal>') zurückgegeben, das aktuelle Verzeichnis
-   kennzeichnend. Ansonsten ist die zurückgegebene Zeichenkette der
-   <parameter>path</parameter> mit dem abschließenden
-   <literal>/component</literal> entfernt.
+   ('<literal>.</literal>') zurückgegeben, der das aktuelle Verzeichnis
+   angibt. Ansonsten ist die zurückgegebene Zeichenkette der
+   <parameter>path</parameter>, von dem die abschließendene
+   <literal>/komponente</literal> entfernt wurde.
   </para>
  </refsect1>
 
@@ -110,7 +120,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>dirname</function> Beispiel</title>
+    <title><function>dirname</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -119,14 +129,13 @@ echo dirname("/etc/") . PHP_EOL;
 echo dirname(".") . PHP_EOL;
 echo dirname("C:\\") . PHP_EOL;
 echo dirname("/usr/local/lib", 2);
-?>
 ]]>
     </programlisting>
     &example.outputs.similar;
     <screen>
 <![CDATA[
 /etc
-/ (or \ on Windows)
+/ (oder \ unter Windows)
 .
 C:\
 /usr
@@ -148,7 +157,6 @@ C:\
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
