@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 80872147aa52367137bd3d168412f70cbe2ddf9c Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: d042804100d34f5389fe122b0e1cd41087fd94ba Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <!-- CREDITS: tom -->
 <refentry xml:id="function.array-map" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -12,23 +14,21 @@
   &reftitle.description;
   <methodsynopsis>
    <type>array</type><methodname>array_map</methodname>
-   <methodparam><type>callable</type><parameter>callback</parameter></methodparam>
-   <methodparam><type>array</type><parameter>array1</parameter></methodparam>
-   <methodparam choice="opt"><type>array</type><parameter>...</parameter></methodparam>
+   <methodparam><type class="union"><type>callable</type><type>null</type></type><parameter>callback</parameter></methodparam>
+   <methodparam><type>array</type><parameter>array</parameter></methodparam>
+   <methodparam rep="repeat"><type>array</type><parameter>arrays</parameter></methodparam>
   </methodsynopsis>
   <para>
-   <function>array_map</function> gibt ein &array; zurück, das die Ergebnisse der
-   Anwendung des <parameter>callback</parameter> auf den entsprechenden Index von
-   <parameter>array1</parameter> (und <parameter>...</parameter>, wenn weitere Arrays angegeben wurden)
-   als Callback-Argumente enthält.
-   Die Anzahl Parameter, welche die Callback-Funktion
+   <function>array_map</function> gibt ein &array; zurück, das die Ergebnisse
+   der Anwendung der Callback-Funktion <parameter>callback</parameter> auf den
+   entsprechenden Index von <parameter>array</parameter> (und
+   <parameter>arrays</parameter>, wenn weitere Arrays angegeben wurden) als
+   Callback-Argumente enthält. Die Anzahl Parameter, welche
    <parameter>callback</parameter> akzeptiert, sollte der Anzahl der an
-   <function>array_map</function> übergebenen Arrays entsprechen.
-  </para>
-  <para>
-   Das zurückgelieferte Array erhält die Schlüssel des Array-Arguments nur,
-   wenn genau ein Array übergeben wurde. Wird mehr als ein Array übergeben,
-   hat das zurückgelieferte Array sequentielle Integer-Schlüssel.
+   <function>array_map</function> übergebenen Arrays entsprechen. Überzählige
+   Eingabe-Arrays werden ignoriert. Wenn eine zu geringe Anzahl von Argumenten
+   übergeben wird, wird ein <classname>ArgumentCountError</classname>-Fehler
+   ausgelöst.
   </para>
  </refsect1>
 
@@ -44,15 +44,15 @@
        aufgerufen werden soll.
       </para>
       <para>
-       &null; kann als Wert an <parameter>callback</parameter> übergeben werden,
-       um eine zip-Operation auf mehrere Arrays durchzuführen.
-       Wird nur <parameter>array1</parameter> übergeben,
-       gibt <methodname>array_map</methodname> das Eingabe-Array zurück.
+       &null; kann als Wert an <parameter>callback</parameter> übergeben
+       werden, um eine zip-Operation auf mehrere Arrays durchzuführen. Wird
+       nur <parameter>array</parameter> übergeben, gibt
+       <methodname>array_map</methodname> das Eingabe-Array zurück.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>array1</parameter></term>
+     <term><parameter>array</parameter></term>
      <listitem>
       <para>
        Ein Array, auf das die <parameter>callback</parameter>-Funktion
@@ -61,7 +61,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>...</parameter></term>
+     <term><parameter>arrays</parameter></term>
      <listitem>
       <para>
        Zusätzliche variable Liste von Array-Argumenten, auf die die
@@ -76,10 +76,16 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   <function>array_map</function> gibt ein Array zurück, das die Ergebnisse der
-   Anwendung der <parameter>callback</parameter> Funktion auf den entsprechenden Index von
-   <parameter>array1</parameter> (und <parameter>...</parameter>, wenn weitere Arrays angegeben wurden)
-   als Callback-Argumente enthält.
+   <function>array_map</function> gibt ein Array zurück, das die Ergebnisse
+   der Anwendung der <parameter>callback</parameter>-Funktion auf den
+   entsprechenden Index von <parameter>array</parameter> (und
+   <parameter>arrays</parameter>, wenn weitere Arrays angegeben wurden) als
+   Callback-Argumente enthält.
+  </para>
+  <para>
+   Das zurückgegebene Array behält die Schlüssel des Array-Arguments nur bei,
+   wenn genau ein Array übergeben wurde. Wird mehr als ein Array übergeben,
+   hat das zurückgegebene Array aufeinanderfolgende Integer-Schlüssel.
   </para>
  </refsect1>
 
@@ -121,17 +127,19 @@ Array
   </para>
   <para>
    <example>
-    <title><function>array_map</function> mit einer Lambda-Funktion
-    (seit PHP 5.3.0)</title>
+    <title><function>array_map</function> mit einer Lambda-Funktion</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-
-/* Seit PHP 5.3.0 */
-
-$func = function($value) { return $value * 2; };
+$func = function(int $value): int {
+    return $value * 2;
+};
 
 print_r(array_map($func, range(1, 5)));
+
+// Oder ab PHP 7.4.0:
+
+print_r(array_map(fn($value): int => $value * 2, range(1, 5)));
 
 ?>
 ]]>
@@ -152,18 +160,16 @@ Array
   </para>
   <para>
    <example>
-    <title>
-     <function>array_map</function> - Verwendung mehrerer Arrays
-    </title>
+    <title><function>array_map</function> - Verwendung mehrerer Arrays</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-function show_Spanish($n, $m)
+function show_Spanish(int $n, string $m): string
 {
     return "Die Zahl {$n} heißt auf Spanisch {$m}";
 }
 
-function map_Spanish($n, $m)
+function map_Spanish(int $n, string $m): array
 {
     return [$n => $m];
 }
@@ -226,16 +232,16 @@ Array
    </example>
   </para>
   <para>
-   Bei Verwendung von zwei oder mehr Arrays sollten diese gewöhnlich
-   die gleiche Länge besitzen, da die Callback-Funktion parallel auf
-   die entsprechenden Elemente angewandt wird.  Haben die Arrays
-   unterschiedliche Längen, werden kürzere um leere Elemente
-   erweitert, um mit der Länge des längsten übereinzustimmen.
+   Bei Verwendung von zwei oder mehr Arrays sollten diese die gleiche Länge
+   besitzen, da die Callback-Funktion parallel auf die entsprechenden Elemente
+   angewandt wird. Haben die Arrays unterschiedliche Längen, werden die
+   kürzeren um leere Elemente erweitert, um mit der Länge des längsten
+   übereinzustimmen.
   </para>
   <para>
-   Eine interessante Anwendung dieser Funktion ist die Konstruktion
-   eines Arrays bestehend aus Arrays, was mit &null; als Name der
-   Callback-Funktion leicht realisiert werden kann.
+   Eine interessante Anwendung dieser Funktion ist die Konstruktion eines
+   Arrays bestehend aus Arrays, was mit &null; als Name der Callback-Funktion
+   leicht realisiert werden kann.
   </para>
   <para>
    <example>
@@ -300,7 +306,7 @@ Array
   <para>
    <example>
     <title>
-     &null; <parameter>callback</parameter> nur mit <parameter>array1</parameter>
+     &null;-<parameter>callback</parameter> mit nur einem <parameter>array</parameter>
     </title>
     <programlisting role="php">
 <![CDATA[
@@ -380,6 +386,46 @@ array(1) {
 ]]>
     </screen>
    </example>
+   <example>
+    <title><function>array_map</function> - assoziative Arrays</title>
+    <para>
+     Die <function>array_map</function> unterstützt die Verwendung des
+     Array-Schlüssels als Eingabe zwar nicht direkt, aber dies kann mit
+     <function>array_keys</function> simuliert werden.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$arr = [
+    'v1' => 'erste Version',
+    'v2' => 'zweite Version',
+    'v3' => 'dritte Version',
+];
+
+// Hinweis: Vor 7.4.0 ist stattdessen die längere Syntax für anonyme
+// Funktionen zu verwenden.
+$callback = fn(string $k, string $v): string => "$k war die $v";
+
+$result = array_map($callback, array_keys($arr), array_values($arr));
+
+var_dump($result);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(3) {
+  [0]=>
+  string(24) "v1 war die erste Version"
+  [1]=>
+  string(25) "v2 war die zweite Version"
+  [2]=>
+  string(25) "v3 war die dritte Version"
+}
+]]>
+    </screen>
+   </example>
   </para>
  </refsect1>
 
@@ -393,8 +439,8 @@ array(1) {
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

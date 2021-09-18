@@ -1,36 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 23348cb918016e0da9a346d1b65f316696fad6cd Maintainer: wiesemann Status: ready -->
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.pathinfo">
+<!-- EN-Revision: 70babd5faf9fc63f08af63dc6781a350d04a3c57 Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<refentry xml:id="function.pathinfo" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pathinfo</refname>
   <refpurpose>Liefert Informationen über einen Dateipfad</refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>mixed</type><methodname>pathinfo</methodname>
+   <type class="union"><type>array</type><type>string</type></type><methodname>pathinfo</methodname>
    <methodparam><type>string</type><parameter>path</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PATHINFO_DIRNAME | PATHINFO_BASENAME | PATHINFO_EXTENSION | PATHINFO_FILENAME</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>PATHINFO_ALL</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>pathinfo</function> gibt Informationen über einen Dateipfad
    (<parameter>path</parameter>) zurück: entweder als assoziatives Array
-   oder als String, abhängig vom <parameter>options</parameter>-Parameter.
+   oder als String, abhängig vom Parameter <parameter>flags</parameter>.
   </para>
   <note>
    <para>
-    Informationen über das Wiederauffinden der aktuellen Pfadinformation
-    finden Sie unter <link linkend="language.variables.predefined">
-    Vordefinierte Variablen</link>.
+    Informationen über das Ermitteln der aktuellen Pfadinformation
+    finden Sie unter
+    <link linkend="language.variables.predefined"> Vordefinierte Variablen</link>.
+   </para>
+  </note>
+  <note>
+   <para>
+    <function>pathinfo</function> verarbeitet lediglich den Eingabestring und
+    kennt weder das tatsächliche Dateisystem noch Pfadkomponenten wie
+    "<literal>..</literal>".
    </para>
   </note>
   <caution>
    <para>
-    <function>pathinfo</function> berücksichtigt die locale-Einstellung. Um einen
-    Pfad, der Multibyte-Zeichen enthält, korrekt parsen zu können, muss die entsprechende
-    locale mit der <function>setlocale</function>-Funktion gesetzt werden.
+    <function>pathinfo</function> berücksichtigt die Locale-Einstellung. Um
+    einen Pfad, der Multibyte-Zeichen enthält, korrekt parsen zu können, muss
+    die entsprechende Locale mit der Funktion <function>setlocale</function>
+    gesetzt werden.
    </para>
   </caution>
  </refsect1>
@@ -48,18 +58,19 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Falls angegeben, wird nur dieses eine Element zurückgegeben.
-       Mögliche Werte:
+       Gibt, falls vorhanden, ein bestimmtes Element an, das zurückgegeben
+       werden soll. Mögliche Werte:
        <constant>PATHINFO_DIRNAME</constant>,
        <constant>PATHINFO_BASENAME</constant>,
        <constant>PATHINFO_EXTENSION</constant> oder
        <constant>PATHINFO_FILENAME</constant>.
       </para>
-      <para>Falls <parameter>options</parameter> nicht angegeben wird, werden
-       alle verfügbaren Elemente zurückgegeben.
+      <para>
+       Falls <parameter>flags</parameter> nicht angegeben wird, werden alle
+       verfügbaren Elemente zurückgegeben.
       </para>
      </listitem>
     </varlistentry>
@@ -70,7 +81,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Falls der <parameter>options</parameter>-Parameter nicht angegeben wird,
+   Falls der Parameter <parameter>flags</parameter> nicht angegeben wird,
    wird ein assoziatives <type>Array</type> mit den folgenden Elementen
    zurückgegeben: <literal>dirname</literal>, <literal>basename</literal>,
    <literal>extension</literal> (falls vorhanden) und
@@ -78,8 +89,8 @@
   </para>
   <note>
    <para>
-    Wenn der <parameter>path</parameter> mehr als eine Erweiterung hat,
-    gibt <constant>PATHINFO_EXTENSION</constant> nur die letzte zurück, und
+    Wenn <parameter>path</parameter> mehr als eine Erweiterung hat, gibt
+    <constant>PATHINFO_EXTENSION</constant> nur die letzte zurück, und
     <constant>PATHINFO_FILENAME</constant> entfernt nur die letzte.
     (Siehe auch das erste Beispiel weiter unten.)
    </para>
@@ -87,45 +98,21 @@
   <note>
    <para>
     Falls <parameter>path</parameter> keine Erweiterung hat, wird das
-    <literal>extension</literal>-Element nicht zurückgegeben
+    Element <literal>extension</literal> nicht zurückgegeben
     (siehe das zweite Beispiel unten).
    </para>
   </note>
   <note>
    <para>
-    Beginnt der <literal>basename</literal> des <parameter>path</parameter> mit
+    Beginnt <literal>basename</literal> von <parameter>path</parameter> mit
     einem Punkt, werden die folgenden Zeichen als <literal>extension</literal>
-    interpretiert, und der <literal>filename</literal> ist leer (siehe das 
-    dritte Beispiel unten).
+    interpretiert, und <literal>filename</literal> ist leer (siehe das dritte
+    Beispiel unten).
    </para>
   </note>
   <para>
-   Falls <parameter>options</parameter> genutzt wird, gibt diese Funktion
+   Falls <parameter>flags</parameter> genutzt wird, gibt diese Funktion
    einen <type>String</type> mit dem gewünschten Element zurück.
-  </para>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.2.0</entry>
-       <entry>
-        Die <constant>PATHINFO_FILENAME</constant>-Konstante wurde hinzugefügt.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
   </para>
  </refsect1>
 
@@ -142,7 +129,7 @@ $path_parts = pathinfo('/www/htdocs/inc/lib.inc.php');
 echo $path_parts['dirname'], "\n";
 echo $path_parts['basename'], "\n";
 echo $path_parts['extension'], "\n";
-echo $path_parts['filename'], "\n"; // seit PHP 5.2.0
+echo $path_parts['filename'], "\n";
 ?>
 ]]>
     </programlisting>
@@ -159,7 +146,10 @@ lib.inc
   </para>
   <para>
    <example>
-    <title><function>pathinfo</function>-Beispiel für den Unterschied zwischen einer leeren und keiner Erweiterung</title>
+    <title>
+     <function>pathinfo</function>-Beispiel für den Unterschied zwischen einer
+     leeren und keiner Erweiterung
+    </title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -176,7 +166,7 @@ var_dump($path_parts['extension']);
 <![CDATA[
 string(0) ""
 
-Notice: Undefined index: extension in /test.php on line 6
+Notice: Undefined index: extension in test.php on line 6
 NULL
 ]]>
     </screen>
@@ -200,7 +190,7 @@ Array
     [dirname] => /some/path
     [basename] => .test
     [extension] => test
-    [filename] => 
+    [filename] =>
 )
 ]]>
     </screen>
@@ -221,7 +211,6 @@ Array
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
