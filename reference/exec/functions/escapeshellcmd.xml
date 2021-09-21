@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d4fc011c85ed673692d442c8312ea5ced28dae71 Maintainer: gerdtsteltner Status: ready -->
+<!-- EN-Revision: 1ea4e4f5769f1a173303f95074a91e8537f65133 Maintainer: gerdtsteltner Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.escapeshellcmd" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>escapeshellcmd</refname>
-  <refpurpose>Maskiert Shell-Metazeichen</refpurpose>
+  <refpurpose>Maskiert Metazeichen der Shell</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -14,23 +16,22 @@
    <methodparam><type>string</type><parameter>command</parameter></methodparam>
   </methodsynopsis>
   <para>
-   <function>escapeshellcmd</function> maskiert alle möglichen
-   Zeichen in einer Zeichenkette, die dazu benutzt werden könnten,
-   um einen Shellbefehl zur Durchführung von willkürlichen Befehlen
-   zu veranlassen. Diese Funktion sollte verwendet werden um
-   sicherzustellen, dass alle Daten aus einer Benutzereingabe
-   maskiert werden bevor diese Daten zu einer der Funktionen
+   <function>escapeshellcmd</function> maskiert alle möglichen Zeichen in
+   einer Zeichenkette, die dazu benutzt werden könnten, um einen Shellbefehl
+   zur Durchführung beliebiger Befehle zu veranlassen. Diese Funktion sollte
+   verwendet werden, um sicherzustellen, dass alle Daten aus einer
+   Benutzereingabe maskiert werden, bevor diese Daten zu einer der Funktionen
    <function>exec</function>, <function>system</function> oder dem
-   <link linkend="language.operators.execution">Backtick Operator</link>
+   <link linkend="language.operators.execution">Backtick-Operator</link>
    übergeben werden
   </para>
   <para>
-   Folgende Zeichen wird ein Backslash vorangestellt:
+   Folgenden Zeichen wird ein Backslash vorangestellt:
    <literal>&amp;#;`|*?~&lt;&gt;^()[]{}$\</literal>, <literal>\x0A</literal>
    und <literal>\xFF</literal>. <literal>'</literal> und <literal>"</literal>
-   werden nur maskiert, wenn sie nicht gepaart auftreten. Unter Windows wird all
-   diesen Zeichen sowie <literal>%</literal> und <literal>!</literal> ein Caret-Zeichen
-   (<literal>^</literal>) vorangestellt.
+   werden nur maskiert, wenn sie nicht paarweise auftreten. Unter Windows wird
+   all diesen Zeichen sowie <literal>%</literal> und <literal>!</literal> ein
+   Caret-Zeichen (<literal>^</literal>) vorangestellt.
   </para>
  </refsect1>
 
@@ -42,7 +43,7 @@
      <term><parameter>command</parameter></term>
      <listitem>
       <para>
-       Das zu maskierende Kommando.
+       Der zu maskierende Befehl.
       </para>
      </listitem>
     </varlistentry>
@@ -61,7 +62,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>escapeshellcmd</function> Beispiel</title>
+    <title><function>escapeshellcmd</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -79,46 +80,29 @@ system($escaped_command);
  </refsect1>
 
  <refsect1 role="notes">
-   <warning xmlns="http://docbook.org/ns/docbook">
-    <para>
-     <function>escapeshellcmd</function> sollte auf die gesamte
-     Kommando-Zeichenkette angewendet werden, und erlaubt dem Angreifer dennoch
-     eine beliebige Anzahl von Argumenten zu übergeben. Um einzelne Argumente zu
-     maskieren, sollte statt dessen <function>escapeshellarg</function>
-     verwendet werden.
-    </para>
-   </warning>
- </refsect1>
-
- <refsect1 role="changelog">
-  &reftitle.changelog;
-  <para>
-   <informaltable>
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>&Version;</entry>
-       <entry>&Description;</entry>
-      </row>
-     </thead>
-     <tbody>
-      <row>
-       <entry>5.4.43, 5.5.27, 5.6.11</entry>
-       <entry>
-        Ausrufezeichen werden durch Leerzeichen ersetzt.
-       </entry>
-      </row>
-      <row>
-       <entry>5.3.0</entry>
-       <entry>
-        Unter Windows werden die Sonderzeichen nun ordnungsgemäß maskiert.
-        Zuvor wurden sie durch ein Leerzeichen ersetzt.
-       </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-  </para>
+  <warning xmlns="http://docbook.org/ns/docbook">
+   <para>
+    <function>escapeshellcmd</function> sollte auf die gesamte
+    Befehls-Zeichenkette angewendet werden. Trotzdem kann der Angreifer damit
+    eine beliebige Anzahl von Argumenten übergeben. Um einzelne Argumente zu
+    maskieren, sollte stattdessen <function>escapeshellarg</function>
+    verwendet werden.
+   </para>
+  </warning>
+  <warning xmlns="http://docbook.org/ns/docbook">
+   <para>
+    Leerzeichen werden von <function>escapeshellcmd</function> nicht maskiert,
+    was unter Windows bei Pfaden wie
+    <literal>C:\Program Files\ProgramName\program.exe</literal> problematisch
+    sein kann. Dies kann mit dem folgenden Codeschnipsel entschärft werden:
+    <programlisting role="php">
+<![CDATA[
+<?php
+$cmd = preg_replace('`(?<!^) `', '^ ', escapeshellcmd($cmd));
+]]>
+    </programlisting>
+   </para>
+  </warning>
  </refsect1>
 
  <refsect1 role="seealso">
@@ -129,12 +113,12 @@ system($escaped_command);
     <member><function>exec</function></member>
     <member><function>popen</function></member>
     <member><function>system</function></member>
-    <member><link linkend="language.operators.execution">Backtick Operator</link></member>
+    <member><link linkend="language.operators.execution">Backtick-Operator</link></member>
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
