@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 2d5c6bed30ea22d847bf03dad1072f075694b4c3 Maintainer: cmb Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="mysqli-stmt.affected-rows" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli_stmt::$affected_rows</refname>
   <refname>mysqli_stmt_affected_rows</refname>
   <refpurpose>
    Liefert die gesamte Anzahl der Datensätze, die bei der letzten ausgeführten
-   Anweisung geändert, gelöscht oder eingefügt wurden
+   Anweisung geändert, gelöscht, eingefügt oder abgeglichen wurden
   </refpurpose>
  </refnamediv>
 
@@ -23,12 +25,9 @@
   <para>
    Gibt die Anzahl der Datensätze zurück, die von einer
    <literal>INSERT</literal>-, <literal>UPDATE</literal>- oder
-   <literal>DELETE</literal>-Abfrage betroffen waren.
-  </para>
-  <para>
-   Die Funktion funktioniert nur bei Abfragen, die eine Tabelle ändern. Um die
-   Anzahl der Datensätze einer SELECT-Abfrage zu bekommen, ist stattdessen
-   <function>mysqli_stmt_num_rows</function> zu verwenden.
+   <literal>DELETE</literal>-Abfrage betroffen waren. Funktioniert wie
+   <function>mysqli_stmt_num_rows</function> bei
+   <literal>SELECT</literal>-Anweisungen.
   </para>
  </refsect1>
 
@@ -45,11 +44,14 @@
   &reftitle.returnvalues;
   <para>
    Ein Integer größer als Null zeigt die Anzahl der betroffenen Datensätze an.
-   Null zeigt an, dass von einer UPDATE/DELETE-Anweisung keine Datensätze
-   betroffen waren, dass keine Datensätze die WHERE-Bedingung der Anweisung
-   erfüllt haben, oder dass keine Anweisung ausgeführt wurde. -1 zeigt an,
-   dass die Abfrage einen Fehler zurückgegeben hat. NULL zeigt an, dass die
-   Abfrage mit einem ungültigen Argument aufgerufen wurde.
+   Null zeigt an, dass von einer <literal>UPDATE</literal>-Anweisung keine
+   Datensätze betroffen waren, dass keine Datensätze die
+   <literal>WHERE</literal>-Bedingung der Anweisung erfüllt haben oder dass
+   keine Anweisung ausgeführt wurde. <literal>-1</literal> zeigt an, dass die
+   Abfrage einen Fehler zurückgegeben hat oder dass bei einer
+   <literal>SELECT</literal>-Abfrage
+   <function>mysqli_stmt_affected_rows</function> vor
+   <function>mysqli_stmt_store_result</function> aufgerufen wurde.
   </para>
   <note>
    <para>
@@ -63,17 +65,14 @@
  <refsect1 role="examples">
  &reftitle.examples;
   <example>
-   <title>&style.oop;</title>
+   <title><methodname>mysqli_stmt_affected_rows</methodname>-Beispiel</title>
+   <para>&style.oop;</para>
    <programlisting role="php">
 <![CDATA[
 <?php
-$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
-/* Verbindung prüfen */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
 /* temporäre Tabelle erzeugen */
 $mysqli->query("CREATE TEMPORARY TABLE myCountry LIKE Country");
@@ -81,39 +80,25 @@ $mysqli->query("CREATE TEMPORARY TABLE myCountry LIKE Country");
 $query = "INSERT INTO myCountry SELECT * FROM Country WHERE Code LIKE ?";
 
 /* Anweisung vorbereiten */
-if ($stmt = $mysqli->prepare($query)) {
+$stmt = $mysqli->prepare($query);
 
-    /* Variable an Platzhalter binden */
-    $code = 'A%';
-    $stmt->bind_param("s", $code);
+/* Variable an Platzhalter binden */
+$code = 'A%';
+$stmt->bind_param("s", $code);
 
-    /* Anweisung ausführen */
-    $stmt->execute();
+/* Anweisung ausführen */
+$stmt->execute();
 
-    printf("eingefügte Datensätze: %d\n", $stmt->affected_rows);
-
-    /* Anweisung schließen */
-    $stmt->close();
-}
-
-/* Verbindung schließen */
-$mysqli->close();
-?>
+printf("eingefügte Datensätze: %d\n", $stmt->affected_rows);
 ]]>
    </programlisting>
-  </example>
-  <example>
-   <title>&style.procedural;</title>
+   <para>&style.procedural;</para>
    <programlisting role="php">
 <![CDATA[
 <?php
-$link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
-/* Verbindung prüfen */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
 /* temporäre Tabelle erzeugen */
 mysqli_query($link, "CREATE TEMPORARY TABLE myCountry LIKE Country");
@@ -121,30 +106,22 @@ mysqli_query($link, "CREATE TEMPORARY TABLE myCountry LIKE Country");
 $query = "INSERT INTO myCountry SELECT * FROM Country WHERE Code LIKE ?";
 
 /* Anweisung vorbereiten */
-if ($stmt = mysqli_prepare($link, $query)) {
+$stmt = mysqli_prepare($link, $query);
 
-    /* Variable an Platzhalter binden */
-    $code = 'A%';
-    mysqli_stmt_bind_param($stmt, "s", $code);
+/* Variable an Platzhalter binden */
+$code = 'A%';
+mysqli_stmt_bind_param($stmt, "s", $code);
 
-    /* Anweisung ausführen */
-    mysqli_stmt_execute($stmt);
+/* Anweisung ausführen */
+mysqli_stmt_execute($stmt);
 
-    printf("eingefügte Datensätze: %d\n", mysqli_stmt_affected_rows($stmt));
-
-    /* Anweisung schließen */
-    mysqli_stmt_close($stmt);
-}
-
-/* Verbindung schließen */
-mysqli_close($link);
-?>
+printf("Eingefügte Datensätze: %d\n", mysqli_stmt_affected_rows($stmt));
 ]]>
    </programlisting>
    &examples.outputs;
    <screen>
 <![CDATA[
-eingefügte Datensätze: 17
+Eingefügte Datensätze: 17
 ]]>
    </screen>
   </example>
@@ -155,7 +132,7 @@ eingefügte Datensätze: 17
   <para>
    <simplelist>
     <member><function>mysqli_stmt_num_rows</function></member>
-    <member><function>mysqli_prepare</function></member>
+    <member><function>mysqli_stmt_store_result</function></member>
    </simplelist>
   </para>
  </refsect1>

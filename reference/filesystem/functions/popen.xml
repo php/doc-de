@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: dec1f8445ab2af7fbafef012fb7907ab2cd349b5 Maintainer: cmb Status: ready -->
-
-<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.popen">
+<!-- EN-Revision: 0c9c2dd669fe9395eaa73d487fbd160f9057429a Maintainer: cmb Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<refentry xml:id="function.popen" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>popen</refname>
-  <refpurpose>Öffnet einen Prozesszeiger</refpurpose>
+  <refpurpose>Öffnet einen Dateizeiger für einen Prozess</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>resource</type><methodname>popen</methodname>
+   <type class="union"><type>resource</type><type>false</type></type><methodname>popen</methodname>
    <methodparam><type>string</type><parameter>command</parameter></methodparam>
    <methodparam><type>string</type><parameter>mode</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Öffnet eine Verbindung zu einem Prozess, der durch das Kommando
-   <parameter>command</parameter> ausgeführt wurde.
+   Öffnet eine Pipe zu einem Prozess durch Forken des Befehls, der durch
+   <parameter>command</parameter> angegeben wurde.
   </para>
  </refsect1>
 
@@ -37,7 +38,16 @@
      <term><parameter>mode</parameter></term>
      <listitem>
       <para>
-       Der Modus
+       Der Modus. Entweder <literal>'r'</literal> zum Lesen, oder
+       <literal>'w'</literal> zum Schreiben.
+      </para>
+      <para>
+       Unter Windows ist <function>popen</function> standardmäßig auf den
+       Textmodus eingestellt, d. h. alle in die Pipe geschriebenen oder aus
+       ihr gelesenen <literal>\n</literal>-Zeichen werden in
+       <literal>\r\n</literal> übersetzt. Wenn dies nicht gewünscht ist, kann
+       der Binärmodus erzwungen werden, indem <parameter>mode</parameter> auf
+       <literal>'rb'</literal> bzw. <literal>'wb'</literal> gesetzt wird.
       </para>
      </listitem>
     </varlistentry>
@@ -48,16 +58,15 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt einen Dateizeiger zurück, der identisch ist mit dem, der bei
-   der Funktion <function>fopen</function> zurückgegeben wird,
-   außer dass dieser nur in eine Richtung funktioniert (entweder
-   lesend oder schreibend) und mit der Funktion
-   <function>pclose</function> geschlossen werden muss.  Dieser
+   Gibt einen Dateizeiger zurück, der identisch ist mit dem, der bei der
+   Funktion <function>fopen</function> zurückgegeben wird, außer dass dieser
+   nur in eine Richtung funktioniert (entweder lesend oder schreibend) und mit
+   der Funktion <function>pclose</function> geschlossen werden muss. Dieser
    Zeiger kann mit den Funktionen <function>fgets</function>,
-   <function>fgetss</function> und <function>fwrite</function>
-   benutzt werden. Ist der Modus 'r', ist der zurückgegebene Dateizeiger das
-   STDOUT des Kommandos; ist der Modus 'w', ist der zurückgegebene Dateizeiger
-   das STDIN des Kommandos.
+   <function>fgetss</function> und <function>fwrite</function> benutzt werden.
+   Ist der Modus 'r', ist der zurückgegebene Dateizeiger das STDOUT des
+   Kommandos; ist der Modus 'w', ist der zurückgegebene Dateizeiger das STDIN
+   des Kommandos.
   </para>
   <para>
    Wenn ein Fehler auftritt, wird &false; zurückgegeben.
@@ -68,7 +77,7 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>popen</function> Beispiel</title>
+    <title><function>popen</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -79,19 +88,19 @@ $handle = popen("/bin/ls", "r");
    </example>
   </para>
   <para>
-   Wenn das auszuführende Kommando nicht gefunden werden konnte,
-   wird eine gültige Ressource zurückgegeben. Das mag seltsam
-   erscheinen, ist aber sinnvoll; es ermöglicht Ihnen, auf von der
-   Konsole zurückgegebene Fehlermeldungen zuzugreifen:
+   Wenn das auszuführende Kommando nicht gefunden werden konnte, wird eine
+   gültige Ressource zurückgegeben. Das mag seltsam erscheinen, ist aber
+   sinnvoll; es ermöglicht Ihnen, auf von der Konsole zurückgegebene
+   Fehlermeldungen zuzugreifen:
    <example>
-    <title><function>popen</function> Beispiel</title>
+    <title><function>popen</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 error_reporting(E_ALL);
 
 /* Umleitung hinzufügen, sodass wir stderr erhalten können */
-$handle = popen('/path/to/spooge 2>&1', 'r');
+$handle = popen('/path/to/executable 2>&1', 'r');
 echo "'$handle'; " . gettype($handle) . "\n";
 $read = fread($handle, 2096);
 echo $read;
@@ -125,7 +134,6 @@ pclose($handle);
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e41806c30bf6975e452c0d4ce35ab0984c2fa68c Maintainer: cmb Status: ready -->
-
-<refentry xml:id="function.fwrite" xmlns="http://docbook.org/ns/docbook">
+<!-- EN-Revision: 9d2b858bca85edbeebb83f05a1cd2e87cf90127d Maintainer: cmb Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.fwrite">
  <refnamediv>
   <refname>fwrite</refname>
   <refpurpose>Binär-sicheres Dateischreiben</refpurpose>
@@ -17,9 +18,9 @@
    <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
   </methodsynopsis>
   <simpara>
-   <function>fwrite</function> schreibt den Inhalt der
-   Zeichenkette <parameter>string</parameter> in die Datei, auf
-   welche der Dateizeiger <parameter>handle</parameter> zeigt.
+   <function>fwrite</function> schreibt den Inhalt der Zeichenkette
+   <parameter>string</parameter> in die Datei, auf welche der Dateizeiger
+   <parameter>handle</parameter> zeigt.
   </simpara>
  </refsect1>
 
@@ -45,16 +46,10 @@
      <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Wenn der <parameter>length</parameter> Parameter angegeben wird, wird das
-       Schreiben nach <parameter>length</parameter> Bytes beendet, oder wenn das
-       Ende von <parameter>string</parameter> erreicht ist, je nachdem was eher
-       eintritt.
-      </para>
-      <para>
-       Sollte der <parameter>length</parameter> Parameter gesetzt sein, so ist zu
-       beachten, dass die <link linkend="ini.magic-quotes-runtime">magic_quotes_runtime</link>
-       Konfigurations-Option ignoriert wird und somit keine Schrägstriche mehr
-       von der Zeichenkette <parameter>string</parameter> entfernt werden.
+       Wenn der Parameter <parameter>length</parameter> angegeben wird, wird
+       das Schreiben nach <parameter>length</parameter> Bytes beendet, oder
+       wenn das Ende von <parameter>string</parameter> erreicht ist, je
+       nachdem was eher eintritt.
       </para>
      </listitem>
     </varlistentry>
@@ -65,9 +60,51 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <simpara>
-   <function>fwrite</function> gibt die Anzahl der
-   geschriebenen Bytes zurück, oder &false; bei einem Fehler.
+   <function>fwrite</function> gibt die Anzahl der geschriebenen Bytes zurück,
+   oder &false; bei einem Fehler.
   </simpara>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Ein einfaches Beispiel für <function>fwrite</function></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$filename = 'test.txt';
+$somecontent = "Füge dies der Datei hinzu\n";
+
+// Sichergehen, dass die Datei existiert und beschreibbar ist.
+if (is_writable($filename)) {
+
+    // Wir öffnen $filename im Anfüge-Modus.
+    // Der Dateizeiger befindet sich am Ende der Datei, und daher
+    // wird später $somecontent mit fwrite() dorthin geschrieben.
+    if (!$handle = fopen($filename, "a")) {
+         print "Kann die Datei $filename nicht öffnen";
+         exit;
+    }
+
+    // Schreibe $somecontent in die geöffnete Datei.
+    if (fwrite($handle, $somecontent) === FALSE) {
+        print "Kann nicht in die Datei $filename schreiben";
+        exit;
+    }
+
+    print "Fertig, in die Datei $filename wurde $somecontent geschrieben";
+
+    fclose($handle);
+
+} else {
+    print "Die Datei $filename ist nicht schreibbar";
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
  </refsect1>
 
  <refsect1 role="notes">
@@ -97,9 +134,9 @@ function fwrite_stream($fp, $string) {
 
   <note>
    <para>
-    Auf Systemen, welche zwischen Binär- und Textdateien (z.B. Windows)
-    unterscheiden, muss die Datei mit 'b' im <function>fopen</function>
-    Mode-Parameter geöffnet werden.
+    Auf Systemen, welche zwischen Binär- und Textdateien unterscheiden (z. B.
+    Windows), muss die Datei mit dem <function>fopen</function>-Modus-Parameter
+    'b' geöffnet werden.
    </para>
   </note>
   <note>
@@ -107,18 +144,18 @@ function fwrite_stream($fp, $string) {
     Wurde <parameter>handle</parameter> mit <function>fopen</function> im
     Anfügemodus geöffnet, ist das Schreiben mit <function>fwrite</function>
     atomar (außer wenn die Länge von <parameter>string</parameter> die
-    Blockgröße des Dateisystems auf manchen Systemen überschreitet, und so lange
-    sich die Datei in einem lokalen Dateisystem befindet). D.h. es besteht keine
-    Notwendigkeit eine Ressource mit <function>flock</function> vor dem Aufruf
-    von <function>fwrite</function> zu sperren; alle Daten werden ohne
-    Unterbrechung geschrieben.
+    Blockgröße des Dateisystems auf manchen Systemen überschreitet, und
+    solange sich die Datei in einem lokalen Dateisystem befindet). D. h. es
+    besteht keine Notwendigkeit, eine Ressource vor dem Aufruf von
+    <function>fwrite</function> mit <function>flock</function> zu sperren;
+    alle Daten werden ohne Unterbrechung geschrieben.
    </para>
   </note>
   <note>
    <para>
     Wird zweimalig in den Dateizeiger geschrieben, werden die Daten an das
     Ende des Dateiinhalts angehängt:
-        <programlisting role="php">
+    <programlisting role="php">
 <![CDATA[
 <?php
 $fp = fopen('data.txt', 'w');
@@ -129,53 +166,9 @@ fclose($fp);
 // der Inhalt von 'data.txt' ist nun 123 und nicht 23!
 ?>
 ]]>
-        </programlisting>
+    </programlisting>
    </para>
   </note>
- </refsect1>
-
-
-
- <refsect1 role="examples">
-  &reftitle.examples;
-  <para>
-   <example>
-    <title>Ein einfaches Beispiel für fwrite</title>
-    <programlisting role="php">
-<![CDATA[      
-<?php
-$filename = 'test.txt';
-$somecontent = "Füge dies der Datei hinzu\n";
-
-// Sichergehen, dass die Datei existiert und beschreibbar ist.
-if (is_writable($filename)) {
-
-    // Wir öffnen $filename im "Anhänge" - Modus.
-    // Der Dateizeiger befindet sich am Ende der Datei, und
-    // dort wird $somecontent später mit fwrite() geschrieben.
-    if (!$handle = fopen($filename, "a")) {
-         print "Kann die Datei $filename nicht öffnen";
-         exit;
-    }
-
-    // Schreibe $somecontent in die geöffnete Datei.
-    if (!fwrite($handle, $somecontent)) {
-        print "Kann in die Datei $filename nicht schreiben";
-        exit;
-    }
-
-    print "Fertig, in Datei $filename wurde $somecontent geschrieben";
-
-    fclose($handle);
-
-} else {
-    print "Die Datei $filename ist nicht schreibbar";
-}
-?>
-]]>
-    </programlisting>
-   </example>
-  </para>
  </refsect1>
 
  <refsect1 role="seealso">
@@ -193,7 +186,6 @@ if (is_writable($filename)) {
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

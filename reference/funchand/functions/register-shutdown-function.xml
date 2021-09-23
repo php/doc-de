@@ -1,6 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9e0f03ac354d797d1d16c0fcc1663e5e170f2727 Maintainer: nikic Status: ready -->
+<!-- EN-Revision: 7973fd533364af4dd6282ca9e7bee2dffec39b1c Maintainer: nikic Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.register-shutdown-function" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>register_shutdown_function</refname>
@@ -8,24 +10,26 @@
    Registriert eine Funktion zur Ausführung beim Skript-Abschluss
   </refpurpose>
  </refnamediv>
- 
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>void</type><methodname>register_shutdown_function</methodname>
+   <type class="union"><type>bool</type><type>null</type></type><methodname>register_shutdown_function</methodname>
    <methodparam><type>callable</type><parameter>callback</parameter></methodparam>
    <methodparam rep="repeat"><type>mixed</type><parameter>args</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Registriert ein <parameter>callback</parameter>, welches ausgeführt werden soll, sobald
-   die Ausführung des Scripts beendet ist oder <function>exit</function> aufgerufen wurde.
+   Registriert ein <parameter>callback</parameter>, welches ausgeführt werden
+   soll, sobald die Ausführung des Skripts endet oder wenn
+   <function>exit</function> aufgerufen wird.
   </para>
   <para>
-   <function>register_shutdown_function</function> kann mehrmals hintereinander aufgerufen
-   werden, in welchem Fall die Callbacks später in der selben Reihenfolge aufgerufen werden,
-   wie sie registriert wurden. Wenn <function>exit</function> innerhalb eines Shutdown
-   Callbacks aufgerufen wird, bricht die Ausführung vollständig ab und keine weiteren
-   Callbacks werden ausgeführt.
+   <function>register_shutdown_function</function> kann mehrmals
+   hintereinander aufgerufen werden, und die Funktionen werden in derselben
+   Reihenfolge aufgerufen, wie sie registriert wurden. Wenn
+   <function>exit</function> innerhalb einer registrierten Shutdown-Funktion
+   aufgerufen wird, bricht die Ausführung vollständig ab und keine weiteren
+   registrierten Shutdown-Funktionen werden ausgeführt.
   </para>
  </refsect1>
 
@@ -37,12 +41,11 @@
      <term><parameter>callback</parameter></term>
      <listitem>
       <para>
-       Das Shutdown Callback, welches registriert werden soll.
+       Das Shutdown-Callback, welches registriert werden soll.
       </para>
       <para>
-       Die Callbacks werden als Teil der Anfrage ausgeführt, d.h.
-       es ist möglich Ausgaben zu machen und auf Output Buffer
-       zuzugreifen.
+       Die Shutdown-Callbacks werden als Teil der Anfrage ausgeführt, d. h. es
+       ist möglich, Ausgaben zu senden und auf Ausgabepuffer zuzugreifen.
       </para>
      </listitem>
     </varlistentry>
@@ -50,8 +53,8 @@
      <term><parameter>args</parameter></term>
      <listitem>
       <para>
-       Alle weiteren Argumente, die dieser Funktion übergeben werden, werden
-       auch den Callbacks beim Aufruf übergeben.
+       Hier können zusätzliche Parameter an die Shutdown-Funktion übergeben
+       werden.
       </para>
      </listitem>
     </varlistentry>
@@ -65,12 +68,12 @@
    &return.void;
   </para>
  </refsect1>
- 
+
  <refsect1 role="errors">
   &reftitle.errors;
   <para>
-   Wenn das übergebene Callback nicht aufrufbar ist, wird ein
-   <constant>E_WARNING</constant> geworfen.
+   Wenn das übergebene Callback nicht aufrufbar ist, wird ein Fehler der Stufe
+   <constant>E_WARNING</constant> erzeugt.
   </para>
  </refsect1>
 
@@ -78,17 +81,17 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>register_shutdown_function</function> Beispiel</title>
+    <title><function>register_shutdown_function</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 function shutdown()
 {
-    // Das ist unsere Shutdown Funktion, in welcher
+    // Das ist unsere Shutdown-Funktion, in welcher
     // wir noch letzte Anweisungen ausführen können
     // bevor die Ausführung beendet wird.
 
-    echo 'Script executed with success', PHP_EOL;
+    echo 'Skript erfolgreich ausgeführt', PHP_EOL;
 }
 
 register_shutdown_function('shutdown');
@@ -103,16 +106,18 @@ register_shutdown_function('shutdown');
   &reftitle.notes;
   <note>
    <para>
-    Das Arbeitsverzeichnis des Scripts kann sich bei manchen
-    Webservern wie Apache innerhalb des Shutdown Callbacks ändern.
+    Das Arbeitsverzeichnis des Skripts kann sich bei manchen Webservern, z. B.
+    Apache, innerhalb des Shutdown-Callbacks ändern.
    </para>
   </note>
   <note>
    <para>
-    Shutdown-Funktionen werden nicht ausgeführt, wenn der Prozess mit einem SIGTERM
-    oder SIGKILL Signal terminiert wurde. Während es nicht möglich ist ein SIGKILL
-    Signal abzufangen, kann die <function>pcntl_signal</function> genutzt werden,
-    um einen Handler für SIGTERM zu registrieren.
+    Shutdown-Funktionen werden nicht ausgeführt, wenn der Prozess mit einem
+    SIGTERM- oder SIGKILL-Signal terminiert wurde. Ein SIGKILL kann zwar nicht
+    abgefangen werden, aber dafür kann mittels
+    <function>pcntl_signal</function> ein Handler für SIGTERM registriert
+    werden, der <function>exit</function> für einen sauberen Abbruch
+    verwendet.
    </para>
   </note>
  </refsect1>
@@ -123,14 +128,12 @@ register_shutdown_function('shutdown');
    <simplelist>
     <member><link linkend="ini.auto-append-file">auto_append_file</link></member>
     <member><function>exit</function></member>
-    <member>Die Sektion über <link
-    linkend="features.connection-handling">Verbindungssteuerung</link></member>
+    <member>Den Abschnitt über <link linkend="features.connection-handling">Verbindungssteuerung</link></member>
    </simplelist>
   </para>
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
