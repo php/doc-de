@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e41806c30bf6975e452c0d4ce35ab0984c2fa68c Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: ed6de1ae20ce16c0c7be0b3fef282b6065bebfac Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.oci-fetch-array" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>oci_fetch_array</refname>
@@ -12,9 +14,9 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>array</type><methodname>oci_fetch_array</methodname>
+   <type class="union"><type>array</type><type>false</type></type><methodname>oci_fetch_array</methodname>
    <methodparam><type>resource</type><parameter>statement</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>mode</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer>OCI_BOTH | OCI_RETURN_NULLS</initializer></methodparam>
   </methodsynopsis>
   <para>
    Gibt ein Array zurück, das die nächste Zeile der Ergebnismenge einer
@@ -24,11 +26,11 @@
   </para>
   <para>
    Bezieht sich <parameter>statement</parameter> auf einen PL/SQL-Block, der
-   implizite Ergebnismengen einer Oracle-Datenbank zurückgibt, dann werden
+   implizite Ergebnismengen einer Oracle-Datenbank zurückgibt, dann werden die
    Zeilen aller Mengen nacheinander abgerufen. Wurde
    <parameter>statement</parameter> von
    <function>oci_get_implicit_resultset</function> zurückgegeben, dann wird
-   nur die Untermenge der Zeilen für eine Kindabfrage zurückgegeben.
+   nur die Teilmenge der Zeilen für eine Kindabfrage zurückgegeben.
   </para>
   &oci.datatypes;
  </refsect1>
@@ -42,7 +44,7 @@
      <listitem>
       &oci.arg.statement.id;
       <para>
-       Kann ebenfalls eine Anweisungskennung sein, die von
+       Kann auch eine Anweisungskennung sein, die von
        <function>oci_get_implicit_resultset</function> zurückgegeben wurde.
       </para>
      </listitem>
@@ -52,7 +54,7 @@
      <listitem>
       <para>
        Der optionale zweite Parameter kann eine beliebige
-       Kombination aus dem folgenden Konstanten sein:
+       Kombination aus den folgenden Konstanten sein:
        <table>
         <title><function>oci_fetch_array</function>-Modi</title>
         <tgroup cols="2">
@@ -68,7 +70,7 @@
            <entry>
             Gibt ein Array mit sowohl assoziativen als auch numerischen
             Indizes zurück. Das ist dasselbe wie
-            <constant>OCI_ASSOC</constant> + <constant>OCI_NUM</constant>, und
+            <constant>OCI_ASSOC</constant> + <constant>OCI_NUM</constant> und
             ist das Standardverhalten.
            </entry>
           </row>
@@ -130,7 +132,7 @@
    <literal>DATE</literal>-Spalten werden als gemäß des aktuellen
    Datumsformats formatierte Zeichenketten zurückgegeben. Das Standardformat
    kann mit Oracle-Umgebungsvariablen wie <literal>NLS_LANG</literal> geändert
-   werden, oder auch durch den zuvor ausgeführten Befehl <literal>ALTER
+   werden oder auch durch den zuvor ausgeführten Befehl <literal>ALTER
    SESSION SET NLS_DATE_FORMAT</literal>.
   </para>
   <para>
@@ -338,7 +340,7 @@ while (($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_LOBS)) != false) {
     echo $row['ID'] . "<br>\n";
     echo $row['DESCRIPTION'] . "<br>\n"; // dies enthält die gesamte DESCRIPTION
     // das Freigeben der großen Variable in einer Schleife vor dem zweiten Fetch
-    // verringert die Spitzenspeicherbelegung von PHP
+    // verringert die maximale Speicherbelegung von PHP
     unset($row);
 }
 
@@ -430,8 +432,8 @@ var_dump($row);
 //      string(9) "Australien"
 //    }
 
-// um einen sich wiederholenden Spaltennamen abzufragen, ist ein SQL-Spaltenalias
-// wie "AS ctnm" zu verwenden:
+// um einen sich wiederholenden Spaltennamen abzufragen, ist ein
+// SQL-Spaltenalias wie "AS ctnm" zu verwenden:
 $sql = 'SELECT mycity.name AS ctnm, mycountry.name
         FROM mycity, mycountry
         WHERE mycity.id = mycountry.id';
@@ -471,8 +473,8 @@ if (!$conn) {
 }
 
 // Lege das Datumsformat für diese Verbindung fest.
-// Aus Effizienzgründen ist zu erwägen, das Format stattdessen in einem Trigger
-// oder mit Umgebungsvariablen zu ändern.
+// Aus Effizienzgründen ist zu erwägen, das Format stattdessen in
+// einem Trigger oder mit Umgebungsvariablen zu ändern.
 $stid = oci_parse($conn, "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
 oci_execute($stid);
 
@@ -515,7 +517,7 @@ $refcur = oci_new_cursor($conn);
 oci_bind_by_name($stid, ':rc', $refcur, -1, OCI_B_CURSOR);
 oci_execute($stid);
 
-// führe den zurückgegebenen REF CURSOR aus, und lies
+// führe den zurückgegebenen REF CURSOR aus und lies
 // von ihm wie mit einer Anweisungskennung
 oci_execute($refcur);
 echo "<table border='1'>\n";
@@ -561,12 +563,12 @@ if ($oracleversion >= 12) {
     // verwende die OFFSET / FETCH NEXT-Syntax von Oracle 12c
     $sql = $sql . ' OFFSET :offset ROWS FETCH NEXT :numrows ROWS ONLY';
 } else {
-    // Ältere Oracle-Versionen benötigten eine verschachtelte Abfrage, die eine
-    // Untermenge von $sql auswählt. Oder, wenn die SQL-Anweisung während der
-    // Programmentwicklung bekannt ist, ist die Verwendung einer row_number()
-    // Funktion in Betracht zu ziehen. In Produktionsumgebungen ist Sorge zu
-    // tragen, dass SQL-Injection-Probleme durch Zeichenkettenverknüpfung
-    // vermieden werden.
+    // Ältere Oracle-Versionen benötigten eine verschachtelte Abfrage, die
+    // eine Teilmenge von $sql auswählt. Wenn die SQL-Anweisung zum Zeitpunkt
+    // der Programmentwicklung bekannt ist, sollte statt dieser Methode eine
+    // row_number()-Funktion verwendet werden. In Produktionsumgebungen ist
+    // darauf zu achten, dass SQL-Injection-Probleme durch
+    // Zeichenkettenverknüpfung vermieden werden.
     $sql = "SELECT * FROM (SELECT a.*, ROWNUM AS my_rnum
                            FROM ($sql) a
                            WHERE ROWNUM <= :offset + :numrows)
@@ -626,7 +628,8 @@ $sql = 'DECLARE
 $stid = oci_parse($conn, $sql);
 oci_execute($stid);
 
-// Beachte: oci_fetch_all und oci_fetch() können so nicht verwendet werden
+// Beachte: oci_fetch_all und oci_fetch() können nicht auf diese Weise
+// verwendet werden
 echo "<table>\n";
 while (($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
     echo "<tr>\n";

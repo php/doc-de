@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: a44a1e0b7918846659a3c91013855d2c3d674fb9 Maintainer: sammywg Status: ready -->
-
+<!-- EN-Revision: ed6de1ae20ce16c0c7be0b3fef282b6065bebfac Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.oci-close" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>oci_close</refname>
@@ -11,18 +12,19 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>bool</type><methodname>oci_close</methodname>
+   <type class="union"><type>bool</type><type>null</type></type><methodname>oci_close</methodname>
    <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Hebt die <parameter>connection</parameter> auf. Die unterliegende
-   Datenbank-Verbindung wird geschlossen, wenn sie von keinen anderen Ressourcen
-   verwendet wird, und wenn sie mit <function>oci_connect</function> oder
-   <function>oci_new_connect</function> erzeugt wurde.
+   Hebt die Verbindung <parameter>connection</parameter> auf. Die
+   zugrundeliegende Datenbank-Verbindung wird geschlossen, wenn sie von
+   keiner anderen Ressource verwendet wird und mit
+   <function>oci_connect</function> oder <function>oci_new_connect</function>
+   erzeugt wurde.
   </para>
   <para>
-   Es wird empfohlen nicht mehr benötigte Verbindungen zu schließen, da dies
-   Datenbankressourcen für andere Nutzer frei gibt.
+   Es wird empfohlen, nicht mehr benötigte Verbindungen zu schließen, da dies
+   Datenbankressourcen für andere Nutzer freigibt.
   </para>
  </refsect1>
 
@@ -34,9 +36,9 @@
      <term><parameter>connection</parameter></term>
      <listitem>
       <para>
-       Ein Zeiger auf eine Oracle-Verbindung, die durch <function>oci_connect</function>,
-       <function>oci_pconnect</function> oder <function>oci_new_connect</function>
-       zurückgegeben wurde.
+       Ein Zeiger auf eine Oracle-Verbindung, die von
+       <function>oci_connect</function>, <function>oci_pconnect</function>
+       oder <function>oci_new_connect</function> zurückgegeben wurde.
       </para>
      </listitem>
     </varlistentry>
@@ -47,10 +49,11 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   &return.success;
+   Gibt &null; zurück, wenn
+   <link linkend="ini.oci8.old-oci-close-semantics">oci8.old_oci_close_semantics</link>
+   aktiviert ist, und andernfalls &true;.
   </para>
  </refsect1>
-
 
  <refsect1 role="examples">
   &reftitle.examples;
@@ -58,8 +61,8 @@
    <title>Schließen einer Verbindung</title>
    <para>
     Ressourcen, die mit einer Verbindung assoziiert sind, sollten geschlossen
-    werden, um sicher zu stellen, dass die unterliegende Datenbankverbindung
-    ordnungsgemäß beendet wird, und die Datenbankressourcen frei gegeben werden.
+    werden, um sicherzustellen, dass die zugrundeliegende Datenbankverbindung
+    ordnungsgemäß beendet wird und die Datenbankressourcen freigegeben werden.
    </para>
    <programlisting role="php">
 <![CDATA[
@@ -89,7 +92,7 @@ oci_close($conn);
    <title>Datenbankverbindungen werden nicht geschlossen, bevor alle Referenzen geschlossen wurden</title>
    <para>
     Der interne Referenzzähler eines Verbindungsbezeichners muss null (0) sein,
-    bevor die unterliegende Verbindung zur Datenbank geschlossen wird.
+    bevor die zugrundeliegende Verbindung zur Datenbank geschlossen wird.
    </para>
    <programlisting role="php">
 <![CDATA[
@@ -108,19 +111,20 @@ var_dump($res);
 
 oci_close($conn);
 
-// $conn ist im Script nicht länger verwendbar, aber die unterliegende
-// Datenbankverbindung wird solange offen gehalten bis $stid frei gegeben wird.
+// $conn ist im Skript nicht mehr verwendbar, aber die zugrundeliegende
+// Datenbankverbindung wird solange offengehalten, bis $stid freigegeben wird.
 var_dump($conn);  // gibt NULL aus
 
-// Während PHP schläft, zeigt das Abfragen der Oracle V$SESSION Ansicht in einem
-// Terminal-Fenster, dass der Datenbanknutzer immer noch verbunden ist.
+// Während PHP schläft, zeigt das Abfragen der Oracle-V$SESSION-Ansicht in
+// einem Terminal-Fenster, dass der Datenbanknutzer immer noch verbunden ist.
 sleep(10);
 
-// Wenn $stid frei gegegben wird, wird die Datenbankverbindung physikalisch geschlossen
+// Wenn $stid freigegegben wird, wird die Datenbankverbindung tatsächlich
+// geschlossen
 oci_free_statement($stid);
 
-// Während PHP schläft, zeigt das Abfragen der Oracle V$SESSION Ansicht in einem
-// Terminal-Fenster, dass der Datenbanknutzer getrennt wurde
+// Während PHP schläft, zeigt das Abfragen der Oracle-V$SESSION-Ansicht in
+// einem Terminal-Fenster, dass der Datenbanknutzer getrennt wurde
 sleep(10);
 
 ?>
@@ -131,9 +135,9 @@ sleep(10);
   <example>
    <title>Schließen einer Verbindung, die mehr als einmal geöffnet wurde</title>
    <para>
-    Wenn Datenbankanmeldedaten wiederverwendet werden, müssen beide Verbindungen
-    geschlossen werden, bevor die unterliegende Datenbankverbindung geschlossen
-    wird.
+    Wenn Datenbank-Anmeldedaten wiederverwendet wurden, müssen beide
+    Verbindungen geschlossen werden, bevor die zugrundeliegende
+    Datenbankverbindung geschlossen wird.
    </para>
    <programlisting role="php">
 <![CDATA[
@@ -141,16 +145,17 @@ sleep(10);
 
 $conn1 = oci_connect('hr', 'welcome', 'localhost/XE');
 
-// Die Verwendung der selben Anmeldedaten benutzt die selbe unterliegende Datenbankverbindung nochmals
-// Jegliche unbestätigten Änderungen, die auf $conn1 durchgeführt wurden, sind in $conn2 sichtbar
+// Die Verwendung derselben Anmeldedaten benutzt dieselbe zugrundeliegende
+// Datenbankverbindung nochmals. Jegliche unbestätigten Änderungen, die auf
+// $conn1 durchgeführt wurden, sind in $conn2 sichtbar
 $conn2 = oci_connect('hr', 'welcome', 'localhost/XE');
 
 // Während PHP schläft, zeigt das Abfragen der Oracle V$SESSION Ansicht in einem
 // Terminal-Fenster, dass nur ein Datenbanknutzer verbunden ist.
 sleep(10);
 
-oci_close($conn1); // schließt nicht die unterliegende Datenbankverbindung
-var_dump($conn1);  // gibt NULL aus, weil die Variable $conn1 nicht länger verwendbar ist
+oci_close($conn1); // schließt nicht die zugrundeliegende Datenbankverbindung
+var_dump($conn1);  // gibt NULL aus, weil die Variable $conn1 nicht mehr verwendbar ist
 var_dump($conn2);  // zeigt an, dass $conn2 noch immer eine gültige Verbindungsressource ist
 
 ?>
@@ -162,8 +167,8 @@ var_dump($conn2);  // zeigt an, dass $conn2 noch immer eine gültige Verbindungs
    <title>Verbindungen werden geschlossen, wenn die Variablen den Geltungsbereich verlassen</title>
    <para>
     Wenn alle Variablen, die eine Verbindung referenzieren, den Geltungsbereich
-    verlassen und von PHP frei gegeben werden, erfolgt ein Rollback (falls
-    nötig) und die unterliegende Verbindung zur Datenbank wird geschlossen.
+    verlassen und von PHP freigegeben werden, erfolgt ein Rollback (falls
+    nötig) und die zugrundeliegende Verbindung zur Datenbank wird geschlossen.
    </para>
    <programlisting role="php">
 <![CDATA[
@@ -182,7 +187,8 @@ function myfunc() {
 }
 
 $r = myfunc();
-// In diesem Moment erfolgte ein Rollback und die unterliegende Datenbankverbindung wurde frei gegeben.
+// In diesem Moment erfolgte ein Rollback und die zugrundeliegende
+// Datenbankverbindung wurde freigegeben.
 
 print $r;  // zeigt den Funktionsrückgabewert "Beendet" an
 
@@ -198,22 +204,22 @@ print $r;  // zeigt den Funktionsrückgabewert "Beendet" an
    <para>
     Variablen, die eine Abhängigkeit vom Verbindungsbezeichner haben, wie von
     <function>oci_parse</function> zurückgegebene Anweisungsbezeichner, müssen
-    ebenfalls frei gegeben werden, bevor die unterliegende Datenbankverbindung
-    geschlossen wird.
+    ebenfalls freigegeben werden, bevor die zugrundeliegende
+    Datenbankverbindung geschlossen wird.
    </para>
   </note>
   <note>
    <para>
     Vor Version PHP 5.1.2 (PECL OCI8 1.1) hatte <function>oci_close</function>
-    keine Wirkung. In neueren Version schließt es korrekt die Oracle-Verbindung.
+    keine Wirkung. In neueren Version schließt es die Oracle-Verbindung korrekt.
     <link linkend="ini.oci8.old-oci-close-semantics">oci8.old_oci_close_semantics</link>
-    kann verwendet werden, um das alte Verhalten dieser Funktion wieder
-    herzustellen.
+    kann verwendet werden, um das alte Verhalten dieser Funktion
+    wiederherzustellen.
    </para>
   </note>
   <note>
    <para>
-    Die <function>oci_close</function> Funktion schließt nicht unterliegende
+    Die Funktion <function>oci_close</function> schließt nicht zugrundeliegende
     Datenbankverbindungen, die mit <function>oci_pconnect</function> erzeugt
     wurden.
    </para>
@@ -231,8 +237,6 @@ print $r;  // zeigt den Funktionsrückgabewert "Beendet" an
  </refsect1>
 
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
