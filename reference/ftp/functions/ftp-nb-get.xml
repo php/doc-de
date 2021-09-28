@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 18680fd1681731888c6fb7c530cfdb712f53e954 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 4d1c34c9b7a30cfc3a59641122c707a2812cfed7 Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.ftp-nb-get" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ftp_nb_get</refname>
@@ -14,7 +16,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>ftp_nb_get</methodname>
-   <methodparam><type>resource</type><parameter>ftp</parameter></methodparam>
+   <methodparam><type>FTP\Connection</type><parameter>ftp</parameter></methodparam>
    <methodparam><type>string</type><parameter>local_filename</parameter></methodparam>
    <methodparam><type>string</type><parameter>remote_filename</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer><constant>FTP_BINARY</constant></initializer></methodparam>
@@ -25,7 +27,7 @@
    speichert sie in einer lokalen Datei.
   </para>
   <para>
-   Der Unterscheid zwischen dieser Funktion und <function>ftp_get</function>
+   Der Unterschied zwischen dieser Funktion und <function>ftp_get</function>
    ist, dass diese Funktion die Datei asynchron überträgt, sodass Ihr
    Programm noch andere Operationen ausführen kann, während die Datei
    heruntergeladen wird.
@@ -39,16 +41,14 @@
     <varlistentry>
      <term><parameter>ftp</parameter></term>
      <listitem>
-      <para>
-       Die Verbindungskennung der FTP-Verbindung.
-      </para>
+      &ftp.parameter.ftp;
      </listitem>
     </varlistentry>
     <varlistentry>
      <term><parameter>local_filename</parameter></term>
      <listitem>
       <para>
-       Der Pfad zur lokalen Datei (wird überschrieben falls die Datei
+       Der Pfad zur lokalen Datei (wird überschrieben, falls die Datei
        schon existiert).
       </para>
      </listitem>
@@ -74,7 +74,8 @@
      <term><parameter>offset</parameter></term>
      <listitem>
       <para>
-       Die Position in der entfernten Datei, an der der Download beginnen soll.
+       Die Position in der Datei auf dem Server, an der der Download beginnen
+       soll.
       </para>
      </listitem>
     </varlistentry>
@@ -101,6 +102,7 @@
      </row>
     </thead>
     <tbody>
+     &ftp.changelog.ftp-param;
      <row>
       <entry>7.3.0</entry>
       <entry>
@@ -123,14 +125,14 @@
 <?php
 
 // Download iniitieren
-$ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY);
+$ret = ftp_nb_get($ftp, "test", "README", FTP_BINARY);
 while ($ret == FTP_MOREDATA) {
 
    // Irgendwas machen
    echo ".";
 
    // Download fortsetzen
-   $ret = ftp_nb_continue($my_connection);
+   $ret = ftp_nb_continue($ftp);
 }
 if ($ret != FTP_FINISHED) {
    echo "Es gab einen Fehler bei der Übertragung.";
@@ -147,17 +149,17 @@ if ($ret != FTP_FINISHED) {
 <?php
 
 // Iniitieren
-$ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY,
+$ret = ftp_nb_get($ftp, "test", "README", FTP_BINARY,
                       filesize("test"));
-// ODER: $ret = ftp_nb_get($my_connection, "test", "README", FTP_BINARY,
-// FTP_AUTORESUME);
+// ODER: $ret = ftp_nb_get($ftp, "test", "README",
+//                           FTP_BINARY, FTP_AUTORESUME);
 while ($ret == FTP_MOREDATA) {
 
    // Irgendwas machen
    echo ".";
 
    // Download fortsetzen
-   $ret = ftp_nb_continue($my_connection);
+   $ret = ftp_nb_continue($ftp);
 }
 if ($ret != FTP_FINISHED) {
    echo "Es gab einen Fehler bei der Übertragung.";
@@ -177,16 +179,16 @@ if ($ret != FTP_FINISHED) {
 <?php
 
 // Autoseek deaktivieren
-ftp_set_option($my_connection, FTP_AUTOSEEK, false);
+ftp_set_option($ftp, FTP_AUTOSEEK, false);
 
 // Initialisieren
-$ret = ftp_nb_get($my_connection, "newfile", "README", FTP_BINARY, 100);
+$ret = ftp_nb_get($ftp, "newfile", "README", FTP_BINARY, 100);
 while ($ret == FTP_MOREDATA) {
 
    /* ... */
 
    // Download fortsetzen
-   $ret = ftp_nb_continue($my_connection);
+   $ret = ftp_nb_continue($ftp);
 }
 ?>
 ]]>

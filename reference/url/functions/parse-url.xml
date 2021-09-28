@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 22fa19e2534e0749ee98b0f4dec87a3237006f8a Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 0254e633d2a0cf36c3b3a2ba19350019e12d3b4b Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.parse-url" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>parse_url</refname>
@@ -15,16 +17,16 @@
    <methodparam choice="opt"><type>int</type><parameter>component</parameter><initializer>-1</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Diese Funktion parst einen URL und gibt ein assoziatives Array zurück, das
-   die im URL vorhandenen Komponenten enthält.
+   Diese Funktion parst eine URL und gibt ein assoziatives Array zurück, das
+   die in der URL vorhandenen Komponenten enthält.
    Die Werte der Array-Elemente sind <emphasis>nicht</emphasis> URL-dekodiert.
   </para>
   <para>
    Diese Funktion ist <emphasis role="strong">nicht</emphasis> dazu gedacht,
-   einen gegebenen URL zu validieren, sondern es gliedert einen URL in die
-   unten aufgeführten Bestandteile. Unvollständige und ungültige URLs werden als Parameter
-   akzeptiert, <function>parse_url</function> versucht, sie bestmöglich zu
-   analysieren.
+   eine gegebene URL zu validieren, sondern es gliedert eine URL in die
+   unten aufgeführten Bestandteile. Unvollständige und ungültige URLs werden
+   als Parameter akzeptiert; <function>parse_url</function> versucht, sie so
+   gut wie möglich korrekt zu analysieren.
   </para>
  </refsect1>
 
@@ -36,8 +38,7 @@
      <term><parameter>url</parameter></term>
      <listitem>
       <para>
-       Der zu parsende URL. Ungültige Zeichen werden durch <literal>_</literal>
-       ersetzt.
+       Die zu analysierende URL.
       </para>
      </listitem>
     </varlistentry>
@@ -48,14 +49,14 @@
      <listitem>
       <para>
        Geben Sie einen der folgenden Parameter an, um nur einen spezifischen
-       Teil des URL als <type>string</type> (außer wenn
-       <constant>PHP_URL_PORT</constant> angegeben wird, in welchem Fall der
-       Rückgabewert ein <type>int</type> ist) zu erhalten:
-       Geben Sie entweder <constant>PHP_URL_SCHEME</constant>,
+       Teil der URL als <type>String</type> (außer wenn
+       <constant>PHP_URL_PORT</constant> angegeben wird, in diesem Fall ist
+       der Rückgabewert ein <type>int</type>) zu erhalten:
+       <constant>PHP_URL_SCHEME</constant>,
        <constant>PHP_URL_HOST</constant>, <constant>PHP_URL_PORT</constant>,
        <constant>PHP_URL_USER</constant>, <constant>PHP_URL_PASS</constant>,
        <constant>PHP_URL_PATH</constant>, <constant>PHP_URL_QUERY</constant>
-       oder <constant>PHP_URL_FRAGMENT</constant> an.
+       oder <constant>PHP_URL_FRAGMENT</constant>.
       </para>
      </listitem>
     </varlistentry>
@@ -70,13 +71,13 @@
    zurückgeben.
   </para>
   <para>
-   Wird der <parameter>component</parameter> Parameter ausgelassen, wird ein
+   Wird der Parameter <parameter>component</parameter> ausgelassen, wird ein
    assoziatives <type>Array</type> zurückgegeben. Mindestens ein Bestandteil
    liegt im Array vor. Mögliche Schlüssel in diesem Array sind:
    <itemizedlist>
     <listitem>
      <simpara>
-      <varname remap="structfield">scheme</varname> - z.B. http
+      <varname remap="structfield">scheme</varname> - z. B. http
      </simpara>
     </listitem>
     <listitem>
@@ -112,7 +113,7 @@
     </listitem>
     <listitem>
      <simpara>
-      <varname remap="structfield">fragment</varname> - alles nach dem Textanker
+      <varname remap="structfield">fragment</varname> - alles nach dem Text-Anker
       <literal>#</literal>
      </simpara>
     </listitem>
@@ -120,10 +121,55 @@
   </para>
   <para>
    Ist der Parameter <parameter>component</parameter> angegeben, gibt
-   <function>parse_url</function> ein <type>string</type> (oder ein
-   <type>int</type>, im Fall von <constant>PHP_URL_PORT</constant>) anstelle
-   des normalen <type>array</type> zurück.
+   <function>parse_url</function> einen <type>String</type> (oder ein
+   <type>int</type> bei <constant>PHP_URL_PORT</constant>) anstelle des
+   <type>Array</type>s zurück. Wenn die angeforderte Komponente in der
+   angegebenen URL nicht existiert, wird &null; zurückgegeben. Seit PHP 8.0.0
+   unterscheidet <function>parse_url</function> zwischen fehlenden und leeren
+   Abfragen und Fragmenten:
   </para>
+  <para>
+   <informalexample>
+    <screen>
+<![CDATA[
+http://example.com/foo → query = null, fragment = null
+http://example.com/foo? → query = "",   fragment = null
+http://example.com/foo# → query = null, fragment = ""
+http://example.com/foo?# → query = "",   fragment = ""
+]]>
+    </screen>
+   </informalexample>
+  </para>
+  <para>
+    Zuvor führten alle Fälle dazu, dass Abfrage und Fragment &null; waren.
+  </para>
+  <para>
+   Zu beachten ist, dass Steuerzeichen (vgl. <function>ctype_cntrl</function>)
+   in den Komponenten durch Unterstriche (<literal>_</literal>) ersetzt werden.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <function>parse_url</function> unterscheidet nun zwischen fehlenden
+       und leeren Abfragen und Fragmenten.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -215,7 +261,8 @@ array(3) {
   &reftitle.notes;
   <note>
    <para>
-    Diese Funktion gibt für relative URLs möglicherweise inkorrekte Ergebnisse.
+    Diese Funktion gibt für relative URLs möglicherweise inkorrekte Ergebnisse
+    zurück.
    </para>
   </note>
   <note>

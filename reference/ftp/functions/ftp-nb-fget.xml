@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 18680fd1681731888c6fb7c530cfdb712f53e954 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 4d1c34c9b7a30cfc3a59641122c707a2812cfed7 Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.ftp-nb-fget" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ftp_nb_fget</refname>
   <refpurpose>
-   Lädt eine Datei vom FTP-Server und schreibt sie in eine lokale Datei
+   Ruft eine Datei vom FTP-Server ab und schreibt sie in eine lokale Datei
    (nicht-blockierend)
   </refpurpose>
  </refnamediv>
@@ -14,15 +16,14 @@
   &reftitle.description;
   <methodsynopsis>
    <type>int</type><methodname>ftp_nb_fget</methodname>
-   <methodparam><type>resource</type><parameter>ftp</parameter></methodparam>
+   <methodparam><type>FTP\Connection</type><parameter>ftp</parameter></methodparam>
    <methodparam><type>resource</type><parameter>stream</parameter></methodparam>
    <methodparam><type>string</type><parameter>remote_filename</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer><constant>FTP_BINARY</constant></initializer></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>offset</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
   <para>
-   <function>ftp_nb_fget</function> lädt eine entfernte Datei von einem
-   FTP-Server.
+   <function>ftp_nb_fget</function> ruft eine Datei von einem FTP-Server ab.
   </para>
   <para>
    Der Unterschied zwischen dieser Funktion und <function>ftp_fget</function>
@@ -39,9 +40,7 @@
     <varlistentry>
      <term><parameter>ftp</parameter></term>
      <listitem>
-      <para>
-       Die Verbindungskennung der FTP-Verbindung.
-      </para>
+      &ftp.parameter.ftp;
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -73,7 +72,8 @@
      <term><parameter>offset</parameter></term>
      <listitem>
       <para>
-       Die Position in der entfernten Datei, an der der Download beginnen soll.
+       Die Position in der Datei auf dem Server, an der der Download beginnen
+       soll.
       </para>
      </listitem>
     </varlistentry>
@@ -100,6 +100,7 @@
      </row>
     </thead>
     <tbody>
+     &ftp.changelog.ftp-param;
      <row>
       <entry>7.3.0</entry>
       <entry>
@@ -125,19 +126,19 @@
 $file = 'index.php';
 $fp = fopen($file, 'w');
 
-$conn_id = ftp_connect($ftp_server);
+$ftp = ftp_connect($ftp_server);
 
-$login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+$login_result = ftp_login($ftp, $ftp_user_name, $ftp_user_pass);
 
 // Download initiieren
-$ret = ftp_nb_fget($conn_id, $fp, $file, FTP_BINARY);
+$ret = ftp_nb_fget($ftp, $fp, $file, FTP_BINARY);
 while ($ret == FTP_MOREDATA) {
 
    // Irgendwas machen
    echo ".";
 
    // Download forsetzen
-   $ret = ftp_nb_continue($conn_id);
+   $ret = ftp_nb_continue($ftp);
 }
 if ($ret != FTP_FINISHED) {
    echo "Es gab einen Fehler bei der Übertragung.";

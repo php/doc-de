@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 18680fd1681731888c6fb7c530cfdb712f53e954 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 4d1c34c9b7a30cfc3a59641122c707a2812cfed7 Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 1.0 Reviewer: samesch -->
 <refentry xml:id="function.ftp-ssl-connect" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>ftp_ssl_connect</refname>
@@ -10,7 +12,7 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>resource</type><type>false</type></type><methodname>ftp_ssl_connect</methodname>
+   <type class="union"><type>FTP\Connection</type><type>false</type></type><methodname>ftp_ssl_connect</methodname>
    <methodparam><type>string</type><parameter>hostname</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>port</parameter><initializer>21</initializer></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>timeout</parameter><initializer>90</initializer></methodparam>
@@ -19,8 +21,8 @@
    <function>ftp_ssl_connect</function> öffnet eine
    <emphasis>explizite</emphasis> SSL-FTP-Verbindung zu dem angegebenen
    <parameter>host</parameter>. Das impliziert, dass
-   <function>ftp_ssl_connect</function> gelingen wird, selbst wenn der Server
-   nicht für SSL-FTP konfiguriert ist, oder sein Zertifikat ungültig ist. Erst
+   <function>ftp_ssl_connect</function> gelingt, selbst wenn der Server
+   nicht für SSL-FTP konfiguriert ist oder sein Zertifikat ungültig ist. Erst
    wenn <function>ftp_login</function> aufgerufen wird, sendet der Client das
    entsprechende AUTH-FTP-Kommando, sodass <function>ftp_login</function> in
    den genannten Fällen fehlschlagen wird.
@@ -87,9 +89,32 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt bei Erfolg einen SSL-FTP-Stream zurück oder &false;, falls ein Fehler
-   auftrat.
+   Gibt bei Erfolg eine <classname>FTP\Connection</classname>-Instanz zurück.
+   &return.falseforfailure;
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.1.0</entry>
+      <entry>
+       Gibt jetzt eine <classname>FTP\Connection</classname>-Instanz zurück;
+       vorher wurde eine &resource; zurückgegeben.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -102,20 +127,20 @@
 <?php
 
 // SSL-Verbindung aufbauen
-$conn_id = ftp_ssl_connect($ftp_server);
+$ftp = ftp_ssl_connect($ftp_server);
 
 // Login mit Benutzername und Passwort
-$login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+$login_result = ftp_login($ftp, $ftp_user_name, $ftp_user_pass);
 
 if (!$login_result) {
     // PHP hat in diesem Fall bereits eine Nachricht der Stufe E_WARNING erzeugt
     die("Login nicht möglich");
 }
 
-echo ftp_pwd($conn_id); // /
+echo ftp_pwd($ftp);
 
 // SSL-Verbindung schließen
-ftp_close($conn_id);
+ftp_close($ftp);
 ?>
 ]]>
     </programlisting>
