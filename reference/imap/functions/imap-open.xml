@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 34892f82742329af7e7b4b22be6ad21418fd9768 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 34892f82742329af7e7b4b22be6ad21418fd9768 Reviewer: samesch -->
 <refentry xml:id="function.imap-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>imap_open</refname>
@@ -10,7 +12,7 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>resource</type><type>false</type></type><methodname>imap_open</methodname>
+   <type class="union"><type>IMAP\Connection</type><type>false</type></type><methodname>imap_open</methodname>
    <methodparam><type>string</type><parameter>mailbox</parameter></methodparam>
    <methodparam><type>string</type><parameter>user</parameter></methodparam>
    <methodparam><type>string</type><parameter>password</parameter></methodparam>
@@ -47,13 +49,14 @@
       </para>
       &imap.mailboxname.insecure;
       <para>
-       Der Serverteil wird in '{' und '}' eingebettet und besteht aus dem
-       Namen oder der IP-Adresse des Servers, einer optionalen Portnummer
+       Der Serverteil wird in '{' und '}' eingebettet und besteht aus der
+       Domain oder der IP-Adresse des Servers, einer optionalen Portnummer
        (eingeleitet mit ':') und einer optionalen Protokollangabe (eingeleitet
        mit '/').
       </para>
       <para>
-       Die Angabe des Serverteils ist immer zwingend.
+       Die Angabe des Serverteils ist immer zwingend bei allen
+       Postfach-Parametern.
       </para>
       <para>
        Alle Namen, die mit <literal>{</literal> beginnen, bezeichnen
@@ -108,7 +111,7 @@
            <entry><literal>/authuser=</literal><emphasis>user</emphasis></entry>
            <entry>
             Benutzername für die Remote-Authentifizierung; falls angegeben,
-            ist dies der Benutzername dessen Passwort verwendet wird (z.B.
+            ist dies der Benutzername dessen Passwort verwendet wird (z. B.
             administrator)
            </entry>
           </row>
@@ -119,7 +122,7 @@
           <row>
            <entry><literal>/debug</literal></entry>
            <entry>
-            Protokollausgaben in das Fehlerlog des Webservers leiten
+            Protokollausgaben im Debug-Log der Anwendung aufzeichnen
            </entry>
           </row>
           <row>
@@ -145,8 +148,8 @@
           <row>
            <entry><literal>/norsh</literal></entry>
            <entry>
-            Für eine vorauthentifizierte IMAP-Verbindung soll weder rsh noch
-            ssh verwendet werden
+            Für eine vorauthentifizierte IMAP-Verbindung soll weder RSH noch
+            SSH verwendet werden
            </entry>
           </row>
           <row>
@@ -170,23 +173,23 @@
           <row>
            <entry><literal>/tls</literal></entry>
            <entry>
-            <literal>start-TLS</literal>-Verschlüsselung erzwingen,
-            Verbindungen von Servern die dies nicht unterstützen ablehnen
+            <literal>start-TLS</literal>-Verschlüsselung erzwingen und
+            Verbindungen zu Servern, die dies nicht unterstützen, ablehnen
            </entry>
           </row>
           <row>
            <entry><literal>/notls</literal></entry>
            <entry>
-            <literal>start-TLS</literal> nicht verwenden, auch wenn es der
-            Server unterstützt
+            <literal>start-TLS</literal> nicht zum Verschlüsseln der
+            Verbindung verwenden, auch wenn es der Server unterstützt
            </entry>
           </row>
           <row>
            <entry><literal>/readonly</literal></entry>
            <entry>
-            Nur lesender Zugriff auf den Server ohne serverseitige Änderung
-            von Daten (nur für IMAP, NNTP ignoriert dies, POP3 und SMTP
-            verweigern readonly-Verbindungen)
+            Öffnen des Postfachs im Nur-Lese-Modus anfordern (nur für IMAP,
+            NNTP ignoriert dies, POP3 und SMTP verweigern
+            readonly-Verbindungen)
            </entry>
           </row>
          </tbody>
@@ -247,7 +250,7 @@
         </listitem>
         <listitem>
          <simpara>
-          <constant>OP_DEBUG</constant> - Debug-Protokoll 
+          <constant>OP_DEBUG</constant> - Protokollverhandlungen debuggen
          </simpara>
         </listitem>
         <listitem>
@@ -309,8 +312,32 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt einen IMAP-Stream zurück oder &false; bei Fehlern.
+   Gibt bei Erfolg eine <classname>IMAP\Connection</classname>-Instanz zurück.
+   &return.falseforfailure;
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.1.0</entry>
+      <entry>
+       Gibt jetzt eine <classname>IMAP\Connection</classname>-Instanz zurück;
+       vorher wurde eine &resource; zurückgegeben.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -321,23 +348,22 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Verbindung zu einem IMAP-Server auf Port 143 des lokalen Rechners 
+// Verbindung zu einem IMAP-Server auf Port 143 des lokalen Rechners
 $mbox = imap_open("{localhost:143}INBOX", "user_id", "password");
 
-// Verbindung zu einem POP3-Server auf Port 110 des lokalen Rechners 
+// Verbindung zu einem POP3-Server auf Port 110 des lokalen Rechners
 $mbox = imap_open ("{localhost:110/pop3}INBOX", "user_id", "password");
 
-// Für SSL-verschlüsselte Verbindungen wird /ssl an die 
-// Protokollspezifikation angefügt
+// Für SSL-verschlüsselte Verbindungen zu einem IMAP- oder POP3-Server wird
+// /ssl an die Protokollspezifikation angefügt
 $mbox = imap_open ("{localhost:993/imap/ssl}INBOX", "user_id", "password");
 
-// Zur SSL-Verbindung mit Servern mit selbstsignierten Zertifikaten 
-// muss zusätzlich /novalidate-cert angefügt werden
+// Zur SSL-Verbindung mit IMAP- oder POP3-Servern mit selbstsignierten
+// Zertifikaten muss zusätzlich /novalidate-cert angefügt werden
 $mbox = imap_open ("{localhost:995/pop3/ssl/novalidate-cert}", "user_id", "password");
 
-// Verbindung zu einem NNTP-Server auf Port 119 des lokalen Rechners 
+// Verbindung zu einem NNTP-Server auf Port 119 des lokalen Rechners
 $nntp = imap_open ("{localhost:119/nntp}comp.test", "", "");
-
 // Für Verbindungen zu anderen Servern wird "localhost" mit dem Namen
 // oder der IP-Adresse des Servers ersetzt
 ?>

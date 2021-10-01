@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e2f50c240bebc502a3d990d73633a6141f3bd9fd Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 34892f82742329af7e7b4b22be6ad21418fd9768 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 34892f82742329af7e7b4b22be6ad21418fd9768 Reviewer: samesch -->
 <refentry xml:id="function.imap-search" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>imap_search</refname>
@@ -13,7 +15,7 @@
   &reftitle.description;
   <methodsynopsis>
    <type class="union"><type>array</type><type>false</type></type><methodname>imap_search</methodname>
-   <methodparam><type>resource</type><parameter>imap</parameter></methodparam>
+   <methodparam><type>IMAP\Connection</type><parameter>imap</parameter></methodparam>
    <methodparam><type>string</type><parameter>criteria</parameter></methodparam>
    <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>SE_FREE</constant></initializer></methodparam>
    <methodparam choice="opt"><type>string</type><parameter>charset</parameter><initializer>""</initializer></methodparam>
@@ -23,7 +25,7 @@
    angegebenen <acronym>IMAP</acronym>-Stream.
   </para>
   <para>
-   Der Suchstring, um z.B. nach allen unbeantworteten Nachrichten von Mutter
+   Der Suchstring, um z. B. nach allen unbeantworteten Nachrichten von Mutter
    zu suchen, wäre "UNANSWERED FROM Mutter". Die Suche unterscheidet nicht
    nach Groß- und Kleinschreibung. Die folgende Liste von Suchkriterien wurde
    aus dem Sourcecode des UW-c-client erstellt und ist daher nicht unbedingt
@@ -37,14 +39,14 @@
   &reftitle.parameters;
   <para>
    <variablelist>
-    &imap.imap-stream.description;
+    &imap.imap-parameter.imap;
     <varlistentry>
      <term><parameter>criteria</parameter></term>
      <listitem>
       <para>
        Ein String, in dem die folgenden durch Leerzeichen getrennten
        Schlüsselwörter erlaubt sind. Argumente, die selbt Leerzeichen
-       enthalten, müssen in doppelte Anführungszeichen gefasst werden (z.B.
+       enthalten, müssen in doppelte Anführungszeichen gefasst werden (z. B.
        <literal>FROM "Hans Müller"</literal>). Die Ergebnisse müssen mit allen
        Einträgen in <parameter>criteria</parameter> übereinstimmen.
        <itemizedlist>
@@ -139,7 +141,7 @@
         </listitem>
         <listitem>
          <simpara>
-          TEXT "text" - sucht Nachrichten deren Text "text" enthält
+          TEXT "text" - sucht Nachrichten, deren Text "text" enthält
          </simpara>
         </listitem>
         <listitem>
@@ -154,7 +156,7 @@
         </listitem>
         <listitem>
          <simpara>
-          UNDELETED - sucht nicht zum Löschen vorgemerkte Nachrichten
+          UNDELETED - sucht Nachrichten, die nicht zum Löschen vorgemerkt sind
          </simpara>
         </listitem>
         <listitem>
@@ -181,7 +183,7 @@
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Gültige Werte für <parameter>flags</parameter> sind
+       Der einzige gültige Werte für <parameter>flags</parameter> ist
        <constant>SE_UID</constant>, was bewirkt, dass das zurückgegebene Array
        UIDs anstelle von Nachrichtennummern enthält.
       </para>
@@ -205,9 +207,26 @@
    Gibt ein Array mit Nachrichtennummern oder UIDs zurück.
   </para>
   <para>
-   Wenn die Suchkriterien nicht verstanden wurden oder keine Nachrichten
-   gefunden wurden, wird &false; zurückgegeben.
+   Wenn die Suchkriterien <parameter>criteria</parameter> nicht verstanden
+   wurden oder keine Nachrichten gefunden wurden, wird &false; zurückgegeben.
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     &imap.changelog.imap-param;
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -217,11 +236,11 @@
    <programlisting role="php">
 <![CDATA[
 <?php
-$conn   = imap_open('{imap.example.com:993/imap/ssl}INBOX', 'foo@example.com', 'pass123', OP_READONLY);
+$imap   = imap_open('{imap.example.com:993/imap/ssl}INBOX', 'foo@example.com', 'pass123', OP_READONLY);
 
-$some   = imap_search($conn, 'SUBJECT "HOWTO be Awesome" SINCE "8 August 2008"', SE_UID);
-$msgnos = imap_search($conn, 'ALL');
-$uids   = imap_search($conn, 'ALL', SE_UID);
+$some   = imap_search($imap, 'SUBJECT "HOWTO be Awesome" SINCE "8 August 2008"', SE_UID);
+$msgnos = imap_search($imap, 'ALL');
+$uids   = imap_search($imap, 'ALL', SE_UID);
 
 print_r($some);
 print_r($msgnos);
