@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b95d28e6ec86e4a71e012737d36ebdc1cf009180 Maintainer: sammywg Status: ready -->
-
+<!-- EN-Revision: b0b19b66183b28cebc1ffbcf1e2b8763f9d9c7b3 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: b0b19b66183b28cebc1ffbcf1e2b8763f9d9c7b3 Reviewer: samesch -->
 <refentry xml:id="function.readdir" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>readdir</refname>
@@ -12,12 +13,12 @@
   &reftitle.description;
   <methodsynopsis>
    <type class="union"><type>string</type><type>false</type></type><methodname>readdir</methodname>
-   <methodparam choice="opt"><type>resource</type><parameter>dir_handle</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>resource</type><type>null</type></type><parameter>dir_handle</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Gibt den Namen des nächsten Eintrags des Verzeichnisses zurück. Die
-   Einträge werden in der Reihenfolge zurück gegeben, in der sie innerhalb
-   des Filesystems angelegt wurden.
+   Einträge werden in der Reihenfolge zurückgegeben, in der sie innerhalb des
+   Dateisystems angelegt wurden.
   </para>
  </refsect1>
 
@@ -29,10 +30,11 @@
      <term><parameter>dir_handle</parameter></term>
      <listitem>
       <para>
-       Das Verzeichnis-Handle <type>resource</type>, das zuvor mit
-       <function>opendir</function> geöffnet wurde. Wenn das Verzeichnis-Handle
-       nicht angegeben ist, wird dasjenige verwendet, das auf das zuletzt mittels
-       <function>opendir</function> geöffnete Verzeichnis zeigt.
+       Die Verzeichnis-Handle-<type>&resource;</type>, die zuvor mit
+       <function>opendir</function> geöffnet wurde. Wenn das
+       Verzeichnis-Handle nicht angegeben ist, wird dasjenige verwendet, das
+       auf das zuletzt mittels <function>opendir</function> geöffnete
+       Verzeichnis zeigt.
       </para>
      </listitem>
     </varlistentry>
@@ -48,6 +50,29 @@
   &return.falseproblem;
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>dir_handle</parameter> ist nun nullable (akzeptiert den
+       &null;-Wert).
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -56,12 +81,12 @@
     <para>
      Bitte beachten Sie die Art und Weise, in der die Rückgabewerte von
      <function>readdir</function> in untenstehenden Beispielen geprüft werden.
-     Wir testen explizit, ob der Rückgabewert identisch (also inhaltlich und
-     typgleich -- siehe Kapitel  <link
-     linkend="language.operators.comparison">Vergleichs-Operatoren</link>
+     Wir testen explizit, ob der Rückgabewert identisch (also den gleichen
+     Wert und Datentyp hat - siehe Kapitel
+     <link linkend="language.operators.comparison">Vergleichs-Operatoren</link>
      für weitere Informationen) zu &false; ist, andernfalls würde jeder
      Verzeichnis-Eintrag, dessen Name als &false; ausgewertet wird, das
-     Durchlaufen der Schleife beenden (z.B. ein Verzeichnis namens "0").
+     Durchlaufen der Schleife beenden (z. B. ein Verzeichnis namens "0").
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -71,7 +96,7 @@ if ($handle = opendir('/path/to/files')) {
     echo "Verzeichnis-Handle: $handle\n";
     echo "Einträge:\n";
 
-    /* Das ist der korrekte Weg, ein Verzeichnis zu durchlaufen. */
+    /* Dies ist der korrekte Weg, ein Verzeichnis zu durchlaufen. */
     while (false !== ($entry = readdir($handle))) {
         echo "$entry\n";
     }
@@ -92,7 +117,7 @@ if ($handle = opendir('/path/to/files')) {
    <example>
     <title>
      Listet alle Einträge des aktuellen Verzeichnisses auf und blendet dabei
-     <literal>.</literal> und <literal>..</literal> aus.
+     die Verzeichnisse <literal>.</literal> und <literal>..</literal> aus.
     </title>
     <programlisting role="php">
 <![CDATA[
@@ -123,9 +148,8 @@ if ($handle = opendir('.')) {
    </simplelist>
   </para>
  </refsect1>
+
 </refentry>
-
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
