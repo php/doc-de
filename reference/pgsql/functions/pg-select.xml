@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3954d29fbd41e2b760c54e870d1e37269fb53b4e Maintainer: conni Status: ready -->
+<!-- EN-Revision: 58645a79f1993effc0571f7b49acc9aace0e417f Maintainer: conni Status: ready -->
 <!-- Reviewed: yes Maintainer: samesch -->
-<refentry xml:id='function.pg-select' xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="function.pg-select" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_select</refname>
   <refpurpose>Wählt Datensätze aus</refpurpose>
@@ -11,26 +11,26 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>mixed</type><methodname>pg_select</methodname>
+   <type class="union"><type>array</type><type>string</type><type>false</type></type><methodname>pg_select</methodname>
    <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
    <methodparam><type>string</type><parameter>table_name</parameter></methodparam>
-   <methodparam><type>array</type><parameter>assoc_array</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PGSQL_DML_EXEC</initializer></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>result_type</parameter><initializer>PGSQL_ASSOC</initializer></methodparam>
+   <methodparam><type>array</type><parameter>conditions</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>PGSQL_DML_EXEC</constant></initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer><constant>PGSQL_ASSOC</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>pg_select</function> wählt die Datensätze aus der Tabelle
    <parameter>table_name</parameter> aus, die den Elementen
-   (<literal>field=>value</literal>) in <literal>assoc_array</literal>
+   (<literal>field=&gt;value</literal>) in <parameter>conditions</parameter>
    entsprechen. Wenn die Abfrage erfolgreich war, wird ein assoziatives Array
    mit allen Datensätzen und Werten aus <parameter>table_name</parameter>
    zurückgegeben, die mit den Datensätzen und Werten in
-   <literal>assoc_array</literal> identisch sind.
+   <parameter>conditions</parameter> identisch sind.
   </para>
   <para>
-   Falls <literal>options</literal> angegeben wurde, wird
+   Falls <parameter>flags</parameter> angegeben wurde, wird
    <function>pg_convert</function> mit den angegebenen Flags auf
-   <literal>assoc_array</literal> angewendet.
+   <parameter>conditions</parameter> angewendet.
   </para>
   <para>
    Standardmäßig übergibt <function>pg_select</function> Rohwerte. Die Werte
@@ -54,9 +54,7 @@
     <varlistentry>
      <term><parameter>connection</parameter></term>
      <listitem>
-      <para>
-       Die PostgreSQL-Verbindungskennung.
-      </para>
+      &pgsql.parameter.connection;
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -68,7 +66,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>assoc_array</parameter></term>
+     <term><parameter>conditions</parameter></term>
      <listitem>
       <para>
        Ein <type>&array;</type>, dessen Schlüssel Feldnamen von
@@ -80,7 +78,7 @@
     </varlistentry>
 
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
        Eine beliebige Kombination aus
@@ -105,9 +103,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   &return.success; Gibt einen <type>&string;</type> zurück, falls
+   Gibt einen <type>&string;</type> zurück, falls
    <constant>PGSQL_DML_STRING</constant> im Parameter
-   <parameter>options</parameter> übergeben wurde.
+   <parameter>flags</parameter> übergeben wurde,
+   andernfalls wird bei Erfolg ein <type>array</type> zurückgegeben. &return.falseforfailure;
   </para>
  </refsect1>
 
@@ -126,7 +125,7 @@
       <row>
        <entry>7.1.0</entry>
        <entry>
-        Der Parameter <parameter>result_type</parameter> wurde hinzugefügt.
+        Der Parameter <parameter>mode</parameter> wurde hinzugefügt.
        </entry>
       </row>
      </tbody>
