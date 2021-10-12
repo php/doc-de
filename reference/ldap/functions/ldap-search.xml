@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 1f801a1187777ac1ec620e0a228d55e483f2757b Maintainer: nobody Status: ready -->
+<!-- EN-Revision: fbc6f9055f47d18f8ffb30513b772a32eda1526e Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: fbc6f9055f47d18f8ffb30513b772a32eda1526e Reviewer: samesch -->
 <refentry xml:id="function.ldap-search" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>ldap_search</refname>
@@ -10,8 +12,8 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>resource</type><type>array</type><type>false</type></type><methodname>ldap_search</methodname>
-   <methodparam><type class="union"><type>resource</type><type>array</type></type><parameter>ldap</parameter></methodparam>
+   <type class="union"><type>LDAP\Result</type><type>array</type><type>false</type></type><methodname>ldap_search</methodname>
+   <methodparam><type class="union"><type>LDAP\Connection</type><type>array</type></type><parameter>ldap</parameter></methodparam>
    <methodparam><type class="union"><type>array</type><type>string</type></type><parameter>base</parameter></methodparam>
    <methodparam><type class="union"><type>array</type><type>string</type></type><parameter>filter</parameter></methodparam>
    <methodparam choice="opt"><type>array</type><parameter>attributes</parameter><initializer>[]</initializer></methodparam>
@@ -22,9 +24,9 @@
    <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>controls</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Führt eine Suche für einen gegebenen Filter im Verzeichnis mit der
-   Reichweite von <constant>LDAP_SCOPE_SUBTREE</constant> durch. Das ist
-   äquivalent zu einer Suche im ganzen Verzeichnis.
+   Führt eine Suche für einen gegebenen Filter im Verzeichnis mit dem
+   Geltungsbereichmit von <constant>LDAP_SCOPE_SUBTREE</constant> durch. Das
+   ist äquivalent zu einer Suche im ganzen Verzeichnis.
   </para>
   <para>
    Von 4.0.5 an ist es außerdem möglich, parallele Suchen durchzuführen. Um
@@ -69,7 +71,7 @@
      <term><parameter>filter</parameter></term>
      <listitem>
       <para>
-       Der Suchfilter kann einfach oder erweitert sein, und boolesche
+       Der Suchfilter kann einfach oder erweitert sein und boolesche
        Operatoren in dem Format verwenden, das in der LDAP-Dokumentation
        beschrieben wird (siehe das
        <link xlink:href="&url.ldap.filters;">Netscape Directory SDK</link>
@@ -82,7 +84,7 @@
      <term><parameter>attributes</parameter></term>
      <listitem>
       <para>
-       Ein Array von erforderlichen Merkmalen, z.B. <literal>array("mail",
+       Ein Array von erforderlichen Merkmalen, z. B. <literal>array("mail",
        "sn", "cn")</literal>. Es ist zu beachten, dass der "dn" immer
        zurückgegeben wird, unabhängig davon, welche Merkmalstypen angefragt
        wurden.
@@ -90,7 +92,7 @@
       <para>
        Die Verwendung dieses Parameters ist effizienter als die Standardaktion
        (die alle Merkmale und deren assoziierte Werte zurückgibt). Die
-       Verwendung dieses Parameter sollte daher als gute Praxis eingestuft
+       Verwendung dieses Parameters sollte daher als gute Praxis eingestuft
        werden.
       </para>
      </listitem>
@@ -166,7 +168,7 @@
         <listitem>
          <simpara>
           <constant>LDAP_DEREF_FINDING</constant> - Aliase sollen für die
-          Lokalisierung des Basis-Objekt dereferenziert werden, aber nicht
+          Lokalisierung des Basis-Objekts dereferenziert werden, aber nicht
           während der Suche.
          </simpara>
         </listitem>
@@ -196,7 +198,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt eine Suchergebniskennung zurück oder &false; im Fehlerfall.
+   &ldap.return-result;
   </para>
  </refsect1>
 
@@ -212,6 +214,8 @@
       </row>
      </thead>
      <tbody>
+      &ldap.changelog.ldap-object;
+      &ldap.changelog.return-result-object;
       &ldap.changelog.controls-nullable;
       <row>
        <entry>7.3</entry>
@@ -239,19 +243,21 @@
     <title>LDAP-Suche</title>
     <programlisting role="php">
 <![CDATA[
+<?php
 // $ds ist eine gültige Verbindungskennung für einen Verzeichnis-Server
 
-// $person ist ein Teil oder der vollständige Name einer Person, z.B. "Jo"
+// $person ist ein Teil des Namens oder der vollständige Name einer Person, z. B. "Jo"
 
 $dn = "o=Meine Firma, c=DE";
 $filter = "(|(sn=$person*)(vorname=$person*))";
-$justthese = array( "ou", "sn", "vorname", "mail");
+$justthese = array("ou", "sn", "vorname", "mail");
 
 $sr=ldap_search($ds, $dn, $filter, $justthese);
 
 $info = ldap_get_entries($ds, $sr);
 
 echo $info["count"] . " Einträge gefundene\n";
+?>
 ]]>
     </programlisting>
    </example>
