@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 7d763b79e5d29ab6702d72d85187267f828562c6 Maintainer: conni Status: ready -->
-<refentry xml:id='function.pg-delete' xmlns="http://docbook.org/ns/docbook">
+<!-- EN-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Maintainer: conni Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Reviewer: samesch -->
+<refentry xml:id="function.pg-delete" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_delete</refname>
   <refpurpose>Löscht Datensätze</refpurpose>
@@ -10,36 +12,34 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>mixed</type><methodname>pg_delete</methodname>
-   <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
+   <type class="union"><type>string</type><type>bool</type></type><methodname>pg_delete</methodname>
+   <methodparam><type>PgSql\Connection</type><parameter>connection</parameter></methodparam>
    <methodparam><type>string</type><parameter>table_name</parameter></methodparam>
-   <methodparam><type>array</type><parameter>assoc_array</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PGSQL_DML_EXEC</initializer></methodparam>
+   <methodparam><type>array</type><parameter>conditions</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>PGSQL_DML_EXEC</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>pg_delete</function> löscht die Datensätze aus
    <parameter>table_name</parameter>, deren Feldnamen und Werte im Array
-   <parameter>assoc_array</parameter> angegeben wurden. Falls
-   <parameter>options</parameter> angegeben wurde, wird
-   <function>pg_convert</function> mit den angegebenen Optionen auf
-   <parameter>assoc_array</parameter> angewendet.
+   <parameter>conditions</parameter> angegeben wurden.
   </para>
   <para>
-   Falls <literal>options</literal> angegeben wurde, wird
+   Falls <literal>flags</literal> angegeben wurde, wird
    <function>pg_convert</function> mit den angegebenen Flags auf das Array
-   <literal>assoc_array</literal> angewendet.
+   <parameter>conditions</parameter> angewendet.
   </para>
   <para>
    Standardmäßig übergibt <function>pg_delete</function> Rohwerte. Die Werte
-   müssen entweder maskiert werden oder es muss die Option PGSQL_DML_ESCAPE
-   angegeben werden. PGSQL_DML_ESCAPE maskiert Parameter und Bezeichner und
-   setzt sie in Anführungszeichen. Daher muss bei Tabellen- und Spaltennamen
-   zwischen Groß- und Kleinschreibung unterschieden werden.
+   müssen entweder maskiert werden oder es muss das Flag
+   <constant>PGSQL_DML_ESCAPE</constant> in <parameter>flags</parameter>
+   angegeben werden. <constant>PGSQL_DML_ESCAPE</constant> maskiert Parameter
+   und Bezeichner und setzt sie in Anführungszeichen. Daher muss bei Tabellen-
+   und Spaltennamen zwischen Groß- und Kleinschreibung unterschieden werden.
   </para>
   <para>
    Es ist zu beachten, dass weder die Maskierung noch eine vorbereitete
    Abfrage LIKE-Abfragen, JSON, Array, Regex usw. schützen können. Diese
-   Parameter sollten im Kontext behandelt werden, d.h. Werte maskieren und
+   Parameter sollten im Kontext behandelt werden, d. h. Werte maskieren und
    validieren.
   </para>
  </refsect1>
@@ -51,9 +51,7 @@
     <varlistentry>
      <term><parameter>connection</parameter></term>
      <listitem>
-      <para>
-       Die PostgreSQL-Verbindungskennung.
-      </para>
+      &pgsql.parameter.connection;
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -65,17 +63,17 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>assoc_array</parameter></term>
+     <term><parameter>conditions</parameter></term>
      <listitem>
       <para>
-       Ein <type>array</type> dessen Schlüssel den Feldnamen der Tabelle
+       Ein <type>&array;</type> dessen Schlüssel den Spaltennamen der Tabelle
        <parameter>table_name</parameter> entsprechen und dessen Werte den zu
        löschenden Spaltenwerten entsprechen.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
        Jede Kombination aus <constant>PGSQL_CONV_FORCE_NULL</constant>,
@@ -85,7 +83,7 @@
        <constant>PGSQL_DML_ASYNC</constant> und
        <constant>PGSQL_DML_STRING</constant>. Falls
        <constant>PGSQL_DML_STRING</constant> in den
-       <parameter>options</parameter> enthalten ist, wird der Abfragestring
+       <parameter>flags</parameter> enthalten ist, wird der Abfragestring
        zurückgegeben. Werden <constant>PGSQL_DML_NO_CONV</constant> oder
        <constant>PGSQL_DML_ESCAPE</constant> angegeben, wird
        <function>pg_convert</function> intern nicht aufgerufen.
@@ -99,13 +97,29 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt bei Erfolg &true; zurück oder einen <type>string</type>, falls die
-   Konstante <constant>PGSQL_DML_STRING</constant> im Parameter
-   <parameter>options</parameter> übergeben wurde. Im Fehlerfall wird &false;
-   zurückgegeben.
+   &return.success; Falls die Konstante <constant>PGSQL_DML_STRING</constant>
+   im Parameter <parameter>flags</parameter> übergeben wurde, wird ein
+   <type>&string;</type> zurückgegeben.
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     &pgsql.changelog.connection-object;
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+ 
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
@@ -139,6 +153,7 @@
    </simplelist>
   </para>
  </refsect1>
+
 </refentry>
 <!-- Keep this comment at the end of the file
 Local variables:

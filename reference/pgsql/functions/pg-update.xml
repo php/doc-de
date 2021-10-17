@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5fabd07880ab15b0ad2cf7eb055c7c2b36d7120f Maintainer: conni Status: ready -->
-<refentry xml:id='function.pg-update' xmlns="http://docbook.org/ns/docbook">
+<!-- EN-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Maintainer: conni Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Reviewer: samesch -->
+<refentry xml:id="function.pg-update" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_update</refname>
   <refpurpose>Aktualisiert eine Tabelle</refpurpose>
@@ -10,37 +12,31 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>mixed</type><methodname>pg_update</methodname>
-   <methodparam><type>resource</type><parameter>connection</parameter></methodparam>
+   <type class="union"><type>string</type><type>bool</type></type><methodname>pg_update</methodname>
+   <methodparam><type>PgSql\Connection</type><parameter>connection</parameter></methodparam>
    <methodparam><type>string</type><parameter>table_name</parameter></methodparam>
-   <methodparam><type>array</type><parameter>data</parameter></methodparam>
-   <methodparam><type>array</type><parameter>condition</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>options</parameter><initializer>PGSQL_DML_EXEC</initializer></methodparam>
+   <methodparam><type>array</type><parameter>values</parameter></methodparam>
+   <methodparam><type>array</type><parameter>conditions</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>flags</parameter><initializer><constant>PGSQL_DML_EXEC</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>pg_update</function> überschreibt alle Datensätze in
-   <parameter>table_name</parameter>, deren Werte denen in
-   <literal>condition</literal> entsprechen, mit den Werten aus
-   <literal>data</literal>. Falls <literal>options</literal> angegeben sind,
-   wird <function>pg_convert</function> mit den angegebenen Flags auf
-   <literal>data</literal> angewendet.
+   <parameter>table_name</parameter>, die die Bedingungen in
+   <parameter>conditions</parameter> erfüllen, mit den Werten aus
+   <parameter>values</parameter>.
   </para>
   <para>
-   <function>pg_update</function> aktualisiert Datensätze, die in
-   <literal>assoc_array</literal> durch <literal>field=>value</literal>
-   angegeben wurden.
-  </para>
-  <para>
-   Falls <literal>options</literal> angegeben wurde, wird
+   Falls <parameter>flags</parameter> angegeben wurde, wird
    <function>pg_convert</function> mit den angegebenen Flags auf
-   <literal>assoc_array</literal> angewendet.
+   <parameter>values</parameter> angewendet.
   </para>
   <para>
    Standardmäßig übergibt <function>pg_update</function> Rohwerte. Die Werte
-   müssen entweder maskiert werden oder es muss die Option PGSQL_DML_ESCAPE
-   angegeben werden. PGSQL_DML_ESCAPE maskiert Parameter und Bezeichner und
-   setzt sie in Anführungszeichen. Daher muss bei Tabellen- und Spaltennamen
-   zwischen Groß- und Kleinschreibung unterschieden werden.
+   müssen entweder maskiert werden oder das Flag
+   <constant>PGSQL_DML_ESCAPE</constant> muss in <parameter>flags</parameter>
+   angegeben werden. <constant>PGSQL_DML_ESCAPE</constant> maskiert Parameter
+   und Bezeichner und setzt sie in Anführungszeichen. Daher muss bei Tabellen-
+   und Spaltennamen zwischen Groß- und Kleinschreibung unterschieden werden.
   </para>
   <para>
    Es ist zu beachten, dass weder die Maskierung noch eine vorbereitete
@@ -57,41 +53,39 @@
     <varlistentry>
      <term><parameter>connection</parameter></term>
      <listitem>
-      <para>
-       Die PostgreSQL-Verbindungskennung.
-      </para>
+      &pgsql.parameter.connection;
      </listitem>
     </varlistentry>
     <varlistentry>
      <term><parameter>table_name</parameter></term>
      <listitem>
       <para>
-       Name der Tabelle, die aktualisiert werden soll.
+       Der Name der Tabelle, die aktualisiert werden soll.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>data</parameter></term>
+     <term><parameter>values</parameter></term>
      <listitem>
       <para>
-       Ein &array;, dessen Schlüssel Feldnamen von
+       Ein <type>&array;</type>, dessen Schlüssel Feldnamen von
        <parameter>table_name</parameter> sind und mit dessen Werten die
-       Tabelle aktualisiert wird.
+       entsprechenden Datensätze aktualisiert werden.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>condition</parameter></term>
+     <term><parameter>conditions</parameter></term>
      <listitem>
       <para>
-       Ein &array;, dessen Schlüssel Feldnamen von
+       Ein <type>&array;</type>, dessen Schlüssel Feldnamen von
        <parameter>table_name</parameter> sind und dessen Werte die Bedingungen
        sind, die ein Datensatz erfüllen muss, um aktualisiert zu werden.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>options</parameter></term>
+     <term><parameter>flags</parameter></term>
      <listitem>
       <para>
        Jede Kombination aus <constant>PGSQL_CONV_FORCE_NULL</constant>,
@@ -101,7 +95,7 @@
        <constant>PGSQL_DML_ASYNC</constant> und
        <constant>PGSQL_DML_STRING</constant>. Falls
        <constant>PGSQL_DML_STRING</constant> in den
-       <parameter>options</parameter> enthalten ist, wird der Abfragestring
+       <parameter>flags</parameter> enthalten ist, wird der Abfragestring
        zurückgegeben. Werden <constant>PGSQL_DML_NO_CONV</constant> oder
        <constant>PGSQL_DML_ESCAPE</constant> angegeben, wird
        <function>pg_convert</function> intern nicht aufgerufen.
@@ -115,12 +109,29 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   &return.success; Gibt einen &string; zurück, falls
+   &return.success; Gibt einen <type>&string;</type> zurück, falls
    <constant>PGSQL_DML_STRING</constant> mit dem Parameter
-   <parameter>options</parameter> übergeben wurde.
+   <parameter>flags</parameter> übergeben wurde.
   </para>
  </refsect1>
 
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     &pgsql.changelog.connection-object;
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+ 
  <refsect1 role="examples">
   &reftitle.examples;
   <para>

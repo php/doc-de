@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3954d29fbd41e2b760c54e870d1e37269fb53b4e Maintainer: conni Status: ready -->
-<!-- Reviewed: yes Maintainer: samesch -->
+<!-- EN-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Maintainer: conni Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Reviewer: samesch -->
 <refentry xml:id="function.pg-fetch-all" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_fetch_all</refname>
@@ -12,12 +13,12 @@
   &reftitle.description;
   <methodsynopsis>
    <type>array</type><methodname>pg_fetch_all</methodname>
-   <methodparam><type>resource</type><parameter>result</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>result_type</parameter><initializer>PGSQL_ASSOC</initializer></methodparam>
+   <methodparam><type>PgSql\Result</type><parameter>result</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer><constant>PGSQL_ASSOC</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>pg_fetch_all</function> gibt ein Array zurück, das alle Zeilen
-   eines Abfrageergebnisses enthält.
+   einer <classname>PgSql\Result</classname>-Instanz enthält.
   </para>
   &database.fetch-null;
  </refsect1>
@@ -29,11 +30,22 @@
     <varlistentry>
      <term><parameter>result</parameter></term>
      <listitem>
+      &pgsql.parameter.result;
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>mode</parameter></term>
+     <listitem>
       <para>
-       Die PostgreSQL-Verbindungskennung, die (unter anderem) von den
-       Funktionen <function>pg_query</function>,
-       <function>pg_query_params</function> oder
-       <function>pg_execute</function> zurückgegeben wurde.
+       Ein optionaler Parameter, der bestimmt, wie das zurückgegebene
+       <type>&array;</type> indiziert werden soll. <parameter>mode</parameter>
+       ist eine Konstante, die einen der folgenden Werte annehmen kann:
+       <constant>PGSQL_ASSOC</constant>, <constant>PGSQL_NUM</constant> und
+       <constant>PGSQL_BOTH</constant>. Wenn <function>pg_fetch_all</function>
+       mit <constant>PGSQL_NUM</constant> aufgerufen wird, wird ein
+       numerisches Array zurückgegeben, mit <constant>PGSQL_ASSOC</constant>
+       wird ein assoziatives Array zurückgegeben, während der Standardwert
+       <constant>PGSQL_BOTH</constant> ein Array mit beiden Indizes zurückgibt.
       </para>
      </listitem>
     </varlistentry>
@@ -44,13 +56,9 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Ein <type>&array;</type> mit allen Zeilen des Abfrageergebnisses. Jede Zeile
-   ist ein assoziatives Array mit den Feldnamen als Indizes und den Werten der
-   Tabellenspalte als Werte.
-  </para>
-  <para>
-   Falls ein Fehler auftritt oder falls das Abfrageergebnis leer ist, wird
-   &false; zurückgegeben.
+   Ein <type>&array;</type> mit allen Zeilen des Abfrageergebnisses. Jede
+   Zeile ist ein assoziatives Array mit den Spaltennamen als Indizes und den
+   Werten der Tabellenspalte als Werte.
   </para>
  </refsect1>
 
@@ -66,10 +74,11 @@
       </row>
      </thead>
      <tbody>
+      &pgsql.changelog.result-object;
       <row>
        <entry>7.1.0</entry>
        <entry>
-        Der Parameter <parameter>result_type</parameter> wurde hinzugefügt.
+        Der Parameter <parameter>mode</parameter> wurde hinzugefügt.
        </entry>
       </row>
      </tbody>
@@ -88,13 +97,13 @@
 <?php
 $conn = pg_pconnect("dbname=publisher");
 if (!$conn) {
-  echo "Konnte keine Verbindung aufbauen.\n";
+    echo "Konnte keine Verbindung aufbauen.\n";
   exit;
 }
 
 $result = pg_query($conn, "SELECT * FROM authors");
 if (!$result) {
-  echo "Ein Fehler ist aufgetreten.\n";
+    echo "Ein Fehler ist aufgetreten.\n";
   exit;
 }
 

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
 <!-- EN-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Maintainer: conni Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: c2eca73ef79ebe78cebb34053e41b565af504c4f Reviewer: samesch -->
 <refentry xml:id="function.pg-send-execute" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_send_execute</refname>
   <refpurpose>
-    Sendet eine Aufforderung an den Server, eine vorbereitete Abfrage mit den
-    übergebenen Parametern auszuführen, ohne auf die Ergebnisse zu warten
+   Sendet eine Aufforderung an den Server, eine vorbereitete Abfrage mit den
+   übergebenen Parametern auszuführen, ohne auf die Ergebnisse zu warten
   </refpurpose>
  </refnamediv>
 
@@ -19,17 +21,17 @@
    <methodparam><type>array</type><parameter>params</parameter></methodparam>
   </methodsynopsis>
   <para>
-    Sendet eine Aufforderung an den Server, eine vorbereitete Anfrage mit
-    den übergebenen Parametern auszuführen, ohne auf die Ergebnisse zu
-    warten.
+   Sendet eine Aufforderung an den Server, eine vorbereitete Anfrage mit den
+   übergebenen Parametern auszuführen, ohne auf die Ergebnisse zu warten.
   </para>
   <para>
-    Dies ist ähnlich, wie die Funktion <function>pg_send_query_params</function>,
-    nur dass das auszuführende Kommando eine zuvor benannte vorbereitete
-    Abfrage ist und kein Abfragestring. Die Parameter der Funktion werden
-    genauso verarbeitet, wie bei der Funktion  <function>pg_execute</function>
-    beschrieben  und genau wie diese kann <function>pg_send_execute</function>
-    nicht mit PostgreSQL Versionen vor 7.4 benutzet werden.
+   Dies ist ähnlich wie die Funktion
+   <function>pg_send_query_params</function>, aber das auszuführende Kommando
+   wird statt durch einen Abfragestring durch den Namen einer zuvor
+   vorbereiteten Anweisung angegeben. Die Parameter der Funktion werden
+   genauso verarbeitet, wie bei der Funktion <function>pg_execute</function>
+   beschrieben und genau wie diese kann <function>pg_send_execute</function>
+   nicht mit PostgreSQL-Versionen vor 7.4 benutzt werden.
   </para>
  </refsect1>
 
@@ -47,9 +49,10 @@
      <term><parameter>statement_name</parameter></term>
      <listitem>
       <para>
-       Der Name der auszuführenden vorbereiteten Abfrage. Falls "" angegeben wird,
-       wird eine unbenannte Abfrage ausgeführt. Der Name muss zuvor mit <function>pg_prepare</function>,
-       <function>pg_send_prepare</function> oder dem SQL-Kommando <literal>PREPARE</literal> definiert worden sein.
+       Der Name der auszuführenden vorbereiteten Anweisung. Falls "" angegeben
+       wird, wird eine unbenannte Abfrage ausgeführt. Der Name muss zuvor mit
+       <function>pg_prepare</function>, <function>pg_send_prepare</function>
+       oder dem SQL-Kommando <literal>PREPARE</literal> definiert worden sein.
       </para>
      </listitem>
     </varlistentry>
@@ -57,10 +60,10 @@
      <term><parameter>params</parameter></term>
      <listitem>
       <para>
-        Ein Array mit Parameterwerten, mit denen die Platzhalter $1, $2
-        usw. in der ursprünglichen vorbereiteten Abfrage ersetzt werden.
-        Die Anzahl der Elemente dieses Arrays muss mit der Anzahl der
-        Platzhalter übereinstimmen.
+       Ein Array mit Parameterwerten, mit denen die Platzhalter $1, $2 usw. in
+       der ursprünglichen vorbereiteten Anweisung ersetzt werden. Die Anzahl
+       der Elemente dieses Arrays muss mit der Anzahl der Platzhalter
+       übereinstimmen.
       </para>
      </listitem>
     </varlistentry>
@@ -71,12 +74,12 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt bei Erfolg &true; zurück und &false; oder <literal>0</literal>, falls ein Fehler auftrat.
-   Benutzen Sie <function>pg_get_result</function>, um das Abfrageergebnis
-   zu erhalten.
+   Gibt bei Erfolg &true; zurück und &false; oder <literal>0</literal>, falls
+   ein Fehler auftrat. Benutzen Sie <function>pg_get_result</function>, um das
+   Abfrageergebnis zu erhalten.
   </para>
  </refsect1>
- 
+
  <refsect1 role="changelog">
   &reftitle.changelog;
   <informaltable>
@@ -93,53 +96,54 @@
    </tgroup>
   </informaltable>
  </refsect1>
- 
+
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
    <example>
-    <title><function>pg_send_execute</function> benutzen:</title>
+    <title>Die Verwendung von <function>pg_send_execute</function>:</title>
     <programlisting role="php">
 <![CDATA[
 <?php
   $dbconn = pg_connect("dbname=publisher") or die("Konnte nicht verbinden");
 
-  // Abfrage vorbereiten
+  // Die Abfrage vorbereiten
   if (!pg_connection_busy($dbconn)) {
     pg_send_prepare($dbconn, "my_query", 'SELECT * FROM shops WHERE name = $1');
     $res1 = pg_get_result($dbconn);
   }
 
   // Die vorbereitete Abfrage ausführen. Beachten Sie, dass es
-  // nicht nötig ist, den String "Joe's Widgets" zu maskieren 
+  // nicht nötig ist, den String "Joe's Widgets" zu maskieren
   if (!pg_connection_busy($dbconn)) {
     pg_send_execute($dbconn, "my_query", array("Joe's Widgets"));
     $res2 = pg_get_result($dbconn);
   }
-  
+
   // Dieselbe vorbereitete Abfrage, diesmal mit einem anderen Parameter.
   if (!pg_connection_busy($dbconn)) {
     pg_send_execute($dbconn, "my_query", array("Clothes Clothes Clothes"));
     $res3 = pg_get_result($dbconn);
   }
-  
+
 ?>
 ]]>
     </programlisting>
    </example>
   </para>
  </refsect1>
- 
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
     <member><function>pg_prepare</function></member>
     <member><function>pg_send_prepare</function></member>
-    <member><function>pg_execute</function></member>    
+    <member><function>pg_execute</function></member>
    </simplelist>
   </para>
  </refsect1>
+
 </refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
