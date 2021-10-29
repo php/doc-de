@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8a7c2e03689cc5edf0dfb6710c9d3fe0b450849f Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 3ef3e56c80f7ae6b6a7291b7eb57dc6250b50801 Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<!-- Rev-Revision: 3ef3e56c80f7ae6b6a7291b7eb57dc6250b50801 Reviewer: samesch -->
 <!-- CREDITS: tom, jumpa -->
 <refentry xml:id="function.count" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>count</refname>
-  <refpurpose>Zählt alle Elemente eines Arrays oder etwas in einem Objekt</refpurpose>
+  <refpurpose>Zählt alle Elemente eines Arrays oder eines <interfacename>Countable</interfacename>-Objekts</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -18,19 +18,10 @@
    <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer><constant>COUNT_NORMAL</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
-   Zählt alle Elemente eines Arrays oder etwas in einem Objekt.
-  </para>
-  <para>
-   Wenn <link linkend="ref.spl">SPL</link> zur Verfügung steht, kann die
-   Funktion <function>count</function> durch Implementierung der Schnittstelle
-   <classname>Countable</classname> verwendet werden. Diese Schnittstelle hat
-   genau eine Methode, <methodname>Countable::count</methodname>, die den
-   Rückgabewert der Funktion <function>count</function> zurückgibt.
-  </para>
-  <para>
-   Im Abschnitt <link linkend="language.types.array">Arrays</link> des
-   Handbuchs wird detailliert erklärt, wie Arrays in PHP implementiert sind
-   und wie sie benutzt werden.
+   Zählt alle Elemente eines Arrays, wenn es mit einem Array verwendet wird.
+   Bei Verwendung mit einem Objekt, das die Schnittstelle
+   <interfacename>Countable</interfacename> nutzt, gibt es den Rückgabewert
+   der Methode <methodname>Countable::count</methodname> zurück.
   </para>
  </refsect1>
 
@@ -42,7 +33,7 @@
      <term><parameter>value</parameter></term>
      <listitem>
       <para>
-       Ein Array oder ein <classname>Countable</classname>-Objekt.
+       Ein Array oder ein <interfacename>Countable</interfacename>-Objekt.
       </para>
      </listitem>
     </varlistentry>
@@ -52,9 +43,9 @@
       <para>
        Wenn der optionale Parameter <parameter>mode</parameter> auf
        <constant>COUNT_RECURSIVE</constant> (oder 1) gesetzt ist, wird
-       <function>count</function> rekursiv durch das Array zählen.
-       Dies kann besonders nützlich sein, um alle Elemente eines
-       mehrdimensionalen Arrays zu zählen.
+       <function>count</function> rekursiv durch das Array zählen. Dies kann
+       besonders nützlich sein, um alle Elemente eines mehrdimensionalen
+       Arrays zu zählen.
       </para>
       <caution>
        <para>
@@ -74,11 +65,12 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt die Anzahl von Elementen in <parameter>value</parameter> zurück.
-   Ist der Parameter weder ein Array noch ein Objekt mit implementierter
-   <literal>Countable</literal>-Schnittstelle, wird <literal>1</literal>
-   zurückgegeben. Es gibt eine Ausnahme: Wenn <parameter>value</parameter>
-   &null; ist, wird <literal>0</literal> zurückgegeben.
+   Gibt die Anzahl von Elementen in <parameter>value</parameter> zurück. Vor
+   PHP 8.0.0 wurde <literal>1</literal> zurückgegeben, wenn der Parameter
+   weder ein &array; noch ein &object; mit implementierter
+   <interfacename>Countable</interfacename>-Schnittstelle war, es sei denn,
+   <parameter>value</parameter> war null, dann wurde <literal>0</literal>
+   zurückgegeben.
   </para>
  </refsect1>
 
@@ -105,8 +97,8 @@
       <entry>7.2.0</entry>
       <entry>
        <function>count</function> erzeugt nun eine Warnung für ungültige
-       zählbare Typen, die an den Parameter
-       <parameter>value</parameter> übergeben wurden.
+       zählbare Typen, die an den Parameter <parameter>value</parameter>
+       übergeben wurden.
       </entry>
      </row>
     </tbody>
@@ -117,7 +109,7 @@
  <refsect1 role="examples">
   &reftitle.examples;
   <para>
-   <example>
+   <example xml:id="count.example.basic">
     <title><function>count</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
@@ -144,7 +136,7 @@ int(3)
    </example>
   </para>
   <para>
-   <example>
+   <example xml:id="count.example.badexample">
     <title><function>count</function>-Beispiel für ein nicht zählbares Array (schlechtes Beispiel - nicht verwenden)</title>
     <programlisting role="php">
 <![CDATA[
@@ -191,7 +183,7 @@ Fatal error: Uncaught TypeError: count(): Argument #1 ($var) must be of type Cou
    </example>
   </para>
   <para>
-   <example>
+   <example xml:id="count.example.recursive">
     <title>Rekursives <function>count</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
@@ -200,14 +192,52 @@ $food = array('Obst' => array('Orange', 'Banane', 'Apfel'),
               'Gemüse' => array('Karotte', 'Kohl', 'Erbse'));
 
 // rekursiv zählen
-echo count($food, COUNT_RECURSIVE); // gibt 8 aus
+var_dump(count($food, COUNT_RECURSIVE));
 
 // normales zählen
-echo count($food); // gibt 2 aus
+var_dump(count($food));
 
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+int(8)
+int(2)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example xml:id="count.example.countable">
+    <title><interfacename>Countable</interfacename>-Objekt</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class CountOfMethods implements Countable
+{
+    private function someMethod()
+    {
+    }
+
+    public function count(): int
+    {
+        return count(get_class_methods($this));
+    }
+}
+
+$obj = new CountOfMethods();
+var_dump(count($obj));
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen role="php">
+<![CDATA[
+int(2)
+]]>
+    </screen>
    </example>
   </para>
  </refsect1>
@@ -221,6 +251,7 @@ echo count($food); // gibt 2 aus
     <member><function>empty</function></member>
     <member><function>strlen</function></member>
     <member><function>is_countable</function></member>
+    <member><link linkend="language.types.array">Arrays</link></member>
    </simplelist>
   </para>
  </refsect1>
