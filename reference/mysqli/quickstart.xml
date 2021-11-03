@@ -1,0 +1,1779 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 2e8ef0a1bd98243cb2c6c5c627a195bb53a7a440 Maintainer: nobody Status: wip -->
+<chapter xml:id="mysqli.quickstart" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Kurzanleitung für den schnellen Einstieg</title>
+ <para>
+  Diese Kurzanleitung hilft dabei, sich mit der PHP-MySQL-API vertraut zu
+  machen.
+ </para>
+ <para>
+  Diese Kurzanleitung gibt einen Überblick über die mysqli-Erweiterung. Es
+  werden Beispiele für alle wichtigen Aspekte der API beschrieben.
+  Datenbankkonzepte werden in dem Maße erklärt, wie es für die Darstellung
+  von MySQL-spezifischen Konzepten erforderlich ist.
+ </para>
+ <para>
+  Voraussetzungen: Vertrautheit mit der Programmiersprache PHP, der Sprache
+  SQL und Grundkenntnisse über den MySQL-Server.
+ </para>
+ <section xml:id="mysqli.quickstart.dual-interface">
+  <title>Prozedurale und objektorientierte Schnittstelle</title>
+  <para>
+   Die mysqli-Erweiterung verfügt über eine doppelte Schnittstelle. Sie
+   unterstützt das prozedurale und das objektorientierte Programmier-Paradigma.
+  </para>
+  <para>
+   Benutzer, die von der alten mysql-Erweiterung umsteigen, werden vielleicht
+   die prozedurale Schnittstelle bevorzugen. Die prozedurale Schnittstelle ist
+   ähnlich wie die der alten mysql Erweiterung. In vielen Fällen unterscheiden
+   sich die Funktionsnamen nur durch das Präfix. Einige mysqli-Funktionen
+   benötigen ein Verbindungs-Handle als ersten Parameter, während
+   entsprechende Funktionen der alten mysql-Schnittstelle es als optionalen
+   letzten Parameter nehmen.
+  </para>
+  <para>
+   <example>
+    <title>Einfacher Umstieg von der alten mysql-Erweiterung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli = mysqli_connect("example.com", "user", "password", "database");
+$result = mysqli_query($mysqli, "SELECT 'Bitte verwenden Sie nicht die veraltete mysql-Erweiterung für neue Projekte. ' AS _msg FROM DUAL");
+$row = mysqli_fetch_assoc($result);
+echo $row['_msg'];
+
+$mysql = mysql_connect("example.com", "user", "password");
+mysql_select_db("test");
+$result = mysql_query("SELECT 'Verwenden Sie stattdessen die mysqli-Erweiterung.' AS _msg FROM DUAL", $mysql);
+$row = mysql_fetch_assoc($result);
+echo $row['_msg'];
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Bitte verwenden Sie nicht die veraltete mysql-Erweiterung für neue Projekte. Verwenden Sie stattdessen die mysqli-Erweiterung.
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Die objektorientierte Schnittstelle</emphasis>
+  </para>
+  <para>
+   Neben der klassischen prozeduralen Schnittstelle kann der Benutzer auch die
+   objektorientierte Schnittstelle verwenden. Die Dokumentation ist anhand der
+   objektorientierten Schnittstelle gegliedert. Um den Einstieg zu
+   erleichtern, sind die Funktionen der objektorientierten Schnittstelle nach
+   ihrem Zweck gruppiert. Der Referenzteil enthält Beispiele für beide
+   Syntaxvarianten.
+  </para>
+  <para>
+   Es gibt keine signifikanten Leistungsunterschiede zwischen den beiden
+   Schnittstellen. Der Benutzer kann seine Wahl nach persönlichen Vorlieben
+   treffen.
+  </para>
+  <para>
+   <example>
+    <title>Objektorientierte und prozedurale Schnittstelle</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$mysqli = mysqli_connect("example.com", "user", "password", "database");
+
+$result = mysqli_query($mysqli, "SELECT 'A world full of ' AS _msg FROM DUAL");
+$row = mysqli_fetch_assoc($result);
+echo $row['_msg'];
+
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$result = $mysqli->query("SELECT 'choices to please everybody.' AS _msg FROM DUAL");
+$row = $result->fetch_assoc();
+echo $row['_msg'];
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+A world full of choices to please everybody.
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Für die Kurzanleitung wird die objektorientierte Schnittstelle verwendet,
+   weil der Referenzabschnitt entsprechend aufgebaut ist.
+  </para>
+  <para>
+   <emphasis role="bold">Stile miteinander kombinieren</emphasis>
+  </para>
+  <para>
+   Es ist jederzeit möglich, zwischen den Stilen zu wechseln. Das Kombinieren
+   beider Stile wird aus Gründen des Programmierstils und der Verständlichkeit
+   des Codes nicht empfohlen.
+  </para>
+  <para>
+   <example>
+    <title>Schlechter Programmierstil</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$result = mysqli_query($mysqli, "SELECT 'Möglich, aber schlechter Stil.' AS _msg FROM DUAL");
+
+if ($row = $result->fetch_assoc()) {
+    echo $row['_msg'];
+}
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Möglich, aber schlechter Stil.
+]]>
+    </screen>
+    </example>
+  </para>
+  <para>
+   <emphasis role="bold">Siehe auch</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::__construct</methodname></member>
+    <member><methodname>mysqli::query</methodname></member>
+    <member><methodname>mysqli_result::fetch_assoc</methodname></member>
+    <member><link linkend="mysqli.connect-errno">$mysqli::connect_errno</link></member>
+    <member><link linkend="mysqli.connect-error">$mysqli::connect_error</link></member>
+    <member><link linkend="mysqli.errno">$mysqli::errno</link></member>
+    <member><link linkend="mysqli.error">$mysqli::error</link></member>
+    <member><link linkend="mysqli.summary">Übersicht über die Funktionen der MySQLi-Erweiterung</link></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.connections">
+  <title>Datenbankverbindungen</title>
+  <para>
+   Der MySQL-Server unterstützt die Verwendung verschiedener
+   Transportschichten für Verbindungen. Verbindungen verwenden TCP/IP,
+   Unix-Domain-Sockets oder Windows Named Pipes.
+  </para>
+  <para>
+   Der Hostname <literal>localhost</literal> hat eine besondere Bedeutung. Er
+   ist an die Verwendung von Unix-Domain-Sockets gebunden. Um eine
+   TCP/IP-Verbindung zum Localhost zu öffnen, muss <literal>127.0.0.1</literal>
+   anstelle des Hostnamens <literal>localhost</literal> verwendet werden.
+  </para>
+  <para>
+   <example>
+    <title>Die besondere Bedeutung von localhost</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$mysqli = new mysqli("localhost", "user", "password", "database");
+
+echo $mysqli->host_info . "\n";
+
+$mysqli = new mysqli("127.0.0.1", "user", "password", "database", 3306);
+
+echo $mysqli->host_info . "\n";
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Localhost via UNIX socket
+127.0.0.1 via TCP/IP
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Standardwerte für Verbindungsparameter</emphasis>
+  </para>
+  <para>
+   Je nach verwendeter Verbindungsfunktion können verschiedene Parameter
+   weggelassen werden. Wenn ein Parameter nicht angegeben wird, versucht die
+   Erweiterung, die Standardwerte zu verwenden, die in der
+   PHP-Konfigurationsdatei festgelegt sind.
+  </para>
+  <para>
+   <example>
+    <title>Standardwerte festlegen</title>
+    <programlisting role="ini">
+<![CDATA[
+mysqli.default_host=192.168.2.27
+mysqli.default_user=root
+mysqli.default_pw=""
+mysqli.default_port=3306
+mysqli.default_socket=/tmp/mysql.sock
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   Die entsprechenden Parameterwerte werden dann an die Client-Bibliothek
+   übergeben, die von der Erweiterung verwendet wird. Wenn die
+   Client-Bibliothek leere oder nicht gesetzte Parameter findet, kann sie die
+   Standardwerte der Bibliothek verwenden.
+  </para>
+  <para>
+   <emphasis role="bold">Standardwerte der integrierten Verbindungsbibliothek</emphasis>
+  </para>
+  <para>
+   Wenn der Wert von host nicht definiert oder leer ist, verwendet die
+   Client-Bibliothek standardmäßig eine Unix-Socket-Verbindung zu
+   <literal>localhost</literal>. Wenn der Socket undefiniert oder leer ist und
+   eine Unix-Socket-Verbindung angefordert wird, dann wird versucht, eine
+   Verbindung zum Standardsocket <literal>/tmp/mysql.sock</literal>
+   aufzubauen.
+  </para>
+  <para>
+   Auf Windows-Systemen wird der Hostname <literal>.</literal> von der
+   Client-Bibliothek als Versuch interpretiert, eine auf einer Windows Namend
+   Pipe basierende Verbindung zu öffnen. In diesem Fall wird der
+   Socket-Parameter als Name der Pipe interpretiert. Wird er nicht angegeben
+   oder ist er leer, dann wird der Socket (Name der Pipe) standardmäßig auf
+   <literal>\\.\pipe\MySQL</literal> gesetzt.
+  </para>
+  <para>
+   Wenn eine Verbindung weder basierend auf einen Unix-Domänen-Socket noch auf
+   eine Windows Named Pipe aufgebaut werden soll und der Parameterwert für den
+   Port nicht gesetzt ist, verwendet die Bibliothek standardmäßig den Port
+   <literal>3306</literal>.
+  </para>
+  <para>
+   Die <link linkend="mysqlnd.overview">mysqlnd</link>-Bibliothek und die
+   MySQL-Client-Bibliothek (libmysqlclient) implementieren dieselbe Logik zur
+   Bestimmung der Standardwerte.
+  </para>
+  <para>
+   <emphasis role="bold">Optionen für die Verbindung</emphasis>
+  </para>
+  <para>
+   Die Verbindungsoptionen sind verfügbar, um z. B. Initialisierungsbefehle zu
+   setzen, die beim Aufbau der Verbindung ausgeführt werden, oder um die
+   Verwendung eines bestimmten Zeichensatzes anzugeben. Die
+   Verbindungsoptionen müssen gesetzt werden, bevor eine Netzwerkverbindung
+   aufgebaut wird.
+  </para>
+  <para>
+   Um eine Verbindungsoption zu setzen, muss der Verbindungsvorgang in drei
+   Schritten durchgeführt werden: erstellen eines Verbindungs-Handles mit
+   <function>mysqli_init</function> oder
+   <methodname>mysqli::__construct</methodname>, setzen der gewünschten
+   Optionen mit <methodname>mysqli::options</methodname> und Aufbau der
+   Netzwerkverbindung mit <methodname>mysqli::real_connect</methodname>.
+  </para>
+  <para>
+   <emphasis role="bold">Pooling von Verbindungen</emphasis>
+  </para>
+  <para>
+   Die mysqli-Erweiterung unterstützt persistente Datenbankverbindungen, die
+   eine spezielle Art von gepoolten Verbindungen sind. Standardmäßig wird jede
+   Datenbankverbindung, die von einem Skript geöffnet wird, entweder explizit
+   durch den Benutzer während der Laufzeit geschlossen oder am Ende des
+   Skripts automatisch freigegeben. Eine persistente Verbindung wird nicht
+   geschlossen. Stattdessen wird sie in einen Pool gelegt, um später
+   wiederverwendet zu werden, wenn eine Verbindung zum selben Server mit
+   denselben Benutzernamen, Passwort, Socket, Port und Standarddatenbank
+   geöffnet wird. Die Wiederverwendung spart Verbindungs-Overhead.
+  </para>
+  <para>
+   Jeder PHP-Prozess verwendet seinen eigenen mysqli-Verbindungspool. Abhängig
+   vom Einsatzmodell des Webservers kann ein PHP-Prozess eine oder mehrere
+   Anfragen bedienen. Daher kann eine in einem Pool gehaltene Verbindung von
+   einem oder mehreren Skripten nacheinander verwendet werden.
+  </para>
+  <para>
+   <emphasis role="bold">Persistente Verbindung</emphasis>
+  </para>
+  <para>
+   Wenn im Verbindungspool für eine bestimmte Kombination von Host,
+   Benutzername, Passwort, Socket, Port und Standarddatenbank keine unbenutzte
+   persistente Verbindung gefunden wird, öffnet mysqli eine neue Verbindung.
+   Die Verwendung persistenter Verbindungen kann mit der PHP-Direktive
+   <link linkend="ini.mysqli.allow-persistent">mysqli.allow_persistent</link>
+   aktiviert und deaktiviert werden. Die Gesamtzahl der von einem Skript
+   geöffneten Verbindungen kann mit
+   <link linkend="ini.mysqli.max-links">mysqli.max_links</link> begrenzt
+   werden. Die maximale Anzahl von persistenten Verbindungen pro PHP-Prozess
+   kann mit
+   <link linkend="ini.mysqli.max-persistent">mysqli.max_persistent</link>
+   begrenzt werden. Bitte beachten Sie, dass der Webserver viele PHP-Prozesse
+   erzeugen kann.
+  </para>
+  <para>
+   Eine häufige Kritik an persistenten Verbindungen ist, dass ihr Zustand vor
+   der Wiederverwendung nicht zurückgesetzt wird. Zum Beispiel werden offene
+   und nicht abgeschlossene Transaktionen nicht nicht automatisch
+   zurückgesetzt. Aber auch Berechtigungsänderungen, die in der Zeit zwischen
+   der Aufnahme der Verbindung in den Pool und ihrer Wiederverwendung
+   vorgenommen wurden, werden nicht berücksichtigt. Dies kann als
+   unerwünschter Nebeneffekt angesehen werden. Andererseits kann der Name
+   <literal>persistent</literal> als Zusage verstanden werden, dass der
+   Zustand erhalten bleibt.
+  </para>
+  <para>
+   Die mysqli-Erweiterung unterstützt beide Arten einer persistenten
+   Verbindung: den persistenten Zustand und den vor der Wiederverwendung
+   zurückgesetzten Zustand. Die Voreinstellung ist Zurücksetzen. Bevor eine
+   persistente Verbindung wiederverwendet wird, ruft die mysqli-Erweiterung
+   implizit <methodname>mysqli::change_user</methodname> auf, um den Zustand
+   zurückzusetzen. Die persistente Verbindung erscheint dem Benutzer so, als
+   ob sie gerade geöffnet worden wäre. Es sind keine Spuren von früheren
+   Verwendungen sichtbar.
+  </para>
+  <para>
+   Der Aufruf von <methodname>mysqli::change_user</methodname> ist eine
+   aufwändige Operation. Um die beste Leistung zu erzielen, sollten Benutzer
+   die Erweiterung mit dem Kompilierungsflag
+   <constant>MYSQLI_NO_CHANGE_USER_ON_PCONNECT</constant> neu kompilieren.
+  </para>
+  <para>
+   Es ist dem Benutzer überlassen, zwischen sicherem Verhalten und bester
+   Leistung zu wählen. Beides sind berechtigte Optimierungsziele. Um die
+   Benutzung zu erleichtern, wurde das sichere Verhalten auf Kosten der
+   maximalen Leistung als Standard festgelegt.
+  </para>
+  <para>
+   <emphasis role="bold">Siehe auch</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::__construct</methodname></member>
+    <member><function>mysqli_init</function></member>
+    <member><methodname>mysqli::options</methodname></member>
+    <member><methodname>mysqli::real_connect</methodname></member>
+    <member><methodname>mysqli::change_user</methodname></member>
+    <member><link linkend="mysqli.get-host-info">$mysqli::host_info</link></member>
+    <member><link linkend="mysqli.configuration">MySQLi-Konfigurationsoptionen</link></member>
+    <member><link linkend="features.persistent-connections">Persistente Datenbankverbindungen</link></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.statements">
+  <title>Ausführen von Anweisungen</title>
+  <para>
+   Anweisungen können mit <methodname>mysqli::query</methodname>,
+   <methodname>mysqli::real_query</methodname> und
+   <methodname>mysqli::multi_query</methodname> ausgeführt werden. Die
+   Funktion <methodname>mysqli::query</methodname> wird am häufigsten
+   verwendet und kombiniert in einem Aufruf die auszuführende Anweisung mit
+   einem gepufferten Abruf der Ergebnismenge, falls vorhanden. Der Aufruf von
+   <methodname>mysqli::query</methodname> ist gleichbedeutend mit dem Aufruf
+   von <methodname>mysqli::real_query</methodname> gefolgt von
+   <methodname>mysqli::store_result</methodname>.
+  </para>
+  <para>
+   <example>
+    <title>Ausführen von Anfragen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Gepufferte Ergebnisse</emphasis>
+  </para>
+  <para>
+   Nach der Ausführung der Anweisung können die Ergebnisse entweder alle auf
+   einmal vom Server abgerufen werden oder Zeile für Zeile. Die clientseitige
+   Pufferung der Ergebnismenge ermöglicht es dem Server, die mit den
+   Ergebnissen der Anweisung verbundenen Ressourcen so früh wie möglich
+   freizugeben. Im Allgemeinen verarbeiten Clients die Ergebnismengen langsam.
+   Es wird daher empfohlen, gepufferte Ergebnismengen zu verwenden.
+   <methodname>mysqli::query</methodname> kombiniert die Ausführung einer
+   Anweisung mit der Pufferung der Ergebnismenge.
+  </para>
+  <para>
+   PHP-Anwendungen können frei durch gepufferte Ergebnismengen navigieren. Da
+   die Ergebnismengen im Speicher des Clients gehalten werden, ist die
+   Navigation sehr schnell. Bitte bedenken Sie, dass es oft einfacher ist,
+   einen Client zu skalieren als den Server.
+  </para>
+  <para>
+   <example>
+    <title>Navigation durch gepufferte Ergebnisse</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+$mysqli->query("INSERT INTO test(id) VALUES (1), (2), (3)");
+
+$result = $mysqli->query("SELECT id FROM test ORDER BY id ASC");
+
+echo "Umgekehrte Reihenfolge...\n";
+for ($row_no = $result->num_rows - 1; $row_no >= 0; $row_no--) {
+    $result->data_seek($row_no);
+    $row = $result->fetch_assoc();
+    echo " id = " . $row['id'] . "\n";
+}
+
+echo "Reihenfolge der Ergebnisse...\n";
+foreach ($result as $row) {
+    echo " id = " . $row['id'] . "\n";
+}
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Umgekehrte Reihenfolge...
+ id = 3
+ id = 2
+ id = 1
+Reihenfolge der Ergebnisse...
+ id = 1
+ id = 2
+ id = 3
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Ungepufferte Ergebnismengen</emphasis>
+  </para>
+  <para>
+   Wenn der Client-Speicher knapp ist und es nicht notwendig ist,
+   Server-Ressourcen so früh wie möglich freizugeben, um die Serverlast gering
+   zu halten, können ungepufferte Ergebnisse verwendet werden. Das Blättern
+   durch ungepufferte Ergebnisse ist erst möglich, nachdem alle Zeilen gelesen
+   wurden.
+  </para>
+  <para>
+   <example>
+    <title>Navigation durch ungepufferte Ergebnisse</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$mysqli->real_query("SELECT id FROM test ORDER BY id ASC");
+$result = $mysqli->use_result();
+
+echo "Reihenfolge der Ergebnisse...\n";
+foreach ($result as $row) {
+    echo " id = " . $row['id'] . "\n";
+}
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Datentypen der Werte in der Ergebnismenge</emphasis>
+  </para>
+  <para>
+   Die Funktionen <methodname>mysqli::query</methodname>,
+   <methodname>mysqli::real_query</methodname> und
+   <methodname>mysqli::multi_query</methodname> werden verwendet, um nicht
+   vorbereitete Anweisungen auszuführen. Auf der Ebene des
+   Client-Server-Protokolls von MySQL werden der Befehl
+   <literal>COM_QUERY</literal> und das Textprotokoll für die Ausführung von
+   Anweisungen verwendet. Mit dem Textprotokoll wandelt der MySQL-Server alle
+   Daten einer Ergebnismenge vor dem Senden in Zeichenketten um. Diese
+   Umwandlung wird unabhängig vom Datentyp der Spalten der SQL-Ergebnismenge
+   durchgeführt. Die mysql-Client-Bibliotheken empfangen alle Spaltenwerte als
+   Zeichenketten. Es wird keine weitere clientseitige Umwandlung durchgeführt,
+   um Spalten zurück in ihre nativen Typen umzuwandeln. Stattdessen werden
+   alle Werte als PHP-Zeichenketten bereitgestellt.
+  </para>
+  <para>
+   <example>
+    <title>Das Textprotokoll gibt standardmäßig Zeichenketten zurück</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label CHAR(1))");
+$mysqli->query("INSERT INTO test(id, label) VALUES (1, 'a')");
+
+$result = $mysqli->query("SELECT id, label FROM test WHERE id = 1");
+$row = $result->fetch_assoc();
+
+printf("id = %s (%s)\n", $row['id'], gettype($row['id']));
+printf("label = %s (%s)\n", $row['label'], gettype($row['label']));
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+id = 1 (string)
+label = a (string)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Wenn die mysqlnd-Bibliothek verwendet wird, können Integer- und
+   Float-Spalten durch Setzen der Verbindungsoption
+   <constant>MYSQLI_OPT_INT_AND_FLOAT_NATIVE</constant> in PHP-Zahlen
+   umgewandelt werden. Wenn sie gesetzt ist, überprüft die mysqlnd-Bibliothek
+   die Metadaten der Spaltentypen in der Ergebnismenge und wandelt
+   numerische SQL-Spalten in PHP-Zahlen um, wenn der Wertebereich des
+   PHP-Datentyps dies zulässt. Auf diese Weise werden z. B. SQL-INT-Spalten
+   als Integer zurückgegeben.
+  </para>
+  <para>
+   <example>
+    <title>Native Datentypen bei mysqlnd und Verbindungsoption</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+$mysqli = new mysqli();
+$mysqli->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
+$mysqli->real_connect("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label CHAR(1))");
+$mysqli->query("INSERT INTO test(id, label) VALUES (1, 'a')");
+
+$result = $mysqli->query("SELECT id, label FROM test WHERE id = 1");
+$row = $result->fetch_assoc();
+
+printf("id = %s (%s)\n", $row['id'], gettype($row['id']));
+printf("label = %s (%s)\n", $row['label'], gettype($row['label']));
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+id = 1 (integer)
+label = a (string)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Siehe auch</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::__construct</methodname></member>
+    <member><methodname>mysqli::options</methodname></member>
+    <member><methodname>mysqli::real_connect</methodname></member>
+    <member><methodname>mysqli::query</methodname></member>
+    <member><methodname>mysqli::multi_query</methodname></member>
+    <member><methodname>mysqli::use_result</methodname></member>
+    <member><methodname>mysqli::store_result</methodname></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.prepared-statements">
+  <title>Vorbereitete Anweisungen (Prepared Statements)</title>
+  <para>
+   Die MySQL-Datenbank unterstützt vorbereitete Anweisungen. Vorbereitete
+   Anweisungen oder parametrisierte Anweisungen ermöglichen die wiederholte
+   und effiziente Ausführung derselben Anweisung und schützen gleichzeitig vor
+   SQL-Injections.
+  </para>
+  <para>
+   <emphasis role="bold">Grundlegender Ablauf</emphasis>
+  </para>
+  <para>
+   Die Ausführung einer vorbereiteten Anweisung besteht aus zwei Phasen: der
+   Vorbereitung und der Ausführung. In der Vorbereitungsphase wird eine
+   Anweisungsvorlage an den Datenbankserver gesendet. Der Server führt eine
+   Syntaxprüfung durch und initialisiert Server-interne Ressourcen für die
+   spätere Verwendung.
+  </para>
+  <para>
+   Der MySQL-Server unterstützt die Verwendung des anonymen,
+   positionsbezogenen Platzhalters <literal>?</literal>.
+  </para>
+  <para>
+   Auf das Vorbereiten folgt das Ausführen. Während der Ausführung bindet der
+   Client die Parameterwerte und sendet sie an den Server. Der Server führt
+   die Anweisung mit den gebundenen Werten unter Verwendung der zuvor
+   erstellten internen Ressourcen aus.
+  </para>
+  <para>
+   <example>
+    <title>Vorbereitete Anweisung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Nicht-vorbereitete Anweisung */
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label TEXT)");
+
+/* Vorbereitete Anweisung, Stufe 1: vorbereiten */
+$stmt = $mysqli->prepare("INSERT INTO test(id, label) VALUES (?, ?)");
+
+/* Vorbereitete Anweisung, Stufe 2: binden und ausführen */
+$id = 1;
+$label = 'PHP';
+$stmt->bind_param("is", $id, $label); // "is" bedeutet, dass $id als Integer und
+                                      // $label als Zeichenkette gebunden ist
+
+$stmt->execute();
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Mehrmalige Ausführung</emphasis>
+  </para>
+  <para>
+   Eine vorbereitete Anweisung kann mehrmals ausgeführt werden. Bei jeder
+   Ausführung wird der aktuelle Wert der gebundenen Variablen ausgewertet und
+   an den Server gesendet. Die Anweisung wird nicht erneut analysiert und die
+   Anweisungsvorlage wird nicht erneut an den Server übertragen.
+  </para>
+  <para>
+   <example>
+    <title>INSERT einmal vorbereitet, mehrfach ausgeführt</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Nicht-vorbereitete Anweisung */
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label TEXT)");
+
+/* Vorbereitete Anweisung, Stufe 1: vorbereiten */
+$stmt = $mysqli->prepare("INSERT INTO test(id, label) VALUES (?, ?)");
+
+/* Vorbereitete Anweisung, Stufe 2: binden und ausführen */
+$stmt->bind_param("is", $id, $label); // "is" bedeutet, dass $id als Integer und
+                                      // $label als Zeichenkette gebunden ist
+
+$data = [
+    1 => 'PHP',
+    2 => 'Java',
+    3 => 'C++'
+];
+foreach ($data as $id => $label) {
+    $stmt->execute();
+}
+
+$result = $mysqli->query('SELECT id, label FROM test');
+var_dump($result->fetch_all(MYSQLI_ASSOC));
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(3) {
+  [0]=>
+  array(2) {
+    ["id"]=>
+    string(1) "1"
+    ["label"]=>
+    string(3) "PHP"
+  }
+  [1]=>
+  array(2) {
+    ["id"]=>
+    string(1) "2"
+    ["label"]=>
+    string(4) "Java"
+  }
+  [2]=>
+  array(2) {
+    ["id"]=>
+    string(1) "3"
+    ["label"]=>
+    string(3) "C++"
+  }
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Jede vorbereitete Anweisung beansprucht Ressourcen auf dem Server, weshalb
+   sie sofort nach ihrer Verwendung explizit geschlossen werden sollte. Falls
+   dies nicht explizit geschieht, wird die Anweisung geschlossen, wenn das
+   Anweisungs-Handle von PHP freigegeben wird.
+  </para>
+  <para>
+   Die Verwendung einer vorbereiteten Anweisung ist nicht immer die
+   effizienteste Art, eine Anweisung auszuführen. Eine vorbereitete Anweisung,
+   die nur einmal ausgeführt wird, verursacht mehr Client-Server-Umläufe
+   (Roundtrips) als eine nicht-vorbereitete Anweisung. Aus diesem Grund wird
+   die <literal>SELECT</literal>-Anweisung nicht als vorbereitete Anweisung
+   ausgeführt.
+  </para>
+  <para>
+   Außerdem sollte für INSERTs die Verwendung der multi-INSERT-Syntax von
+   MySQL in Betracht gezogen werden. Für das Beispiel erfordert multi-INSERT
+   weniger Umläufe zwischen Server und Client als die oben gezeigte
+   vorbereitete Anweisung.
+  </para>
+  <para>
+   <example>
+    <title>Weniger Umläufe durch multi-INSERT-SQL</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+
+$values = [1, 2, 3, 4];
+
+$stmt = $mysqli->prepare("INSERT INTO test(id) VALUES (?), (?), (?), (?)");
+$stmt->bind_param('iiii', ...$values);
+$stmt->execute();
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Datentypen der Werte in der Ergebnismenge</emphasis>
+  </para>
+  <para>
+   Das MySQL-Client-Server-Protokoll definiert unterschiedliche
+   Datenübertragungsprotokolle für vorbereitete Anweisungen und
+   nicht-vorbereitete Anweisungen. Vorbereitete Anweisungen verwenden das
+   sogenannte Binärprotokoll. Der MySQL-Server sendet die Ergebnisdaten "as is"
+   (wie sie sind) im Binärformat. Die Ergebnisse werden vor dem Senden nicht
+   zu Zeichenketten serialisiert. Die Client-Bibliotheken empfangen die
+   binären Daten und versuchen, die Werte in geeignete PHP-Datentypen
+   umzuwandeln. Zum Beispiel werden Ergebnisse aus einer
+   SQL-<literal>INT</literal>-Spalte als PHP-Integer-Variablen bereitgestellt.
+  </para>
+  <para>
+   <example>
+    <title>Native Datentypen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Nicht-vorbereitete Anweisung */
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label TEXT)");
+$mysqli->query("INSERT INTO test(id, label) VALUES (1, 'PHP')");
+
+$stmt = $mysqli->prepare("SELECT id, label FROM test WHERE id = 1");
+$stmt->execute();
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+
+printf("id = %s (%s)\n", $row['id'], gettype($row['id']));
+printf("label = %s (%s)\n", $row['label'], gettype($row['label']));
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+id = 1 (integer)
+label = PHP (string)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Dieses Verhalten unterscheidet sich von nicht-vorbereiteten Anweisungen.
+   Standardmäßig geben nicht-vorbereitete Anweisungen alle Ergebnisse als
+   Zeichenketten zurück. Diese Vorgabe kann mit einer Verbindungsoption
+   geändert werden. Wenn diese Verbindungsoption verwendet wird, gibt es keine
+   Unterschiede.
+  </para>
+  <para>
+   <emphasis role="bold">Ergebnisse über gebundene Variablen abrufen</emphasis>
+  </para>
+  <para>
+   Ergebnisse von vorbereiteten Anweisungen können entweder durch Binden der
+   Ausgabevariablen oder durch Anfordern eines
+   <classname>mysqli_result</classname>-Objekts abgerufen werden.
+  </para>
+  <para>
+   Die Ausgabevariablen müssen nach der Ausführung der Anweisung gebunden
+   werden. Für jede Spalte der Ergebnismenge der Anweisung muss eine Variable
+   gebunden werden.
+  </para>
+  <para>
+   <example>
+    <title>Binden der Ausgabevariablen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Nicht-vorbereitete Anweisung */
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label TEXT)");
+$mysqli->query("INSERT INTO test(id, label) VALUES (1, 'PHP')");
+
+$stmt = $mysqli->prepare("SELECT id, label FROM test WHERE id = 1");
+$stmt->execute();
+
+$stmt->bind_result($out_id, $out_label);
+
+while ($stmt->fetch()) {
+    printf("id = %s (%s), label = %s (%s)\n", $out_id, gettype($out_id), $out_label, gettype($out_label));
+}
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+id = 1 (integer), label = PHP (string)
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Vorbereitete Anweisungen geben standardmäßig ungepufferte Ergebnismengen
+   zurück. Die Ergebnisse der Anweisung werden nicht implizit vom Server
+   abgerufen und zur clientseitigen Pufferung zum Client übertragen. Die
+   Ergebnismenge nimmt solange Serverressourcen in Anspruch, bis alle
+   Ergebnisse vom Client abgerufen wurden. Es wird daher empfohlen, die
+   Ergebnisse frühzeitig abzurufen. Wenn ein Client nicht alle Ergebnisse
+   abrufen kann oder der Client die Anweisung schließt, bevor er alle Daten
+   geholt hat, müssen die Daten implizit mit <literal>mysqli</literal>
+   abgerufen werden.
+  </para>
+  <para>
+   Mit <methodname>mysqli_stmt::store_result</methodname> ist es auch möglich,
+   die Ergebnisse einer vorbereiteten Anweisung zu puffern.
+  </para>
+  <para>
+   <emphasis role="bold" >Abrufen der Ergebnisse über die
+   mysqli_result-Schnittstelle</emphasis>.
+  </para>
+  <para>
+   Anstatt gebundene Ergebnisse zu verwenden, können die Ergebnisse auch über
+   die mysqli_result-Schnittstelle abgerufen werden.
+   <methodname>mysqli_stmt::get_result</methodname> gibt eine gepufferte
+   Ergebnismenge zurück.
+  </para>
+  <para>
+   <example>
+    <title>Verwendung von mysqli_result zum Abrufen von Ergebnissen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Nicht-vorbereitete Anweisung */
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label TEXT)");
+$mysqli->query("INSERT INTO test(id, label) VALUES (1, 'PHP')");
+
+$stmt = $mysqli->prepare("SELECT id, label FROM test WHERE id = 1");
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+var_dump($result->fetch_all(MYSQLI_ASSOC));
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(1) {
+  [0]=>
+  array(2) {
+    ["id"]=>
+    int(1)
+    ["label"]=>
+    string(3) "PHP"
+  }
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Die Verwendung der <classname>mysqli_result</classname>-Schnittstelle
+   bietet den zusätzlichen Vorteil einer flexiblen clientseitigen Navigation
+   in der Ergebnismenge.
+  </para>
+  <para>
+   <example>
+    <title>Gepufferte Ergebnismenge für flexibles Auslesen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Nicht-vorbereitete Anweisung */
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT, label TEXT)");
+$mysqli->query("INSERT INTO test(id, label) VALUES (1, 'PHP'), (2, 'Java'), (3, 'C++')");
+
+$stmt = $mysqli->prepare("SELECT id, label FROM test");
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+for ($row_no = $result->num_rows - 1; $row_no >= 0; $row_no--) {
+    $result->data_seek($row_no);
+    var_dump($result->fetch_assoc());
+}
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(2) {
+  ["id"]=>
+  int(3)
+  ["label"]=>
+  string(3) "C++"
+}
+array(2) {
+  ["id"]=>
+  int(2)
+  ["label"]=>
+  string(4) "Java"
+}
+array(2) {
+  ["id"]=>
+  int(1)
+  ["label"]=>
+  string(3) "PHP"
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Maskierung und SQL-Injection</emphasis>
+  </para>
+  <para>
+   Die gebundenen Variablen werden getrennt von der Abfrage an den Server
+   gesendet und können diese daher nicht beeinflussen. Der Server verwendet
+   diese Werte erst zum Zeitpunkt der der Ausführung, nachdem die
+   Anweisungsvorlage geparst wurde. Die gebundenen Parameter müssen nicht
+   müssen nicht maskiert werden, da sie nie direkt in die Abfragezeichenkette
+   eingefügt werden. Dem Server muss der Typ der gebundenen Variablen
+   mitgeteilt werden, um eine geeignete Umwandlung zu ermöglichen. Siehe
+   <methodname>mysqli_stmt::bind_param</methodname> für weitere Informationen.
+  </para>
+  <para>
+   Diese Trennung wird oft als die einzige Möglichkeit angesehen, sich gegen
+   SQL-Injection zu schützen, aber tatsächlich kann das gleiche Maß an
+   Sicherheit auch mit nicht-vorbereiteten Anweisungen erreicht werden, wenn
+   alle Werte korrekt formatiert sind. Es ist wichtig, zu beachten, dass eine
+   korrekte Formatierung nicht dasselbe ist wie die Maskierung, und mehr Logik
+   beinhaltet. Daher sind vorbereitete Anweisungen einfach ein bequemerer und
+   weniger fehleranfälliger Ansatz, um dieses Niveau an Datenbanksicherheit zu
+   erreichen.
+  </para>
+  <para>
+   <emphasis role="bold">Clientseitige Emulation vorbereiteter Anweisungen</emphasis>
+  </para>
+  <para>
+   Die API enthält keine Emulation für die clientseitige Emulation von
+   vorbereiteten Anweisungen.
+  </para>
+  <para>
+   <emphasis role="bold" >Ein kurzer Vergleich von vorbereiteten und
+   nicht-vorbereiteten Anweisungen</emphasis>
+  </para>
+  <para>
+   Die folgende Tabelle vergleicht serverseitige vorbereitete und
+   nicht-vorbereitete Anweisungen.
+  </para>
+  <table xml:id="mysqli.quickstart.prepared.comparison">
+   <title>Vergleich von vorbereiteten und nicht-vorbereiteten Anweisungen</title>
+   <tgroup cols="3">
+    <thead>
+     <row>
+      <entry></entry>
+      <entry>Vorbereitete Anweisung</entry>
+      <entry>Nicht-vorbereitete Anweisung</entry>
+    </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>Client-Server-Umläufe, SELECT, einmalige Ausführung</entry>
+      <entry>2</entry>
+      <entry>1</entry>
+     </row>
+     <row>
+      <entry>Anweisung vom Client zum Server übertragen</entry>
+      <entry>1</entry>
+      <entry>1</entry>
+     </row>
+     <row>
+      <entry>
+       Client-Server-Umläufe, SELECT, (n-malige) wiederholte Ausführung
+      </entry>
+      <entry>1 + n</entry>
+      <entry>n</entry>
+     </row>
+     <row>
+      <entry>Anweisung vom Client zum Server übertragen</entry>
+      <entry>1 Vorlage, n-mal gebundener Parameter, falls erforderlich</entry>
+      <entry>n-mal und jedes Mal geparst</entry>
+     </row>
+     <row>
+      <entry>API für die Bindung von Eingabeparametern</entry>
+      <entry>Ja</entry>
+      <entry>Nein, manuelles Maskieren der Eingabe</entry>
+     </row>
+     <row>
+      <entry>API für die Bindung von Ausgabevariablen</entry>
+      <entry>Ja</entry>
+      <entry>Nein</entry>
+     </row>
+     <row>
+      <entry>Unterstützt die Verwendung der mysqli_result-API</entry>
+      <entry>
+       Ja, Verwendung von <methodname>mysqli_stmt::get_result</methodname>
+      </entry>
+      <entry>Ja</entry>
+     </row>
+     <row>
+      <entry>Gepufferte Ergebnismengen</entry>
+      <entry>
+       Ja, Verwendung von <methodname>mysqli_stmt::get_result</methodname>
+       oder Bindung mit <methodname>mysqli_stmt::store_result</methodname>
+      </entry>
+      <entry>Ja, Voreinstellung von <methodname>mysqli::query</methodname></entry>
+     </row>
+     <row>
+      <entry>Ungepufferte Ergebnismengen</entry>
+      <entry>Ja, verwenden Sie die API für die Ausgabebindung</entry>
+      <entry>
+       Ja, verwenden Sie <methodname>mysqli::real_query</methodname> mit
+       <methodname>mysqli::use_result</methodname>
+      </entry>
+     </row>
+     <row>
+      <entry>
+       Variante des MySQL-Client-Server-Protokolls für die Datenübertragung
+      </entry>
+      <entry>Binär-Protokoll</entry>
+      <entry>Text-Protokoll</entry>
+     </row>
+     <row>
+      <entry>SQL-Datentypen der Werte in der Ergebnismenge</entry>
+      <entry>Werden beim Abrufen beibehalten</entry>
+      <entry>In Zeichenkette konvertiert oder beim Abrufen beibehalten</entry>
+     </row>
+     <row>
+      <entry>Unterstützt alle SQL-Anweisungen</entry>
+      <entry>
+       Neuere MySQL-Versionen unterstützen die meisten, aber nicht alle
+      </entry>
+      <entry>Ja</entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
+  <para>
+   <emphasis role="bold">Siehe auch</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::__construct</methodname></member>
+    <member><methodname>mysqli::query</methodname></member>
+    <member><methodname>mysqli::prepare</methodname></member>
+    <member><methodname>mysqli_stmt::prepare</methodname></member>
+    <member><methodname>mysqli_stmt::execute</methodname></member>
+    <member><methodname>mysqli_stmt::bind_param</methodname></member>
+    <member><methodname>mysqli_stmt::bind_result</methodname></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.stored-procedures">
+  <title>Stored Procedures</title>
+  <para>
+   The MySQL database supports stored procedures. A stored procedure is a
+   subroutine stored in the database catalog. Applications can call and
+   execute the stored procedure. The <literal>CALL</literal>
+   SQL statement is used to execute a stored procedure.
+  </para>
+  <para>
+   <emphasis role="bold">Parameter</emphasis>
+  </para>
+  <para>
+   Stored procedures can have <literal>IN</literal>,
+   <literal>INOUT</literal> and <literal>OUT</literal> parameters,
+   depending on the MySQL version. The mysqli interface has no special
+   notion for the different kinds of parameters.
+  </para>
+  <para>
+   <emphasis role="bold">IN parameter</emphasis>
+  </para>
+  <para>
+   Input parameters are provided with the <literal>CALL</literal> statement.
+   Please, make sure values are escaped correctly.
+  </para>
+  <para>
+   <example>
+    <title>Calling a stored procedure</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+
+$mysqli->query("DROP PROCEDURE IF EXISTS p");
+$mysqli->query("CREATE PROCEDURE p(IN id_val INT) BEGIN INSERT INTO test(id) VALUES(id_val); END;");
+
+$mysqli->query("CALL p(1)");
+
+$result = $mysqli->query("SELECT id FROM test");
+
+var_dump($result->fetch_assoc());
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(1) {
+  ["id"]=>
+  string(1) "1"
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">INOUT/OUT parameter</emphasis>
+  </para>
+  <para>
+   The values of <literal>INOUT</literal>/<literal>OUT</literal>
+   parameters are accessed using session variables.
+  </para>
+  <para>
+   <example>
+    <title>Using session variables</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP PROCEDURE IF EXISTS p");
+$mysqli->query('CREATE PROCEDURE p(OUT msg VARCHAR(50)) BEGIN SELECT "Hi!" INTO msg; END;');
+
+$mysqli->query("SET @msg = ''");
+$mysqli->query("CALL p(@msg)");
+
+$result = $mysqli->query("SELECT @msg as _p_out");
+
+$row = $result->fetch_assoc();
+echo $row['_p_out'];
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Hi!
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Application and framework developers may be able to provide a more convenient
+   API using a mix of session variables and databased catalog inspection.
+   However, please note the possible performance impact of a custom
+   solution based on catalog inspection.
+  </para>
+  <para>
+   <emphasis role="bold">Handling result sets</emphasis>
+  </para>
+  <para>
+   Stored procedures can return result sets. Result sets returned from a
+   stored procedure cannot be fetched correctly using <methodname>mysqli::query</methodname>.
+   The <methodname>mysqli::query</methodname> function combines statement execution
+   and fetching the first result set into a buffered result set, if any.
+   However, there are additional stored procedure result sets hidden
+   from the user which cause <methodname>mysqli::query</methodname> to fail
+   returning the user expected result sets.
+  </para>
+  <para>
+   Result sets returned from a stored procedure are fetched using
+   <methodname>mysqli::real_query</methodname> or <methodname>mysqli::multi_query</methodname>.
+   Both functions allow fetching any number of result sets returned by a
+   statement, such as <literal>CALL</literal>. Failing to fetch all
+   result sets returned by a stored procedure causes an error.
+  </para>
+  <para>
+   <example>
+    <title>Fetching results from stored procedures</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+$mysqli->query("INSERT INTO test(id) VALUES (1), (2), (3)");
+
+$mysqli->query("DROP PROCEDURE IF EXISTS p");
+$mysqli->query('CREATE PROCEDURE p() READS SQL DATA BEGIN SELECT id FROM test; SELECT id + 1 FROM test; END;');
+
+$mysqli->multi_query("CALL p()");
+
+do {
+    if ($result = $mysqli->store_result()) {
+        printf("---\n");
+        var_dump($result->fetch_all());
+        $result->free();
+    }
+} while ($mysqli->next_result());
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+---
+array(3) {
+  [0]=>
+  array(1) {
+    [0]=>
+    string(1) "1"
+  }
+  [1]=>
+  array(1) {
+    [0]=>
+    string(1) "2"
+  }
+  [2]=>
+  array(1) {
+    [0]=>
+    string(1) "3"
+  }
+}
+---
+array(3) {
+  [0]=>
+  array(1) {
+    [0]=>
+    string(1) "2"
+  }
+  [1]=>
+  array(1) {
+    [0]=>
+    string(1) "3"
+  }
+  [2]=>
+  array(1) {
+    [0]=>
+    string(1) "4"
+  }
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Use of prepared statements</emphasis>
+  </para>
+  <para>
+   No special handling is required when using the prepared statement
+   interface for fetching results from the same stored procedure as above.
+   The prepared statement and non-prepared statement interfaces are similar.
+   Please note, that not every MYSQL server version may support
+   preparing the <literal>CALL</literal> SQL statement.
+  </para>
+  <para>
+   <example>
+    <title>Stored Procedures and Prepared Statements</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+$mysqli->query("INSERT INTO test(id) VALUES (1), (2), (3)");
+
+$mysqli->query("DROP PROCEDURE IF EXISTS p");
+$mysqli->query('CREATE PROCEDURE p() READS SQL DATA BEGIN SELECT id FROM test; SELECT id + 1 FROM test; END;');
+
+$stmt = $mysqli->prepare("CALL p()");
+
+$stmt->execute();
+
+do {
+    if ($result = $stmt->get_result()) {
+        printf("---\n");
+        var_dump($result->fetch_all());
+        $result->free();
+    }
+} while ($stmt->next_result());
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+---
+array(3) {
+  [0]=>
+  array(1) {
+    [0]=>
+    int(1)
+  }
+  [1]=>
+  array(1) {
+    [0]=>
+    int(2)
+  }
+  [2]=>
+  array(1) {
+    [0]=>
+    int(3)
+  }
+}
+---
+array(3) {
+  [0]=>
+  array(1) {
+    [0]=>
+    int(2)
+  }
+  [1]=>
+  array(1) {
+    [0]=>
+    int(3)
+  }
+  [2]=>
+  array(1) {
+    [0]=>
+    int(4)
+  }
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   Of course, use of the bind API for fetching is supported as well.
+  </para>
+  <para>
+   <example>
+    <title>Stored Procedures and Prepared Statements using bind API</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+$mysqli->query("INSERT INTO test(id) VALUES (1), (2), (3)");
+
+$mysqli->query("DROP PROCEDURE IF EXISTS p");
+$mysqli->query('CREATE PROCEDURE p() READS SQL DATA BEGIN SELECT id FROM test; SELECT id + 1 FROM test; END;');
+
+$stmt = $mysqli->prepare("CALL p()");
+
+$stmt->execute();
+
+do {
+    if ($stmt->store_result()) {
+        $stmt->bind_result($id_out);
+        while ($stmt->fetch()) {
+            echo "id = $id_out\n";
+        }
+    }
+} while ($stmt->next_result());
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+id = 1
+id = 2
+id = 3
+id = 2
+id = 3
+id = 4
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">See also</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::query</methodname></member>
+    <member><methodname>mysqli::multi_query</methodname></member>
+    <member><methodname>mysqli::next_result</methodname></member>
+    <member><methodname>mysqli::more_results</methodname></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.multiple-statement">
+  <title>Multiple Statements</title>
+  <para>
+   MySQL optionally allows having multiple statements in one statement string,
+   but it requires special handling.
+  </para>
+  <para>
+   Multiple statements or multi queries must be executed
+   with <methodname>mysqli::multi_query</methodname>. The individual statements
+   of the statement string are separated by semicolon.
+   Then, all result sets returned by the executed statements must be fetched.
+  </para>
+  <para>
+   The MySQL server allows having statements that do return result sets and
+   statements that do not return result sets in one multiple statement.
+  </para>
+  <para>
+   <example>
+    <title>Multiple Statements</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$mysqli->query("DROP TABLE IF EXISTS test");
+$mysqli->query("CREATE TABLE test(id INT)");
+
+$sql = "SELECT COUNT(*) AS _num FROM test;
+        INSERT INTO test(id) VALUES (1);
+        SELECT COUNT(*) AS _num FROM test; ";
+
+$mysqli->multi_query($sql);
+
+do {
+    if ($result = $mysqli->store_result()) {
+        var_dump($result->fetch_all(MYSQLI_ASSOC));
+        $result->free();
+    }
+} while ($mysqli->next_result());
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(1) {
+  [0]=>
+  array(1) {
+    ["_num"]=>
+    string(1) "0"
+  }
+}
+array(1) {
+  [0]=>
+  array(1) {
+    ["_num"]=>
+    string(1) "1"
+  }
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Security considerations</emphasis>
+  </para>
+  <para>
+   The API functions <methodname>mysqli::query</methodname> and
+   <methodname>mysqli::real_query</methodname> do not set a connection flag necessary
+   for activating multi queries in the server. An extra API call is used for
+   multiple statements to reduce the damage of accidental SQL injection
+   attacks. An attacker may try to add statements such as
+   <literal>; DROP DATABASE mysql</literal> or <literal>; SELECT SLEEP(999)</literal>.
+   If the attacker succeeds in adding SQL to the statement string but
+   <literal>mysqli::multi_query</literal> is not used, the server will not
+   execute the injected and malicious SQL statement.
+  </para>
+  <para>
+   <example>
+    <title>SQL Injection</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli = new mysqli("example.com", "user", "password", "database");
+$result    = $mysqli->query("SELECT 1; DROP TABLE mysql.user");
+if (!$result) {
+    echo "Error executing query: (" . $mysqli->errno . ") " . $mysqli->error;
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Error executing query: (1064) You have an error in your SQL syntax;
+check the manual that corresponds to your MySQL server version for the right syntax
+to use near 'DROP TABLE mysql.user' at line 1
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Prepared statements</emphasis>
+  </para>
+  <para>
+   Use of the multiple statement with prepared statements is not supported.
+  </para>
+  <para>
+   <emphasis role="bold">See also</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::query</methodname></member>
+    <member><methodname>mysqli::multi_query</methodname></member>
+    <member><methodname>mysqli::next_result</methodname></member>
+    <member><methodname>mysqli::more_results</methodname></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.transactions">
+  <title>API support for transactions</title>
+  <para>
+   The MySQL server supports transactions depending on the storage engine used.
+   Since MySQL 5.5, the default storage engine is InnoDB.
+   InnoDB has full ACID transaction support.
+  </para>
+  <para>
+   Transactions can either be controlled using SQL or API calls.
+   It is recommended to use API calls for enabling and disabling the
+   <literal>autocommit</literal> mode and for committing and rolling back transactions.
+  </para>
+  <para>
+   <example>
+    <title>Setting <literal>autocommit</literal> mode with SQL and through the API</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+/* Recommended: using API to control transactional settings */
+$mysqli->autocommit(false);
+
+/* Won't be monitored and recognized by the replication and the load balancing plugin */
+$mysqli->query('SET AUTOCOMMIT = 0');
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   Optional feature packages, such as the replication and load balancing plugin,
+   can easily monitor API calls. The replication plugin offers transaction
+   aware load balancing, if transactions are controlled with API calls.
+   Transaction aware load balancing is not available if SQL statements are
+   used for setting <literal>autocommit</literal> mode, committing or rolling back a transaction.
+  </para>
+  <para>
+   <example>
+    <title>Commit and rollback</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+$mysqli->autocommit(false);
+
+$mysqli->query("INSERT INTO test(id) VALUES (1)");
+$mysqli->rollback();
+
+$mysqli->query("INSERT INTO test(id) VALUES (2)");
+$mysqli->commit();
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   Please note, that the MySQL server cannot roll back all statements.
+   Some statements cause an implicit commit.
+  </para>
+  <para>
+   <emphasis role="bold">See also</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::autocommit</methodname></member>
+    <member><methodname>mysqli::begin_transaction</methodname></member>
+    <member><methodname>mysqli::commit</methodname></member>
+    <member><methodname>mysqli::rollback</methodname></member>
+   </simplelist>
+  </para>
+ </section>
+
+ <section xml:id="mysqli.quickstart.metadata">
+  <title>Metadata</title>
+  <para>
+   A MySQL result set contains metadata. The metadata describes the columns
+   found in the result set. All metadata sent by MySQL is accessible
+   through the <literal>mysqli</literal> interface.
+   The extension performs no or negligible changes to the
+   information it receives.
+   Differences between MySQL server versions are not aligned.
+  </para>
+  <para>
+   Meta data is access through the <classname>mysqli_result</classname> interface.
+  </para>
+  <para>
+   <example>
+    <title>Accessing result set meta data</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$result = $mysqli->query("SELECT 1 AS _one, 'Hello' AS _two FROM DUAL");
+var_dump($result->fetch_fields());
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(2) {
+  [0]=>
+  object(stdClass)#3 (13) {
+    ["name"]=>
+    string(4) "_one"
+    ["orgname"]=>
+    string(0) ""
+    ["table"]=>
+    string(0) ""
+    ["orgtable"]=>
+    string(0) ""
+    ["def"]=>
+    string(0) ""
+    ["db"]=>
+    string(0) ""
+    ["catalog"]=>
+    string(3) "def"
+    ["max_length"]=>
+    int(1)
+    ["length"]=>
+    int(1)
+    ["charsetnr"]=>
+    int(63)
+    ["flags"]=>
+    int(32897)
+    ["type"]=>
+    int(8)
+    ["decimals"]=>
+    int(0)
+  }
+  [1]=>
+  object(stdClass)#4 (13) {
+    ["name"]=>
+    string(4) "_two"
+    ["orgname"]=>
+    string(0) ""
+    ["table"]=>
+    string(0) ""
+    ["orgtable"]=>
+    string(0) ""
+    ["def"]=>
+    string(0) ""
+    ["db"]=>
+    string(0) ""
+    ["catalog"]=>
+    string(3) "def"
+    ["max_length"]=>
+    int(5)
+    ["length"]=>
+    int(5)
+    ["charsetnr"]=>
+    int(8)
+    ["flags"]=>
+    int(1)
+    ["type"]=>
+    int(253)
+    ["decimals"]=>
+    int(31)
+  }
+}
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">Prepared statements</emphasis>
+  </para>
+  <para>
+   Meta data of result sets created using prepared statements are accessed
+   the same way. A suitable <classname>mysqli_result</classname> handle is
+   returned by <methodname>mysqli_stmt::result_metadata</methodname>.
+  </para>
+  <para>
+   <example>
+    <title>Prepared statements metadata</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("example.com", "user", "password", "database");
+
+$stmt = $mysqli->prepare("SELECT 1 AS _one, 'Hello' AS _two FROM DUAL");
+$stmt->execute();
+$result = $stmt->result_metadata();
+var_dump($result->fetch_fields());
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   <emphasis role="bold">See also</emphasis>
+  </para>
+  <para>
+   <simplelist>
+    <member><methodname>mysqli::query</methodname></member>
+    <member><methodname>mysqli_result::fetch_fields</methodname></member>
+   </simplelist>
+  </para>
+ </section>
+</chapter>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: aab33d644359aba597e810e2fc0c0caa0d347c9c Maintainer: samesch Status: ready -->
-<!-- Reviewed: yes Maintainer: samesch -->
+<!-- EN-Revision: 2d1981cc3003cd94f5fb88e0473eed2c5b26efde Maintainer: samesch Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 2d1981cc3003cd94f5fb88e0473eed2c5b26efde Reviewer: samesch -->
  <chapter xml:id="features.http-auth" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>HTTP-Authentifizierung mit PHP</title>
 
@@ -16,9 +17,9 @@
    <varname>AUTH_TYPE</varname>, die den Benutzernamen, das Passwort und den
    Typ der Authentifizierung enthalten, erneut aufgerufen. Diese
    vordefinierten Variablen befinden sich im Array
-   <varname>$_SERVER</varname>. Es werden sowohl die "Basic"- als auch die
-   "Digest"-Authentifizierungsmethode unterstützt. Näheres hierzu bei der
-   Funktion <function>header</function>.
+   <varname>$_SERVER</varname>. Es werden <emphasis>nur</emphasis> die
+   Authentifizierungsmethoden "Basic" und "Digest" unterstützt. Näheres hierzu
+   bei der Funktion <function>header</function>.
   </simpara>
 
   <para>
@@ -28,7 +29,7 @@
   <para>
    <example>
     <title>Beispiel: Basic-HTTP-Authentifizierung</title>
-   <programlisting role="php">
+    <programlisting role="php">
 <![CDATA[
 <?php
 if (!isset($_SERVER['PHP_AUTH_USER'])) {
@@ -52,9 +53,9 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
     <para>
      In diesem Beispiel wird gezeigt, wie ein einfaches Skript für die
      Digest-HTTP-Authentifizierung implementiert wird. Weitere Informationen
-     dazu finden Sie im <link xlink:href="&url.rfc;2617">RFC 2617</link>.
+     dazu sind im <link xlink:href="&url.rfc;2617">RFC 2617</link> zu finden.
     </para>
-   <programlisting role="php">
+    <programlisting role="php">
 <![CDATA[
 <?php
 $realm = 'Geschützter Bereich';
@@ -65,8 +66,7 @@ $benutzer = array('admin' => 'mypass', 'gast' => 'gast');
 if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
     header('HTTP/1.1 401 Unauthorized');
     header('WWW-Authenticate: Digest realm="' . $realm .
-           '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($realm) .
-           '"');
+           '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($realm) . '"');
 
     die('Text, der gesendet wird, falls der Benutzer auf Abbrechen drückt');
 }
@@ -77,12 +77,10 @@ if (!($daten = http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) ||
     die('Falsche Zugangsdaten!');
 
 // Erzeugen einer gültigen Antwort
-$A1 = md5($daten['username'] . ':' . $realm . ':' .
-          $benutzer[$daten['username']]);
+$A1 = md5($daten['username'] . ':' . $realm . ':' . $benutzer[$daten['username']]);
 $A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $daten['uri']);
 $gueltige_antwort = md5($A1 . ':' . $daten['nonce'] . ':' . $daten['nc'] .
-                        ':' . $daten['cnonce'] . ':' . $daten['qop'] . ':' .
-                        $A2);
+                        ':' . $daten['cnonce'] . ':' . $daten['qop'] . ':' . $A2);
 
 if ($daten['response'] != $gueltige_antwort)
     die('Falsche Zugangsdaten!');
@@ -130,8 +128,9 @@ function http_digest_parse($txt) {
   <para>
    Anstatt <varname>PHP_AUTH_USER</varname> und <varname>PHP_AUTH_PW</varname>
    wie im Beispiel oben einfach nur auszugeben, werden Sie den Benutzernamen
-   und das Passwort auf Gültigkeit überprüfen wollen. Dies kann durch abfragen
-   einer Datenbank oder die Suche des Benutzers in einer Textdatei geschehen.
+   und das Passwort auf Gültigkeit überprüfen wollen. Dies kann durch das
+   Abfragen einer Datenbank oder die Suche des Benutzers in einer Textdatei
+   geschehen.
   </para>
 
   <para>
@@ -151,8 +150,8 @@ function http_digest_parse($txt) {
   </note>
 
   <simpara>
-   Zu beachten ist, dass obenstehendes keinesfalls jemanden, der auf dem
-   selben Server die Kontrolle über eine nicht authentifizierte URL hat, davon
+   Zu beachten ist, dass Obenstehendes keinesfalls jemanden, der auf demselben
+   Server die Kontrolle über eine nicht authentifizierte URL hat, davon
    abhalten kann, Passwörter von authentifizierten URLs auszulesen.
   </simpara>
   <simpara>
@@ -166,10 +165,8 @@ function http_digest_parse($txt) {
   </simpara>
   <para>
    <example>
-    <title>
-     HTTP-Authentifizierung, mit erneuter Anforderung von Name/Passwort
-    </title>
-   <programlisting role="php">
+    <title>HTTP-Authentifizierung, mit erneuter Anforderung von Name/Passwort</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 function authentifizieren() {
@@ -181,13 +178,12 @@ function authentifizieren() {
 }
 
 if (!isset($_SERVER['PHP_AUTH_USER']) ||
-    ($_POST['Gesehen'] == 1 &&
-    $_POST['AlteAuth'] == $_SERVER['PHP_AUTH_USER'])) {
+    ($_POST['Gesehen'] == 1 && $_POST['AlteAuth'] == $_SERVER['PHP_AUTH_USER'])) {
     authentifizieren();
 } else {
     echo "<p>Willkommen: " . htmlspecialchars($_SERVER['PHP_AUTH_USER']) . "<br />";
     echo "Alt: " . htmlspecialchars($_REQUEST['AlteAuth']);
-    echo "<form action='' METHOD='post'>\n";
+    echo "<form action='' method='post'>\n";
     echo "<input type='hidden' name='Gesehen' value='1' />\n";
     echo "<input type='hidden' name='AlteAuth' value=\"" . htmlspecialchars($_SERVER['PHP_AUTH_USER']) . "\" />\n";
     echo "<input type='submit' value='Erneut Anmelden' />\n";
@@ -244,4 +240,7 @@ sgml-exposed-tags:nil
 sgml-local-catalogs:nil
 sgml-local-ecat-files:nil
 End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
 -->
