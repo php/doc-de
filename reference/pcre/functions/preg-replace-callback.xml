@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 22e850b66cd9a4b8f0e002bd5850f9839caaf152 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 41c8533ff5a8f93ba9fdf0732d05dd5ab79864c9 Maintainer: samesch Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 41c8533ff5a8f93ba9fdf0732d05dd5ab79864c9 Reviewer: samesch -->
 <refentry xml:id="function.preg-replace-callback" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>preg_replace_callback</refname>
@@ -45,7 +47,7 @@
       <para>
        Ein Callback, dem ein Array von Übereinstimmungen mit
        <parameter>subject</parameter> übergeben wird. Der Callback sollte die
-       Ersetzungs-Zeichenkette liefern. Das ist die Callback-Signatur:
+       Ersetzungs-Zeichenkette liefern. Dies ist die Callback-Signatur:
       </para>
       <para>
        <methodsynopsis>
@@ -56,19 +58,17 @@
       <para>
        Häufig werden Sie die <parameter>callback</parameter>-Funktion für
        <function>preg_replace_callback</function> nur an einer Stelle
-       benötigen. In diesem Fall können Sie eine <link
-       linkend="functions.anonymous">Anonyme Funktion</link> verwenden, um
-       innerhalb des Aufrufs von <function>preg_replace_callback</function>
+       benötigen. In diesem Fall können Sie eine
+       <link linkend="functions.anonymous">Anonyme Funktion</link> verwenden,
+       um innerhalb des Aufrufs von <function>preg_replace_callback</function>
        den Callback zu deklarieren. Auf diese Weise haben Sie alle
-       Informationen für den Aufruf an einer Stelle und stopfen den Namensraum
-       für Funktionen nicht mit Namen für Callback-Funktionen voll, die sonst
+       Informationen für den Aufruf an einer Stelle und füllen den Namensraum
+       für Funktionen nicht mit Namen für Callback-Funktionen, die sonst
        nirgends verwendet werden.
       </para>
       <para>
        <example>
-        <title>
-         <function>preg_replace_callback</function> und Anonyme Funktion
-        </title>
+        <title><function>preg_replace_callback</function> und Anonyme Funktion</title>
         <programlisting role="php">
 <![CDATA[
 <?php
@@ -76,15 +76,15 @@
 // Kleinschreibung am Beginn eines Abschnitts
 $fp = fopen("php://stdin", "r") or die("kann stdin nicht lesen");
 while (!feof($fp)) {
-  $zeile = fgets($fp);
-  $zeile = preg_replace_callback(
-    '|<p>\s*\w|',
-    function ($treffer) {
-      return strtolower($treffer[0]);
-    },
-    $zeile
-  );
-  echo $zeile;
+    $zeile = fgets($fp);
+    $zeile = preg_replace_callback(
+        '|<p>\s*\w|',
+        function ($treffer) {
+            return strtolower($treffer[0]);
+        },
+        $zeile
+    );
+    echo $zeile;
 }
 fclose($fp);
 ?>
@@ -108,8 +108,8 @@ fclose($fp);
      <listitem>
       <para>
        Die Höchstzahl der Ersetzungen für jedes Suchmuster in jeder
-       <parameter>subject</parameter>. Standardmäßig <literal>-1</literal>
-       (unbegrenzt).
+       <parameter>subject</parameter>-Zeichenkette. Standardmäßig
+       <literal>-1</literal> (unbegrenzt).
       </para>
      </listitem>
     </varlistentry>
@@ -126,9 +126,9 @@ fclose($fp);
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       <parameter>flags</parameter> ist eine Kombination der
+       <parameter>flags</parameter> ist eine Kombination der Flags
        <constant>PREG_OFFSET_CAPTURE</constant> und
-       <constant>PREG_UNMATCHED_AS_NULL</constant> Flags, die das Format des
+       <constant>PREG_UNMATCHED_AS_NULL</constant>, die das Format des
        matches-Arrays beeinflussen. Details sind der Beschreibung in
        <function>preg_match</function> zu entnehmen.
       </para>
@@ -152,6 +152,11 @@ fclose($fp);
   </para>
  </refsect1>
 
+ <refsect1 role="errors">
+  &reftitle.errors;
+  &pcre.pattern.warning;
+ </refsect1>
+
  <refsect1 role="changelog">
   &reftitle.changelog;
   <para>
@@ -167,7 +172,7 @@ fclose($fp);
       <row>
        <entry>7.4.0</entry>
        <entry>
-        Der <parameter>flags</parameter> Parameter wurde hinzugefügt.
+        Der Parameter <parameter>flags</parameter> wurde hinzugefügt.
        </entry>
       </row>
      </tbody>
@@ -191,10 +196,10 @@ $text.= "Das letzte Weihnachten war am 24.12.2001\n";
 // die Callback-Funktion
 function naechstes_jahr($treffer)
 {
-  // wie üblich: $treffer[0] ist die Übereinstimmung mit dem
-  // kompletten Suchmuster, $treffer[1] die Übereinstimmung mit
-  // dem ersten eingeklammerten Teilsuchmuster und so weiter
-  return $treffer[1].($treffer[2]+1);
+    // wie üblich: $treffer[0] ist die Übereinstimmung mit dem
+    // kompletten Suchmuster, $treffer[1] die Übereinstimmung mit
+    // dem ersten eingeklammerten Teilsuchmuster und so weiter
+    return $treffer[1].($treffer[2]+1);
 }
 echo preg_replace_callback(
             "|(\d{2}\.\d{2}\.)(\d{4})|",
@@ -226,13 +231,14 @@ $eingabe = "plain [indent] deep [indent] deeper [/indent] deep [/indent] plain";
 
 function parseTagsRecursive($eingabe)
 {
-  $regex = '#\[indent]((?:[^[]|\[(?!/?indent])|(?R))+)\[/indent]#';
 
-  if (is_array($eingabe)) {
-    $eingabe = '<div style="margin-left: 10px">'.$eingabe[1].'</div>';
-  }
+    $regex = '#\[indent]((?:[^[]|\[(?!/?indent])|(?R))+)\[/indent]#';
 
-  return preg_replace_callback($regex, 'parseTagsRecursive', $eingabe);
+    if (is_array($eingabe)) {
+        $eingabe = '<div style="margin-left: 10px">'.$eingabe[1].'</div>';
+    }
+
+    return preg_replace_callback($regex, 'parseTagsRecursive', $eingabe);
 }
 
 $ausgabe = parseTagsRecursive($eingabe);
@@ -260,7 +266,6 @@ echo $ausgabe;
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
