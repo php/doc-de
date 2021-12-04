@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c140370c354496b38b97dfafe2e31f3f8df8bb44 Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 2ff6e6bcad9700adaf50f9e1639c6d7d7d1f059d Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: c140370c354496b38b97dfafe2e31f3f8df8bb44 Reviewer: samesch -->
 <sect1 xml:id="language.types.array">
@@ -876,7 +876,7 @@ $error_descriptions[8] = "Dies ist nur ein informeller Hinweis";
  </sect2>
 
  <sect2 xml:id="language.types.array.casting">
-  <title>Konvertierung in Array</title>
+  <title>Konvertierung in ein Array</title>
 
   <para>
    Für jeden der Typen <type>&integer;</type>, <type>&float;</type>,
@@ -990,6 +990,107 @@ array(3) {
    <link linkend="language.operators.array">Array-Operatoren</link> ist es
    möglich, Arrays zu vergleichen.
   </para>
+ </sect2>
+
+ <sect2 xml:id="language.types.array.unpacking">
+  <title>Entpacken von Arrays</title>
+
+  <para>
+   Ein Array, dem ein <code>...</code> vorangestellt ist, wird bei der
+   Definition des Arrays an Ort und Stelle expandiert (entpackt). Nur Arrays
+   und Objekte, die <interfacename>Traversable</interfacename> implementieren,
+   können entpackt werden. Das Entpacken von Arrays mit <code>...</code> ist
+   seit PHP 7.4.0 verfügbar.
+  </para>
+
+  <para>
+   Es ist möglich, ein Array mehrmals zu entpacken und normale Elemente vor
+   oder nach dem Operator <code>...</code> hinzuzufügen:
+
+   <example>
+    <title>Einfaches Entpacken von Arrays</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Verwendung der kurzen Array-Syntax.
+// Funktioniert auch mit der array()-Syntax.
+$arr1 = [1, 2, 3];
+$arr2 = [...$arr1]; //[1, 2, 3]
+$arr3 = [0, ...$arr1]; //[0, 1, 2, 3]
+$arr4 = [...$arr1, ...$arr2, 111]; //[1, 2, 3, 1, 2, 3, 111]
+$arr5 = [...$arr1, ...$arr1]; //[1, 2, 3, 1, 2, 3]
+
+function getArr() {
+  return ['a', 'b'];
+}
+$arr6 = [...getArr(), 'c' => 'd']; //['a', 'b', 'c' => 'd']
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+
+  <para>
+   Das Entpacken eines Arrays mit dem Operator <code>...</code> folgt der
+   Syntax der Funktion <function>array_merge</function>. Das heißt,
+   nachfolgende Zeichenketten-Schlüssel überschreiben vorherige und
+   Integer-Schlüssel werden neu nummeriert:
+
+   <example>
+    <title>Entpacken eines Arrays mit doppeltem Schlüssel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// Zeichenketten-Schlüssel
+$arr1 = ["a" => 1];
+$arr2 = ["a" => 2];
+$arr3 = ["a" => 0, ...$arr1, ...$arr2];
+var_dump($arr3); // ["a" => 2]
+
+// Integer-Schlüssel
+$arr4 = [1, 2, 3];
+$arr5 = [4, 5, 6];
+$arr6 = [...$arr4, ...$arr5];
+var_dump($arr6); // [1, 2, 3, 4, 5, 6]
+// Das ergibt [0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5, 5 => 6]
+// wobei die ursprünglichen Integer-Schlüssel nicht beibehalten wurden.
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+
+  <note>
+   <para>
+    Schlüssel, die weder Integer noch Zeichenketten sind, lösen einen
+    <classname>TypeError</classname> aus. Solche Schlüssel können nur von
+    einem <interfacename>Traversable</interfacename>-Objekt erzeugt werden.
+   </para>
+  </note>
+  <note>
+   <para>
+    Vor PHP 8.1 wird das Entpacken eines Arrays, das einen String-Schlüssel
+    enthält, nicht unterstützt:
+   </para>
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$arr1 = [1, 2, 3];
+$arr2 = ['a' => 4];
+$arr3 = [...$arr1, ...$arr2];
+// Fatal error: Uncaught Error: Cannot unpack array with string keys in example.php:5
+
+$arr4 = [1, 2, 3];
+$arr5 = [4, 5];
+$arr6 = [...$arr4, ...$arr5]; // works. [1, 2, 3, 4, 5]
+?>
+]]>
+    </programlisting>
+   </informalexample>
+  </note>
+
  </sect2>
 
  <sect2 xml:id="language.types.array.examples">
