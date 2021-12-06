@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: cb0630b14901459c0bf1556e7d68f1b4c0d3796e Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: a7f535a32ba19f7e8236b9d87f3d84552c5f9b64 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: a7f535a32ba19f7e8236b9d87f3d84552c5f9b64 Reviewer: samesch -->
 
 <phpdoc:varentry xmlns:phpdoc="http://php.net/ns/phpdoc" xml:id="reserved.variables.globals" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -48,6 +50,29 @@ $foo in current scope: local variable
     </screen>
    </example>
   </para>
+  <warning>
+   <para>
+    Seit PHP 8.1.0 wird der Schreibzugriff auf das gesamte
+    <varname>$GLOBALS</varname>-Array nicht mehr unterstützt:
+    <example xml:id="variable.globals.entire_write_error">
+     <title>Das Schreiben des gesamten <varname>$GLOBALS</varname> führt zu einem Fehler</title>
+     <programlisting role="php">
+ <![CDATA[
+ <?php
+ // Erzeugt einen Kompilierungsfehler:
+ $GLOBALS = [];
+ $GLOBALS += [];
+ $GLOBALS =& $x;
+ $x =& $GLOBALS;
+ unset($GLOBALS);
+ array_pop($GLOBALS);
+ // ...und jede andere Schreib-/Lese-Schreiboperation auf $GLOBALS
+ ?>
+ ]]>
+     </programlisting>
+    </example>
+   </para>
+  </warning>
  </refsect1>
 
  <refsect1 role="notes">
@@ -56,15 +81,47 @@ $foo in current scope: local variable
   <note>
    <title>Verfügbarkeit der Variablen</title>
    <para>
-    Im Gegensatz zu allen anderen <link
-    linkend="language.variables.superglobals">Superglobals</link> ist
+    Im Gegensatz zu allen anderen
+    <link linkend="language.variables.superglobals">Superglobals</link> ist
     <varname>$GLOBALS</varname> notwendigerweise immer in PHP verfügbar.
+   </para>
+  </note>
+  <note>
+   <para>
+    Seit PHP 8.1.0 ist <varname>$GLOBALS</varname> eine schreibgeschützte
+    Kopie der globalen Symboltabelle. Das heißt, globale Variablen können
+    nicht über diese Kopie verändert werden. Zuvor war das Array
+    <varname>$GLOBALS</varname> vom üblichen Verhalten der Wertübergabe
+    (by-value) von PHP-Arrays ausgenommen und globale Variablen konnten über
+    seine Kopie geändert werden.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Vor PHP 8.1.0
+$a = 1;
+$globals = $GLOBALS; // Eine by-value-Kopie
+$globals['a'] = 2;
+var_dump($a); // int(2)
+
+// Seit PHP 8.1.0
+// $a wird dadurch nicht mehr verändert. Das vorherige Verhalten verletzte die Semantik von by-value.
+$globals = $GLOBALS;
+$globals['a'] = 1;
+
+// Um das vorherige Verhalten wiederherzustellen, durchlaufen Sie die Kopie und übertragen jede Eigenschaft zurück auf $GLOBALS.
+foreach ($globals as $key => $value) {
+    $GLOBALS[$key] = $value;
+}
+?>
+]]>
+     </programlisting>
+    </informalexample>
    </para>
   </note>
  </refsect1>
 
 </phpdoc:varentry>
-
 
 <!-- Keep this comment at the end of the file
 Local variables:
