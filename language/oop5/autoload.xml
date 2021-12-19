@@ -1,65 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 71b5a8fe9132b287da51b55290bce09d51512077 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Maintainer: simp Status: ready -->
 <!-- Credits: hholzgra -->
 <sect1 xml:id="language.oop5.autoload" xmlns="http://docbook.org/ns/docbook">
-  <title>Autoloading</title>
+  <title>Automatisches Laden von Klassen</title>
   <para>
    Viele Entwickler, die objektorientierte Anwendungen entwickeln, erzeugen
-   eine eigene PHP Quelldatei für jede Klassendefinition. Eines der größten
+   eine eigene PHP-Quelldatei für jede Klassendefinition. Eines der größten
    Ärgernisse ist die Notwendigkeit, eine lange Liste von benötigten 
    Include-Anweisungen am Anfang eines jeden Skripts (eine für jede Klasse).
   </para>
   <para>
-   In PHP 5 ist das nicht länger notwendig. Die
-   <function>spl_autoload_register</function> Funktion registriert eine
+   Die Funktion <function>spl_autoload_register</function> registriert eine
    beliebige Anzahl von Autoladern, die es ermöglichen, dass Klassen und
    Schnittstellen automatisch geladen werden, wenn sie derzeit nicht definiert
    sind. Durch das Registrieren von Autoladern erhält PHP einen letzten Versuch,
    die Klasse zu laden, bevor es unter Ausgabe einer Fehlermeldung scheitert.
   </para>
-  <tip>
+  <caution>
    <para>
-    Obwohl die <function>__autoload</function> Funktion ebenso für das
-    automatische Laden von Klassen und Schnittstellen genutzt werden kann, ist
-    es zu bevorzugen die <function>spl_autoload_register</function> Funktion zu
-    verwenden. Dies ist so, weil sie eine flexiblere Alternative darstellt (die
-    es ermöglicht eine beliebige Anzahl von Autoladern in der Anwendung zu
-    spezifizieren, wie etwa bei Fremdbibliotheken). Aus diesem Grund wird von
-    der Verwendung von <function>__autoload</function> abgeraten, und von PHP 7.2.0
-    an missbilligt.
+    Vor PHP 8.0.0 war es möglich, <function>__autoload</function> zu
+    verwenden, um Klassen und Schnittstellen automatisch zu laden. Dies ist
+    jedoch eine weniger flexible Alternative zu
+    <function>spl_autoload_register</function>.
+    <function>__autoload</function> ist seit PHP 7.2.0 veraltet und wurde in
+    PHP 8.0.0 entfernt.
    </para>
-  </tip>
-  <note>
-   <para>
-    Vor der Version 5.3.0 waren Exceptions, die in einer <function>__autoload</function>-Funktion 
-    geworfen wurden nicht in einem <link linkend="language.exceptions">Catch</link>-
-    Block fangbar und führten zu einem fatalen Fehler. Von PHP 5.3.0 an können 
-    Exceptions, die in einer __autoload-Funktion geworfen wurden, unter der folgenden
-    Bedingung in einem <link linkend="language.exceptions">Catch</link>-Block
-    gefangen werden. Wenn eine selbst definierte Exception geworfen wird, so
-    muss die Klasse dieser Exception bereits verfügbar sein. Die __autoload-
-    Funktion kann diese Exceptionklasse unter Umständen laden.
-   </para>
-  </note>
-  <note>
-   <para>
-    Autoloading ist nicht verfügbar, wenn man PHP im CLI <link
-    linkend="features.commandline">interaktiven Modus</link> betreibt.
-   </para>
-  </note>
-  <note>
-   <para>
-    Wird der Klassenname verwendet, z.B. in der Funktion <function>call_user_func</function>, 
-    so ist zu beachten, dass er gefährliche Zeichen wie z.B. <literal>../</literal>
-    enthalten kann. Es wird daher empfohlen keine Benutzereingaben an
-    solche Funktionen weiterzugeben oder zumindest die Eingaben in
-    <function>__autoload</function> zu prüfen. 
-   </para>
-  </note>
+  </caution>
   <para>
    <example>
-    <title>Autoload Beispiel</title>
+    <title>Autoload-Beispiel</title>
     <para>
      Dieses Beispiel versucht die Klassen <literal>MyClass1</literal> und
      <literal>MyClass2</literal> aus den entsprechenden Dateien 
@@ -80,9 +50,9 @@ $obj2 = new MyClass2();
     </programlisting>
    </example>
    <example>
-    <title>Weiteres Autoload Beispiel</title>
+    <title>Weiteres Autoload-Beispiel</title>
     <para>
-     Dieses Beispiel versucht das Interface <literal>ITest</literal> 
+     Dieses Beispiel versucht das Interface <literal>ITest</literal>
      zu laden.
     </para>
     <programlisting role="php">
@@ -95,10 +65,10 @@ spl_autoload_register(function ($name) {
 
 class Foo implements ITest {
 }
- 
+
 /*
 string(5) "ITest"
- 
+
 Fatal error: Interface 'ITest' not found in ...
 */
 ?>
@@ -106,9 +76,10 @@ Fatal error: Interface 'ITest' not found in ...
     </programlisting>
    </example>
    <example>
-    <title>Autoloading mit Ausnahmebehandlung für 5.3.0+</title>
+    <title>Autoloading mit Ausnahmebehandlung</title>
     <para>
-     In diesem Beispiel wird eine Exception geworfen und ein try/catch-Block demonstriert.
+     In diesem Beispiel wird eine Exception geworfen und ein try/catch-Block
+     demonstriert.
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -135,9 +106,10 @@ Kann NonLoadableClass nicht laden.
     </screen>
    </example>
    <example>
-    <title>Autoloading mit Ausnahmebehandlung für 5.3.0+ mit fehlender eigener Exception</title>
+    <title>Autoloading mit Ausnahmebehandlung mit fehlender eigener Exception</title>
     <para>
-     In diesem Beispiel wird eine Exception geworfen für eine nicht ladbare eigene Exception.
+     In diesem Beispiel wird eine Exception geworfen für eine nicht ladbare
+     eigene Exception.
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -179,7 +151,7 @@ Fatal error: Class 'MissingException' not found in testMissingException.php on l
     </simplelist>
    </para>
   </simplesect>
-  
+
  </sect1>
  
 <!-- Keep this comment at the end of the file

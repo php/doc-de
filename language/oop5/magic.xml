@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 069ce7647cdc4322493d15647354c3a622ea0a9b Maintainer: simp Status: ready -->
-
+<!-- EN-Revision: 3926279f825d418fdd2e7079968507d8b0c62b7d Maintainer: simp Status: ready -->
 <sect1 xml:id="language.oop5.magic" xmlns="http://docbook.org/ns/docbook">
   <title>Magische Methoden</title>
   <para>
@@ -56,10 +55,13 @@
   </warning>
   <warning>
    <para>
-    Falls Typdeklarationen in der Definition der magischen Methoden angegeben werden,
-    müssen diese identisch zu den Signaturen sein die in diesem Dokument beschrieben
-    werden. Andernfalls wird ein fataler Fehler hervorgerufen.
-    Vor PHP 8.0.0 wurde keine Diagnostik ausgegeben.
+    Falls Typdeklarationen in der Definition der magischen Methoden angegeben
+    werden, müssen diese identisch zu den Signaturen sein die in diesem
+    Dokument beschrieben werden. Andernfalls wird ein fataler Fehler
+    hervorgerufen. Vor PHP 8.0.0 wurde keine Diagnostik ausgegeben. Allerdings
+    dürfen <link linkend="object.construct">__construct()</link> und
+    <link linkend="object.destruct">__destruct()</link> keinen Rückgabetyp
+    deklarieren, sonst wird ein fataler Fehler ausgegeben.
    </para>
   </warning>
  
@@ -119,31 +121,31 @@
 <?php
 class Connection
 {
- protected $link;
- private $dsn, $username, $password;
-
- public function __construct($dsn, $username, $password)
- {
-  $this->dsn = $dsn;
-  $this->username = $username;
-  $this->password = $password;
-  $this->connect();
- }
-
- private function connect()
- {
-  $this->link = new PDO($this->dsn, $this->username, $this->password);
- }
-
- public function __sleep()
- {
-  return array('dsn', 'username', 'password');
- }
-
- public function __wakeup()
- {
-  $this->connect();
- }
+    protected $link;
+    private $dsn, $username, $password;
+    
+    public function __construct($dsn, $username, $password)
+    {
+        $this->dsn = $dsn;
+        $this->username = $username;
+        $this->password = $password;
+        $this->connect();
+    }
+    
+    private function connect()
+    {
+        $this->link = new PDO($this->dsn, $this->username, $this->password);
+    }
+    
+    public function __sleep()
+    {
+        return array('dsn', 'username', 'password');
+    }
+    
+    public function __wakeup()
+    {
+        $this->connect();
+    }
 }?>
 ]]>
    </programlisting>
@@ -430,10 +432,11 @@ object(A)#2 (2) {
    <note>
     <simpara>
      Wenn ein Objekt exportiert wird, überprüft <function>var_export</function>
-     nicht ob <link linkend="object.set-state">__set_state()</link> von der
-     Objektklasse implementiert wird, so dass der erneute Import solcher Objekte
-     fehlschlägt, falls __set_state() nicht implementiert ist. Die betrifft im
-     Besonderen einige interne Klassen.
+     nicht, ob <link linkend="object.set-state">__set_state()</link> von der
+     Objektklasse implementiert wird, sodass der erneute Import von Objekten
+     zu einer <classname>Error</classname>-Exception führt, falls
+     __set_state() nicht implementiert ist. Die betrifft im Besonderen einige
+     interne Klassen.
     </simpara>
     <simpara>
      Es liegt im Aufgabenbereich des Programmiers sicherzustellen, dass nur Objekte
@@ -441,7 +444,7 @@ object(A)#2 (2) {
     </simpara>
    </note>
  </sect2>
- 
+
  <sect2 xml:id="language.oop5.magic.debuginfo">
   <title><link linkend="object.debuginfo">__debugInfo()</link></title>
   <methodsynopsis xml:id="object.debuginfo">
