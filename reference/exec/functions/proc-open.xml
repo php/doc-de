@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c1f8c2ea33c70f59557175e1a43af7153b1df565 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 769812c12f00c1978bf7dd711dca38dbf05462da Maintainer: sammywg Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: c1f8c2ea33c70f59557175e1a43af7153b1df565 Reviewer: samesch -->
-<refentry xml:id='function.proc-open' xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="function.proc-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>proc_open</refname>
   <refpurpose>
@@ -14,13 +14,13 @@
  <refsect1 role="description">
   &reftitle.description;
    <methodsynopsis>
-    <type>resource</type><methodname>proc_open</methodname>
-    <methodparam><type>mixed</type><parameter>cmd</parameter></methodparam>
-    <methodparam><type>array</type><parameter>descriptorspec</parameter></methodparam>
+    <type class="union"><type>resource</type><type>false</type></type><methodname>proc_open</methodname>
+    <methodparam><type class="union"><type>array</type><type>string</type></type><parameter>command</parameter></methodparam>
+    <methodparam><type>array</type><parameter>descriptor_spec</parameter></methodparam>
     <methodparam><type>array</type><parameter role="reference">pipes</parameter></methodparam>
-    <methodparam choice="opt"><type>string</type><parameter>cwd</parameter><initializer>&null;</initializer></methodparam>
-    <methodparam choice="opt"><type>array</type><parameter>env</parameter><initializer>&null;</initializer></methodparam>
-    <methodparam choice="opt"><type>array</type><parameter>other_options</parameter><initializer>&null;</initializer></methodparam>
+    <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>cwd</parameter><initializer>&null;</initializer></methodparam>
+    <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>env_vars</parameter><initializer>&null;</initializer></methodparam>
+    <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>options</parameter><initializer>&null;</initializer></methodparam>
    </methodsynopsis>
   <para>
    <function>proc_open</function> ist äquivalent zu <function>popen</function>,
@@ -49,7 +49,7 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>cmd</parameter></term>
+     <term><parameter>command</parameter></term>
      <listitem>
       <para>
        Das auszuführende Kommandozeile als &string;. Sonderzeichen müssen
@@ -60,23 +60,23 @@
        <simpara>
         Unter <emphasis>Windows</emphasis> wird, falls
         <literal>bypass_shell</literal> in
-        <parameter>other_options</parameter> nicht auf &true; gesetzt ist, das
-        <parameter>cmd</parameter> mit dem Flag <literal>/c</literal> als
+        <parameter>options</parameter> nicht auf &true; gesetzt ist, das
+        <parameter>command</parameter> mit dem Flag <literal>/c</literal> als
         <emphasis>nicht in Anführungszeichen eingeschlossene</emphasis>
         Zeichenkette (d. h. genau wie an <function>proc_open</function>
         übergeben) an <command>cmd.exe</command> übergeben (genauer gesagt an
         <literal>%ComSpec%</literal>). Dies kann dazu führen, dass
         <command>cmd.exe</command> die umschließenden Anführungszeichen von
-        <parameter>cmd</parameter> entfernt (Details sind der Dokumentation
+        <parameter>command</parameter> entfernt (Details sind der Dokumentation
         von <command>cmd.exe</command> zu entnehmen), was zu unerwartetem und
         potentiell sogar gefährlichem Verhalten führen kann, da
         Fehlermeldungen von <command>cmd.exe</command> das übergebene
-        <parameter>cmd</parameter> oder Teile davon enthalten können (siehe
+        <parameter>command</parameter> oder Teile davon enthalten können (siehe
         Beispiel weiter unten).
        </simpara>
       </note>
       <para>
-       Von PHP 7.4.0 an kann <parameter>cmd</parameter> als &array; von
+       Von PHP 7.4.0 an kann <parameter>command</parameter> als &array; von
        Befehlsparametern übergeben werden. In diesem Fall wird der Prozess
        direkt gestartet (ohne Umweg über die Shell) und PHP kümmert sich um
        das nötige Maskieren der Argumente.
@@ -92,7 +92,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>descriptorspec</parameter></term>
+     <term><parameter>descriptor_spec</parameter></term>
      <listitem>
       <para>
        Ein indexiertes Array, in dem die Schlüssel die Descriptornummer
@@ -153,7 +153,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>env</parameter></term>
+     <term><parameter>env_vars</parameter></term>
      <listitem>
       <para>
        Ein Array mit den Umgebungsvariablen für das auszuführende Kommando,
@@ -163,7 +163,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>other_options</parameter></term>
+     <term><parameter>options</parameter></term>
      <listitem>
       <para>
        Erlaubt Ihnen, zusätzliche Optionen anzugeben. Derzeit unterstützte
@@ -226,21 +226,21 @@
        <entry>7.4.4</entry>
        <entry>
         Die Option <literal>create_new_console</literal> wurde dem Parameter
-        <parameter>other_options</parameter> hinzugefügt.
+        <parameter>options</parameter> hinzugefügt.
        </entry>
       </row>
       <row>
        <entry>7.4.0</entry>
        <entry>
         <function>proc_open</function> akzeptiert nun ebenfalls ein &array;
-        für das <parameter>cmd</parameter>.
+        für das <parameter>command</parameter>.
        </entry>
       </row>
       <row>
        <entry>7.4.0</entry>
        <entry>
         Die Option <literal>create_process_group</literal> wurde dem Parameter
-        <parameter>other_options</parameter> hinzugefügt.
+        <parameter>options</parameter> hinzugefügt.
        </entry>
       </row>
      </tbody>
@@ -333,7 +333,7 @@ konnte nicht gefunden werden.
     </screen>
     <simpara>
      Um dieses Verhalten zu vermeiden, ist es üblicherweise ausreichend das
-     <parameter>cmd</parameter> in zusätzliche Anführungszeichen einzuschließen:
+     <parameter>command</parameter> in zusätzliche Anführungszeichen einzuschließen:
     </simpara>
     <programlisting role="php">
 <![CDATA[
