@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9d2b858bca85edbeebb83f05a1cd2e87cf90127d Maintainer: cmb Status: ready -->
+<!-- EN-Revision: ea62fb83196997032641b50fe44420305466195e Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<!-- Rev-Revision: 9d2b858bca85edbeebb83f05a1cd2e87cf90127d Reviewer: samesch -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.fwrite">
  <refnamediv>
   <refname>fwrite</refname>
@@ -12,15 +12,15 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>int</type><methodname>fwrite</methodname>
-   <methodparam><type>resource</type><parameter>handle</parameter></methodparam>
-   <methodparam><type>string</type><parameter>string</parameter></methodparam>
-   <methodparam choice="opt"><type>int</type><parameter>length</parameter></methodparam>
+   <type class="union"><type>int</type><type>false</type></type><methodname>fwrite</methodname>
+   <methodparam><type>resource</type><parameter>stream</parameter></methodparam>
+   <methodparam><type>string</type><parameter>data</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>length</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <simpara>
    <function>fwrite</function> schreibt den Inhalt der Zeichenkette
-   <parameter>string</parameter> in die Datei, auf welche der Dateizeiger
-   <parameter>handle</parameter> zeigt.
+   <parameter>data</parameter> in die Datei, auf welche der Dateizeiger
+   <parameter>stream</parameter> zeigt.
   </simpara>
  </refsect1>
 
@@ -29,13 +29,13 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>handle</parameter></term>
+     <term><parameter>stream</parameter></term>
      <listitem>
       &fs.file.pointer;
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>string</parameter></term>
+     <term><parameter>data</parameter></term>
      <listitem>
       <para>
        Die zu schreibende Zeichenkette.
@@ -46,9 +46,9 @@
      <term><parameter>length</parameter></term>
      <listitem>
       <para>
-       Wenn der Parameter <parameter>length</parameter> angegeben wird, wird
+       Wenn Parameter <parameter>length</parameter> eine &integer; ist, wird
        das Schreiben nach <parameter>length</parameter> Bytes beendet, oder
-       wenn das Ende von <parameter>string</parameter> erreicht ist, je
+       wenn das Ende von <parameter>data</parameter> erreicht ist, je
        nachdem was eher eintritt.
       </para>
      </listitem>
@@ -63,6 +63,28 @@
    <function>fwrite</function> gibt die Anzahl der geschriebenen Bytes zurück,
    oder &false; bei einem Fehler.
   </simpara>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.0.0</entry>
+      <entry>
+       <parameter>length</parameter> ist jetzt nullbar.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -82,20 +104,20 @@ if (is_writable($filename)) {
     // Wir öffnen $filename im Anfüge-Modus.
     // Der Dateizeiger befindet sich am Ende der Datei, und daher
     // wird später $somecontent mit fwrite() dorthin geschrieben.
-    if (!$handle = fopen($filename, "a")) {
+    if (!$fp = fopen($filename, "a")) {
          print "Kann die Datei $filename nicht öffnen";
          exit;
     }
 
     // Schreibe $somecontent in die geöffnete Datei.
-    if (fwrite($handle, $somecontent) === FALSE) {
+    if (fwrite($fp, $somecontent) === FALSE) {
         print "Kann nicht in die Datei $filename schreiben";
         exit;
     }
 
     print "Fertig, in die Datei $filename wurde $somecontent geschrieben";
 
-    fclose($handle);
+    fclose($fp);
 
 } else {
     print "Die Datei $filename ist nicht schreibbar";
@@ -141,9 +163,9 @@ function fwrite_stream($fp, $string) {
   </note>
   <note>
    <para>
-    Wurde <parameter>handle</parameter> mit <function>fopen</function> im
+    Wurde <parameter>stream</parameter> mit <function>fopen</function> im
     Anfügemodus geöffnet, ist das Schreiben mit <function>fwrite</function>
-    atomar (außer wenn die Länge von <parameter>string</parameter> die
+    atomar (außer wenn die Länge von <parameter>data</parameter> die
     Blockgröße des Dateisystems auf manchen Systemen überschreitet, und
     solange sich die Datei in einem lokalen Dateisystem befindet). D. h. es
     besteht keine Notwendigkeit, eine Ressource vor dem Aufruf von
