@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 9b7ab9bc8e78b1201b8b8c71eac051256d433993 Maintainer: samesch Status: ready -->
+<sect1 xml:id="migration81.deprecated">
+ <title>Veraltete Features</title>
+
+ <sect2 xml:id="migration81.deprecated.core">
+  <title>PHP-Kern</title>
+
+  <sect3 xml:id="migration81.deprecated.core.serialize-interface">
+   <title>
+    Implementierung von <interfacename>Serializable</interfacename> ohne
+    <function>__serialize</function> und <function>__unserialize</function>
+   </title>
+
+   <para>
+    Sofern keine Unterstützung für PHP-Versionen vor 7.4 erforderlich ist,
+    sollten nur diese beiden magischen Methoden implementiert werden,
+    andernfalls sollten sowohl Schnittstellenmethoden als auch magische
+    Methoden implementiert werden.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.deprecated.core.null-not-nullable-internal">
+   <title>Übergabe von &null; an den Parameter einer eingebauten Funktion, der &null; nicht erlaubt</title>
+
+   <para>
+    Es wird empfohlen, &null; nicht mehr an skalare Parameter von eingebauten
+    Funktionen zu übergeben. Andernfalls wird nun ein entsprechender Hinweis
+    ausgegeben. Dieses Verhalten wurde eingeführt, um es an die Funktionsweise
+    von benutzerdefinierten Funktionen anzugleichen, bei denen
+    &null;-validierende Parameter zu diesem Zweck explizit markiert werden
+    müssen.
+
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+var_dump(str_contains("foobar", null));
+// Veraltet: Die Übergabe von null an Parameter #2 ($needle) vom Typ
+// string ist veraltet
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.deprecated.core.implicit-float-conversion">
+   <title>Implizite Umwandlungen von &float; in &integer;, die nicht kompatibel sind</title>
+   <para>
+    Die implizite Umwandlung von &float; in &integer;, die zu einem Verlust an
+    Genauigkeit führt, ist nun veraltet. Dies betrifft &array;-Schlüssel,
+    erzwungene Konvertierungen von &integer;-Typen, und Operatoren, die mit
+    &integer;n arbeiten.
+
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$a = [];
+$a[15.5]; // veraltet, da der Schlüsselwert die 0.5-Komponente verliert
+$a[15.0]; // OK, weil 15.0 == 15
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.deprecated.core.static-trait">
+   <title>Aufruf eines <modifier>static</modifier>-Elements bei einem Trait</title>
+
+   <para>
+    Der Aufruf einer <modifier>static</modifier>-Methode oder der Zugriff auf
+    eine <modifier>static</modifier>-Eigenschaft direkt in einem Trait ist
+    veraltet. Auf statische Methoden und Eigenschaften sollte nur in einer
+    Klasse zugegriffen werden, die den Trait verwendet.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.deprecated.core.magic-sleep">
+   <title>Rückgabe eines nicht-&array;s von <function>__sleep</function></title>
+
+   <para>
+    Die Rückgabe eines Wertes von
+    <link linkend="object.sleep">__sleep()</link>, der kein &array; ist,
+    erzeugt nun eine Fehlermeldung.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.deprecated.core.void-by-ref">
+   <title>Rückgabe per Referenz aus einer <type>void</type>-Funktion</title>
+
+   <para>
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function &test(): void {}
+?>
+]]>
+     </programlisting>
+    </informalexample>
+    Eine solche Funktion ist widersprüchlich und gibt bereits folgende
+    <constant>E_NOTICE</constant>-Meldung aus, wenn sie aufgerufen wird:
+    <literal>Only variable references should be returned by reference</literal>.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.deprecated.core.autovivification-false">
+   <title>Automatische Erstellung (Autovivifikation) von &false;</title>
+   <para>
+    Autovivifikation ist der Prozess der automatischen Erstellung eines
+    &array;s, wenn ein Wert hinzugefügt wird. Dies ist bei skalaren Werten
+    verboten, jedoch war &false; eine Ausnahme. Diese Ausnahme ist nun
+    veraltet.
+
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$arr = false;
+$arr[] = 2;   // veraltet
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+   <note>
+    <para>
+     Die Autovivifikation von &null; und undefinierten Werten ist weiterhin
+     erlaubt:
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+// Von undefiniert
+$arr[] = 'ein Wert';
+$arr['existiertNicht'][] = 2;
+// Von null
+$arr = null;
+$arr[] = 2;
+?>
+]]>
+      </programlisting>
+     </informalexample>
+    </para>
+   </note>
+  </sect3>
+
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.ctype">
+  <title>ctype</title>
+
+  <sect3 xml:id="migration81.deprecated.ctype.nonstring-arguments">
+   <title>Überprüfung von Parametern, die keine Strings sind</title>
+
+   <para>
+    Die Übergabe eines Parameters, der kein String ist, ist veraltet. In
+    Zukunft wird der Parameter als String interpretiert und nicht mehr als
+    ASCII-Codepunkt. Je nach beabsichtigtem Verhalten sollte der Parameter
+    entweder nach &string; umgewandelt werden oder ein expliziter Aufruf von
+    <function>chr</function> erfolgen.
+    Alle <literal>ctype_*()</literal>-Funktionen sind betroffen.
+   </para>
+  </sect3>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.date">
+  <title>Date</title>
+
+  <para>
+   Die Funktionen <function>date_sunrise</function> und
+   <function>date_sunset</function> sind zugunsten von
+   <function>date_sun_info</function> veraltet.
+  </para>
+
+  <para>
+   Die Funktion <function>strptime</function> ist veraltet. Stattdessen sollte
+   <function>date_parse_from_format</function> verwendet werden (für
+   Locale-unabhängiges Parsen), oder
+   <methodname>IntlDateFormatter::parse</methodname> (für Locale-abhängiges
+   Parsen).
+  </para>
+
+  <para>
+   Die Funktionen <function>strftime</function> und
+   <function>gmstrftime</function> sind veraltet. Stattdessen sollte
+   <function>date</function> verwendet werden (für Locale-unabhängige
+   Formatierung), oder <methodname>IntlDateFormatter::format</methodname> (für
+   Locale-abhängige Formatierung).
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.filter">
+  <title>Filter</title>
+
+  <para>
+   Die Filter <constant>FILTER_SANITIZE_STRING</constant> und
+   <constant>FILTER_SANITIZE_STRIPPED</constant> sind veraltet.
+  </para>
+  <para>
+   Die INI-Direktive <link linkend="ini.filter.default">filter.default</link>
+   ist veraltet.
+   <!-- TODO Check that filter.default_flags -->
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.gd">
+  <title>GD</title>
+
+  <para>
+   Der Parameter <parameter>num_points</parameter> der Funktionen
+   <function>imageopenpolygon</function> und
+   <function>imagefilledpolygon</function> ist veraltet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.hash">
+  <title>Hash</title>
+
+  <para>
+   Die Funktionen <function>mhash</function>,
+   <function>mhash_keygen_s2k</function>, <function>mhash_count</function>,
+   <function>mhash_get_block_size</function> und
+   <function>mhash_get_hash_name</function> sind veraltet. Stattdessen sollten
+   die <literal>hash_*()</literal>-Funktionen verwendet werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.imap">
+  <title>IMAP</title>
+
+  <para>
+   Die Konstante <constant>NIL</constant> ist veraltet.
+   Stattdessen sollte <literal>0</literal> verwendet werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.intl">
+  <title>Intl</title>
+
+  <para>
+   Der Aufruf von <methodname>IntlCalendar::roll</methodname> mit einem
+   &boolean;-Parameter ist veraltet. Anstelle von &true; und &false; sollten
+   <literal>1</literal> bzw. <literal>-1</literal> verwendet werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.mbstring">
+  <title>Multibyte-String</title>
+
+  <para>
+   Der Aufruf von <function>mb_check_encoding</function> ohne Parameter ist
+   veraltet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.mysqli">
+  <title>MySQLi</title>
+
+  <para>
+   Die Eigenschaft <property>mysqli_driver::$driver_version</property> ist
+   veraltet. Sie war bedeutungslos und überholt; stattdessen sollte
+   <constant>PHP_VERSION_ID</constant> verwendet werden.
+  </para>
+
+  <para>
+   Der Aufruf von <methodname>mysqli::get_client_info</methodname> oder
+   <function>mysqli_get_client_info</function> mit dem Parameter
+   <parameter>mysqli</parameter> ist veraltet. Um die Versionsinformationen
+   der Clientbibliothek zu erhalten, sollte
+   <function>mysqli_get_client_info</function> ohne Parameter aufgerufen
+   werden.
+  </para>
+
+  <para>
+   Die Methode <methodname>mysqli::init</methodname> ist veraltet. Der Aufruf
+   von <methodname>parent::init</methodname> sollte durch
+   <methodname>parent::__construct</methodname> ersetzt werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.oci8">
+  <title>OCI8</title>
+
+  <para>
+   Die INI-Direktive
+   <link linkend="ini.oci8.old-oci-close-semantics">oci8.old_oci_close_semantics</link>
+   ist veraltet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.odbc">
+  <title>ODBC</title>
+
+  <para>
+   <function>odbc_result_all</function> ist veraltet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.pdo">
+  <title>PDO</title>
+
+  <para>
+   Der Abrufmodus <constant>PDO::FETCH_SERIALIZE</constant> ist veraltet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.pgsql">
+  <title>PgSQL</title>
+
+  <para>
+   Den <literal>pgsql_*()</literal>-Funktionen muss der Verbindungsparameter
+   nun explizit übergeben werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.soap">
+  <title>SOAP</title>
+
+  <para>
+   Die <literal>ssl_method</literal>-Option von
+   <methodname>SoapClient::__construct</methodname> ist zugunsten der
+   SSL-Streamkontext-Optionen veraltet.
+   <!-- The direct equivalent would be
+    crypto_method, but min_proto_version/max_proto_version are recommended
+    instead. -->
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration81.deprecated.standard">
+  <title>Standard</title>
+
+  <para>
+   Der Aufruf von <function>key</function>, <function>current</function>,
+   <function>next</function>, <function>prev</function>,
+   <function>reset</function> oder <function>end</function> bei &object;en ist
+   veraltet. Stattdessen sollte entweder zuerst
+   <function>get_mangled_object_vars</function> auf das Objekt angewendet
+   werden oder es sollte <classname>ArrayIterator</classname> verwendet
+   werden.
+  </para>
+
+  <para>
+   Die INI-Direktive
+   <link linkend="ini.auto-detect-line-endings">auto_detect_line_endings</link>
+   ist veraltet. Falls nötig, sollten <literal>"\r"</literal>-Zeilenumbrüche
+   stattdessen manuell bearbeitet werden.
+  </para>
+
+  <para>
+   Die Konstanten <constant>FILE_BINARY</constant> und
+   <constant>FILE_TEXT</constant> sind veraltet. Sie hatten nie eine
+   Auswirkung.
+  </para>
+ </sect2>
+
+</sect1>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
