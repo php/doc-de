@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 0b005cfe4e7075d8f7c7472545eaee2b7f38526e Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 5c2678e02f0eb135946799eed02d884de1bcf4ad Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: b95e76e41de2ffe5c75e04be1b187d80ca745359 Reviewer: samesch -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
@@ -1491,18 +1491,26 @@ var_export($x);  // gibt 1 aus
   </sect1>
 
   <sect1 xml:id="functions.first_class_callable_syntax">
-   <title>First class callable syntax</title>
+   <title>Callback-Funktionen als Objekte erster Klasse</title>
 
    <para>
-    The first class callable syntax is introduced as of PHP 8.1.0, as a way of creating <link linkend="functions.anonymous">anonymous functions</link> from <link linkend="language.types.callable">callable</link>.
-    It supersedes existing callable syntax using strings and arrays.
-    The advantage of this syntax is that it is accessible to static analysis, and uses the scope at the point where the callable is acquired.
+    Callback-Funktionen als Objekte erster Klasse wurde mit PHP 8.1.0
+    eingeführt, um
+    <link linkend="functions.anonymous">anonyme Funktionen</link> aus
+    <link linkend="language.types.callable" >Callback-Funktionen</link> zu
+    erstellen. Sie ersetzt die bestehende Callback-Syntax, die Strings und
+    Arrays verwendet. Der Vorteil dieser Syntax ist, dass sie für die
+    statische Analyse zugänglich ist und den Gültigkeitsbereich an der Stelle
+    verwendet, an der die Callback-Funktion aufgerufen wird.
    </para>
 
    <para>
-    <code>CallableExpr(...)</code> syntax is used to create a <classname>Closure</classname> object from callable. <code>CallableExpr</code> accepts any expression that can be directly called in the PHP grammar:
+    Die <code>CallableExpr(...)</code>-Syntax wird verwendet, um ein
+    <classname>Closure</classname>-Objekt aus einer Callback-Funktion zu
+    erzeugen. <code>CallableExpr</code> akzeptiert jeden Ausdruck, der in der
+    PHP-Grammatik direkt aufgerufen werden kann:
     <example>
-     <title>Simple first class callable syntax</title>
+     <title>Einfaches Beispiel für eine Callback-Funktion als Objekt erster Klasse</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -1520,13 +1528,13 @@ $staticmethodStr = 'staticmethod';
 
 
 $f1 = strlen(...);
-$f2 = $obj(...);  // invokable object
+$f2 = $obj(...);  // Callback-Objekt
 $f3 = $obj->method(...);
 $f4 = $obj->$methodStr(...);
 $f5 = Foo::staticmethod(...);
 $f6 = $classStr::$staticmethodStr(...);
 
-// traditional callable using string, array
+// traditionelle Callback-Funktion mit String, Array
 $f7 = 'strlen'(...);
 $f8 = [$obj, 'method'](...);
 $f9 = [Foo::class, 'staticmethod'](...);
@@ -1538,15 +1546,18 @@ $f9 = [Foo::class, 'staticmethod'](...);
 
    <note>
     <para>
-      The <code>...</code> is part of the syntax, and not an omission.
+      Das <code>...</code> ist keine Auslassung, sondern Teil der Syntax.
     </para>
    </note>
 
    <para>
-    <code>CallableExpr</code> has the same semantics as <methodname>Closure::fromCallable</methodname>.
-    That is, unlike callable using strings and arrays, <code>CallableExpr(...)</code> respects the scope at the point where it is created:
+    <code>CallableExpr(...)</code> hat die gleiche Semantik wie
+    <methodname>Closure::fromCallable</methodname>. Das heißt, im Gegensatz zu
+    Callback-Funktionen, die Strings und Arrays verwenden, wird bei
+    <code>CallableExpr(...)</code> der Geltungsbereich an dem Punkt
+    berücksichtigt, an dem er erstellt wird:
     <example>
-     <title>Scope comparison of <code>CallableExpr(...)</code> and traditional callable</title>
+     <title>Vergleich des Anwendungsbereichs von <code>CallableExpr(...)</code> und traditionellen Callback-Funktionen</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -1565,12 +1576,12 @@ $foo = new Foo;
 $privateMethod = $foo->getPrivateMethod();
 $privateMethod();
 // Fatal error: Call to private method Foo::privateMethod() from global scope
-// This is because call is performed outside from Foo and visibility will be checked from this point.
+// Dies liegt daran, dass der Aufruf außerhalb von Foo erfolgt und die Sichtbarkeit ab diesem Punkt geprüft wird.
 
 class Foo1 {
     public function getPrivateMethod() {
-        // Uses the scope where the callable is acquired.
-        return $this->privateMethod(...); // identical to Closure::fromCallable([$this, 'privateMethod']);
+        // Verwendet den Bereich, in dem die Callback-Funktion aufgerufen wird.
+        return $this->privateMethod(...); // identisch mit Closure::fromCallable([$this, 'privateMethod']);
     }
 
     private function privateMethod() {
@@ -1590,13 +1601,17 @@ $privateMethod();  // Foo1::privateMethod
 
    <note>
     <para>
-     Object creation by this syntax (e.g <code>new Foo(...)</code>) is not supported, because <code>new Foo()</code> syntax is not considered a call.
+     Die Erzeugung von Objekten mit dieser Syntax (z. B.
+     <code>new Foo(...)</code>) wird nicht unterstützt, da die
+     <code>new Foo()</code>-Syntax nicht als Aufruf betrachtet wird.
     </para>
    </note>
 
    <note>
     <para>
-     The first-class callable syntax cannot be combined with the nullsafe operator. Both of the following result in a compile-time error:
+     Callback-Funktionen als Objekte erster Klasse können nicht mit dem
+     <link linkend="language.oop5.basic.nullsafe">Nullsafe-Operator</link>
+     kombiniert werden. Beides führt zu einem Fehler bei der Kompilierung:
      <example>
       <programlisting role="php">
 <![CDATA[
