@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 363a506c6d5ab264ffb5d9a82d9aa6379b8d27bb Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: d6fbec8b2161d13e51af9763bbd1487b0b25bd42 Maintainer: hholzgra Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: d6fbec8b2161d13e51af9763bbd1487b0b25bd42 Reviewer: samesch -->
 <refentry xml:id="function.get-class" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>get_class</refname>
@@ -30,13 +32,10 @@
       <note>
        <simpara>
         Die explizite Übergabe von &null; als <parameter>object</parameter> ist
-        von PHP 7.2.0 an nicht mehr erlaubt.
-       </simpara>
-       <simpara>
-        Der Parameter ist nach wie vor optional, und der Aufruf von
-        <function>get_class</function> ohne Parameter innerhalb einer Klasse
-        funktioniert, aber die Übergabe von &null; erzeugt nun einen
-        <constant>E_WARNING</constant> Hinweis.
+        von PHP 7.2.0 an nicht mehr erlaubt und erzeugt einen
+        <constant>E_WARNING</constant>-Hinweis. Seit PHP 8.0.0 wird ein
+        <classname>TypeError</classname> ausgegeben, wenn &null; verwendet
+        wird.
        </simpara>
       </note>
      </listitem>
@@ -47,25 +46,30 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Liefert den Namen der Klasse deren Instanz <parameter>object</parameter>
-   ist. Ist <parameter>object</parameter> kein Objekt, so wird &false;
-   zurückgegeben.
+   Gibt den Namen der Klasse zurück, von der <parameter>object</parameter>
+   eine Instanz ist.
   </para>
   <para>
    Wenn <parameter>object</parameter> innerhalb einer Klasse ausgelassen wird,
-   wird der Name dieser Klasse zurück gegeben.
+   wird der Name dieser Klasse zurückgegeben.
   </para>
   <para>
    Ist <parameter>object</parameter> eine Instanz einer Klasse in einem
-   Namensraum, wird der qualifizierte Name dieser Klasse zurückgeliefert.
+   Namensraum, wird der qualifizierte Name dieser Klasse zurückgegeben.
   </para>
  </refsect1>
  <refsect1 role="errors">
   &reftitle.errors;
   <para>
    Wenn <function>get_class</function> mit etwas anderem als einem Objekt
-   aufgerufen wird, wird ein Fehler der Stufe <constant>E_WARNING</constant>
+   aufgerufen wird, wird ein <classname>TypeError</classname> erzeugt. Vor
+   PHP 8.0.0 wurde ein Fehler der Stufe <constant>E_WARNING</constant>
    erzeugt.
+  </para>
+  <para>
+   Wenn <function>get_class</function> ohne Parameter von außerhalb einer
+   Klasse aufgerufen wird, wird ein <classname>Error</classname> erzeugt. Vor
+   PHP 8.0.0 wurde ein Fehler der Stufe <constant>E_WARNING</constant> erzeugt.
   </para>
  </refsect1>
  <refsect1 role="changelog">
@@ -81,12 +85,21 @@
      </thead>
      <tbody>
       <row>
+       <entry>8.0.0</entry>
+       <entry>
+        Der Aufruf dieser Funktion von außerhalb einer Klasse ohne jegliche
+        Parameter löst einen <classname>Error</classname> aus. Zuvor wurde,
+        wurde ein <constant>E_WARNING</constant>-Hinweis ausgelöst und die
+        Funktion gab &false; zurück.
+       </entry>
+      </row>
+      <row>
        <entry>7.2.0</entry>
        <entry>
         Vor dieser Version war der Standardwert für <parameter>object</parameter>
         &null;, was denselben Effekt hatte wie das Auslassen dieses Parameters.
         Nun wurde &null; als Standardwert für <parameter>object</parameter>
-        entfernt, und ist nicht länger eine gültige Eingabe.
+        entfernt und ist keine gültige Eingabe mehr.
        </entry>
       </row>
      </tbody>
@@ -143,12 +156,12 @@ abstract class bar {
         var_dump(get_class());
     }
 }
-      
+
 class foo extends bar {
 }
-     
+
 new foo;
-      
+
 ?>
 ]]>
     </programlisting>
@@ -202,8 +215,8 @@ string(11) "Foo\Bar\Baz"
    </simplelist>
   </para>
  </refsect1>
-</refentry>
 
+</refentry>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
