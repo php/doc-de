@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 90242f8793566eb87ee35a989912310a7c7c132b Maintainer: samesch Status: ready -->
+
+<sect1 xml:id="migration74.other-changes" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Andere Änderungen</title>
+
+ <sect2 xml:id="migration74.other-changes.performance">
+  <title>Verbesserung der Leistung</title>
+
+  <sect3 xml:id="migration74.other-changes.performance.core">
+   <title>PHP-Kern</title>
+   <para>
+    Für die Funktion <function>array_key_exists</function> wurde ein
+    spezieller VM-Opcode hinzugefügt, der die Leistung dieser Funktion
+    verbessert, wenn der Parameterwert statisch aufgelöst werden kann. In
+    Code, der Namensräume verwendet, kann es notwendig sein, einen absoluten
+    Namen zu verwenden (<literal>\array_key_exists()</literal>) oder die
+    Funktion explizit zu importieren.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.other-changes.performance.pcre">
+   <title>Reguläre Ausdrücke (Perl-kompatibel)</title>
+   <para>
+    Wenn die Funktion <function>preg_match</function> im UTF-8 Modus
+    (Modifikator <literal>"u"</literal>) mehrmals für dieselbe Zeichenkette
+    aufgerufen wird (aber möglicherweise mit unterschiedlichen Offsets), wird
+    sie nur einmal auf valides UTF-8 geprüft.
+   </para>
+  </sect3>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.ini">
+  <title>Änderungen bei der Handhabung von INI-Dateien</title>
+  <para>
+   <link linkend="ini.zend.exception-ignore-args">zend.exception_ignore_args</link>
+   ist eine neue INI-Direktive, um Parameter in die von Ausnahmen erzeugten
+   Stacktraces einzubeziehen oder davon auszuschließen.
+  </para>
+  <para>
+   <link linkend="ini.opcache.preload-user">opcache.preload_user</link> ist
+   eine neue INI-Direktive, um das Benutzerkonto anzugeben, unter dem der
+   vorab geladene Code ausgeführt wird, wenn er sonst unter root laufen würde
+   (was aus Sicherheitsgründen nicht erlaubt ist).
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.pkg-config">
+  <title>Umstellung auf pkg-config</title>
+  <para>
+   Eine Reihe von Erweiterungen wurde dahingehend umgestellt, dass sie
+   für die Erkennung von Bibliotheksabhängigkeiten ausschließlich pkg-config
+   verwenden. Im Allgemeinen bedeutet dies, dass statt
+   <option role="configure">--with-foo-dir=DIR</option> oder ähnlich nur
+   <option role="configure">--with-foo</option> verwendet wird.
+   Benutzerdefinierte Bibliothekspfade können entweder angegeben werden, imdem
+   zusätzliche Verzeichnisse zu <literal>PKG_CONFIG_PATH</literal> hinzugefügt
+   werden, oder durch Angabe expliziter Kompilierungsoptionen mittels
+   <literal>FOO_CFLAGS</literal> und <literal>FOO_LIBS</literal>.
+  </para>
+  <para>
+   Die folgenden Erweiterungen und SAPIs sind betroffen:
+  </para>
+
+  <itemizedlist>
+   <listitem>
+    <simpara>CURL:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-curl</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Enchant:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-enchant</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>FPM:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-fpm-systemd</option> verwendet nur noch
+       pkg-config für libsystemd-Überprüfungen. Die erforderliche
+       Mindestversion von libsystemd ist 209.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>GD:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-gd</option> wurde zu
+       <option role="configure">--enable-gd</option>
+       (ob das Modul aktiviert werden soll oder nicht) und
+       <option role="configure">--with-external-gd</option>
+       (um eine externe libgd zu verwenden, anstatt der mitgelieferten).
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-png-dir</option> wurde entfernt. libpng
+       wird nun zwingend vorausgesetzt.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-zlib-dir</option> wurde entfernt. zlib
+       wird nun zwingend vorausgesetzt.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-freetype-dir</option> wurde zu
+       <option role="configure">--with-freetype</option>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-jpeg-dir</option> wurde zu
+       <option role="configure">--with-jpeg</option>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-webp-dir</option> wurde zu
+       <option role="configure">--with-webp</option>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-xpm-dir</option> wurde zu
+       <option role="configure">--with-xpm</option>
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>IMAP:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-kerberos-systemd</option> akzeptiert
+       kein Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Intl:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-icu-dir</option> wurde entfernt.
+       Falls <option role="configure">--enable-intl</option> übegeben wird,
+       dann wird libicu immer zwingend vorausgesetzt.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>LDAP:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-ldap-sasl</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Libxml:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-libxml-dir</option> wurde entfernt.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--enable-libxml</option> wurde zu
+       <option role="configure">--with-libxml</option>.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-libexpat-dir</option> wurde umbenannt
+       in <option role="configure">--with-expat</option> und akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Litespeed:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-litespeed</option> wurde zu
+       <option role="configure">--enable-litespeed</option>.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Mbstring:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-onig</option> wurde entfernt.
+       Sofern <option role="configure">--disable-mbregex</option> nicht
+       übergeben wurde, ist libonig zwingend erforderlich.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>ODBC:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-iodbc</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-unixODBC</option> ohne Verzeichnis
+       verwendet nun pkg-config (bevorzugt). Das Verzeichnis wird bei älteren
+       Versionen ohne libodbc.pc immer noch akzeptiert.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>OpenSSL:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-openssl</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>PCRE:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-pcre-regex</option> wurde entfernt.
+       Dafür steht <option role="configure">--with-external-pcre</option>
+       zur Verfügung, um statt der mitgelieferten PCRE-Bibliothek eine externe
+       zu verwenden
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>PDO_SQLite:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-pdo-sqlite</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Readline:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-libedit</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Sodium:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-sodium</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>SQLite3:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-sqlite3</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>XSL:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-xsl</option> akzeptiert kein
+       Verzeichnis mehr.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+   <listitem>
+    <simpara>Zip:</simpara>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       <option role="configure">--with-libzip</option> wurde entfernt.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <option role="configure">--enable-zip</option> wurde zu
+       <option role="configure">--with-zip</option>.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+   </listitem>
+
+  </itemizedlist>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.csv">
+  <title>Maskieren von CSV</title>
+  <para>
+   <function>fputcsv</function>, <function>fgetcsv</function>,
+   <methodname>SplFileObject::fputcsv</methodname>,
+   <methodname>SplFileObject::fgetcsv</methodname> und
+   <methodname>SplFileObject::setCsvControl</methodname> akzeptieren nun
+   eine leere Zeichenkette als <literal>$escape</literal>-Parameter, wodurch
+   der proprietäre PHP-Mechanismus für die Maskierung deaktiviert wird.
+  </para>
+  <para>
+   Das Verhalten der Funktion <function>str_getcsv</function> wurde
+   entsprechend angepasst (bisher war eine leere Zeichenkette gleichbedeutend
+   mit der Verwendung der Standardeinstellung).
+  </para>
+  <para>
+   Die Methode <methodname>SplFileObject::getCsvControl</methodname> kann
+   dementsprechend für das dritte Array-Element nun auch eine leere
+   Zeichenkette zurückgeben.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.filter">
+  <title>Datenfilterung</title>
+  <para>
+   Für die Erweiterung <link linkend="book.filter">filter</link> steht die
+   Option <option role="configure">--with-pcre-dir</option> für Unix-Builds
+   nicht mehr zur Verfügung; sie kann nun problemlos mit
+   <command>./configure</command> als Shared gebaut werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.gd">
+  <title>GD</title>
+  <para>
+   Das Verhalten der Funktion <function>imagecropauto</function> in der
+   mitgelieferten libgd-Bibliothek wurde mit dem der libgd des Systems
+   synchronisiert:
+  </para>
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <constant>IMG_CROP_DEFAULT</constant> greift nicht mehr auf
+     <constant>IMG_CROP_SIDES</constant> zurück.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Der Schwellenwert für das Cropping verwendet nun den Algorithmus der
+     System-libgd.
+    </simpara>
+   </listitem>
+  </itemizedlist>
+  <para>
+   Bei der Funktion <function>imagecropauto</function> wurde der
+   Standardparameter von <literal>$mode</literal> geändert auf
+   <constant>IMG_CROP_DEFAULT</constant>; die Übergabe von
+   <literal>-1</literal> ist veraltet.
+  </para>
+  <para>
+   Die Funktion <function>imagescale</function> unterstützt nun die
+   Beibehaltung des Seitenverhältnisses, wenn auf eine feste Höhe skaliert
+   wird, indem <literal>-1</literal> als <literal>$new_width</literal>
+   übergeben wird.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.hash">
+  <title>HASH Message Digest Framework</title>
+  <para>
+   Die Erweiterung <link linkend="book.hash">hash</link> kann nicht mehr
+   deaktiviert werden und ist, ähnlich wie die Erweiterung
+   <link linkend="book.datetime">date</link>, immer ein integraler Bestandteil
+   eines jeden PHP-Builds.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.intl">
+  <title>Intl</title>
+  <para>
+   Die Erweiterung <link linkend="book.intl">intl</link> benötigt nun
+   mindestens ICU 50.1.
+  </para>
+  <para>
+   Die Klasse <classname>ResourceBundle</classname> implementiert nun
+   <interfacename>Countable</interfacename>.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.ldap">
+  <title>Lightweight Directory Access Protocol (LDAP)</title>
+  <para>
+   Die Unterstützung für nsldap und umich_ldap wurde entfernt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.libxml">
+  <title>Libxml</title>
+  <para>
+   Alle libxml-basierten Erweiterungen benötigen nun mindestens libxml 2.7.6.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.mbstring">
+  <title>Multibyte-Zeichenketten</title>
+  <para>
+   Die Bibliothek oniguruma wird nicht mehr in PHP mitgeliefert, stattdessen
+   muss libonig auf dem System verfügbar sein. Alternativ dazu kann die Option
+   <option role="configure">--disable-mbregex</option> verwendet werden, um
+   die Komponente mbregex zu deaktivieren.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.opcache">
+  <title>OPcache</title>
+  <para>
+   Die Konfigurationsoptionen
+   <option role="configure">--disable-opcache-file</option> und
+   <option role="configure">--enable-opcache-file</option>
+   wurden zugunsten der INI-Direktive
+   <link linkend="ini.opcache.file-cache">opcache.file_cache</link> entfernt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.password">
+  <title>Passwort-Hashing</title>
+  <para>
+   Die Funktionen <function>password_hash</function> und
+   <function>password_needs_rehash</function> akzeptieren beim Parameter
+   <literal>$algo</literal> nun nullbare &string; und &integer;.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.pear">
+  <title>PEAR</title>
+  <para>
+   Die Installation von PEAR (einschließlich PECL) ist nicht mehr
+   standardmäßig aktiviert. Sie kann explizit mit der Option
+   <option role="configure">--with-pear</option> aktiviert werden. Diese
+   Option ist veraltet und wird möglicherweise in Zukunft entfernt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.reflection">
+  <title>Reflection</title>
+  <para>
+   Bei den Klassen
+   <classname>ReflectionClass</classname>,
+   <classname>ReflectionFunction</classname>,
+   <classname>ReflectionMethod</classname>,
+   <classname>ReflectionObject</classname> und
+   <classname>ReflectionProperty</classname>
+   haben sich die numerischen Werte der Modifizierungskonstanten
+   (<literal>IS_ABSTRACT</literal>,
+   <literal>IS_DEPRECATED</literal>,
+   <literal>IS_EXPLICIT_ABSTRACT</literal>,
+   <literal>IS_FINAL</literal>,
+   <literal>IS_IMPLICIT_ABSTRACT</literal>,
+   <literal>IS_PRIVATE</literal>,
+   <literal>IS_PROTECTED</literal>,
+   <literal>IS_PUBLIC</literal> und
+   <literal>IS_STATIC</literal>) geändert.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.simplexml">
+  <title>SimpleXML</title>
+  <para>
+   Die Klasse <classname>SimpleXMLElement</classname> implementiert nun
+   <interfacename>Countable</interfacename>.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.sqlite3">
+  <title>SQLite3</title>
+  <para>
+   Die mitgelieferte Bibliothek libsqlite wurde entfernt. Um die Erweiterung
+   <link linkend="book.sqlite3">SQLite3</link> zu erstellen, wird nun
+   libsqlite3 ≥ 3.7.4 benötigt. Um die Erweiterung
+   <link linkend="ref.pdo-sqlite">PDO_SQLite</link> zu erstellen,
+   wird nun libsqlite3 ≥ 3.5.0 benötigt.
+  </para>
+  <para>
+   Es ist nun ausdrücklich verboten, <classname>SQLite3</classname>,
+   <classname>SQLite3Stmt</classname> und <classname>SQLite3Result</classname>
+   zu serialisieren und zu deserialisieren. Zuvor war es zwar möglich, die
+   Instanzen dieser Klassen zu serialisieren, aber die Deserialisierung führte
+   zu unbrauchbaren Objekten.
+  </para>
+  <para>
+   Die Notation <literal>@param</literal> kann nun auch verwendet werden, um
+   SQL-Abfrageparameter anzugeben.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.other-changes.zip">
+  <title>Zip</title>
+  <para>
+   Die mitgelieferte Bibliothek libzip wurde entfernt. Um die Erweiterung
+   <link linkend="book.zip">zip</link> zu erstellen, wird nun libzip >= 0.11
+   benötigt.
+  </para>
+ </sect2>
+
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
