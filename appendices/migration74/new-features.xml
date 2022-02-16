@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 8d1a5d2d15df15cc5cbc7f96cdc083b8fe49366e Maintainer: samesch Status: ready -->
+
+<sect1 xml:id="migration74.new-features" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Neue Features</title>
+
+ <sect2 xml:id="migration74.new-features.core">
+  <title>PHP-Kern</title>
+
+  <sect3 xml:id="migration74.new-features.core.typed-properties">
+   <title>Typisierte Eigenschaften</title>
+
+   <para>
+    Klasseneigenschaften unterstützen nun Typ-Deklarationen.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+class User {
+    public int $id;
+    public string $name;
+}
+?>
+]]>
+     </programlisting>
+    </informalexample>
+    Das obige Beispiel erzwingt, dass <literal>$user->id</literal> nur
+    <type>int</type>-Werte zugewiesen werden können und
+    <literal>$user->name</literal> nur <type>string</type>-Werte.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.arrow-functions">
+   <title>Pfeilfunktionen</title>
+
+   <para>
+    Die <link linkend="functions.arrow">Pfeilfunktionen</link> bieten eine
+    Kurzform der Syntax für die Definition von Funktionen mit impliziter
+    Bindung an den Wertebereich.
+
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$factor = 10;
+$nums = array_map(fn($n) => $n * $factor, [1, 2, 3, 4]);
+// $nums = array(10, 20, 30, 40);
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.type-variance">
+   <title>Eingeschränkte Kovarianz des Rückgabetyps und Kontravarianz des Parametertyps</title>
+
+   <para>
+    Der folgende Code funktioniert nun:
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+class A {}
+class B extends A {}
+
+class Producer {
+    public function method(): A {}
+}
+class ChildProducer extends Producer {
+    public function method(): B {}
+}
+?>
+]]>
+     </programlisting>
+    </informalexample>
+    Die vollständige Unterstützung der Varianz ist nur verfügbar, wenn
+    automatisches Laden verwendet wird. Innerhalb einer einzelnen Datei sind
+    nur nichtzyklische Typreferenzen möglich, da alle Klassen verfügbar sein
+    müssen, bevor sie referenziert werden.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.null-coalescing-assignment-operator">
+   <title>Zuweisungsoperator für die Kombination mit null (null-Koaleszenz)</title>
+
+   <para>
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$array['key'] ??= computeDefault();
+// entspricht in etwa
+if (!isset($array['key'])) {
+    $array['key'] = computeDefault();
+}
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.unpack-inside-array">
+   <title>Entpacken innerhalb von Arrays</title>
+
+   <para>
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$parts = ['apple', 'pear'];
+$fruits = ['banana', 'orange', ...$parts, 'watermelon'];
+// ['banana', 'orange', 'apple', 'pear', 'watermelon'];
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.numeric-literal-separator">
+   <title>Trennzeichen für numerische Literale</title>
+
+   <para>
+    Bei numerischen Literalen können nun Unterstriche zwischen den Ziffern
+    eingefügt werden.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+6.674_083e-11; // Gleitkommazahl
+299_792_458;   // Dezimalzahl
+0xCAFE_F00D;   // Hexadezimalzahl
+0b0101_1111;   // Binärzahl
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.weakreference">
+   <title>Schwache Referenzen</title>
+
+   <para>
+    Eine <link linkend="class.weakreference">schwache Referenz</link>
+    ermöglicht es dem Programmierer, eine Referenz auf ein Objekt zu behalten,
+    die nicht verhindert, dass das Objekt zerstört wird.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.core.tostring-exceptions">
+   <title>Zulassen von Exceptions aus __toString()</title>
+
+   <para>
+    Bei der Methode <link linkend="object.tostring">__toString()</link> ist es
+    nun möglich, Exceptions auszulösen. Zuvor führte dies zu einem
+    schwerwiegenden Fehler. Alle behebbaren schwerwiegenden Fehler bei
+    Zeichenketten-Konvertierungen wurden in
+    <classname>Error</classname>-Exceptions umgewandelt.
+   </para>
+  </sect3>
+
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.curl">
+  <title>CURL</title>
+
+  <para>
+   Wenn die Erweiterung mit libcurl &gt;= 7.56.0 kompiliert wurde, unterstützt
+   die Klasse <classname>CURLFile</classname> nun zusätzlich zu einfachen
+   Dateinamen auch Stream-Wrapper.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.filter">
+  <title>Filter</title>
+
+  <para>
+   Der Filter <constant>FILTER_VALIDATE_FLOAT</constant> unterstützt nun die
+   Optionen <literal>min_range</literal> und <literal>max_range</literal> mit
+   der gleichen Semantik wie <constant>FILTER_VALIDATE_INT</constant>.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.ffi">
+  <title>FFI</title>
+
+  <para>
+   FFI ist eine neue Erweiterung, die eine einfache Möglichkeit bietet, native
+   Funktionen aufzurufen, auf native Variablen zuzugreifen und Datenstrukturen
+   zu erzeugen/aufzurufen, die in C-Bibliotheken definiert sind.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.gd">
+  <title>GD</title>
+
+  <para>
+   Der Bildfilter <constant>IMG_FILTER_SCATTER</constant> wurde hinzugefügt,
+   um einen Streufilter auf Bilder anzuwenden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.hash">
+  <title>Hash</title>
+
+  <para>
+   Der <literal>crc32c</literal>-Hash, der das Castagnoli-Polynom verwendet,
+   wurde hinzugefügt. Diese CRC32-Variante wird in Speichersystemen wie iSCSI,
+   SCTP, Btrfs und ext4 verwendet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.mbstring">
+  <title>Multibyte-Zeichenketten</title>
+
+  <para>
+   Die Funktion <function>mb_str_split</function> wurde hinzugefügt. Sie
+   bietet die gleiche Funktionalität wie <function>str_split</function>,
+   arbeitet aber mit Codepunkten anstelle von Bytes.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.opcache">
+  <title>OPcache</title>
+
+  <para>
+   Die Unterstützung für das
+   <link linkend="opcache.preloading">Vorladen von Code</link> wurde
+   hinzugefügt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.pcre">
+  <title>Reguläre Ausdrücke (Perl-kompatibel)</title>
+
+  <para>
+   Die Funktionen <function>preg_replace_callback</function> und
+   <function>preg_replace_callback_array</function> akzeptieren nun zusätzlich
+   den Parameter <parameter>flags</parameter>, der die Flags
+   <constant>PREG_OFFSET_CAPTURE</constant> und
+   <constant>PREG_UNMATCHED_AS_NULL</constant> unterstützt. Dies beeinflusst
+   das Format des Arrays für die Übereinstimmungen, das an die
+   Callback-Funktion übergeben wird.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.pdo">
+  <title>PDO</title>
+
+  <para>
+   Bei den Treibern für mysql, mssql, dblib, firebird und oci können
+   Benutzername und Passwort nun als Teil des PDO DSN angegeben werden. Zuvor
+   wurde dies nur vom pgsql-Treiber unterstützt. Wenn ein Benutzername/Passwort
+   sowohl im Konstruktor als auch im DSN angegeben wird, hat der Konstruktor
+   Vorrang.
+  </para>
+  <para>
+   Es ist nun möglich, Fragezeichen in SQL-Abfragen zu maskieren, damit sie
+   nicht als als Platzhalter für Parameter interpretiert werden. Mit
+   <literal>??</literal> ist es möglich, ein einzelnes Fragezeichen an die
+   Datenbank zu senden. Dieses kann z. B. bei PostgreSQL als
+   <literal>?</literal>-Operator verwendet werden, um zu prüfen, ob ein
+   JSON-Schlüssel existiert.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.pdo_oci">
+  <title>PDO_OCI</title>
+
+  <para>
+   Die Methode <methodname>PDOStatement::getColumnMeta</methodname> ist nun
+   verfügbar.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.pdo_sqlite">
+  <title>PDO_SQLite</title>
+
+  <para>
+   <literal>PDOStatement::getAttribute(PDO::SQLITE_ATTR_READONLY_STATEMENT)</literal>
+   ermöglicht es, zu prüfen, ob eine Anweisung nur lesend ist, d. h., ob sie
+   die Datenbank nicht verändert.
+  </para>
+  <para>
+   <literal>PDO::setAttribute(PDO::SQLITE_ATTR_EXTENDED_RESULT_CODES, true)</literal>
+   ermöglicht in <function>PDO::errorInfo</function> und
+   <function>PDOStatement::errorInfo</function> die Verwendung der erweiterten
+   SQLite3-Ergebniscodes.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.sqlite3">
+  <title>SQLite3</title>
+
+  <para>
+   Die Methode <methodname>SQLite3::lastExtendedErrorCode</methodname> wurde
+   hinzugefügt, um den letzten erweiterten Ergebniscode abzurufen.
+  </para>
+  <para>
+   <literal>SQLite3::enableExtendedResultCodes($enable = true)</literal> wurde
+   hinzugefügt, was dazu führt, dass
+   <methodname>SQLite3::lastErrorCode</methodname> erweiterte Ergebniscodes
+   zurückgibt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration74.new-features.standard">
+  <title>Standard</title>
+
+  <sect3 xml:id="migration74.new-features.standard.strip-tags">
+   <title>strip_tags() mit einem Array von Tag-Namen</title>
+   <para>
+    Die Funktion <function>strip_tags</function> akzeptiert nun auch ein Array
+    mit erlaubten Tags: Anstelle von
+    <literal>strip_tags($str, '&lt;a&gt;&lt;p&gt;')</literal> kann nun
+    <literal>strip_tags($str, ['a', 'p'])</literal> geschrieben werden.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.standard.magic-serialize">
+   <title>Benutzerdefinierte Serialisierung von Objekten</title>
+   <para>
+    Es wurde ein neues Verfahren für die benutzerdefinierte Serialisierung von
+    Objekten hinzugefügt, das zwei neue magische Methoden verwendet:
+    <literal>__serialize</literal> und <literal>__unserialize</literal>.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Gibt ein Array zurück, das alle notwendigen Zustände des Objekts enthält.
+public function __serialize(): array;
+
+// Stellt den Objektzustand aus dem angegebenen Datenarray wieder her.
+public function __unserialize(array $data): void;
+?>
+]]>
+     </programlisting>
+    </informalexample>
+    Das neue Serialisierungsverfahren ersetzt die Schnittstelle
+    <interfacename>Serializable</interfacename>, die in Zukunft für veraltet
+    erklärt werden wird.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.standard.array-merge-no-args">
+   <title>Verwendung der array_merge-Funktionen ohne Parameter</title>
+   <para>
+    Die Funktionen <function>array_merge</function> und
+    <function>array_merge_recursive</function> können nun auch ohne Parameter
+    aufgerufen werden und geben in diesem Fall ein leeres Array zurück. Dies
+    ist nützlich in Verbindung mit dem Spread-Operator (Zerlegungsoperator),
+    z. B. <literal>array_merge(...$arrays)</literal>.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.standard.proc-open">
+   <title>Die Funktion <function>proc_open</function></title>
+   <para>
+    <function>proc_open</function> akzeptiert für den Befehl nun ein Array
+    anstelle einer Zeichenkette. In diesem Fall wird der Prozess direkt
+    geöffnet (ohne den Umweg über eine Shell) und PHP kümmert sich bei Bedarf
+    darum, die Parameter zu maskieren.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+proc_open(['php', '-r', 'echo "Hello World\n";'], $descriptors, $pipes);
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+   <para>
+    <function>proc_open</function> unterstützt nun die Deskriptoren
+    <literal>redirect</literal> und <literal>null</literal>.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Wie 2>&1 in der Shell
+proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['redirect', 1]], $pipes);
+// Wie 2>/dev/null oder 2>nul in der Shell
+proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['null']], $pipes);
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration74.new-features.standard.sodium-argon-hash">
+   <title>argon2i(d) ohne libargon</title>
+   <para>
+    Wenn PHP ohne libargon gebaut wird, hat <function>password_hash</function>
+    nun die argon2i- und argon2id-Implementierungen aus der Erweiterung Sodium.
+   </para>
+  </sect3>
+
+ </sect2>
+
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
