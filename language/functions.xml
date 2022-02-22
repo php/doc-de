@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5c2678e02f0eb135946799eed02d884de1bcf4ad Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 0bafd5454e7c54de5b9e455f997bec3ecf89cfdb Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: b95e76e41de2ffe5c75e04be1b187d80ca745359 Reviewer: samesch -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
@@ -232,29 +232,6 @@ function takes_many_args(
 ]]>
     </programlisting>
    </example>
-   <para>
-    Seit PHP 8.0.0 wird die Angabe von obligatorischen Parametern nach
-    optionalen Parametern missbilligt. Dies kann im Allgemeinen durch das
-    Weglassen des Standardwertes gelöst werden. Eine Ausnahme von dieser Regel
-    sind Parameter der Form <code>Type $param = null</code>, wobei der
-    Standardwert &null; den Typ implizit nullbar macht. Diese Verwendung
-    bleibt erlaubt, obwohl empfohlen wird, stattdessen einen Typ zu verwenden,
-    der explizit nullable ist.
-   </para>
-   <example>
-    <title>Angabe von optionalen Parametern nach obligatorischen Parametern</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-function foo($a = [], $b) {} // vorher
-function foo($a, $b) {}      // nachher
-
-function bar(A $a = null, $b) {} // noch erlaubt
-function bar(?A $a, $b) {}       // empfohlen
-?>
-]]>
-    </programlisting>
-   </example>
 
    <sect2 xml:id="functions.arguments.by-reference">
     <title>Parameter als Verweise übergeben</title>
@@ -298,8 +275,11 @@ echo $str; // Ausgabe: 'Dies ist ein String, und etwas mehr.'
     <title>Vorgabewerte für Parameter</title>
 
     <para>
-     Eine Funktion kann C++-artige Vorgabewerte für skalare Parameter
-     wie folgt definieren:
+     Eine Funktion kann Standardwerte für Parameter definieren, indem sie eine
+     ähnliche Syntax wie bei der Zuweisung von Variablen verwendet. Der
+     Standardwert wird nur verwendet, wenn der Parameter nicht angegeben ist.
+     Dabei ist insbesondere zu beachten, dass bei der Übergabe von &null;
+     <emphasis>nicht</emphasis> der Standardwert zugewiesen wird.
     </para>
     <para>
      <example>
@@ -328,8 +308,11 @@ Ich mache eine Tasse Espresso.
      </example>
     </para>
     <para>
-     PHP gestattet es, <type>&array;</type>s und den speziellen Typ &null; als
-     Vorgabewert zu nutzen, zum Beispiel:
+     Die Standardwerte der Parameter können skalare Werte,
+     <type>&array;</type>s, der spezielle Typ &null; und seit PHP 8.1.0 auch
+     Objekte sein, die die
+     <link linkend="language.oop5.basic.new">new ClassName()</link>-Syntax
+     verwenden.
     </para>
     <para>
      <example>
@@ -337,13 +320,40 @@ Ich mache eine Tasse Espresso.
       <programlisting role="php">
 <![CDATA[
 <?php
-function makecoffee($types = array("cappuccino"), $coffeeMaker = NULL)
+function makecoffee($types = array("Cappuccino"), $coffeeMaker = NULL)
 {
     $device = is_null($coffeeMaker) ? "hands" : $coffeeMaker;
     return "Ich mache eine Tasse ".join(", ", $types)." mit $device.\n";
 }
 echo makecoffee();
-echo makecoffee(array("cappuccino", "lavazza"), "teapot");
+echo makecoffee(array("Cappuccino", "Lavazza"), "Teekanne");
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     <example>
+      <title>Verwendung von Objekten als Standardwerte (seit PHP 8.1.0)</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+class DefaultCoffeeMaker {
+    public function brew() {
+        return 'Koche Kaffee.';
+    }
+}
+class FancyCoffeeMaker {
+    public function brew() {
+        return 'Bereite einen schönen Kaffee für Dich zu.';
+    }
+}
+function makecoffee($coffeeMaker = new DefaultCoffeeMaker)
+{
+    return $coffeeMaker->brew();
+}
+echo makecoffee();
+echo makecoffee(new FancyCoffeeMaker);
 ?>
 ]]>
       </programlisting>
@@ -355,9 +365,9 @@ echo makecoffee(array("cappuccino", "lavazza"), "teapot");
      sein.
     </simpara>
     <para>
-     Zu beachten ist, dass alle Parameter mit Vorgabewert rechts von den
-     Parametern ohne Vorgabewert stehen müssen - sonst wird es nicht
-     funktionieren. Das nachfolgende Beispiel verdeutlicht dies:
+     Es ist zu beachten, dass optionale Parameter nach den erforderlichen
+     Parametern angegeben werden müssen, da sie sonst bei einem Aufruf nicht
+     weggelassen werden können. Das nachfolgende Beispiel verdeutlicht dies:
     </para>
     <para>
      <example>
@@ -367,19 +377,18 @@ echo makecoffee(array("cappuccino", "lavazza"), "teapot");
 <?php
 function mach_joghurt($typ = "rechtsdrehendes", $geschmack)
 {
-    return "Mache einen Becher $typ $geschmack-joghurt.\n";
+    return "Mache einen Becher $typ $geschmack-Joghurt.\n";
 }
 
-echo mach_joghurt("Brombeer");   // funktioniert nicht wie erwartet
+echo mach_joghurt("Brombeer"); // "Brombeer" ist $typ, nicht $geschmack
 ?>
 ]]>
       </programlisting>
       &example.outputs;
       <screen>
 <![CDATA[
-Warning: Missing argument 2 in call to mach_joghurt() in
-/usr/local/etc/httpd/htdocs/phptest/functest.html on line 41
-Mache einen Becher Brombeer -joghurt.
+Fatal error: Uncaught ArgumentCountError: Too few arguments
+ to function makeyogurt(), 1 passed in example.php on line 42
 ]]>
       </screen>
      </example>
@@ -398,7 +407,7 @@ function mach_joghurt($geschmack, $typ = "rechtsdrehendes")
     return "Mache einen Becher $typ $geschmack-Joghurt.\n";
 }
 
-echo mach_joghurt("Brombeer");   // funktioniert wie erwartet.
+echo mach_joghurt("Brombeer"); // "Brombeer" ist $geschmack
 ?>
 ]]>
       </programlisting>
@@ -410,6 +419,66 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
       </screen>
      </example>
     </para>
+    <para>
+     Seit PHP 8.0.0 können
+     <link linkend="functions.named-arguments">benannte Parameter</link>
+     verwendet werden, um mehrere optionale Parameter zu überspringen.
+    </para>
+    <para>
+     <example>
+      <title>Korrekte Verwendung von Funktionsparametern mit Standardwerten</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function makeyogurt($container = "bowl", $flavour = "raspberry", $style = "Greek")
+{
+    return "Making a $container of $flavour $style yogurt.\n";
+}
+
+echo makeyogurt(style: "natural");
+?>
+]]>
+      </programlisting>
+      &example.outputs;
+      <screen>
+<![CDATA[
+Making a bowl of raspberry natural yogurt.
+]]>
+      </screen>
+     </example>
+    </para>
+    <para>
+     Seit PHP 8.0.0 wird die Angabe von obligatorischen Parametern nach
+     optionalen Parametern <emphasis>missbilligt</emphasis>. Dies kann im
+     Allgemeinen durch das Weglassen des Standardwertes gelöst werden, da er
+     nie verwendet wird. Eine Ausnahme von dieser Regel sind Parameter der Form
+     <code>Type $param = null</code>, wobei der Standardwert &null; den Typ
+     implizit nullbar macht. Diese Verwendung bleibt erlaubt, obwohl empfohlen
+     wird, stattdessen einen explizit
+     <link linkend="language.types.declarations.nullable">nullbaren Typ</link>
+     zu verwenden.
+     <example>
+      <title>Angabe von optionalen Parametern nach obligatorischen Parametern</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function foo($a = [], $b) {} // Seit PHP 8.0.0 veraltet; Standardwert wird nicht verwendet
+function foo($a, $b) {}      // Funktionell identisch, aber ohne Veraltet-Hinweis
+
+function bar(A $a = null, $b) {} // Noch erlaubt; $a wird benötigt, kann aber null sein
+function bar(?A $a, $b) {}       // Empfohlen
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <note>
+     <simpara>
+      Seit PHP 7.1.0 wird ein <classname>ArgumentCountError</classname>
+      ausgelöst, wenn ein Parameter weggelassen wird, für den kein Standardwert
+      angegeben ist; in früheren Versionen löste es eine Warnung aus.
+     </simpara>
+    </note>
     <note>
      <simpara>
       Parameter, die per Verweis übergeben werden, dürfen einen Standardwert
@@ -603,7 +672,7 @@ echo sum(1, 2, 3, 4);
     <example>
      <title>Syntax benannter Parameter</title>
      <programlisting role="php">
-      <![CDATA[
+<![CDATA[
 <?php
 myFunction(paramName: $value);
 array_foobar(array: $value);
@@ -617,7 +686,7 @@ function_name($variableStoringParamName: $value);
     <example>
      <title>Positionsparameter im Vergleich zu benannten Parametern</title>
      <programlisting role="php">
-      <![CDATA[
+<![CDATA[
 <?php
 // Verwendung von Positionsparametern:
 array_fill(0, 100, 50);
@@ -635,7 +704,7 @@ array_fill(start_index: 0, count: 100, value: 50);
     <example>
      <title>Das gleiche Beispiel wie oben mit einer anderen Reihenfolge der Parameter</title>
      <programlisting role="php">
-      <![CDATA[
+<![CDATA[
 <?php
 array_fill(value: 50, count: 100, start_index: 0);
 ?>
@@ -651,7 +720,7 @@ array_fill(value: 50, count: 100, start_index: 0);
     <example>
      <title>Kombinieren von benannten Parametern mit Positionsparametern</title>
      <programlisting role="php">
-      <![CDATA[
+<![CDATA[
 <?php
 htmlspecialchars($string, double_encode: false);
 // Ist das Gleiche wie
@@ -664,9 +733,9 @@ htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', fa
      Die mehrfache Übergabe desselben Parameters führt zu einer Error-Exception.
     </para>
     <example>
-     <title>Error-Exception bei mehrfacher Übergabe desselben Parameters</title>
+     <title>Die mehrfache Übergabe desselben Parameters erzeugt einen Fehler</title>
      <programlisting role="php">
-      <![CDATA[
+<![CDATA[
 <?php
 function foo($param) { ... }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- EN-Revision: 9c21d93b4c2659081f995fcf63b7b7133b753f84 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 0bafd5454e7c54de5b9e455f997bec3ecf89cfdb Maintainer: samesch Status: ready -->
 <sect1 xml:id="migration81.incompatible" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Nicht abwärtskompatible Änderungen</title>
 
@@ -11,11 +11,10 @@
 
    <para>
     Der Zugriff auf das Array <varname>$GLOBALS</varname> unterliegt nun einer
-    einer Reihe von Einschränkungen.
-    Der Lese- und Schreibzugriff auf einzelne Array-Elemente wie
-    <code>$GLOBALS['var']</code> funktioniert weiterhin wie bisher.
-    Der nur lesende Zugriff auf das Gesamt-Array <varname>$GLOBALS</varname>
-    wird ebenfalls wird weiterhin unterstützt.
+    einer Reihe von Einschränkungen. Der Lese- und Schreibzugriff auf einzelne
+    Array-Elemente wie <code>$GLOBALS['var']</code> funktioniert weiterhin wie
+    bisher. Der nur lesende Zugriff auf das Gesamt-Array
+    <varname>$GLOBALS</varname> wird ebenfalls wird weiterhin unterstützt.
     Allerdings wird der Schreibzugriff auf das Gesamt-Array
     <varname>$GLOBALS</varname> nicht mehr unterstützt. Zum Beispiel wird
     <code>array_pop($GLOBALS)</code> zu einem Fehler führen.
@@ -54,6 +53,65 @@ var_dump(B::counter()); // int(4), vorher int(2)
 
     Das bedeutet, dass sich statische Variablen in Methoden nun genauso
     verhalten wie statische Eigenschaften.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration81.incompatible.core.optional-before-required">
+   <title>Angabe optionaler Parameter vor den erforderlichen</title>
+
+   <para>
+    Ein <link linkend="functions.arguments.default">optionaler Parameter</link>,
+    der vor den erforderlichen Parametern angegeben wird, wird nun immer als
+    erforderlich angesehen. Dies ist auch der Fall, wenn eine Funktion mit
+    <link linkend="functions.named-arguments">benannten Parametern</link>
+    aufgerufen wird. Seit PHP 8.0.0, aber vor PHP 8.1.0, löst das untenstehende
+    Beispiel einen Hinweis darauf aus, dass die Definition veraltet ist, läuft
+    aber beim Aufruf trotzdem fehlerfrei. Ab PHP 8.1.0 wird ein Fehler der
+    Klasse <classname>ArgumentCountError</classname> ausgelöst, so wie es auch
+    bei einem Aufruf mit positionsbezogenen Parametern der Fall wäre.
+
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function makeyogurt($container = "bowl", $flavour)
+{
+    return "Making a $container of $flavour yogurt.\n";
+}
+try
+{
+    echo makeyogurt(flavour: "raspberry");
+}
+catch (Error $e)
+{
+    echo get_class($e), ' - ', $e->getMessage(), "\n";
+}
+?>
+]]>
+     </programlisting>
+     &example.outputs.80;
+     <screen>
+<![CDATA[
+Deprecated: Required parameter $flavour follows optional parameter $container
+ in example.php on line 3
+Making a bowl of raspberry yogurt.
+]]>
+     </screen>
+     &example.outputs.81;
+     <screen>
+<![CDATA[
+Deprecated: Optional parameter $container declared before required parameter
+ $flavour is implicitly treated as a required parameter in example.php on line 3
+ArgumentCountError - makeyogurt(): Argument #1 ($container) not passed
+]]>
+     </screen>
+    </informalexample>
+   </para>
+   <para>
+    Es ist zu beachten, dass ein Standardwert von &null; vor erforderlichen
+    Parametern verwendet werden kann, um einen
+    <link linkend="language.types.declarations.nullable">nullbaren Typ</link>
+    anzugeben, aber der Parameter wird trotzdem benötigt.
    </para>
   </sect3>
 
