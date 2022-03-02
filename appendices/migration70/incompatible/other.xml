@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: b20fb5e69d7f7a91a52e43bbb95925893cbd4bb9 Maintainer: samesch Status: ready -->
+
+<sect2 xml:id="migration70.incompatible.other">
+ <title>Andere nicht abwärtskompatible Änderungen</title>
+
+ <sect3 xml:id="migration70.incompatible.other.new-by-ref">
+  <title>Neue Objekte können nicht per Referenz zugewiesen werden</title>
+
+  <para>
+   Es ist nicht mehr möglich, das Resultat einer &new;-Anweisung per Referenz
+   einer Variablen zuzuweisen:
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class C {}
+$c =& new C;
+?>
+]]>
+   </programlisting>
+   &example.outputs.5;
+   <screen>
+<![CDATA[
+Deprecated: Assigning the return value of new by reference is deprecated in /tmp/test.php on line 3
+]]>
+   </screen>
+   &example.outputs.7;
+   <screen>
+<![CDATA[
+Parse error: syntax error, unexpected 'new' (T_NEW) in /tmp/test.php on line 3
+]]>
+   </screen>
+  </informalexample>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.classes">
+  <title>Ungültige Klassen-, Schnittstellen- und Trait names</title>
+
+  <para>
+   Die folgenden Namen können nicht mehr als Namen für Klassen,
+   Schnittstellen und Traits verwendet werden:
+  </para>
+
+  <itemizedlist>
+   <listitem>
+    <simpara><type>bool</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara><type>int</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara><type>float</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara><type>string</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara>&null;</simpara>
+   </listitem>
+   <listitem>
+    <simpara>&true;</simpara>
+   </listitem>
+   <listitem>
+    <simpara>&false;</simpara>
+   </listitem>
+  </itemizedlist>
+
+  <para>
+   Darüber hinaus sollten auch die folgenden Namen nicht verwendet werden.
+   Auch wenn sie in PHP 7.0 keinen Fehler erzeugen, sind sie für die
+   zukünftige Verwendung reserviert und sollten als veraltet angesehen werden.
+  </para>
+
+  <itemizedlist>
+   <listitem>
+    <simpara><type>resource</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara><type>object</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara><type>mixed</type></simpara>
+   </listitem>
+   <listitem>
+    <simpara><type>numeric</type></simpara>
+   </listitem>
+  </itemizedlist>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.php-tags">
+  <title>ASP- und Skript-Tags wurden entfernt</title>
+
+  <para>
+   Es ist nicht mehr möglich, ASP-ähnliche Tags oder Skript-Tags zu verwenden,
+   um PHP-Code einzuschließen. Die folgenden Tags sind hiervon betroffen:
+  </para>
+
+  <table>
+   <title>Entfernte ASP- und Skript-Tags</title>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>Öffnendes Tag</entry>
+      <entry>Schließendes Tag</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry><code>&lt;%</code></entry>
+      <entry><code>%&gt;</code></entry>
+     </row>
+     <row>
+      <entry><code>&lt;%=</code></entry>
+      <entry><code>%&gt;</code></entry>
+     </row>
+     <row>
+      <entry><code>&lt;script language="php"&gt;</code></entry>
+      <entry><code>&lt;/script&gt;</code></entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.incompatible-this">
+  <title>Aufrufe aus inkompatiblen Kontexten wurden entfernt</title>
+
+  <para>
+   Ein statischer Aufruf einer nicht-statischen Methode aus einem
+   inkompatiblen Kontext war
+   <link linkend="migration56.deprecated.incompatible-context">bereits in PHP 5.6 veraltet</link>
+   und führt nun dazu, dass die aufgerufene Methode eine undefinierte
+   <literal>$this</literal>-Variable hat und einen Veraltet-Hinweis ausgibt.
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class A {
+    public function test() { var_dump($this); }
+}
+
+// Hinweis: Erweitert A NICHT
+class B {
+    public function callNonStaticMethodOfA() { A::test(); }
+}
+
+(new B)->callNonStaticMethodOfA();
+?>
+]]>
+   </programlisting>
+   &example.outputs.56;
+   <screen>
+<![CDATA[
+Deprecated: Non-static method A::test() should not be called statically, assuming $this from incompatible context in /tmp/test.php on line 8
+object(B)#1 (0) {
+}
+]]>
+   </screen>
+   &example.outputs.7;
+   <screen>
+<![CDATA[
+Deprecated: Non-static method A::test() should not be called statically in /tmp/test.php on line 8
+
+Notice: Undefined variable: this in /tmp/test.php on line 3
+NULL
+]]>
+   </screen>
+  </informalexample>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.yield">
+  <title>&yield; ist nun ein rechtsassoziativer Operator</title>
+
+  <para>
+   Das &yield;-Konstrukt ist nun rechtsassoziativ (Auswertung von rechts nach
+   links) und es werden keine Klammern mehr benötigt. In der Rangfolge liegt
+   es nun zwischen <literal>print</literal> und <literal>=&gt;</literal>.
+   Dadurch ändert sich das Verhalten wie folgt:
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+echo yield -1;
+// Wurde zuvor interpretiert als
+echo (yield) - 1;
+// Und wird nun interpretiert als
+echo yield (-1);
+
+yield $foo or die;
+// Wurde zuvor interpretiert als
+yield ($foo or die);
+// Und wird nun interpretiert als
+(yield $foo) or die;
+?>
+]]>
+   </programlisting>
+  </informalexample>
+
+  <para>
+   Um Unklarheiten zu beseitigen, können Klammern verwendet werden.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.func-parameters">
+  <title>Eine Funktion kann nicht mehrere Parameter mit demselben Namen haben</title>
+
+  <para>
+   Es ist nicht mehr möglich, in einer Funktion mehrere Parameter mit
+   demselben Namen zu definieren. Zum Beispiel führt eine Funktion wie die
+   folgende zu einem <constant>E_COMPILE_ERROR</constant>:
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+function foo($a, $b, $unused, $unused) {
+    //
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.func-parameter-modified">
+  <title>Funktionen, die Parameter analysieren, melden den <emphasis>aktuellen</emphasis> Parameterwert</title>
+
+  <para>
+   Die Funktionen <function>func_get_arg</function>,
+   <function>func_get_args</function> und <function>debug_backtrace</function>
+   und Backtraces bei Exceptions melden nicht mehr den ursprünglichen Wert,
+   der an einen Parameter übergeben wurde, sondern stattdessen den aktuellen
+   Wert (der möglicherweise geändert wurde).
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+function foo($x) {
+    $x++;
+    var_dump(func_get_arg(0));
+}
+foo(1);?>
+]]>
+   </programlisting>
+   &example.outputs.5;
+   <screen>
+<![CDATA[
+1
+]]>
+   </screen>
+   &example.outputs.7;
+   <screen>
+<![CDATA[
+2
+]]>
+   </screen>
+  </informalexample>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.multiple-default">
+  <title>Switch-Anweisungen können nicht mehrere default-Blöcke haben</title>
+
+  <para>
+   Es ist nicht mehr möglich, zwei oder mehr default-Blöcke in einer
+   switch-Anweisung zu definieren. Zum Beispiel löst die folgende
+   switch-Anweisung einen <constant>E_COMPILE_ERROR</constant> aus:
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+switch (1) {
+    default:
+    break;
+    default:
+    break;
+}
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.http-raw-post-data">
+  <title><varname>$HTTP_RAW_POST_DATA</varname> wurde entfernt</title>
+
+  <para>
+   <varname>$HTTP_RAW_POST_DATA</varname> ist nicht mehr verfügbar.
+   Stattdessen sollte der
+   <link linkend="wrappers.php.input"><literal>php://input</literal></link>-Stream
+   verwendet werden.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.ini-comments">
+  <title>In INI-Dateien wurden Kommentare im <literal>#</literal>-Format entfernt</title>
+
+  <para>
+   In INI-Dateien ist es nicht mehr möglich, Kommentare durch ein
+   vorangestelltes <literal>#</literal> zu markieren. Stattdessen sollte
+   ein <literal>;</literal> (Semikolon) verwendet werden. Diese Änderung gilt
+   nicht nur für die &php.ini;, sondern auch für die Dateien, die von
+   <function>parse_ini_file</function> und
+   <function>parse_ini_string</function> verarbeitet werden.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.json-to-jsond">
+  <title>Erweiterung JSON durch JSOND ersetzt</title>
+
+  <para>
+   Die Erweiterung JSON wurde durch JSOND ersetzt, was zu drei kleineren
+   Beeinträchtigungen in der Abwärtskompatibilität führt. Erstens darf eine
+   Zahl nicht mit einem Dezimalpunkt enden (d. h. <literal>34.</literal> muss
+   entweder durch <literal>34.0</literal> oder <literal>34</literal> ersetzt
+   werden). Zweitens darf bei Verwendung der wissenschaftlichen Notation der
+   Exponent <literal>e</literal> nicht unmittelbar auf einen Dezimalpunkt
+   folgen (d. h. <literal>3.e3</literal> muss entweder durch
+   <literal>3.0e3</literal> oder <literal>3e3</literal> ersetzt werden). Und
+   schließlich wird eine leere Zeichenkette nicht mehr als gültiges JSON
+   angesehen.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.internal-function-failure-overflow">
+  <title>Interne Funktionen schlagen bei Überlauf fehl</title>
+
+  <para>
+   Bisher haben interne Funktionen Zahlen, die von Gleitkommazahlen in
+   Ganzzahlen umgewandelt wurden, stillschweigend abgeschnitten, wenn die
+   Gleitkommazahl zu groß war, um sie als Ganzzahl darzustellen. Nun wird ein
+   Fehler der Stufe E_WARNING ausgegeben und &null; zurückgegeben.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.fixes-custom-session-handler">
+  <title>Korrekturen bei Rückgabewerten von benutzerdefinierten Session-Handlern</title>
+
+  <para>
+   Eine Prädikatsfunktion, die von einem benutzerdefinierten Session-Handler
+   implementiert wird und entweder &false; oder <literal>-1</literal>
+   zurückgibt, löst einen schwerwiegenden Fehler aus. Ist ein von dieser
+   Funktion zurückgegebener Wert nicht boolesch, <literal>-1</literal> oder
+   <literal>0</literal>, schlägt die Funktion fehl und löst einen Fehler der
+   Stufe E_WARNING aus.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.sort-order">
+  <title>Sortierreihenfolge gleichwertiger Elemente</title>
+  <para>
+   Aufgrund von Verbesserungen des internen Sortieralgorithmus kann sich
+   die Sortierreihenfolge von Elementen, die beim Vergleich als gleichwertig
+   betrachtet werden, im Vergleich zu vorher ändern.
+  </para>
+  <note>
+   <para>
+    Es wird davon abgeraten, sich auf die Reihenfolge der Elemente, die als
+    gleichwertig betrachtet werden, zu verlassen; sie kann sich jederzeit
+    ändern.
+   </para>
+  </note>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.break-continue">
+  <title>Falsch platzierte break- und continue-Anweisungen</title>
+  <para>
+   <literal>break</literal>- und <literal>continue</literal>-Anweisungen
+   außerhalb einer Schleife oder einer
+   <literal>switch</literal>-Kontrollstruktur werden nun bei der Kompilierung
+   erkannt, anstatt wie bisher zur Laufzeit, und lösen einen Fehler der Stufe
+   <constant>E_COMPILE_ERROR</constant> aus.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.mhash">
+  <title>Mhash ist keine Erweiterung mehr</title>
+  <para>
+   Die Erweiterung Mhash wurde vollständig in die Erweiterung
+   <link linkend="book.hash">Hash</link> integriert. Daher ist es nicht mehr
+   möglich, mit <function>extension_loaded</function> zu erkennen, ob Mhash
+   unterstützt wird. Stattdessen sollte <function>function_exists</function>
+   verwendet werden. Darüber hinaus wird Mhash nicht mehr von
+   <function>get_loaded_extensions</function> und ähnlichen Funktionen
+   gemeldet.
+  </para>
+ </sect3>
+
+ <sect3 xml:id="migration70.incompatible.other.declare-ticks">
+  <title>declare(ticks)</title>
+  <para>
+   Die Directive
+   <link linkend="control-structures.declare.ticks">declare(ticks)</link>
+   wird nicht mehr in verschiedene Kompilierungseinheiten übertragen.
+  </para>
+ </sect3>
+</sect2>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
