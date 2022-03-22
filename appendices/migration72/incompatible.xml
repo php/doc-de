@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: e61d2217d58d7135abd368baa1089e58c626fbcc Maintainer: samesch Status: ready -->
+
+<sect1 xml:id="migration72.incompatible">
+ <title>Nicht abwärtskompatible Änderungen</title>
+
+ <sect2 xml:id="migration72.incompatible.number_format-no-neg-zero">
+  <title><function>number_format</function> gibt keine negativen Nullen zurück</title>
+
+  <para>
+   In früheren Versionen konnte die Funktion
+   <function>number_format</function> <literal>-0</literal> zurückgeben. Dies
+   ist zwar für Gleitkommazahlen nach dem Standard IEEE-754 durchaus zulässig,
+   aber in Bezug auf die Formatierung der Zahlen in einer für den Menschen
+   lesbare Form war diese Eigenart nicht wünschenswert.
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+var_dump(number_format(-0.01)); // gibt anstelle von string(2) "-0" nun string(1) "0" aus
+]]>
+   </programlisting>
+  </informalexample>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.object-array-casts">
+  <title>Behandlung numerischer Schlüssel bei Umwandlungen zwischen Objekten und Arrays</title>
+
+  <para>
+   Numerische Schlüssel werden nun besser behandelt, wenn Arrays in Objekte
+   und Objekte in Arrays umgewandelt werden. Dies gilt nicht nur für explizite
+   Umwandlungen, sondern auch für die Verwendung von
+   <function>settype</function>.
+  </para>
+
+  <para>
+   Das bedeutet, dass auf die (zeichenkettenartigen) Integer-Schlüssel eines
+   Arrays, das in ein Objekt umgewandelt wird, nun zugegriffen werden kann:
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+// Array zu Objekt
+$arr = [0 => 1];
+$obj = (object)$arr;
+var_dump(
+    $obj,
+    $obj->{'0'}, // nun zugänglich
+    $obj->{0} // nun zugänglich
+);
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+object(stdClass)#1 (1) {
+  ["0"]=>    // nun ein Zeichenketten-Schlüssel anstelle eines Integer-Schlüssels
+  int(1)
+}
+int(1)
+int(1)
+]]>
+   </screen>
+  </informalexample>
+
+  <para>
+   Genauso kann nun auf die (zeichenkettenartigen) Integer-Schlüssel eines
+   Objekts, das in ein Array umgewandelt wird, zugegriffen werden:
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+// object to array
+$obj = new class {
+    public function __construct()
+    {
+        $this->{0} = 1;
+    }
+};
+$arr = (array)$obj;
+var_dump(
+    $arr,
+    $arr[0], // nun zugänglich
+    $arr['0'] // nun zugänglich
+);
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+array(1) {
+  [0]=>    // nun ein Integer-Schlüssel anstelle eines Zeichenketten-Schlüssels
+  int(1)
+}
+int(1)
+int(1)
+]]>
+   </screen>
+  </informalexample>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.no-null-to-get_class">
+  <title>Keine Übergabe von &null; an <function>get_class</function></title>
+
+  <para>
+   Bisher wurde bei der Übergabe von &null; an die Funktion
+   <function>get_class</function> der Name der umschließenden Klasse
+   ausgegeben. Dieses Verhalten wurde nun entfernt und es wird stattdessen ein
+   Fehler der Stufe <constant>E_WARNING</constant> ausgegeben. Um das
+   beschriebene Verhalten wiederherzustellen, sollte der Parameter einfach
+   weggelassen werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.warn-on-non-countable-types">
+  <title>Warnung beim Zählen nicht zählbarer Typen</title>
+
+  <para>
+   Wenn versucht wird, nicht zählbare Typen mittels <function>count</function>
+   zu zählen, wird nun ein Fehler der Stufe <constant>E_WARNING</constant>
+   ausgegeben (dies gilt auch für die Alias-Funktion
+   <function>sizeof</function>).
+  </para>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+var_dump(
+    count(null), // NULL ist nicht zählbar
+    count(1), // Integer sind nicht zählbar
+    count('abc'), // Zeichenketten sind nicht zählbar
+    count(new stdclass), // Objeke, die die Countable-Schnittstelle nicht implementieren, sind nicht zählbar
+    count([1,2]) // Arrays sind zählbar
+);
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+Warning: count(): Parameter must be an array or an object that implements Countable in %s on line %d
+
+Warning: count(): Parameter must be an array or an object that implements Countable in %s on line %d
+
+Warning: count(): Parameter must be an array or an object that implements Countable in %s on line %d
+
+Warning: count(): Parameter must be an array or an object that implements Countable in %s on line %d
+int(0)
+int(1)
+int(1)
+int(1)
+int(2)
+]]>
+   </screen>
+  </informalexample>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.hash-ext-to-objects">
+  <title>ext/hash verwendet Objekte statt Ressourcen</title>
+
+  <para>
+   Als Teil der langfristigen Umstellung weg von Ressourcen, wurde die
+   Erweiterung <link linkend="book.hash">Hash</link> dahingehend überarbeitet,
+   dass nun Objekte anstelle von Ressourcen verwendet werden. Die Änderung
+   sollte für PHP-Entwickler problemlos vonstatten gehen, mit Ausnahme der
+   Fälle, in denen Überprüfungen mit der Funktion
+   <function>is_resource</function> durchgeführt wurden (diese müssen auf
+   <function>is_object</function> umgestellt werden).
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.ssl-tls-defaults">
+<title>Verbesserung der SSL/TLS-Standardeinstellungen</title>
+
+  <para>
+   Folgendes wurde an den Standardeinstellungen geändert:
+  </para>
+
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     <literal>tls://</literal> ist nun standardmäßig auf TLSv1.0 oder TLSv1.1
+     oder TLSv1.2 eingestellt
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>ssl://</literal> ist nun ein Alias für <literal>tls://</literal>
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Die <literal>STREAM_CRYPTO_METHOD_TLS_*</literal>-Konstanten sind nun
+     standardmäßig auf TLSv1.0 oder TLSv1.1 + TLSv1.2 eingestellt, statt nur
+     auf TLSv1.0
+    </simpara>
+   </listitem>
+  </itemizedlist>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.gettype-on-closed-resource">
+  <title>Rückgabewert von <function>gettype</function> bei geschlossenen Ressourcen</title>
+
+  <para>
+   Bisher gab <function>gettype</function> bei einer geschlossenen Ressource
+   die Zeichenkette <literal>"unknown type"</literal> zurück. Nun wird die
+   Zeichenkette <literal>"resource (closed)"</literal> zurückgegeben.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.is_object-on-incomplete_class">
+  <title><function>is_object</function> und <classname>__PHP_Incomplete_Class</classname></title>
+
+  <para>
+   Bisher gab die Funktion <function>is_object</function> bei der Klasse
+   <classname>__PHP_Incomplete_Class</classname> &false; zurück. Nun gibt sie
+   &true; zurück.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.undefined-constants">
+  <title>Erhöhung der Fehlerstufe bei undefinierten Konstanten</title>
+
+  <para>
+   Unvollständig definierte Referenzen auf undefinierte Konstanten erzeugen
+   nun einen Fehler der Stufe <constant>E_WARNING</constant> (statt
+   <constant>E_NOTICE</constant>). In der nächsten Hauptversion von PHP werden
+   sie <classname>Error</classname>-Exceptions auslösen.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.windows-support">
+  <title>Windows-Unterstützung</title>
+
+  <para>
+   Die derzeit niedrigsten offiziell unterstützten Windows-Version sind
+   Windows 7/Server 2008 R2.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.trait-properties">
+  <title>Überprüfung der Standard-Eigenschaftswerte von Traits</title>
+
+  <para>
+   Bei Kompatibilitätsprüfungen von Standard-Eigenschaftswerten von Traits
+   werden nun keine Typumwandlungen mehr durchgeführt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.object-reserved-word">
+  <title><literal>object</literal> als Klassenname</title>
+
+  <para>
+   Die Bezeichnung <literal>object</literal> war in PHP 7.0 bisher weich
+   reserviert. Nun ist sie hart reserviert, d. h. sie kann nicht mehr als Name
+   für Klassen, Traits oder Schnittstellen verwendet werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.netware-support">
+  <title>NetWare-Unterstützung</title>
+
+  <para>
+   Die Unterstützung für NetWare wurde entfernt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.array-unique">
+  <title><function>array_unique</function> mit <constant>SORT_STRING</constant></title>
+
+  <para>
+   Während <function>array_unique</function> mit
+   <constant>SORT_STRING</constant> früher das Array kopiert und nicht
+   eindeutige Elemente entfernt hat (ohne das ohne das Array anschließend zu
+   packen), wird nun ein neues Array erstellt, das aus den eindeutigen
+   Elementen besteht. Dies kann zu unterschiedlichen numerischen Indizes
+   führen.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.bcmod-and-floats">
+  <title>Änderungen an <function>bcmod</function> bei Gleitkommazahlen</title>
+
+  <para>
+   Die Funktion <function>bcmod</function> reduziert Gleitkommazahlen nicht
+   mehr auf Ganzzahlen. Daher entspricht ihr Verhalten nun der Funktion
+   <function>fmod</function> und nicht mehr dem Operator <literal>%</literal>.
+   Zum Beispiel liefert <literal>bcmod('4', '3.5')</literal> nun
+   <literal>0.5</literal> anstelle von <literal>1</literal>.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.hash-functions">
+  <title>Hashing-Funktionen und nicht-kryptographische Hashes</title>
+
+  <para>
+   Die Funktionen <function>hash_hmac</function>,
+   <function>hash_hmac_file</function>, <function>hash_pbkdf2</function> und
+   <function>hash_init</function> (mit <constant>HASH_HMAC</constant>)
+   akzeptieren keine nicht-kryptographischen Hashes mehr.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.json_decode-changes">
+  <title>Funktionsoptionen für <function>json_decode</function></title>
+
+  <para>
+   Wenn bei der Funktion <function>json_decode</function> der zweite Parameter
+   (assoc) &null; ist, wird nun die Funktionsoption
+   <constant>JSON_OBJECT_AS_ARRAY</constant> verwendet. Zuvor wurde
+   <constant>JSON_OBJECT_AS_ARRAY</constant> immer ignoriert.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.rand-mt_rand-output">
+  <title>Die Rückgabewerte von <function>rand</function> und <function>mt_rand</function></title>
+
+  <para>
+   Die Sequenzen, die von den Funktionen <function>rand</function> und
+   <function>mt_rand</function> für einen bestimmten Seed erzeugt werden,
+   können sich auf 64-Bit-Systemen von den in PHP 7.1 erzeugten unterscheiden
+   (aufgrund eines behobenen Modulo-Bias-Fehlers in der Implementierung).
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.sqlsafe_mode-ini-setting">
+  <title>INI-Einstellung <link linkend="ini.sql.safe-mode"><parameter>sql.safe_mode</parameter></link> entfernt</title>
+
+  <para>
+   Die INI-Einstellung <parameter>sql.safe_mode</parameter> wurde entfernt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.date_parse_from_format">
+  <title>Änderungen an <function>date_parse</function> und <function>date_parse_from_format</function></title>
+
+  <para>
+   Das Element <literal>zone</literal> des Arrays, das von den Funktionen
+   <function>date_parse</function> und
+   <function>date_parse_from_format</function> zurückgegeben wird, zeigt nun
+   Sekunden anstelle von Minuten, und sein Vorzeichen wurde umgedreht. So ist
+   zum Beispiel <literal>-120</literal> nun <literal>7200</literal>.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration72.incompatible.cookie-decode">
+  <title>Eingehende Cookies</title>
+
+  <para>
+   Seit PHP 7.2.34 werden die <emphasis>Namen</emphasis> eingehender Cookies
+   aus Sicherheitsgründen nicht mehr URL-dekodiert.
+  </para>
+ </sect2>
+
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
