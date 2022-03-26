@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 86e6094e86b84a51d00ab217ac50ce8dde33d82a Maintainer: samesch Status: ready -->
+
+<sect1 xml:id="migration73.incompatible" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Nicht abwärtskompatible Änderungen</title>
+
+ <sect2 xml:id="migration73.incompatible.core">
+  <title>PHP-Kern</title>
+
+  <sect3 xml:id="migration73.incompatible.core.heredoc-nowdoc">
+   <title>Interpretation des schließenden Heredoc/Nowdoc-Bezeichners</title>
+
+   <para>
+    Durch die Einführung der
+    <link linkend="migration73.new-features.core.heredoc">flexiblen Heredoc/Nowdoc-Syntax</link>
+    können doc-Zeichenketten, die den schließenden Bezeichner in ihrem Körper
+    enthalten, zu Syntaxfehlern oder einer veränderten Interpretation führen.
+    Zum Beispiel in:
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$str = <<<FOO
+abcdefg
+   FOO
+FOO;
+?>
+]]>
+     </programlisting>
+    </informalexample>
+    hatte das eingerückte <literal>FOO</literal> bisher keine besondere
+    Bedeutung. Nun wird es als Ende der Heredoc-Zeichenkette interpretiert und
+    das folgende <literal>FOO;</literal> führt zu einem Syntaxfehler. Dieses
+    Problem kann immer gelöst werden, indem ein schließender Bezeichner
+    gewählt wird, der nicht im Inhalt der Zeichenkette vorkommt.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration73.incompatible.core.continue-targeting-switch">
+   <title>Warnung bei continue in switch-Anweisung</title>
+
+   <para>
+    Eine <literal>continue</literal>-Anweisung, die in einer
+    <literal>switch</literal>-Kontrollstruktur verwendet wird, erzeugt nun
+    eine Warnung. In PHP sind solche <literal>continue</literal>-Anweisungen
+    gleichbedeutend mit <literal>break</literal>, während sie sich in anderen
+    Sprachen wie <literal>continue 2</literal> verhalten.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+while ($foo) {
+    switch ($bar) {
+      case "baz":
+         continue;
+         // Warning: "continue" targeting switch is equivalent to
+         //          "break". Did you mean to use "continue 2"?
+   }
+}
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration73.incompatible.core.arrayaccess">
+   <title>Strikte Interpretation von ganzzahligen Zeichenketten-Schlüsseln bei ArrayAccess</title>
+
+   <para>
+    Ein Array-Zugriff vom Typ <literal>$obj["123"]</literal>, worin
+    <literal>$obj</literal> <classname>ArrayAccess</classname> implementiert
+    und <literal>"123"</literal> ein ganzzahliges
+    Literal vom Typ <type>string</type> ist, führt nicht mehr zu einer
+    impliziten Umwandlung in eine Ganzzahl, d. h., anstelle von
+    <literal>$obj->offsetGet(123)</literal> wird nun
+    <literal>$obj->offsetGet("123")</literal> aufgerufen. Dies entspricht dem
+    bestehenden Verhalten für nicht-literale Werte. Das Verhalten von Arrays
+    wird davon in keiner Weise beeinflusst; sie wandeln ganzzahlige
+    Zeichenketten-Schlüssel weiterhin implizit in Ganzzahlen um.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration73.incompatible.core.static-properties">
+   <title>Statische Eigenschaften werden nicht mehr durch Referenzzuweisung getrennt</title>
+
+   <para>
+    In PHP werden statische Eigenschaften von vererbenden Klassen gemeinsam
+    genutzt, es sei denn, die statische Eigenschaft wird in einer Kindklasse
+    explizit überschrieben. Allerdings war es aufgrund eines
+    Implementierungs-Artefakts möglich, die statischen Eigenschaften durch
+    Zuweisung einer Referenz zu trennen. Dieses Schlupfloch wurde nun behoben.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+class Test {
+    public static $x = 0;
+}
+class Test2 extends Test { }
+
+Test2::$x = &$x;
+$x = 1;
+
+var_dump(Test::$x, Test2::$x);
+// Vorher:     int(0), int(1)
+// Nun:        int(1), int(1)
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration73.incompatible.core.reference-unwrapping">
+   <title>Referenzen, die von Array- und Eigenschafts-Zugriffen zurückgegeben werden, werden sofort aufgelöst</title>
+
+   <para>
+    Eine Referenz, die von einem Array- oder Eigenschafts-Zugriff
+    zurückgegeben wird, wird nun im Zuge des Zugriffs aufgelöst. Das bedeutet,
+    dass es nicht mehr möglich ist, die Referenz zwischen dem Zugriff und der
+    Verwendung des Wertes, auf den zugegriffen wurde, zu verändern:
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$arr = [1];
+$ref =& $arr[0];
+var_dump($arr[0] + ($arr[0] = 2));
+// Vorher: int(4), Nun: int(3)
+?>
+]]>
+     </programlisting>
+    </informalexample>
+    Dadurch wird das Verhalten von Referenzen und Nicht-Referenzen konsistent.
+    Es ist zu beachten, dass das Lesen und Schreiben eines Wertes innerhalb
+    eines einzelnen Ausdrucks weiterhin undefiniertes Verhalten bleibt und
+    sich in der Zukunft wieder ändern kann.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration73.incompatible.core.traversable-unpacking">
+   <title>Entpacken von Parametern bei Traversables mit nicht-ganzzahligen Schlüsseln wird nicht mehr unterstützt</title>
+
+   <para>
+    Das Entpacken von Parametern funktioniert bei
+    <classname>Traversable</classname>s mit nicht-ganzzahligen Schlüsseln
+    nicht mehr. Der folgende Code funktionierte in PHP 5.6-7.2 unbeabsichtigt.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+function foo(...$args) {
+    var_dump($args);
+}
+function gen() {
+    yield 1.23 => 123;
+}
+foo(...gen());
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration73.incompatible.core.misc">
+   <title>Verschiedenes</title>
+
+   <para>
+    Das Hilfsprogramm <filename>ext_skel</filename> wurde komplett
+    überarbeitet; neue Optionen wurden hinzugefügt und einige alte Optionen
+    entfernt. Es ist nun in PHP geschrieben und hat keine externen
+    Abhängigkeiten.
+   </para>
+
+   <para>
+    Die Unterstützung für BeOS wurde eingestellt.
+   </para>
+
+   <para>
+    Exceptions, die durch die automatische Umwandlung von Warnungen in
+    Exceptions im Modus <literal>EH_THROW</literal> ausgelöst werden (z. B.
+    einige <classname>DateTime</classname>-Exceptions) füllen den Bereich von
+    <function>error_get_last</function> nicht mehr mit Daten. Damit
+    funktionieren sie nun genauso wie manuell ausgelöste Exceptions.
+   </para>
+
+   <para>
+    <classname>TypeError</classname> meldet nun falsche Typen als
+    <literal>int</literal> und <literal>bool</literal> anstelle von
+    <literal>integer</literal> bzw. <literal>boolean</literal>.
+   </para>
+
+   <para>
+    Undefinierte Variablen, die an <function>compact</function> übergeben
+    werden, werden nun als Hinweis gemeldet.
+   </para>
+
+   <para>
+    Die Funktion <function>getimagesize</function> und verwandte Funktionen
+    melden nun den Mime-Typ von BMP-Bildern als <literal>image/bmp</literal>
+    anstelle von <literal>image/x-ms-bmp</literal>, da ersterer bei der IANA
+    registriert ist (siehe <link xlink:href="&url.rfc;7903">RFC 7903</link>).
+   </para>
+
+   <para>
+    Die Funktion <function>stream_socket_get_name</function> gibt nun
+    IPv6-Adressen zurück die in Klammern eingeschlossen sind. Zum Beispiel
+    wird nun <literal>"[::1]:1337"</literal> anstelle von
+    <literal>"::1:1337"</literal> zurückgegeben.
+   </para>
+  </sect3>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.bc">
+  <title>BCMath mathematische Berechnungen mit beliebiger Genauigkeit</title>
+
+  <para>
+   Alle Warnungen, die von <link linkend="ref.bc">BCMath-Funktionen</link>
+   ausgelöst werden, verwenden nun die Fehlerbehandlung von PHP. Zuvor wurden
+   einige Warnungen direkt nach stderr geschrieben.
+  </para>
+
+  <para>
+   Die Funktionen <function>bcmul</function> und <function>bcpow</function>
+   geben nun Zahlen mit der geforderten Genauigkeit zurück. Zuvor wurden in
+   den zurückgegebenen Zahlen unter Umständen die Dezimalnullen am Ende
+   weggelassen.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.imap">
+  <title>IMAP, POP3 und NNTP</title>
+
+  <para>
+   Anmeldungen über <command>rsh</command>/<command>ssh</command> sind
+   standardmäßig deaktiviert. Um dies zu ändern, muss
+   <link linkend="ini.imap.enable-insecure-rsh">imap.enable_insecure_rsh</link>
+   verwendet werden. Es ist zu beachten, dass die IMAP-Bibliothek die Namen
+   der Postfächer nicht filtert, bevor sie an den
+   <command>rsh</command>/<command>ssh</command>-Befehl übergeben werden.
+   Daher sollten bei aktiviertem <command>rsh</command>/<command>ssh</command>
+   keine nicht vertrauenswürdigen Daten an diesen Befehl übergeben werden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.mbstring">
+  <title>Multibyte-Zeichenketten</title>
+
+  <para>
+   Aufgrund der hinzugefügten Unterstützung für benannte Teilsuchmuster
+   verhalten sich <literal>mb_ereg_*()</literal>-Suchmuster, die diese
+   verwenden, anders. Insbesondere werden benannte Teilsuchmuster Teil der
+   Treffer sein und <function>mb_ereg_replace</function> wird die zusätzliche
+   Syntax auswerten. Siehe
+   <link linkend="migration73.new-features.mbstring.named-captures">Benannte Teilsuchmuster</link>
+   für weitere Informationen.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.mysqli">
+  <title>Verbesserte MySQL-Erweiterung (MySQLi)</title>
+
+  <para>
+   Vorbereitete Anweisungen (Prepared Statements) geben die Sekundenbruchteile
+   bei <literal>DATETIME</literal>-, <literal>TIME</literal>- und
+   <literal>TIMESTAMP</literal>-Spalten mit Dezimalspezifizierer (z. B.
+   <literal>TIMESTAMP(6)</literal> bei Verwendung von Mikrosekunden) nun
+   korrekt an. In früheren Versionen wurden sie in den zurückgegebenen Werten
+   einfach weggelassen.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.pdo-mysql">
+  <title>MySQL-Funktionen (PDO_MYSQL)</title>
+
+  <para>
+   Vorbereitete Anweisungen geben die Sekundenbruchteile bei
+   <literal>DATETIME</literal>-, <literal>TIME</literal>- und
+   <literal>TIMESTAMP</literal>-Spalten mit Dezimalspezifizierer (z. B.
+   <literal>TIMESTAMP(6)</literal> bei Verwendung von Mikrosekunden) nun
+   korrekt an. In früheren Versionen wurden sie in den zurückgegebenen Werten
+   einfach weggelassen. Zu beachten ist, dass dies nur die
+   <link linkend="ref.pdo-mysql">PDO_MYSQL</link>-Anweisungen betrifft, bei
+   denen die Emulation vorbereiteter Anweisungen deaktiviert ist (z. B. bei
+   Verwendung der nativen Prepair-Funktionalität von MySQL). Anweisungen, die
+   Verbindungen mit <constant>PDO::ATTR_EMULATE_PREPARES</constant>=&true;
+   verwenden (die Standardeinstellung), waren von dem behobenen Fehler nicht
+   betroffen und erhielten bereits korrekte Sekundenbruchteile von der Engine.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.reflection">
+  <title>Reflection</title>
+
+  <para>
+   Beim Exportieren von
+   <link linkend="book.reflection">Reflection</link>-Objekten in Zeichenketten
+   werden nun <literal>int</literal> und <literal>bool</literal> anstelle von
+   <literal>integer</literal> bzw. <literal>boolean</literal> verwendet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.spl">
+  <title>Standard-PHP-Bibliothek (SPL)</title>
+
+  <para>
+   Wenn ein <link linkend="book.spl">SPL</link>-Autoloader eine Exception
+   auslöst, werden die folgenden Autoloader nicht mehr ausgeführt. Zuvor
+   wurden alle Autoloader ausgeführt und die Exceptions wurden verkettet.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.simplexml">
+  <title>SimpleXML</title>
+
+  <para>
+   Wenn eine mathematische Operation ein
+   <link linkend="book.simplexml">SimpleXML</link>-Objekt enthält, wird der
+   Text nun als <type>int</type> oder <type>float</type> behandelt, je
+   nachdem, was besser geeignet ist. Zuvor wurden Werte grundsätzlich als
+   <type>int</type>s behandelt.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration73.incompatible.cookie-decode">
+  <title>Eingehende Cookies</title>
+
+  <para>
+   Seit PHP 7.3.23 werden die <emphasis>Namen</emphasis> eingehender Cookies
+   aus Sicherheitsgründen nicht mehr URL-dekodiert.
+  </para>
+ </sect2>
+
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
