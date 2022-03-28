@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 317a816da564d570986b2d9aed9c68e9ec173d4c Maintainer: nikic Status: ready -->
+<!-- EN-Revision: 615dc682cf741edd7fbb40bd7b20c43f1e6c3940 Maintainer: nikic Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 197df870cb7d610d4b253621b85909969d3c509a Reviewer: samesch -->
 <!-- Credits: Jens-Andre Koch -->
@@ -472,6 +472,20 @@
      </para>
     </listitem>
    </varlistentry>
+   <varlistentry xml:id="pm.max-spawn-rate">
+    <term>
+     <parameter>pm.max_spawn_rate</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Die Anzahl der gleichzeitig zu erzeugenden Kindprozesse. Wird nur
+      verwendet, wenn <literal>pm</literal> auf <literal>dynamic</literal>
+      gesetzt ist.
+      Standardwert: 32
+     </para>
+    </listitem>
+   </varlistentry>
    <varlistentry xml:id="pm.process-idle-timeout">
     <term>
      <parameter>pm.process_idle_timeout</parameter>
@@ -499,6 +513,24 @@
       Drittanbietern zu umgehen. Für eine unbegrenzte Anzahl Anfragen '0'
       verwenden. Vergleichbar mit <varname>PHP_FCGI_MAX_REQUESTS</varname>.
       Standardwert: 0.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="pm.status-listen">
+    <term>
+     <parameter>pm.status_listen</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Die Adresse, an der FastCGI-Statusanfragen angenommen werden sollen.
+      Hiermit wird ein neuer unsichtbarer Pool erstellt, der Anfragen
+      eigenständig bearbeiten kann. Dies ist nützlich, wenn der Hauptpool mit
+      lang laufenden Anfragen beschäftigt ist, da es trotzdem möglich ist, die
+      <link linkend="fpm.status">FPM-Statusseite</link> zu erhalten, bevor
+      diese abgeschlossen sind. Die Syntax ist die gleiche wie bei der
+      Direktive <link linkend="listen">listen</link>.
+      Standardwert: none
      </para>
     </listitem>
    </varlistentry>
@@ -589,12 +621,30 @@
     </term>
     <listitem>
      <para>
-      Das Zeitspanne für die Bearbeitung einer einzelnen Anfrage, nach der der
-      Worker-Prozess beendet wird. Diese Einstellung sollte verwendet werden,
-      wenn die ini-Option 'max_execution_time' aus irgendeinem Grund nicht zu
-      einem Skriptabbruch führt. Der Wert '0' steht für 'Off'. Mögliche
-      Einheiten: s(econds)(default), m(inutes), h(ours) oder d(ays).
+      Die Zeitbeschränkung für die Bearbeitung einer einzelnen Anfrage, nach
+      der der Worker-Prozess beendet wird. Diese Einstellung sollte verwendet
+      werden, wenn die ini-Option 'max_execution_time' aus irgendeinem Grund
+      nicht zu einem Skriptabbruch führt. Der Wert '0' steht für 'Off'.
+      Mögliche Einheiten: s(econds)(default), m(inutes), h(ours) oder d(ays).
       Standardwert: 0.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="request-terminate-timeout-track-finished">
+    <term>
+     <parameter>request_terminate_timeout_track_finished</parameter>
+     <type>bool</type>
+    </term>
+    <listitem>
+     <para>
+      Die Zeitbeschränkung, die durch
+      <link linkend="request-terminate-timeout">request_terminate_timeout</link>
+      festgelegt wird, wird nicht aktiviert nach
+      <link linkend="function.fastcgi-finish-request">fastcgi_finish_request</link>
+      oder wenn die Anwendung beendet ist und interne Shutdown-Funktionen
+      aufgerufen werden. Mit dieser Direktive kann die Wartezeitbeschränkung
+      auch in solchen Fällen uneingeschränkt angewendet werden.
+      Standardwert: no. Seit PHP 7.3.0.
      </para>
     </listitem>
    </varlistentry>
@@ -605,10 +655,23 @@
     </term>
     <listitem>
      <para>
-      Die Zeitspanne für die Bearbeitung einer einzelnen Anfrage, nach der ein
-      PHP-Backtrace in die 'slowlog'-Datei (Log-Datei für langsame Anfragen
-      geschrieben wird. Der Wert '0' steht für 'Off'. Mögliche Einheiten:
-      s(econds)(default), m(inutes), h(ours) oder d(ays). Standardwert: 0.
+      Die Zeitbeschränkung für die Bearbeitung einer einzelnen Anfrage, nach
+      der ein PHP-Backtrace in die 'slowlog'-Datei (Log-Datei für langsame
+      Anfragen geschrieben wird. Der Wert '0' steht für 'Off'. Mögliche
+      Einheiten: s(econds)(default), m(inutes), h(ours) oder d(ays).
+      Standardwert: 0.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="request-slowlog-trace-depth">
+    <term>
+     <parameter>request_slowlog_trace_depth</parameter>
+     <type>int</type>
+    </term>
+    <listitem>
+     <para>
+      Die Ausführlichkeit des Slowlog-Log-Stacktrace.
+      Standardwert: 20. Seit PHP 7.2.0.
      </para>
     </listitem>
    </varlistentry>
@@ -731,6 +794,18 @@
       Sie sollten FPM nur auf .php-Erweiterungen beschränken, um zu
       verhindern, dass bösartige Nutzer andere Erweiterungen verwenden, um
       PHP-Code auszuführen. Standardwert: .php .phar
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry xml:id="apparmor-hat">
+    <term>
+     <parameter>apparmor_hat</parameter>
+     <type>string</type>
+    </term>
+    <listitem>
+     <para>
+      Wenn AppArmor aktiviert ist, kann die Kopfzeile geändert werden.
+      Standardwert: nicht festgelegt
      </para>
     </listitem>
    </varlistentry>
