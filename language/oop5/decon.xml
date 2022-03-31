@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 18b39f03ef77080a349f6cd2d82112dd43f904c2 Maintainer: hholzgra Status: ready -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<!-- Rev-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Reviewer: samesch -->
 <!-- Credits: simp -->
  <sect1 xml:id="language.oop5.decon" xmlns="http://docbook.org/ns/docbook">
   <title>Konstruktoren und Destruktoren</title>
@@ -184,6 +184,56 @@ class Punkt {
      </para>
     </note>
    </sect3>
+
+   <sect3 xml:id="language.oop5.decon.constructor.new">
+    <title>New bei der Initialisierung</title>
+    <para>
+     Ab PHP 8.1.0 können Objekte als Standardwerte für Parameter, als
+     statische Variablen und globale Konstanten sowie in
+     Eigenschaftsparametern verwendet werden. Objekte können nun auch an
+     <function>define</function> übergeben werden.
+    </para>
+    <note>
+     <para>
+      Es ist nicht zulässig, einen dynamischen Klassennamen, einen
+      Klassennamen, der keine Zeichenkette ist, oder eine anonyme Klasse zu
+      verwenden. Es ist auch nicht zulässig, Parameter zu entpacken, und nicht
+      unterstützte Ausdrücke als Parameter zu verwenden.
+     </para>
+    </note>
+    <example>
+     <title>Verwendung von new bei Initialisierungen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+
+// Alles zulässig:
+static $x = new Foo;
+
+const C = new Foo;
+
+function test($param = new Foo) {}
+
+#[AnAttribute(new Foo)]
+class Test {
+    public function __construct(
+        public $prop = new Foo,
+    ) {}
+}
+
+// Alles nicht zulässig (Kompilierfehler):
+function test(
+    $a = new (CLASS_NAME_CONSTANT)(), // dynamischer Klassenname
+    $b = new class {}, // anonyme Klasse
+    $c = new A(...[]), // Entpacken von Parametern
+    $d = new B($abc), // nicht unterstützter Ausdruck
+) {}
+?>
+]]>
+     </programlisting>
+    </example>
+   </sect3>
+
    <sect3 xml:id="language.oop5.decon.constructor.static">
     <title>Erzeugung über statische Methoden</title>
     <para>
