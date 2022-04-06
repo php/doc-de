@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5065e44c26ccb29437ce26e9df0d26f446583d7a Maintainer: simp Status: wip -->
+<!-- EN-Revision: 39752929cd4ab78db8a7310dfb328444c558df99 Maintainer: simp Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 39752929cd4ab78db8a7310dfb328444c558df99 Reviewer: samesch -->
 <refentry xml:id="function.create-function" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>create_function</refname>
@@ -27,8 +29,8 @@
     Diese Funktion führt intern <function>eval</function> aus und hat daher
     die gleichen Sicherheitsprobleme wie <function>eval</function>. Außerdem
     zeigt diese Funktion ein schlechtes Verhalten in Bezug auf Leistung und
-    Speicherverbrauch, da die erzeugten Funktionen global sind und nicht
-    nicht wieder freigegeben werden können.
+    Speicherverbrauch, da die erzeugten Funktionen global sind und nicht mehr
+    freigegeben werden können.
    </para>
    <para>
     Stattdessen sollten die nativ vorhandenen
@@ -104,7 +106,7 @@ echo $newfunc(2, M_E) . "\n";
      Und nun der gleiche Code unter Verwendung einer
      <link linkend="functions.anonymous">anonymen Funktion</link>. Zu beachten
      ist, dass der Code und die Parameter nicht mehr in Zeichenketten
-     enthalten sind:
+     eingebettet sind:
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -159,7 +161,7 @@ process(2.3445, M_PI, $farr);
 // Nun erzeugen wir eine Reihe von Funktionen zur Bearbeitung von Zeichenketten
 $garr = array(
     create_function('$b,$a', 'if (strncmp($a, $b, 3) == 0) return "** \"$a\" '.
-    'und \"$b\"\n** Sehen für mich gleich aus! (unter Betrachtung der ersten 3 Zeichen)";'),
+    'und \"$b\"\n** sehen für mich gleich aus! (unter Betrachtung der ersten 3 Zeichen)";'),
     create_function('$a,$b', 'return "CRCs: " . crc32($a) . ", ".crc32($b);'),
     create_function('$a,$b', 'return "similar(a,b) = " . similar_text($a, $b, $p) . "($p%)";')
     );
@@ -171,7 +173,7 @@ process("Twas brilling and the slithy toves", "Twas the night", $garr);
     <para>
      Hier ist noch einmal derselbe Code unter Verwendung einer
      <link linkend="functions.anonymous">anonymen Funktion</link>.
-     Hier ist zu erkennen, dass die Variablennamen in diesem Code nicht mehr
+     Es ist zu beachten, dass die Variablennamen in diesem Code nicht mehr
      maskiert werden müssen, da sie sich nicht in einer Zeichenkette befinden.
     </para>
     <programlisting role="php">
@@ -200,7 +202,7 @@ process(2.3445, M_PI, $farr);
 // Nun erzeugen wir eine Reihe von Funktionen zur Bearbeitung von Zeichenketten
 $garr = array(
     function($b,$a) { if (strncmp($a, $b, 3) == 0) return "** \"$a\" " .
-        "and \"$b\"\n** Sehen für mich gleich aus! (unter Betrachtung der ersten 3 Zeichen"; },
+        "und \"$b\"\n** sehen für mich gleich aus! (unter Betrachtung der ersten 3 Zeichen"; },
     function($a,$b) { return "CRCs: " . crc32($a) . ", ".crc32($b); },
     function($a,$b) { return "similar(a,b) = " . similar_text($a, $b, $p) . "($p%)"; }
 );
@@ -222,7 +224,7 @@ ln(a)/b = 0.27122299212594
 
 Wir benutzen nun das zweite Array von dynamischen Funktionen
 ** "Twas the night" und "Twas brilling and the slithy toves"
-** Sehen für mich gleich aus! (unter Betrachtung der ersten 3 Zeichen)
+** sehen für mich gleich aus! (unter Betrachtung der ersten 3 Zeichen)
 CRCs: 3569586014, 342550513
 similar(a,b) = 11(45.833333333333%)
 ]]>
@@ -234,7 +236,7 @@ similar(a,b) = 11(45.833333333333%)
     <title>Gebrauch der anonymen Funktionen als Callback-Funktion</title>
     <para>
      Wahrscheinlich liegt der häufigste Anwendungsfall für dynamische
-     Funktionen darin, sie als Callbacks zu übergeben, also z.B. beim
+     Funktionen darin, sie als Callbacks zu übergeben, also z. B. beim
      Gebrauch von <function>array_walk</function> oder
      <function>usort</function>.
     </para>
@@ -248,7 +250,8 @@ print_r($av);
 ]]>
     </programlisting>
     <para>
-     Converted to an <link linkend="functions.anonymous">anonymous function</link>:
+     Umgewandelt in eine
+     <link linkend="functions.anonymous">anonyme Funktion</link>:
     </para>
     <programlisting role="php">
 <![CDATA[
@@ -288,15 +291,18 @@ print_r($sv);
 ]]>
     </programlisting>
     <para>
-     Sortiert von der Längsten zur Kürzesten
+     Umgewandelt in eine
+     <link linkend="functions.anonymous">anonyme Funktion</link>:
     </para>
     <programlisting role="php">
 <![CDATA[
 <?php
-
-usort($sv, create_function('$a,$b','return strlen($b) - strlen($a);'));
+$sv = array("small", "a big string", "larger", "it is a string thing");
+echo "Original:\n";
 print_r($sv);
-
+echo "Sortiert:\n";
+usort($sv, function($a,$b) { return strlen($b) - strlen($a); });
+print_r($sv);
 ?>
 ]]>
     </programlisting>
