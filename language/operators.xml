@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 87b582706267d69006a8aaaed3b5eda2ccf99c92 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: c653d5a2b9b3a2671ca017c9f7ab6976fa8d148d Maintainer: nobody Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: e4b889a3e8b9d87ab605aac9bbe85d2c16c69a1b Reviewer: samesch -->
 <!-- CREDITS: tzwenny, betz -->
@@ -816,7 +816,7 @@ Parse error: syntax error, unexpected 'new' (T_NEW) in …
      <simplelist>
       <member><link linkend="language.operators.arithmetic">Arithmetische Operatoren</link></member>
       <member><link linkend="language.operators.bitwise">Bit-Operatoren</link></member>
-      <member><link linkend="language.operators.comparison.coalesce">Null-Coalescing-Operator</link></member>
+      <member><link linkend="language.operators.comparison.coalesce">Null-Koaleszenz-Operator</link></member>
      </simplelist>
     </para>
    </sect2>
@@ -1523,7 +1523,7 @@ Ausdruck: 0 = -4 << 62
        <entry>$a == $b</entry>
        <entry>Gleich</entry>
        <entry>
-        Gibt &true; zurück, wenn nach der Typ-Jonglage <varname>$a</varname>
+        Gibt &true; zurück, wenn nach der Typumwandlung <varname>$a</varname>
         gleich <varname>$b</varname> ist.
        </entry>
       </row>
@@ -1539,7 +1539,7 @@ Ausdruck: 0 = -4 << 62
        <entry>$a != $b</entry>
        <entry>Ungleich</entry>
        <entry>
-        Gibt &true; zurück, wenn nach der Typ-Jonglage <varname>$a</varname>
+        Gibt &true; zurück, wenn nach der Typumwandlung <varname>$a</varname>
         nicht gleich <varname>$b</varname> ist.
        </entry>
       </row>
@@ -1547,7 +1547,7 @@ Ausdruck: 0 = -4 << 62
        <entry>$a &lt;&gt; $b</entry>
        <entry>Ungleich</entry>
        <entry>
-        Gibt &true; zurück, wenn nach der Typ-Jonglage <varname>$a</varname>
+        Gibt &true; zurück, wenn nach der Typumwandlung <varname>$a</varname>
         nicht gleich <varname>$b</varname> ist.
        </entry>
       </row>
@@ -1809,7 +1809,7 @@ var_dump(min(-100, -10, NULL, 10, 100)); // NULL - (bool)NULL < (bool)-100 ist F
      <programlisting role="php">
 <![CDATA[
 <?php
-// Arrays werden mit den normalen Vergleichsoperatoren wie folgt verglichen
+// Arrays werden mit den normalen Vergleichsoperatoren sowie dem Raumschiff-Operator wie folgt verglichen
 function standard_array_compare($op1, $op2)
 {
     if (count($op1) < count($op2)) {
@@ -1819,7 +1819,7 @@ function standard_array_compare($op1, $op2)
     }
     foreach ($op1 as $key => $val) {
         if (!array_key_exists($key, $op2)) {
-            return null; // nicht vergleichbar
+            return 1;
         } elseif ($val < $op2[$key]) {
             return -1;
         } elseif ($val > $op2[$key]) {
@@ -1847,6 +1847,17 @@ function standard_array_compare($op1, $op2)
      entnehmen.
     </para>
    </warning>
+
+   <note>
+    <simpara>
+     Es ist wichtig zu beachten, dass die Typumwandlung von PHP nicht immer
+     offensichtlich ist, wenn Werte unterschiedlichen Typs verglichen werden,
+     insbesondere beim Vergleich von &integer;n mit &boolean;s oder &integer;n
+     mit &string;s. Daher ist es im Allgemeinen in den meisten Fällen ratsam,
+     <literal>===</literal> und <literal>!==</literal> für Vergleiche zu
+     verwenden, anstatt <literal>==</literal> und <literal>!=</literal>.
+    </simpara>
+   </note>
 
    <sect2 role="seealso">
     &reftitle.seealso;
@@ -1891,10 +1902,12 @@ if (empty($_POST['action'])) {
     </para>
     <para>
      Beim ternären Operator kann der mittlere Teil weggelassen werden. Der
-     Ausdruck <literal>(ausdr1) ?: (ausdr3)</literal> gibt
+     Ausdruck <literal>(ausdr1) ?: (ausdr3)</literal> wird zum Ergebnis von
      <replaceable>ausdr1</replaceable> zurück, wenn
-     <replaceable>ausdr1</replaceable> zu &true; ausgewertet wird, und
+     <replaceable>ausdr1</replaceable> zu &true; ausgewertet wird, und zu
      <replaceable>ausdr3</replaceable> andernfalls.
+     <replaceable>ausdr1</replaceable> wird in diesem Fall nur einmal
+     ausgewertet.
     </para>
     <note>
      <simpara>
@@ -1939,18 +1952,40 @@ echo ((true ? 'true' : false) ? 't' : 'f');
       </example>
      </para>
     </note>
+    <note>
+     <para>
+      Die Verkettung von kurzen ternären Operatoren (<literal>?:</literal>)
+      ist jedoch stabil und verhält sich plausibel. Sie wird zum ersten
+      Argument ausgewertet, das einen nicht-falschen Wert ergibt. Es ist zu
+      beachten, dass undefinierte Werte immer noch eine Warnung auslösen.
+      <example>
+       <title>Verkettung kurzer ternärer Operatoren</title>
+       <programlisting role="php">
+<![CDATA[
+<?php
+echo 0 ?: 1 ?: 2 ?: 3, PHP_EOL; //1
+echo 0 ?: 0 ?: 2 ?: 3, PHP_EOL; //2
+echo 0 ?: 0 ?: 0 ?: 3, PHP_EOL; //3
+?>
+]]>
+       </programlisting>
+      </example>
+     </para>
+    </note>
    </sect2>
 
    <sect2 xml:id="language.operators.comparison.coalesce">
-    <title>Null-Coalescing-Operator</title>
+    <title>Null-Koaleszens-Operator</title>
     <para>
-     Weiterhin gibt es den "??" (oder null-Coalescing) Operator.
+     Eine weitere nützliche Kurzform eines Operators ist der Operator "??"
+     (null-Koaleszenz-Operator, etwa: Zuweisungsoperator für die Kombination
+     mit null).
      <example>
       <title>Zuweisung eines Standardwerts</title>
       <programlisting role="php">
 <![CDATA[
 <?php
-// Example usage for: Null Coalesce Operator
+// Beispiel für die Verwendung des null-Koaleszenz-Operators
 $action = $_POST['action'] ?? 'standard';
 
 // Obiges ist mit dieser if/else-Anweisung identisch
@@ -1959,7 +1994,6 @@ if (isset($_POST['action'])) {
 } else {
     $action = 'standard';
 }
-
 ?>
 ]]>
       </programlisting>
@@ -1977,7 +2011,7 @@ if (isset($_POST['action'])) {
     </para>
     <note>
      <simpara>
-      Es ist zu beachten, dass der null-Coalescing-Operator ein Ausdruck ist
+      Es ist zu beachten, dass der null-Koaleszenz-Operator ein Ausdruck ist
       und nicht als Variable, sondern als Wert eines Ausdrucks ausgewertet
       wird. Dies ist unbedingt zu berücksichtigen, wenn eine Variable per
       Referenz zurückgegeben werden soll. Die Anweisung <literal>return $foo
@@ -1987,10 +2021,29 @@ if (isset($_POST['action'])) {
     </note>
     <note>
      <para>
-      Es ist zu beachten, dass der null-Coalescing-Operator einfach
+      Der null-Koaleszenz-Operator hat eine niedrige Priorität. Das heißt,
+      wenn er mit anderen Operatoren (z. B. Verkettung von Zeichenketten oder
+      arithmetische Operatoren) kombiniert wird, sind wahrscheinlich Klammern
+      erforderlich.
+     </para>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// Löst die Warnung aus, dass $name undefiniert ist.
+print 'Mr. ' . $name ?? 'Anonymous';
+
+// Gibt "Mr. Anonymous" aus
+print 'Mr. ' . ($name ?? 'Anonymous');
+?>
+]]>
+     </programlisting>
+    </note>
+    <note>
+     <para>
+      Es ist zu beachten, dass der null-Koaleszenz-Operator einfach
       verschachtelt werden kann:
       <example>
-       <title>Verschachtelung des null-Coalescing-Operators</title>
+       <title>Verschachtelung des null-Koaleszenz-Operators</title>
        <programlisting role="php">
 <![CDATA[
 <?php

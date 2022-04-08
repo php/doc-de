@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Maintainer: simp Status: ready -->
+<!-- EN-Revision: fca50d321ce57036f3786f278887abe58cd41de8 Maintainer: simp Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: fca50d321ce57036f3786f278887abe58cd41de8 Reviewer: samesch -->
 <!-- Credits: hholzgra -->
 <sect1 xml:id="language.oop5.autoload" xmlns="http://docbook.org/ns/docbook">
   <title>Automatisches Laden von Klassen</title>
   <para>
    Viele Entwickler, die objektorientierte Anwendungen entwickeln, erzeugen
-   eine eigene PHP-Quelldatei für jede Klassendefinition. Eines der größten
-   Ärgernisse ist die Notwendigkeit, eine lange Liste von benötigten 
-   Include-Anweisungen am Anfang eines jeden Skripts (eine für jede Klasse).
+   für jede Klassendefinition eine eigene PHP-Quelldatei. Eines der größten
+   Ärgernisse ist die Notwendigkeit, am Anfang eines jeden Skripts eine lange
+   Liste von benötigten Include-Anweisungen (eine für jede Klasse) schreiben
+   zu müssen.
   </para>
   <para>
    Die Funktion <function>spl_autoload_register</function> registriert eine
    beliebige Anzahl von Autoladern, die es ermöglichen, dass Klassen und
    Schnittstellen automatisch geladen werden, wenn sie derzeit nicht definiert
    sind. Durch das Registrieren von Autoladern erhält PHP einen letzten Versuch,
-   die Klasse zu laden, bevor es unter Ausgabe einer Fehlermeldung scheitert.
+   die Klasse oder Schnittstelle zu laden, bevor es unter Ausgabe einer
+   Fehlermeldung scheitert.
+  </para>
+  <para>
+   Jedes klassenähnliche Konstrukt kann auf die gleiche Weise automatisch
+   geladen werden. Dazu gehören Klassen, Schnittstellen, Traits und
+   Aufzählungen.
   </para>
   <caution>
    <para>
@@ -27,12 +36,22 @@
     PHP 8.0.0 entfernt.
    </para>
   </caution>
+  <note>
+   <para>
+    Die Funktion <function>spl_autoload_register</function> kann mehrfach
+    aufgerufen werden, um mehrere Autoloader zu registrieren. Wenn von einer
+    Autoload-Funktion eine Exception ausgelöst wird, wird dieser Vorgang
+    jedoch unterbrochen und es werden keine weiteren Autoload-Funktionen
+    ausgeführt. Aus diesem Grund wird dringend davon abgeraten, von einer
+    Autoload-Funktion aus eine Exception auszulösen.
+   </para>
+  </note>
   <para>
    <example>
     <title>Autoload-Beispiel</title>
     <para>
      Dieses Beispiel versucht die Klassen <literal>MyClass1</literal> und
-     <literal>MyClass2</literal> aus den entsprechenden Dateien 
+     <literal>MyClass2</literal> aus den entsprechenden Dateien
      <filename>MyClass1.php</filename> und <filename>MyClass2.php</filename>
      zu laden.
     </para>
@@ -44,7 +63,7 @@ spl_autoload_register(function ($class_name) {
 });
 
 $obj  = new MyClass1();
-$obj2 = new MyClass2(); 
+$obj2 = new MyClass2();
 ?>
 ]]>
     </programlisting>
@@ -52,7 +71,7 @@ $obj2 = new MyClass2();
    <example>
     <title>Weiteres Autoload-Beispiel</title>
     <para>
-     Dieses Beispiel versucht das Interface <literal>ITest</literal>
+     Dieses Beispiel versucht, das Interface <literal>ITest</literal>
      zu laden.
     </para>
     <programlisting role="php">
@@ -75,68 +94,6 @@ Fatal error: Interface 'ITest' not found in ...
 ]]>
     </programlisting>
    </example>
-   <example>
-    <title>Autoloading mit Ausnahmebehandlung</title>
-    <para>
-     In diesem Beispiel wird eine Exception geworfen und ein try/catch-Block
-     demonstriert.
-    </para>
-    <programlisting role="php">
-<![CDATA[
-<?php
-spl_autoload_register(function ($name) {
-    echo "Möchte $name laden.\n";
-    throw new Exception("Kann $name nicht laden.");
-});
-
-try {
-    $obj = new NonLoadableClass();
-} catch (Exception $e) {
-    echo $e->getMessage(), "\n";
-}
-?>
-]]>
-    </programlisting>
-    &example.outputs;
-    <screen>
-<![CDATA[
-Möchte NonLoadableClass laden.
-Kann NonLoadableClass nicht laden.
-]]>
-    </screen>
-   </example>
-   <example>
-    <title>Autoloading mit Ausnahmebehandlung mit fehlender eigener Exception</title>
-    <para>
-     In diesem Beispiel wird eine Exception geworfen für eine nicht ladbare
-     eigene Exception.
-    </para>
-    <programlisting role="php">
-<![CDATA[
-<?php
-spl_autoload_register(function ($name) {
-    echo "Möchte $name laden.\n";
-    throw new MissingException("Kann $name nicht laden.");
-});
-
-try {
-    $obj = new NonLoadableClass();
-} catch (Exception $e) {
-    echo $e->getMessage(), "\n";
-}
-?>
-]]>
-    </programlisting>
-    &example.outputs;
-    <screen>
-<![CDATA[
-Möchte NonLoadableClass laden.
-Möchte MissingException laden.
-
-Fatal error: Class 'MissingException' not found in testMissingException.php on line 4
-]]>
-    </screen>
-   </example>
   </para>
 
   <simplesect role="seealso">
@@ -153,7 +110,7 @@ Fatal error: Class 'MissingException' not found in testMissingException.php on l
   </simplesect>
 
  </sect1>
- 
+
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
