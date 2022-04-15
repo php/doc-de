@@ -1,42 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 4c8603d1c114c20d9ee6142f508da396affc83a8 Maintainer: nobody Status: ready -->
-<!-- Reviewed: no -->
-
+<!-- EN-Revision: 7006df7c1fbc64457ac4011ae33309c3f3e5b202 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 7006df7c1fbc64457ac4011ae33309c3f3e5b202 Reviewer: samesch -->
 <sect1 xml:id="install.unix.lighttpd-14" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
- <title>Lighttpd 1.4 auf Unix Systemen</title>
+ <title>Lighttpd 1.4 auf Unix-Systemen</title>
 
  <para>
-  Dieser Abschnitt enthält Notizen und Hinweise 
-  zur Installtion von PHP für Lighttpd 1.4 für Unixsysteme.
+  Dieser Abschnitt enthält Notizen und Hinweise zur Installtion von
+  Lighttpd 1.4 für PHP auf Unix-Systemen.
  </para>
 
  <para>
-  Bitte benutzen Sie das <link xlink:href="&url.lighttpd.doc;">Lighttpd trac</link>
-  um die ordnungsgemäße Installation von Lighttpd zu lernen bevor Sie fortfahren.
+  Vor der Installation von Lighttpd wird empfohlen, die Installationsanleitung
+  der <link xlink:href="&url.lighttpd.doc;">Lighttpd-Dokumentation</link> zu
+  lesen.
  </para>
- 
+
  <para>
-  Fastcgi ist die bevorzugte SAPI um PHP mit Lighttpd zu verbinden. 
-  Fastcgi ist automatisch bei php-cgi ab PHP Version 5.3 aktiviert.
-  für ältere Version konfigurieren Sie PHP bitte mit der --enable-fastcgi Option.
-  Um zu verifizieren, dass fastcgi aktiviert ist benutzen Sie bitte <literal>php -v</literal>.
-  In diesen sollte Ihre Ausgabe <literal>PHP 5.2.5 (cgi-fcgi)</literal> enthalten.
-  Vor PHP 5.2.3 war fastcgi  in der php Binärtdatei aktiviert (es gab noch kein php-cgi).
+  FastCGI ist die bevorzugte SAPI, um PHP mit Lighttpd zu verbinden. FastCGI
+  wird in php-cgi automagisch aktiviert.
  </para>
- 
+
  <sect2 xml:id="install.unix.lighttpd-14.lighttpd-spawn">
-  <title>Lighttpd einen php Prozess starten lassen</title>
+  <title>Lighttpd einen php-Prozess starten lassen</title>
 
   <para>
-   Um Lighttpd so zu konfigurieren, dass es sich mit php verbindet
-   und einen fastcgi Prozess startet editieren sie bitte die lighttpd.conf.
-   Sockets sind der bevorzugte Weg um sich auf einem lokalen System mit dem
-   fastcgi Prozess zu verbinden.
+   Um Lighttpd so zu konfigurieren, dass es sich mit PHP verbindet und
+   FastCGI-Prozesse startet, muss die Datei <filename>lighttpd.conf</filename>.
+   editiert werden. Auf einem lokalen System werden vorzugsweise Sockets für
+   die Verbindung zu FastCGI-Prozessen verwendet.
   </para>
 
   <example>
-   <title>Partial lighttpd.conf</title>
+   <title>Ein Teil der lighttpd.conf</title>
    <screen>
 <![CDATA[
 server.modules += ( "mod_fastcgi" )
@@ -60,54 +57,58 @@ fastcgi.server = ( ".php" =>
   </example>
 
   <para>
-   Der bin-path erlaubt es Lighttpd einen neue fastcgi Prozess automatisch zu starten.
-   PHP wird entsprechende der PHP_FCGI_CHILDREN Umgebungsvariable Kindprozesse starte.
-   Das "bin-environment" Direktiv konfiguriert die Umgebung für gestartete Prozesse.
-   PHP Wir Kindprozesse beenden nachdem die Anzahl von Anfragen laut PHP_FCGI_MAX_REQUESTS erreicht ist.
-   Die Direktiven "min-procs" und "max-procs" sollten generell vermieden wirden bei PHP. 
-   PHP verwaltet seine eigenen Kindprozesse. Opcode caches wie APC werden nur unter Kindprozessen geteilt,
-   welche von PHP verwaltet werden. Wenn "min-procs" auf einen Wert größer 1 gesetzt ist,
-   wird die totale Anzahle an "php Respondern" mit PHP_FCGI_CHILDREN multipliziert.
-   (2 min-procs * 16 Kindprozesser ergibt 32 Responder)
+   Die Direktive <filename>bin-path</filename> erlaubt es Lighttpd,
+   FastCGI-Prozesse dynamisch zu erzeugen. PHP erzeugt die Kindprozesse
+   entsprechend der Umgebungsvariable <envar>PHP_FCGI_CHILDREN</envar>. Die
+   Direktive <literal>bin-environment</literal> definiert die Umgebung für die
+   erzeugten Prozesse. PHP beendet einen Kindprozess, nachdem die in
+   <envar>PHP_FCGI_MAX_REQUESTS</envar> festgelegte Anzahl von Anfragen
+   erreicht ist. Die Direktiven <literal>min-procs</literal> und
+   <literal>max-procs</literal> sollten bei PHP generell vermieden werden. PHP
+   verwaltet seine eigenen Kindprozesse und OpCode-Caches wie APC nutzen nur
+   die von PHP verwalteten Kindprozesse. Wenn <literal>min-procs</literal> auf
+   einen Wert größer <literal>1</literal> gesetzt ist, wird die Anzahl der
+   PHP-Responder mit <envar>PHP_FCGI_CHILDREN</envar> multipliziert
+   (2 min-procs * 16 Kindprozesse ergibt 32 Responder).
   </para>
  </sect2>
 
  <sect2 xml:id="install.unix.lighttpd-14.spawn-fcgi">
-  <title>Spawning mit spawn-fcgi</title>  
+  <title>Prozesse mit spawn-fcgi erzeugen</title>
 
   <para>
-   Lighttpd bietet ein Programm "spawn-fcgi" an um den Prozess des Erstellens
-   von fastcgi Prozessen zu vereinfachen. 
+   Lighttpd stellt das Programm spawn-fcgi zur Verfügung, um das Erzeugen von
+   FastCGI-Prozessen zu vereinfachen.
   </para>
  </sect2>
 
  <sect2 xml:id="install.unix.lighttpd-14.spawn-php">
-  <title>Spawning php-cgi</title>
+  <title>php-cgi starten</title>
 
   <para>
-   Es ist möglich Prozesse ohne spawn-fcgi zu starten. Jedoch ist dafür etwas Arbeit nötig.
-   Die Umgebungsvariable PHP_FCGI_CHILDREN Umgebungsvariable definiert
-   wie viele Kindprozesse PHP spawnen wird um eingehende Anfragen zu bearbeiten.
-   PHP_FCGI_MAX_REQUESTS definiert wie lange (in Anfragen) jeder Kindprozess
-   existieren wird. Hier ist ein einfaches bash script um das Spawnen von
-   PHP Respondern zu vereinfachen.
+   Es ist möglich, Prozesse ohne spawn-fcgi zu starten, jedoch ist dafür etwas
+   Arbeit nötig. Die Umgebungsvariable <envar>PHP_FCGI_CHILDREN</envar>
+   definiert, wieviele Kindprozesse PHP erzeugt, um eingehende Anfragen zu
+   bearbeiten. <envar>PHP_FCGI_MAX_REQUESTS</envar> definiert, wie lange (in
+   Anfragen) jeder Kindprozess existiert. Hier ist ein einfaches Bash-Skript,
+   um das Erzeugen von PHP-Respondern zu vereinfachen.
   </para>
-     
+
   <example>
-   <title>Spawning FastCGI Responders</title>
+   <title>FastCGI-Responder erzeugen</title>
    <screen>
 <![CDATA[
 #!/bin/sh
 
-# Location of the php-cgi binary
+# Ort des php-cgi-Programms
 PHP=/usr/local/bin/php-cgi
 
-# PID File location
+# Ort der PID-Datei
 PHP_PID=/tmp/php.pid
 
-# Binding to an address
+# Bindung an eine Adresse
 #FCGI_BIND_ADDRESS=10.0.1.1:10000
-# Binding to a domain socket
+# Bindung an einen Domain-Socket
 FCGI_BIND_ADDRESS=/tmp/php.sock
 
 PHP_FCGI_CHILDREN=16
@@ -125,15 +126,15 @@ echo $! > "$PHP_PID"
  </sect2>
 
  <sect2 xml:id="install.unix.lighttpd-14.remote-fcgi">
-  <title>Verbindung zu entfernten FCGI Instanzen</title>
+  <title>Mit entfernten FCGI-Instanzen verbinden</title>
 
   <para>
-   Um Anwendungen besser zu skalieren können fastcgi Instanzen auf mehreren 
-   entfernten Maschinen gestart werden.
+   Um Anwendungen besser zu skalieren, können FastCGI-Instanzen auf mehreren
+   entfernten Rechnern gestartet werden.
   </para>
-   
+
   <example>
-   <title>Verbindung zu entferten php-fastcgi Instanzen</title>
+   <title>Mit entfernten FCGI-Instanzen verbinden</title>
    <screen>
 <![CDATA[
 fastcgi.server = ( ".php" =>
@@ -145,7 +146,6 @@ fastcgi.server = ( ".php" =>
   </example>
  </sect2>
 </sect1>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
