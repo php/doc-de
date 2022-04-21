@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6105da168f7d377a7b122b83e25ddac6b5dd2191 Maintainer: sammywg Status: wip -->
+<!-- EN-Revision: 96f69db3ae2245082de88ff0cc4f8a76620a44d1 Maintainer: sammywg Status: wip -->
+<!-- Reviewed: no -->
 <refentry xml:id="soapclient.construct" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>SoapClient::__construct</refname>
@@ -28,16 +29,18 @@
      <term><parameter>wsdl</parameter></term>
      <listitem>
       <para>
-       Die URI der <literal>WSDL</literal>-Datei oder &null;, wenn der
-       <literal>non-WSDL</literal>-Modus verwendet wird.
+       Der URI einer WSDL-Datei, die den Dienst beschreibt, der verwendet
+       wird, um den Client automatisch zu konfigurieren. Wenn er nicht
+       angegeben wird, arbeitet der Client im non-WSDL-Modus.
       </para>
       <note>
        <para>
-        Während der Entwicklung sollte das WSDL-Caching durch die Verwendung
-        der <literal>soap.wsdl_cache_ttl</literal>-Option in der &php.ini;
-        ausgeschaltet werden. Andernfalls wirken sich Änderungen an der
-        WSDL-Datei erst aus, wenn <literal>soap.wsdl_cache_ttl</literal>
-        abgelaufen ist.
+        Standardmäßig wird die WSDL-Datei aus Performance-Gründen
+        zwischengespeichert. Um diese Zwischenspeicherung zu deaktivieren oder
+        zu konfigurieren, siehe die
+        <link linkend="soap.configuration.list">SOAP-&ConfigureOptions;</link>
+        und die Option
+        <link linkend="soapclient.construct.options.cache-wsdl"><literal>cache_wsdl</literal></link>.
        </para>
       </note>
      </listitem>
@@ -46,10 +49,10 @@
      <term><parameter>options</parameter></term>
      <listitem>
       <para>
-       An associative array specifying additional options for the SOAP client.
-       If <parameter>wsdl</parameter> is provided, this is optional; otherwise,
-       at least <literal>location</literal> and <literal>url</literal> must be
-       provided.
+       Ein assoziatives Array, das zusätzliche Optionen für den SOAP-Client
+       angibt. Wenn <parameter>wsdl</parameter> angegeben wird, ist es
+       optional, andernfalls müssen mindestens <literal>location</literal> und
+       <literal>url</literal> angegeben werden.
        <variablelist>
         <varlistentry xml:id="soapclient.construct.options.location">
          <term>
@@ -58,14 +61,15 @@
          </term>
          <listitem>
           <para>
-           The URL of the SOAP server to send the request to.
+           Die URL des SOAP-Servers, an den die Anfrage gesendet werden soll.
           </para>
           <para>
-           Required if the <parameter>wsdl</parameter> parameter is not provided.
-           If both a <parameter>wsdl</parameter> parameter and
-           <literal>location</literal> option are provided, the
-           <literal>location</literal> option will over-ride any location
-           specified in the WSDL file.
+           Wird benötigt, wenn der Parameter <parameter>wsdl</parameter> nicht
+           angegeben wird. Wenn sowohl der Parameter
+           <parameter>wsdl</parameter> als auch die Option
+           <literal>location</literal> angegeben werden, überschreibt die
+           Option <literal>location</literal> alle in der WSDL-Datei angegeben
+           Orte.
           </para>
          </listitem>
         </varlistentry>
@@ -76,11 +80,11 @@
          </term>
          <listitem>
           <para>
-           The target namespace of the SOAP service.
+           Der Ziel-Namensraum des SOAP-Dienstes.
           </para>
           <para>
-           Required if the <parameter>wsdl</parameter> parameter is not provided;
-           ignored otherwise.
+           Wird benötigt, wenn der Parameter <parameter>wsdl</parameter> nicht
+           angegeben wird, andernfalls wird er ignoriert.
           </para>
          </listitem>
         </varlistentry>
@@ -91,21 +95,26 @@
          </term>
          <listitem>
           <para>
-           Specifies the binding style to use for this client, using the constants
-           <constant>SOAP_RPC</constant> and <constant>SOAP_DOCUMENT</constant>.
-           <constant>SOAP_RPC</constant> indicates RPC-style binding, where the
-           SOAP request body contains a standard encoding of a function call.
-           <constant>SOAP_DOCUMENT</constant> indicates document-style binding,
-           where the SOAP request body contains an XML document with
-           service-defined meaning.
+           Mit den Konstanten <constant>SOAP_RPC</constant> und
+           <constant>SOAP_DOCUMENT</constant> kann der Bindungsstil angegeben
+           werden, der für diesen Client verwendet werden soll.
+           <constant>SOAP_RPC</constant> gibt an, dass die Bindung im RPC-Stil
+           verwendet werden soll, bei der der Body der SOAP-Anfrage die
+           Standardkodierung des Funktionsaufrufs enthält.
+           <constant>SOAP_DOCUMENT</constant> gibt an, dass die Bindung im
+           Dokumentenstil verwendet werden soll, wobei der Body der
+           SOAP-Anfrage ein XML-Dokument mit einer durch den Dienst
+           definierten Bedeutung enthält.
           </para>
           <para>
-           If the <parameter>wsdl</parameter> parameter is provided, this
-           option is ignored, and the style is read from the WSDL file.
+           Wenn der Parameter <parameter>wsdl</parameter> angegeben wird, wird
+           diese Option ignoriert und der Stil wird aus der WSDL-Datei
+           gelesen.
           </para>
           <para>
-           If neither this option nor the <parameter>wsdl</parameter> parameter
-           is provided, RPC-style is used.
+           Wenn weder diese Option noch der Parameter
+           <parameter>wsdl</parameter> angegeben wird, wird der RPC-Stil
+           verwendet.
           </para>
          </listitem>
         </varlistentry>
@@ -116,20 +125,23 @@
          </term>
          <listitem>
           <para>
-           Specifies the encoding style to use for this client, using the
-           constants <constant>SOAP_ENCODED</constant> or <constant>SOAP_LITERAL</constant>.
-           <constant>SOAP_ENCODED</constant> indicates encoding using the types
-           defined in the SOAP specification.
-           <constant>SOAP_LITERAL</constant> indicates encoding using a schema
-           defined by the service.
+           Mit den Konstanten <constant>SOAP_ENCODED</constant> und
+           <constant>SOAP_LITERAL</constant> kann der Kodierungsstil angegeben
+           werden, der für diesem Client verwendet werden soll.
+           <constant>SOAP_ENCODED</constant> gibt an, dass ein in der
+           SOAP-Spezifikation definierter Kodierungstyp verwendet werden soll.
+           <constant>SOAP_LITERAL</constant> gibt an, dass das vom Dienst
+           definierte Schema für die Kodierung verwendet werden soll.
           </para>
           <para>
-           If the <parameter>wsdl</parameter> parameter is provided, this
-           option is ignored, and the encoding is read from the WSDL file.
+           Wenn der Parameter <parameter>wsdl</parameter> angegeben wird, wird
+           diese Option ignoriert und die Kodierung wird aus der WSDL-Datei
+           gelesen.
           </para>
           <para>
-           If neither this option nor the <parameter>wsdl</parameter> parameter
-           is provided, the "encoded" style is used.
+           Wenn weder diese Option noch der Parameter
+           <parameter>wsdl</parameter> angegeben wird, wird der Stil "encoded"
+           verwendet.
           </para>
          </listitem>
         </varlistentry>
@@ -140,12 +152,12 @@
          </term>
          <listitem>
           <para>
-           Specifies the version of the SOAP protocol to use:
-           <constant>SOAP_1_1</constant> for SOAP 1.1,
-           or <constant>SOAP_1_2</constant> for SOAP 1.2.
+           Gibt die Version des SOAP-Protokolls an, die verwendet werden soll:
+           <constant>SOAP_1_1</constant> für SOAP 1.1 oder
+           <constant>SOAP_1_2</constant> für SOAP 1.2.
           </para>
           <para>
-           If omitted, SOAP 1.1 is used.
+           Wenn diese Option weggelassen wird, wird SOAP 1.1 verwendet.
           </para>
          </listitem>
         </varlistentry>
@@ -156,14 +168,15 @@
          </term>
          <listitem>
           <para>
-           Specifies the authentication method when using HTTP authentication
-           in requests. The value may be either
-           <constant>SOAP_AUTHENTICATION_BASIC</constant>
-           or <constant>SOAP_AUTHENTICATION_DIGEST</constant>.
+           Wenn für Anfragen die HTTP-Authentifizierung verwendet wird,
+           bestimmt diese Option die Authentifizierungsmethode. Als Wert kann
+           <constant>SOAP_AUTHENTICATION_BASIC</constant> oder
+           <constant>SOAP_AUTHENTICATION_DIGEST</constant> angegeben werden.
           </para>
           <para>
-           If omitted, and the <literal>login</literal> option is provided,
-           Basic Authentication is used.
+           Wenn diese Option weggelassen wird und die Option
+           <literal>login</literal> vorhanden ist, wird die Basic
+           Authentication verwendet.
           </para>
          </listitem>
         </varlistentry>
@@ -174,7 +187,8 @@
          </term>
          <listitem>
           <para>
-           Username to use with HTTP Basic or Digest Authentication.
+           Der Benutzername, der für die Basic oder Digest Authentication
+           verwendet wird.
           </para>
          </listitem>
         </varlistentry>
@@ -185,11 +199,12 @@
          </term>
          <listitem>
           <para>
-           Password to use with HTTP Basic or Digest Authentication.
+           Das Passwort, das für die Basic oder Digest Authentication
+           verwendet wird.
           </para>
           <para>
-           Not to be confused with <literal>passphrase</literal>,
-           which is used with HTTPS Client Certificate authentication.
+           Nicht zu verwechseln mit <literal>passphrase</literal>, das für die
+           Authentifizierung mit HTTPS-Client-Zertifikat verwendet wird.
           </para>
          </listitem>
         </varlistentry>
@@ -200,19 +215,19 @@
          </term>
          <listitem>
           <para>
-           Path to a client certificate for use with HTTPS authentication.
-           It must be a PEM encoded file which contains your certificate
-           and private key.
+           Der Pfad zu einem Client-Zertifikat für die Verwendung mit der
+           HTTPS-Authentifizierung. Es muss sich um eine PEM-kodierte Datei
+           handeln, die das Zertifikat und den privaten Schlüssel enthält.
           </para>
           <para>
-           The file can also include a chain of issuers, which must come
-           after the client certificate.
+           Die Datei kann auch eine Kette von Zertifikatsausstellern
+           enthalten, die hinter dem Client-Zertifikat angehängt sein muss.
           </para>
           <para>
-           Can also be set via
-           <link linkend="soapclient.construct.options.stream-context">
-           <parameter>stream_context</parameter></link>,
-           which also supports specifying a separate private key file.
+           Kann auch mittels
+           <link linkend="soapclient.construct.options.stream-context"><parameter>stream_context</parameter></link>
+           gesetzt werden, das auch die Angabe einer separaten privaten
+           Schlüsseldatei unterstützt.
           </para>
          </listitem>
         </varlistentry>
@@ -223,17 +238,17 @@
          </term>
          <listitem>
           <para>
-           Passphrase for the client certificate specified in the
-           <literal>local_cert</literal> option.
+           Die Passphrase für das Client-Zertifikat, das in der Option
+           <literal>local_cert</literal> angegeben ist.
           </para>
           <para>
-           Not to be confused with <literal>password</literal>,
-           which is used for Basic or Digest Authentication.
+           Nicht zu verwechseln mit <literal>password</literal>, das für die
+           Basic oder Digest Authentication verwendet wird.
           </para>
           <para>
-           Can also be set via
-           <link linkend="soapclient.construct.options.stream-context">
-           <parameter>stream_context</parameter></link>.
+           Kann auch mittels
+           <link linkend="soapclient.construct.options.stream-context"><parameter>stream_context</parameter></link>
+           gesetzt werden.
           </para>
          </listitem>
         </varlistentry>
@@ -244,10 +259,12 @@
          </term>
          <listitem>
           <para>
-           Hostname to use as a proxy server for HTTP requests.
+           Der Hostname, der als Proxy-Server für HTTP-Anfragen verwendet
+           werden soll.
           </para>
           <para>
-           The <literal>proxy_port</literal> option must also be specified.
+           Die Option <literal>proxy_port</literal> muss ebenfalls angegeben
+           werden.
           </para>
          </listitem>
         </varlistentry>
@@ -258,8 +275,9 @@
          </term>
          <listitem>
           <para>
-           TCP port to use when connecting to the proxy server
-           specified in <literal>proxy_host</literal>.
+           Der TCP-Port, der bei der Verbindung mit dem in
+           <literal>proxy_host</literal> angegebenen Proxy-Server verwendet
+           werden soll.
           </para>
          </listitem>
         </varlistentry>
@@ -270,9 +288,9 @@
          </term>
          <listitem>
           <para>
-           Optional username to authenticate with the proxy server
-           specified in <literal>proxy_host</literal>, using HTTP
-           Basic Authentication.
+           Optionaler Benutzername zur Authentifizierung bei dem in
+           <literal>proxy_host</literal> angegebenen Proxyserver, unter
+           Verwendung der HTTP Basic Authentication.
           </para>
          </listitem>
         </varlistentry>
@@ -283,9 +301,9 @@
          </term>
          <listitem>
           <para>
-           Optional password to authenticate with the proxy server
-           specified in <literal>proxy_host</literal>, using HTTP
-           Basic Authentication.
+           Optionales Passwort zur Authentifizierung bei dem in
+           <literal>proxy_host</literal> angegebenen Proxyserver, unter
+           Verwendung der HTTP Basic Authentication.
           </para>
          </listitem>
         </varlistentry>
@@ -296,19 +314,20 @@
          </term>
          <listitem>
           <para>
-           Enables compression of HTTP SOAP requests and responses.
+           Aktiviert die Komprimierung von HTTP-SOAP-Anfragen und -Antworten.
           </para>
           <para>
-           The value should be the bitwise OR of three parts:
-           an optional <constant>SOAP_COMPRESSION_ACCEPT</constant>,
-           to send an "Accept-Encoding" header; either
-           <constant>SOAP_COMPRESSION_GZIP</constant>
-           or <constant>SOAP_COMPRESSION_DEFLATE</constant> to indicate
-           the compression algorithm to use; and a number between 1 and 9
-           to indicate the level of compression to use in the request.
-           For example, to enable two-way gzip compression with the maximum
-           compression level, use
-           <literal>SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | 9</literal>.
+           Der Wert ist ein bitweises OR aus drei Teilen: das optionale
+           <constant>SOAP_COMPRESSION_ACCEPT</constant>, um einen
+           "Accept-Encoding"-Header zu senden, entweder
+           <constant>SOAP_COMPRESSION_GZIP</constant> oder
+           <constant>SOAP_COMPRESSION_DEFLATE</constant>, um den zu
+           verwendenden Komprimierungsalgorithmus anzugeben, und eine Zahl
+           zwischen 1 und 9, um die Komprimierungsstufe anzugeben, die in der
+           Anfrage verwendet werden soll. Um zum Beispiel eine bidirektionale
+           Gzip-Kompression mit der maximalen Komprimierungsstufe zu
+           aktivieren, wird <literal>SOAP_COMPRESSION_ACCEPT |
+           SOAP_COMPRESSION_GZIP | 9</literal> verwendet.
           </para>
          </listitem>
         </varlistentry>
@@ -319,8 +338,9 @@
          </term>
          <listitem>
           <para>
-           Defines the internal character encoding. Requests are always sent
-           in UTF-8, and converted to and from this encoding.
+           Gibt die interne Zeichenkodierung an. Anfragen werden immer von der
+           hier angegebenen Kodierung in UTF-8 umgewandelt und Antworten
+           werden in diese Kodierung umgewandelt.
           </para>
          </listitem>
         </varlistentry>
@@ -331,15 +351,15 @@
          </term>
          <listitem>
           <para>
-           Captures request and response information, which can then be
-           accessed with the methods
-           <methodname>SoapClient::getLastRequest</methodname>,
+           Erfasst Anfrage- und Antwortinformationen, auf die dann mit den
+           Methoden <methodname>SoapClient::getLastRequest</methodname>,
            <methodname>SoapClient::getLastRequestHeaders</methodname>,
-           <methodname>SoapClient::getLastResponse</methodname>,
-           and <methodname>SoapClient::getLastResponseHeaders</methodname>.
+           <methodname>SoapClient::getLastResponse</methodname> und
+           <methodname>SoapClient::getLastResponseHeaders</methodname>
+           zugegriffen werden kann.
           </para>
           <para>
-           If omitted, defaults to &false;
+           Falls nicht angegeben, ist der Standardwert &false;.
           </para>
          </listitem>
         </varlistentry>
@@ -350,24 +370,27 @@
          </term>
          <listitem>
           <para>
-           Used to map types defined in the WSDL to PHP classes.
-           It should be specified as an associative <type>array</type> with
-           type names from the WSDL as keys and names of PHP classes as values.
-           Note that the type names of an element is not necessarily the same as
-           the element (tag) name.
+           Wird verwendet, um in der WSDL definierte Typen auf PHP-Klassen
+           abzubilden. Diese Option benötigt ein assoziatives
+           <type>Array</type> mit den Typnamen aus der WSDL als Schlüssel und
+           den Namen von PHP-Klassen als Werte. Es ist zu beachten, dass der
+           Typname eines Elements nicht notwendigerweise derselbe ist wie der
+           (Tag-)Name des Elements.
           </para>
           <para>
-           The provided class names should always be fully qualified with any
-           <link linkend="language.namespaces">namespaces</link>, and never
-           start with a leading <literal>\</literal>. The correct form can be
-           generated by using
-           <link linkend="language.oop5.basic.class.class">::class</link>.
+           Die angegebenen Klassennamen müssen immer voll qualifiziert sein
+           mit allen <link linkend="language.namespaces">Namensräumen</link>
+           und dürfen nicht mit einem <literal>\</literal> beginnen. Die
+           korrekte Form kann mit
+           <link linkend="language.oop5.basic.class.class">::class</link>
+           erzeugt werden.
           </para>
           <para>
-           Note that when creating a class, the constructor will not be called,
-           but magic <link linkend="object.set">__set()</link> and
-           <link linkend="object.get">__get()</link> methods for individual
-           properties will be.
+           Zu beachten ist auch, dass beim Erstellen einer Klasse nicht der
+           Konstruktor aufgerufen wird, sondern die Methoden
+           <link linkend="object.set">__set()</link> und
+           <link linkend="object.get">__get()</link> für die einzelnen
+           Eigenschaften aufgerufen werden.
           </para>
          </listitem>
         </varlistentry>
@@ -378,16 +401,15 @@
          </term>
          <listitem>
           <para>
-           Used to define type mappings using user-defined callback functions.
-           Each type mapping should be an array with keys
-           <literal>type_name</literal> (<type>string</type> specifying the
-           XML element type);
-           <literal>type_ns</literal> (<type>string</type> containing namespace
-           URI);
-           <literal>from_xml</literal> (<type>callable</type> accepting one
-           string parameter and returning an object) and
-           <literal>to_xml</literal> (<type>callable</type> accepting one
-           object parameter and returning a string).
+           Wird verwendet, um Typzuordnungen mit Hilfe benutzerdefinierter
+           Callback-Funktionen zu definieren. Jede Typzuordnung ist ein Array
+           mit den Schlüsseln <literal>type_name</literal> (eine Zeichenkette,
+           die den Typ des XML-Elements angibt), <literal>type_ns</literal>
+           (eine Zeichenkette mit dem Namesraum-URI),
+           <literal>from_xml</literal> (ein <type>Callable</type>, das eine
+           Zeichenkette als Parameter akzeptiert und ein Objekt zurückgibt)
+           und <literal>to_xml</literal> (ein <type>Callable</type>, das ein
+           Objekt als Parameter akzeptiert und eine Zeichenkette zurückgibt).
           </para>
          </listitem>
         </varlistentry>
@@ -398,11 +420,11 @@
          </term>
          <listitem>
           <para>
-           Defines whether errors throw exceptions of type
-           <classname>SoapFault</classname>.
+           Legt fest, ob Fehler Exceptions des Typs
+           <classname>SoapFault</classname> auslösen.
           </para>
           <para>
-           Defaults to &true;
+           Der Standardwert ist &true;
           </para>
          </listitem>
         </varlistentry>
@@ -413,11 +435,13 @@
          </term>
          <listitem>
           <para>
-           Defines a timeout in seconds for the connection to the SOAP service.
-           This option does not define a timeout for services with slow responses.
-           To limit the time to wait for calls to finish the
+           Legt das Zeitlimit für die Verbindung mit dem SOAP-Dienst fest (in
+           Sekunden). Mit dieser Option wird kein Zeitlimit für Dienste mit
+           langsamen Antworten festgelegt. Um die Zeit zu begrenzen, die auf
+           den Abschluss von Aufrufen gewartet wird, steht die
+           Konfigurationsoption
            <link linkend="ini.default-socket-timeout">default_socket_timeout</link>
-           configuration option is available.
+           zur Verfügung.
           </para>
          </listitem>
         </varlistentry>
@@ -428,31 +452,37 @@
          </term>
          <listitem>
           <para>
-           If the <parameter>wsdl</parameter> parameter is provided, and the
+           Wenn der Parameter <parameter>wsdl</parameter> angegeben wird, und
+           die Konfigurationsoption
            <link linkend="ini.soap.wsdl-cache-enabled">soap.wsdl_cache_enabled</link>
-           configuration option is on, this option determines the type of caching.
-           One of <constant>WSDL_CACHE_NONE</constant>,
+           aktiviert ist, bestimmt diese Option die Art der
+           Zwischenspeicherung. Es kann einer der Werte
+           <constant>WSDL_CACHE_NONE</constant>,
            <constant>WSDL_CACHE_DISK</constant>,
-           <constant>WSDL_CACHE_MEMORY</constant> or
-           <constant>WSDL_CACHE_BOTH</constant>.
+           <constant>WSDL_CACHE_MEMORY</constant> oder
+           <constant>WSDL_CACHE_BOTH</constant> sein.
           </para>
           <para>
-           Two types of cache are available: in-memory caching, which caches the WSDL
-           in the memory of the current process; and disk caching, which caches the
-           WSDL in a file on disk, shared between all processes.
-           The directory to use for the disk cache is determined by the
+           Es stehen zwei Arten von Caches zur Verfügung: In-Memory-Caching,
+           bei dem die WSDL im Speicher des aktuellen Prozesses
+           zwischenspeichert wird, und Festplatten-Caching, bei dem die WSDL
+           auf der Festplatte in einer Datei zwischenspeichert wird, die von
+           allen Prozessen gemeinsam genutzt werden kann. Das Verzeichnis, das
+           für den Festplatten-Cache verwendet wird, kann durch die
+           Konfigurationsoption
            <link linkend="ini.soap.wsdl-cache-dir">soap.wsdl_cache_dir</link>
-           configuration option.
-           Both caches use the same lifetime, determined by the
+           angegeben werden. Beide Caches verwenden die gleiche Lebensdauer,
+           die durch die Konfigurationsoption
            <link linkend="ini.soap.wsdl-cache-ttl">soap.wsdl_cache_ttl</link>
-           configuration option. The in-memory cache also has a maximum number of entries
-           determined by the
+           festgelegt ist. Für den In-Memory-Cache kann die maximale Anzahl
+           von Einträgen mit der Konfigurationsoption
            <link linkend="ini.soap.wsdl-cache-limit">soap.wsdl_cache_limit</link>
-           configuration option.
+           festgelegt werden.
           </para>
           <para>
-           If not specified, the <link linkend="ini.soap.wsdl-cache">
-           soap.wsdl_cache</link> configuration option will be used.
+           Falls nicht angegeben, wird die Konfigurationsoption
+           <link linkend="ini.soap.wsdl-cache">soap.wsdl_cache</link>
+           verwendet.
           </para>
          </listitem>
         </varlistentry>
@@ -463,16 +493,18 @@
          </term>
          <listitem>
           <para>
-           The value to use in the <literal>User-Agent</literal> HTTP header
-           when making requests.
+           Der Wert, der im HTTP-Header <literal>User-Agent</literal> bei
+           Anfragen zu verwenden ist.
           </para>
           <para>
-           Can also be set via <link linkend="soapclient.construct.options.stream-context">
-           <parameter>stream_context</parameter></link>.
+           Dieser Wert kann auch über
+           <link linkend="soapclient.construct.options.stream-context"><parameter>stream_context</parameter></link>
+           gesetzt werden.
           </para>
           <para>
-           If not specified, the user agent will be <literal>"PHP-SOAP/"</literal>
-           followed by the value of <constant>PHP_VERSION</constant>.
+           Falls nicht angegeben, ist der User-Agent
+           <literal>"PHP-SOAP/"</literal>, gefolgt vom Wert der Konstante
+           <constant>PHP_VERSION</constant>.
           </para>
          </listitem>
         </varlistentry>
@@ -483,25 +515,29 @@
          </term>
          <listitem>
           <para>
-           A <link linkend="context">stream context</link> created by
-           <function>stream_context_create</function>, which allows additional
-           options to be set.
+           Ein <link linkend="context">Stream-Kontext</link>, der mit der
+           Funktion <function>stream_context_create</function> erstellt werden
+           kann und es ermöglicht, zusätzliche Optionen zu setzen.
           </para>
           <para>
-           The context may include <link linkend="context.socket">socket context options</link>,
-           <link linkend="context.ssl">SSL context options</link>,
-           plus selected <link linkend="context.http">HTTP context options</link>:
-           <literal>content_type</literal>, <literal>header</literal>,
-           <literal>max_redirects</literal>, <literal>protocol_version</literal>,
-           and <literal>user_agent</literal>.
+           Der Kontext kann
+           <link linkend="context.socket">Socket-Kontextoptionen</link>,
+           <link linkend="context.ssl">SSL-Kontextoptionen</link>, sowie
+           ausgewählte <link linkend="context.http">HTTP-Kontextoptionen</link>
+           enthalten: <literal>content_type</literal>,
+           <literal>header</literal>, <literal>max_redirects</literal>,
+           <literal>protocol_version</literal> und
+           <literal>user_agent</literal>.
           </para>
           <para>
-           Note that the following HTTP headers are generated automatically or from other
-           options, and will be ignored if specified in the <literal>'header'</literal>
-           context option: <literal>host</literal>, <literal>connection</literal>,
-           <literal>user-agent</literal>, <literal>content-length</literal>,
-           <literal>content-type</literal>, <literal>cookie</literal>,
-           <literal>authorization</literal>, and <literal>proxy-authorization</literal>
+           Es ist zu beachten, dass die folgenden HTTP-Header automatisch oder
+           aus anderen Optionen generiert werden, und dass sie ignoriert
+           werden, wenn sie in der Kontextoption <literal>'header'</literal>
+           angegeben werden: <literal>host</literal>,
+           <literal>connection</literal>, <literal>user-agent</literal>,
+           <literal>content-length</literal>, <literal>content-type</literal>,
+           <literal>cookie</literal>, <literal>authorization</literal> und
+           <literal>proxy-authorization</literal>.
           </para>
          </listitem>
         </varlistentry>
@@ -512,7 +548,8 @@
          </term>
          <listitem>
           <para>
-           A bitmask to enable one or more of the following features:
+           Eine Bitmaske zur Aktivierung einer oder mehrerer der folgenden
+           Funktionen:
            <variablelist>
             <varlistentry>
              <term>
@@ -520,17 +557,22 @@
              </term>
              <listitem>
               <para>
-               When decoding a response to an array, the default behaviour is to detect whether
-               an element name appears once or multiple times in a particular parent element.
-               For elements which appear only once, an object property allows direct access to
-               the content; for elements which appear more than once, the property contains an
-               array with the content of each matching element.
+               Beim Dekodieren einer Antwort in ein Array wird standardmäßig
+               automatisch erkannt, ob der Name eines Elements einmal oder
+               mehrmals in einem bestimmten übergeordneten Element vorkommt.
+               Bei Elementen, die nur einmal vorkommen, kann der Inhalt direkt
+               über die Eigenschaften des Objekts abgerufen werden. Bei
+               Elementen, die mehrfach vorkommen, enthält die Eigenschaft ein
+               Array mit dem Inhalt der entsprechenden Elemente.
               </para>
               <para>
-               If the <constant>SOAP_SINGLE_ELEMENT_ARRAYS</constant> feature is enabled,
-               elements which appear only once are placed in a single-element array, so that
-               access is consistent for all elements. This only has an effect when using a WSDL
-               containing a schema for the response. See Examples section for an illustration.
+               Wenn das Feature <constant>SOAP_SINGLE_ELEMENT_ARRAYS</constant>
+               aktiviert ist, werden die Elemente, die nur einmal vorkommen,
+               in einem Array mit einem einzigen Element abgelegt, sodass der
+               Zugriff für alle Elemente konsistent ist. Dies hat nur eine
+               Auswirkung, wenn eine WSDL verwendet wird, die ein Schema für
+               die Antwort enthält. Im Abschnitt Beispiele wird dies
+               anschaulich dargestellt.
               </para>
              </listitem>
             </varlistentry>
@@ -540,10 +582,11 @@
              </term>
              <listitem>
               <para>
-               When the <link linkend="soapclient.construct.options.use"><literal>use</literal>
-               option</link> or WSDL property is set to <literal>encoded</literal>,
-               force arrays to use a type of <literal>SOAP-ENC:Array</literal>, rather than a
-               schema-specific type.
+               Wenn die Option
+               <link linkend="soapclient.construct.options.use"><literal>use</literal></link>
+               oder die WSDL-Eigenschaft auf <literal>encoded</literal>
+               gesetzt ist, verwenden Arrays statt eines schemaspezifischen
+               Typs den Typ <literal>SOAP-ENC:Array</literal>.
               </para>
              </listitem>
             </varlistentry>
@@ -553,7 +596,8 @@
              </term>
              <listitem>
               <para>
-               Wait for a response even if the WSDL indicates a one-way request.
+               Auf eine Antwort warten, auch wenn die WSDL eine einseitige
+               Anfrage angibt.
               </para>
              </listitem>
             </varlistentry>
@@ -568,12 +612,12 @@
          </term>
          <listitem>
           <para>
-           a boolean value defining whether
-           to send the <literal>Connection: Keep-Alive</literal> header or
-           <literal>Connection: close</literal>.
+           Ein boolescher Wert, der definiert, ob der Header
+           <literal>Connection: Keep-Alive</literal> oder der Header
+           <literal>Connection: close</literal> gesendet wird.
           </para>
           <para>
-           Defaults to &true;
+           Der Standardwert ist &true;
           </para>
          </listitem>
         </varlistentry>
@@ -584,29 +628,32 @@
          </term>
          <listitem>
           <para>
-           Specifies the SSL or TLS protocol version to use with secure HTTP
-           connections, instead of the default negotiation.
-           Specifying <constant>SOAP_SSL_METHOD_SSLv2</constant>
-           or <constant>SOAP_SSL_METHOD_SSLv3</constant> will force use of SSL 2
-           or SSL 3, respectively.
-           Specifying <constant>SOAP_SSL_METHOD_SSLv23</constant> has no effect;
-           the constant exists only for backwards compatibility.
-           As of PHP 7.2, specifying <constant>SOAP_SSL_METHOD_TLS</constant>
-           also has no effect; in earlier versions, it forced use of TLS 1.0.
+           Gibt die SSL- oder TLS-Protokollversion an, die für sichere
+           HTTP-Verbindungen anstelle der Standardvereinbarung (default
+           negotiation) verwendet werden soll. Die Angabe von
+           <constant>SOAP_SSL_METHOD_SSLv2</constant> oder
+           <constant>SOAP_SSL_METHOD_SSLv3</constant> erzwingt die Verwendung
+           von SSL 2 bzw. SSL 3. Die Angabe von
+           <constant>SOAP_SSL_METHOD_SSLv23</constant> hat keine Auswirkung;
+           Diese Konstante existiert nur aus Gründen der
+           Abwärtskompatibilität. Seit PHP 7.2 hat auch die Angabe von
+           <constant>SOAP_SSL_METHOD_TLS</constant> keine Auswirkung mehr; in
+           früheren Versionen erzwang sie die Verwendung von TLS 1.0.
           </para>
           <para>
-           Note that SSL versions 2 and 3 are considered insecure, and may not
-           be supported by the installed OpenSSL library.
+           Es ist zu beachten, dass die SSL-Versionen 2 und 3 als unsicher
+           gelten und von der installierten OpenSSL-Bibliothek möglicherweise
+           nicht unterstützt werden.
           </para>
           <para>
-           This option is <emphasis>DEPRECATED</emphasis> as of PHP 8.1.0.
-           A more flexible alternative, which allows specifying
-           individual versions of TLS, is to use the
-           <link linkend="soapclient.construct.options.stream-context">
-           <parameter>stream_context</parameter></link> option with
-           the 'crypto_method' context parameter.
+           Diese Option ist seit PHP 8.1.0 als <emphasis>VERALTET</emphasis>
+           markiert und sollte nicht mehr verwendet werden. Die Option
+           <link linkend="soapclient.construct.options.stream-context"><parameter>stream_context</parameter></link>
+           bietet mit dem Kontextparameter 'crypto_method' eine flexiblere
+           Alternative, die es ermöglicht, einzelne Versionen von TLS
+           anzugeben.
            <example>
-            <title>Specifying use of TLS 1.3 only</title>
+            <title>Die Verwendung von TLS 1.3 vorschreiben</title>
             <programlisting role="php">
 <![CDATA[
 <?php
@@ -639,7 +686,7 @@ $client = new SoapClient("some.wsdl", ['context' => $context]);
    <constant>E_ERROR</constant>.
   </para>
   <para>
-   Wenn die <parameter>wsdl</parameter>-URI nicht geladen werden kann, wird
+   Wenn der <parameter>wsdl</parameter>-URI nicht geladen werden kann, wird
    eine <classname>SoapFault</classname>-Exception ausgelöst.
   </para>
  </refsect1>
@@ -688,7 +735,7 @@ class MeinBuch {
     public $autor;
 }
 
-$client = new SoapClient("buecher.wsdl", array('classmap' => array('buch' => "MeinBuch")));
+$client = new SoapClient("buecher.wsdl", array('classmap' => array('book' => "MeinBuch")));
 
 $typemap = array(
     array("type_ns"  => "http://schemas.example.com",
@@ -706,10 +753,10 @@ $client = new SoapClient("buecher.wsdl", array('typemap' => $typemap));
 
   <para>
    <example>
-    <title>Using the <constant>SOAP_SINGLE_ELEMENT_ARRAYS</constant> feature</title>
+    <title>Verwendung des Features <constant>SOAP_SINGLE_ELEMENT_ARRAYS</constant></title>
     <programlisting role="php">
 <![CDATA[
-/* Assuming a response like this, and an appropriate WSDL:
+/* Unter der Annahme einer Antwort wie dieser und einer entsprechenden WSDL:
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns="urn:example">
     <SOAP-ENV:Body>
@@ -726,14 +773,14 @@ $client = new SoapClient("buecher.wsdl", array('typemap' => $typemap));
 </SOAP-ENV:Envelope>
 */
 
-echo "Default:\n";
+echo "Voreinstellung:\n";
 
 $client = new TestSoapClient(__DIR__ . '/temp.wsdl');
 $response = $client->exampleRequest();
 var_dump( $response->collection[0]->item );
 var_dump( $response->collection[1]->item );
 
-echo "\nWith SOAP_SINGLE_ELEMENT_ARRAYS:\n";
+echo "\nMit SOAP_SINGLE_ELEMENT_ARRAYS:\n";
 
 $client = new TestSoapClient(__DIR__ . '/temp.wsdl', ['features' => SOAP_SINGLE_ELEMENT_ARRAYS]);
 $response = $client->exampleRequest();
@@ -746,7 +793,7 @@ var_dump( $response->collection[1]->item );
 
     <screen>
 <![CDATA[
-Default:
+Voreinstellung:
 string(6) "Single"
 array(2) {
   [0] =>
@@ -755,7 +802,7 @@ array(2) {
   string(6) "Second"
 }
 
-With SOAP_SINGLE_ELEMENT_ARRAYS:
+Mit SOAP_SINGLE_ELEMENT_ARRAYS:
 array(1) {
   [0] =>
   string(6) "Single"
