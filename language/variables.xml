@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 165718f97f983da66504dbe547900b7e5d54fdb5 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 61cfd00858115c6fe029df05829b04c1ec5bc9c2 Maintainer: nobody Status: ready -->
 <!-- Credits: betz -->
  <chapter xml:id="language.variables" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Variablen</title>
@@ -475,7 +475,7 @@ function test()
    </para>
    <para>
     Statischen Variablen können Werte zugewiesen werden, die das Ergebnis
-    konstanter Ausdrücken sind, aber dynamische Ausdrücke, z.B.
+    konstanter Ausdrücken sind, aber dynamische Ausdrücke, z. B.
     Funktionsaufrufe, verursachen einen Parse-Fehler.
    </para>
    <para>
@@ -497,6 +497,36 @@ function foo(){
      </programlisting>
     </example>
    </para>
+
+   <para>
+    Wenn eine Methode, die statische Variablen verwendet, vererbt (aber nicht
+    überschrieben) wird, teilt die vererbte Methode seit PHP 8.1.0 die
+    statischen Variablen mit der Elternmethode. Das bedeutet, dass sich
+    statische Variablen in Methoden nun genauso verhalten wie statische
+    Eigenschaften.
+   </para>
+
+   <example>
+    <title>Verwendung statischer Variablen in geerbten Methoden</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Foo {
+    public static function counter() {
+        static $counter = 0;
+        $counter++;
+        return $counter;
+    }
+}
+class Bar extends Foo {}
+var_dump(Foo::counter()); // int(1)
+var_dump(Foo::counter()); // int(2)
+var_dump(Bar::counter()); // int(3), vor PHP 8.1.0 int(1)
+var_dump(Bar::counter()); // int(4), vor PHP 8.1.0 int(2)
+?>
+]]>
+    </programlisting>
+   </example>
 
    <note>
     <para>
