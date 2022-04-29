@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 08498c3bd38660ffa1259de0e58cd884c2497d59 Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 3e087a5c618b815c273510ffdc4a86ab189eda00 Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: b95e76e41de2ffe5c75e04be1b187d80ca745359 Reviewer: samesch -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
@@ -1069,6 +1069,43 @@ $func(); // gibt "bar" aus
      <classname>TypeError</classname>-Exception ausgelöst werden.
 
     </simpara>
+   </note>
+   <note>
+    <para>
+     Bei eingebauten Funktionen sind skalare Typen im erzwingenden Modus
+     standardmäßig nullbar. Seit PHP 8.1.0 wird in diesem Modus davon
+     abgeraten, an eine interne Funktion für einen Parameter, der nicht als
+     nullbar deklariert ist, &null; zu übergeben. Um sich dem Verhalten
+     benutzerdefinierter Funktionen anzupassen, bei denen skalare Typen
+     explizit als nullbar deklariert werden müssen, wird in diesem Fall ein
+     entsprechender Missbilligungs-Hinweis ausgegeben.
+    </para>
+
+    <para>
+     Zum Beispiel erwartet die Funktion <function>strlen</function>, dass der
+     Parameter <literal>$string</literal> eine nicht-nullbare Zeichenkette
+     ist. Aus historischen Gründen erlaubt PHP, für diesen Parameter im
+     erzwingenden Modus &null; zu übergeben. Der Parameter wird dabei
+     stillschweigend in den Typ <type>&string;</type> umgewandelt, was den
+     Wert <literal>""</literal> ergibt. Im Gegensatz dazu wird im strikten
+     Modus ein <classname>TypeError</classname> ausgegeben.
+    </para>
+
+    <example>
+     <programlisting role="php">
+<![CDATA[
+<?php
+var_dump(strlen(null));
+// "Deprecated: Passing null to parameter #1 ($string) of type string is deprecated" as of PHP 8.1.0
+// int(0)
+
+var_dump(str_contains("foobar", null));
+// "Deprecated: Passing null to parameter #2 ($needle) of type string is deprecated" as of PHP 8.1.0
+// bool(true)
+?>
+]]>
+     </programlisting>
+    </example>
    </note>
 
    <sect2 role="seealso">
