@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d73c3dcbd6e2b085781115aa42d17b80ea285b9e Maintainer: simp Status: ready -->
+<!-- EN-Revision: 081cf71ecb97b239c1e07beaadb71af0b0c42764 Maintainer: simp Status: ready -->
  <sect1 xml:id="language.oop5.inheritance" xmlns="http://docbook.org/ns/docbook">
   <title>Objekt-Vererbung</title>
   <para>
@@ -113,6 +113,86 @@ $bar->printPHP();       // Ausgabe: 'PHP ist großartig.'
 ]]>
     </programlisting>
    </example>
+  </sect2>
+
+  <sect2 xml:id="language.oop5.inheritance.internal-classes">
+   <title>Kompatibilität des Rückgabetyps bei internen Klassen</title>
+
+   <para>
+    Vor PHP 8.1 haben die meisten internen Klassen oder Methoden ihren
+    Rückgabetyp nicht deklariert und wenn sie erweitert wurden, war jeder
+    Rückgabetyp erlaubt.
+   </para>
+
+   <para>
+    Seit PHP 8.1.0 sind die meisten internen Methoden dazu übergegangen, den
+    Typ des Rückgabewertes "vorläufig" zu deklarieren. In diesem Fall muss der
+    Typ des Rückgabewerts einer Methode mit dem des erweiterten Elternteils
+    kompatibel sein, andernfalls wird ein Hinweis auf eine veraltete Verwendung
+    ausgegeben. Es ist zu beachten, dass eine fehlende explizite Deklaration
+    des Rückgabetyps ebenfalls als Signaturfehler betrachtet wird, und daher
+    zu einer entsprechenden Meldung führt.
+   </para>
+
+   <para>
+    Wenn der Rückgabetyp für eine überschreibende Methode aufgrund von
+    Kompatibilitätsproblemen zwischen PHP-Versionen nicht deklariert werden
+    kann, kann das Attribut <code>#[ReturnTypeWillChange]</code> hinzugefügt
+    werden, um den Hinweis auf eine veraltete Verwendung zu unterdrücken.
+   </para>
+
+   <example>
+    <title>Die überschreibende Methode deklariert keinen Rückgabetyp</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class MyDateTime extends DateTime
+{
+    public function modify(string $modifier) { return false; }
+}
+
+// "Deprecated: Return type of MyDateTime::modify(string $modifier) should either be compatible with DateTime::modify(string $modifier): DateTime|false, or the #[\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice" as of PHP 8.1.0
+?>
+]]>
+    </programlisting>
+   </example>
+
+   <example>
+    <title>Die überschreibende Methode deklariert einen falschen Rückgabetyp</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class MyDateTime extends DateTime
+{
+    public function modify(string $modifier): ?DateTime { return null; }
+}
+
+// "Deprecated: Return type of MyDateTime::modify(string $modifier): ?DateTime should either be compatible with DateTime::modify(string $modifier): DateTime|false, or the #[\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice" as of PHP 8.1.0
+?>
+]]>
+    </programlisting>
+   </example>
+
+   <example>
+    <title>Die überschreibende Methode deklariert einen falschen Rückgabetyp ohne Hinweis auf eine veraltete Verwendung</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class MyDateTime extends DateTime
+{
+    /**
+     * @return DateTime|false
+     */
+    #[ReturnTypeWillChange]
+    public function modify(string $modifier) { return false; }
+}
+
+// Es wird kein Hinweis auf eine veraltete Verwendung ausgelöst
+?>
+]]>
+    </programlisting>
+   </example>
+
   </sect2>
 
  </sect1>
