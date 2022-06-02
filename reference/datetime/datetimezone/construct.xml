@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5fabd07880ab15b0ad2cf7eb055c7c2b36d7120f Maintainer: cmb Status: ready -->
-
+<!-- EN-Revision: c7ee9cd4d1bb4538e283502b5f958b3042a61a63 Maintainer: cmb Status: wip -->
+<!-- Reviewed: no -->
 <refentry xml:id="datetimezone.construct" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>DateTimeZone::__construct</refname>
   <refname>timezone_open</refname>
-  <refpurpose>Erstellt neues DateTimeZone Objekt</refpurpose>
+  <refpurpose>Erstellt neues DateTimeZone-Objekt</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <para>&style.oop;</para>
-  <constructorsynopsis role="oop">
+  <constructorsynopsis>
    <modifier>public</modifier> <methodname>DateTimeZone::__construct</methodname>
    <methodparam><type>string</type><parameter>timezone</parameter></methodparam>
   </constructorsynopsis>
@@ -22,7 +22,19 @@
    <methodparam><type>string</type><parameter>timezone</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Erstellt neues DateTimeZone Objekt.
+   Erstellt neues DateTimeZone-Objekt.
+  </para>
+  <para>
+   A DateTimeZone object provides access to three different types of timezone
+   rules: UTC offset (type <literal>1</literal>), timezone abbreviation (type
+   <literal>2</literal>), and <link linkend="timezones">timezone
+   identifiers</link> as published in the IANA timezone database
+   (type <literal>3</literal>).
+  </para>
+  <para>
+   The DateTimeZone object can be attached to <classname>DateTime</classname> and
+   <classname>DateTimeImmutable</classname> objects to be able to render the
+   timezone encapsulated by these objects in a local timezone.
   </para>
  </refsect1>
 
@@ -42,7 +54,7 @@
    </variablelist>
   </para>
  </refsect1>
- 
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
@@ -50,7 +62,7 @@
    &return.falseforfailure.style.procedural;
   </para>
  </refsect1>
- 
+
  <refsect1 role="errors">
   &reftitle.errors;
   <para>
@@ -64,6 +76,35 @@
   <para>
    <example>
     <title>Fehler beim Initialisieren von <classname>DateTimeZone</classname> abfangen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$d = new DateTimeImmutable("2022-06-02 15:44:48 UTC");
+
+$timezones = [ 'Europe/London', 'GMT+04:45', '-06:00', 'CEST' ];
+
+foreach ($timezones as $tz) {
+    $tzo = new DateTimeZone($tz);
+
+    $local = $d->setTimezone($tzo);
+    echo $local->format(DateTimeInterface::RFC2822 . ' — e'), "\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+Thu, 02 Jun 2022 16:44:48 +0100 — Europe/London
+Thu, 02 Jun 2022 20:29:48 +0445 — +04:45
+Thu, 02 Jun 2022 09:44:48 -0600 — -06:00
+Thu, 02 Jun 2022 17:44:48 +0200 — CEST
+    </screen>
+   </example>
+  </para>
+
+  <para>
+   <example>
+    <title>Catching errors when instantiating <classname>DateTimeZone</classname></title>
     <programlisting role="php">
 <![CDATA[
 <?php
