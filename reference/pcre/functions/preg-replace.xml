@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 41c8533ff5a8f93ba9fdf0732d05dd5ab79864c9 Maintainer: samesch Status: ready -->
-<!-- Reviewed: yes -->
-<!-- Rev-Revision: 8a058e9acded067eaa1bd445ed6943158e7311df Reviewer: samesch -->
+<!-- EN-Revision: f78dae186e8a0ca80a224996b895f929b0b725f6 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
 <refentry xml:id="function.preg-replace" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>preg_replace</refname>
@@ -72,6 +71,10 @@
        öffnende Klammern mit 1 beginnend von links nach rechts gezählt. Es ist
        zu beachten, dass Rückwärtsschrägstriche in &string;-Literalen ggf.
        maskiert werden müssen.
+      </para>
+      <para>
+       Wenn das <parameter>replacement</parameter>-Array assoziativ ist,
+       bleiben die Schlüssel im zurückgegebenen Wert erhalten.
       </para>
       <para>
        Wenn Sie mit einer Ersetzung arbeiten wollen, in der auf eine
@@ -313,12 +316,39 @@ xp***to
     <parameter>replacement</parameter> werden die Schlüssel in der Reihenfolge
     bearbeitet, in der sie im Array vorliegen. Das ist <emphasis>nicht
     notwendigerweise</emphasis> dieselbe, wie die numerische Reihenfolge der
-    Indizes. Wenn Sie Indizes verwenden, um festzulegen welches
+    Indizes. Wenn Indizes verwendet werden, um festzulegen welches
     <parameter>pattern</parameter> durch welchen Ersatz
-    <parameter>replacement</parameter> ersetzt werden soll, sollten Sie vor
-    dem Aufruf von <function>preg_replace</function>
-    <function>ksort</function> auf jedes Array anwenden.
+    <parameter>replacement</parameter> ersetzt werden soll, sollte vor dem
+    Aufruf von <function>preg_replace</function> <function>ksort</function>
+    auf jedes Array angewendet werden.
    </para>
+  </note>
+  <note>
+   <para>
+    Wenn sowohl <parameter>pattern</parameter> als auch
+    <parameter>replacement</parameter> Arrays sind, werden die
+    Übereinstimmungsregeln nacheinander angewendet. Das heißt, das zweite
+    <parameter>pattern</parameter>/<parameter>replacement</parameter>-Paar
+    wirkt nicht auf die ursprüngliche Zeichenkette, sondern auf die
+    Zeichenkette, die sich aus dem ersten
+    <parameter>pattern</parameter>/<parameter>replacement</parameter>-Paar
+    ergibt. Um parallele Ersetzungen zu simulieren, z. B. das Vertauschen von
+    zwei Werten, muss ein Muster durch einen zwischengeschalteten Platzhalter
+    ersetzt werden, der dann in einem späteren Paar durch die gewünschte
+    Ersetzung ersetzt wird.
+   </para>
+   <example>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$p = array('/a/', '/b/', '/c/');
+$r = array('b', 'c', 'd');
+print_r(preg_replace($p, $r, 'a'));
+// Gibt d aus
+?>
+]]>
+    </programlisting>
+   </example>
   </note>
  </refsect1>
 
