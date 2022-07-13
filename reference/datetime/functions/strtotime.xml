@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: f5bd78b3c2c48b8702bc1547a08a9ad592047c1c Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 26cf98b63af3d5dd9793055596d2996851e65ffe Maintainer: sammywg Status: wip -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 8cdc6621f9826d04abc3e50438c010804d7e8683 Reviewer: samesch -->
+<!-- Rev-Revision: f5bd78b3c2c48b8702bc1547a08a9ad592047c1c Reviewer: samesch -->
 <refentry xml:id="function.strtotime" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>strtotime</refname>
-  <refpurpose>Wandelt ein beliebiges in englischer Textform angegebenes Datum in einen UNIX-Zeitstempel um</refpurpose>
+  <refpurpose>Wandelt eine textuelle englische Datums- und Zeitbeschreibung in einen Unix-Zeitstempel um</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -20,25 +20,29 @@
    Diese Funktion erwartet eine Zeichenkette mit einem Datum im englischen
    Datumsformat und versucht, dieses Format in einen Unix-Zeitstempel (die
    Anzahl der Sekunden seit dem 1. Januar 1970 00:00:00 UTC) zu übersetzen.
-   Die Angabe wird relativ zum Zeitstempel, der im Parameter
-   <parameter>baseTimestamp</parameter> übergebenen wurde, ausgewertet oder,
+   Die Angabe wird relativ zum Zeitstempel ausgewertet, der im Parameter
+   <parameter>baseTimestamp</parameter> übergebenen wurde, oder,
    falls <parameter>baseTimestamp</parameter> nicht übergeben wurde, relativ
-   zur aktuellen Zeit.
+   zur aktuellen Zeit. Das Format der Zeichenkette, die das auszuwertende
+   Datum enthält, ist in
+   <link linkend="datetime.formats">Unterstützte Datums- und Zeitformate</link>
+   definiert, wobei einige Feinheiten zu beachten sind. Es wird dringend
+   empfohlen, sich dort mit allen Details vertraut zu machen.
   </simpara>
   <warning>
    <para>
     Der Unix-Zeitstempel, den diese Funktion zurückgibt, enthält keine
-    Informationen über Zeitzonen. Um Berechnungen mit Datums/Zeit-Werten
+    Informationen über Zeitzonen. Um Berechnungen mit Datums- und Zeitwerten
     durchzuführen, sollte das leistungsfähigere
     <classname>DateTimeImmutable</classname> verwendet werden.
    </para>
   </warning>
   <para>
-   Jeder Parameter dieser Funktion verwendet die Standard-Zeitzone, es sei
-   denn, eine Zeitzone wird in diesem Parameter angegeben. Es ist darauf zu
-   achten, nicht etwa verschiedene Zeitzonen je Parameter zu verwenden, außer
-   wenn das beabsichtigt ist. Die verschiedenen Möglichkeiten, die
-   Standard-Zeitzone zu definieren, sind
+   Jeder Parameter dieser Funktion verwendet die Standardzeitzone, es sei
+   denn, im betreffenden Parameter wird eine Zeitzone angegeben. Es ist darauf
+   zu achten, nicht etwa verschiedene Zeitzonen je Parameter zu verwenden,
+   außer es ist beabsichtigt. Die verschiedenen Möglichkeiten, die
+   Standardzeitzone zu definieren, sind
    <function>date_default_timezone_get</function> zu entnehmen.
   </para>
  </refsect1>
@@ -95,8 +99,8 @@
       <row>
        <entry>8.0.0</entry>
        <entry>
-        <parameter>baseTimestamp</parameter> ist jetzt nullable (akzeptiert
-        den &null;-Wert).
+        <parameter>baseTimestamp</parameter> ist nun nullable (akzeptiert den
+        &null;-Wert).
        </entry>
       </row>
      </tbody>
@@ -149,11 +153,23 @@ if (($timestamp = strtotime($str)) === false) {
   &reftitle.notes;
   <note>
    <para>
-    Wenn die Angabe der Jahreszahl zweistellig erfolgt, werden Werte zwischen
-    00 und 69 den Jahren 2000 bis 2069 zugeordnet, die Werte 70-99 ergeben die
-    Jahreszahlen 1970-1999. Beachten Sie die folgenden Anmerkungen bezüglich
-    der Unterschiede auf 32-Bit-Systemen (das Datum endet möglicherweise am
-    2038-01-19 03:14:07).
+    "Relative" date in this case also means that if a particular component
+    of the date/time stamp is not provided, it will be taken verbatim from
+    the <parameter>baseTimestamp</parameter>.  That is,
+    <code>strtotime('February')</code>, if run on the 31st of May 2022, will
+    be interpreted as <literal>31 February 2022</literal>, which will overflow
+    into a timestamp on <literal>3 March</literal>. (In a leap year, it would
+    be <literal>2 March</literal>.)  Using <code>strtotime('1 February')</code>
+    or <code>strtotime('first day of February')</code> would avoid that problem.
+   </para>
+  </note>
+  <note>
+   <para>
+    Wenn die Angabe der Jahreszahl zweistellig erfolgt, werden Werte von 0-69
+    den Jahren 2000-2069 zugeordnet, die Werte 70-99 ergeben die Jahreszahlen
+    1970-1999. Zu möglichen Unterschieden auf 32-Bit-Systemen (mögliche
+    Datumsangaben könnten am 2038-01-19 03:14:07 enden) ist der folgende
+    Hinweis zu beachten.
    </para>
   </note>
   <note>
@@ -164,34 +180,17 @@ if (($timestamp = strtotime($str)) === false) {
     vorzeichenbehafteten 32-bit Integer entsprechen).
    </para>
    <para>
-    Für 64-Bit-Versionen von PHP ist der gültige Bereich für Zeitstempel
+    Bei 64-Bit-Versionen von PHP ist der gültige Bereich für Zeitstempel
     praktisch unendlich groß, da 64 Bit etwa 293 Milliarden Jahre in beide
     Richtungen darstellen können.
    </para>
   </note>
   <note>
    <para>
-    Daten im Format <literal>m/d/y</literal> oder <literal>d-m-y</literal>
-    werden unterschieden anhand des genutzten Trennzeichens: Wenn ein
-    Schrägstrich (<literal>/</literal>) genutzt wird, wird das amerikanische
-    Format <literal>m/d/y</literal> angenommen; wird stattdessen ein Minus
-    (<literal>-</literal>) oder ein Punkt (<literal>.</literal>) genutzt, wird
-    das europäische Format <literal>d-m-y</literal> angenommen. Wird das Jahr
-    allerdings in einem zweistelligen Format angegeben und das Trennzeichen
-    ist ein Minus (<literal>-</literal>), dann wird das Datum als
-    <literal>y-m-d</literal> ausgewertet.
-   </para>
-   <para>
-    Um Mehrdeutigkeiten zu vermeiden, sollten am besten ISO-8601-Daten
-    (<literal>YYYY-MM-DD</literal>) verwendet werden oder, wenn möglich, die
-    Methode <methodname>DateTime::createFromFormat</methodname>.
-   </para>
-  </note>
-  <note>
-   <para>
-    Die Verwendung dieser Funktion für mathematische Berechnungen ist nicht
-    zu empfehlen. Es ist besser, <methodname>DateTime::add</methodname> und
-    <methodname>DateTime::sub</methodname> zu verwenden.
+    Es ist nicht empfehlenswert, diese Funktion für mathematische Berechnungen
+    zu verwenden. Dafür sollten stattdessen
+    <methodname>DateTime::add</methodname> und
+    <methodname>DateTime::sub</methodname> verwendet werden.
    </para>
   </note>
  </refsect1>
@@ -200,7 +199,7 @@ if (($timestamp = strtotime($str)) === false) {
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><link linkend="datetime.formats">Date and Time Formats</link></member>
+    <member><link linkend="datetime.formats">Datums- und Zeitformate</link></member>
     <member><methodname>DateTime::createFromFormat</methodname></member>
     <member><function>checkdate</function></member>
     <member><function>strptime</function></member>
