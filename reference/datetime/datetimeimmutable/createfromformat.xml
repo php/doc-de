@@ -1,0 +1,737 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: b38338a072df878418633292efdd8af1738d5b92 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<refentry xml:id="datetimeimmutable.createfromformat" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>DateTimeImmutable::createFromFormat</refname>
+  <refname>date_create_immutable_from_format</refname>
+  <refpurpose>Wertet eine Zeitangabe gemäß dem angegebenen Format aus</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <para>&style.oop;</para>
+  <methodsynopsis role="oop">
+   <modifier>public</modifier> <modifier>static</modifier> <type class="union"><type>DateTimeImmutable</type><type>false</type></type><methodname>DateTimeImmutable::createFromFormat</methodname>
+   <methodparam><type>string</type><parameter>format</parameter></methodparam>
+   <methodparam><type>string</type><parameter>datetime</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>DateTimeZone</type><type>null</type></type><parameter>timezone</parameter><initializer>&null;</initializer></methodparam>
+  </methodsynopsis>
+  <para>&style.procedural;</para>
+  <methodsynopsis role="procedural">
+   <type class="union"><type>DateTimeImmutable</type><type>false</type></type><methodname>date_create_immutable_from_format</methodname>
+   <methodparam><type>string</type><parameter>format</parameter></methodparam>
+   <methodparam><type>string</type><parameter>datetime</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>DateTimeZone</type><type>null</type></type><parameter>timezone</parameter><initializer>&null;</initializer></methodparam>
+  </methodsynopsis>
+  <para>
+   Gibt ein neues <classname>DateTimeImmutable</classname>-Objekt zurück.
+   Es stellt das Datum und die Uhrzeit dar, die in der Zeichenkette
+   <parameter>datetime</parameter> angegeben sind und gemäß dem angegebenen
+   <parameter>format</parameter> formatiert wurden.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <variablelist>
+   <varlistentry>
+    <term><parameter>format</parameter></term>
+    <listitem>
+     <para>
+      Das Format, in dem der übergebene <type>&string;</type> sein soll. Siehe
+      die nachfolgenden Formatierungsoptionen. In den meisten Fällen können
+      die gleichen Buchstaben verwendet werden wie für die Funktion
+      <function>date</function>.
+     </para>
+     <para>
+      Das Format wird von links nach rechts ausgewertet, was bedeutet, dass
+      die Reihenfolge, in der die Formatzeichen angeordnet sind, in manchen
+      Situationen das Ergebnis beeinflusst. Im Fall von <literal>z</literal>
+      (der Tag des Jahres) ist es erforderlich, dass bereits ein Jahr
+      ausgewertet wurde, zum Beispiel durch die Zeichen <literal>Y</literal>
+      oder <literal>y</literal>.
+     </para>
+     <para>
+      Buchstaben, die für die Auswertung von Zahlen verwendet werden, lassen
+      eine große Bandbreite von Werten zu, die außerhalb des logischen
+      Bereichs liegen. Zum Beispiel akzeptiert das <literal>d</literal> (Tag
+      des Monats) Werte im Bereich von <literal>00</literal> bis
+      <literal>99</literal>. Die einzige Einschränkung betrifft die Anzahl der
+      Ziffern. Wenn ein Wert außerhalb des Bereichs angegeben wird, wird der
+      Überlaufmechanismus des Parsers für Datum und Uhrzeit verwendet. Im
+      Folgenden sind einige Beispiele für dieses Überlaufverhalten aufgeführt.
+     </para>
+     <para>
+      <table>
+       <title>
+        Die folgenden Zeichen werden in der Parameterzeichenkette
+        <parameter>format</parameter> erkannt
+       </title>
+       <tgroup cols="3">
+        <thead>
+         <row>
+          <entry><parameter>format</parameter>-Zeichen</entry>
+          <entry>Beschreibung</entry>
+          <entry>Beispiele zulässiger Werte</entry>
+         </row>
+        </thead>
+        <tbody>
+         <row>
+          <entry align="center"><emphasis>Tag</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry><literal>d</literal> und <literal>j</literal></entry>
+          <entry>Tag des Monats; zwei Ziffern mit oder ohne vorangestellter Null</entry>
+          <entry>
+           <literal>01</literal> bis <literal>31</literal> oder
+           <literal>1</literal> bis <literal>31</literal> (2-stellige Zahlen,
+           die höher sind als die Anzahl der Tage im Monat, werden akzeptiert,
+           führen aber zu einem Überlauf des Monats. Zum Beispiel bedeutet die
+           33 bei Januar den 2. Februar)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>D</literal> und <literal>l</literal></entry>
+          <entry>Textuelle Darstellung eines Tages</entry>
+          <entry>
+           <literal>Mon</literal> bis <literal>Sun</literal> oder
+           <literal>Sonntag</literal> bis <literal>Samstag</literal>. Wenn der
+           angegebene Tagesname vom ausgewerteten (oder voreingestellten)
+           Datum abweicht, kommt es zu einem Überlauf bis zum
+           <emphasis>nächsten</emphasis> Datum mit dem angegebenen Tagesnamen.
+           Siehe die Beispiele unten für eine Erklärung.
+          </entry>
+         </row>
+         <row>
+          <entry><literal>S</literal></entry>
+          <entry>
+           Englisches Ordnungssuffix für einen Tag des Monats; zwei Buchstaben.
+           Es wird bei der Auswertung ignoriert.
+          </entry>
+          <entry>
+           <literal>st</literal>, <literal>nd</literal>, <literal>rd</literal>
+           oder <literal>th</literal>.
+          </entry>
+         </row>
+         <row>
+          <entry><literal>z</literal></entry>
+          <entry>
+           Tag des Jahres (beginnend bei 0); es muss ein <literal>Y</literal>
+           oder <literal>y</literal> vorangestellt werden.
+          </entry>
+          <entry>
+           <literal>0</literal> bis <literal>365</literal> (es können auch
+           dreistellige Zahlen angegeben werden, die größer sind als die
+           Anzahl der Tage in einem Jahr; in diesem Fall wird die Differenz
+           auf das nächste Jahr übertragen. Zum Beispiel bedeutet 366 in
+           Verbindung mit 2022 den 2. Januar 2023)
+          </entry>
+         </row>
+         <row>
+          <entry align="center"><emphasis>Monat</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry><literal>F</literal> und <literal>M</literal></entry>
+          <entry>Textuelle Darstellung eines Monats, z.B. January oder Sept</entry>
+          <entry>
+           <literal>January</literal> bis <literal>December</literal> oder
+           <literal>Jan</literal> bis <literal>Dec</literal>
+          </entry>
+         </row>
+         <row>
+          <entry><literal>m</literal> und <literal>n</literal></entry>
+          <entry>
+           Numerische Darstellung eines Monats; mit oder ohne vorangestellter Null
+          </entry>
+          <entry>
+           <literal>01</literal> bis <literal>12</literal> oder
+           <literal>1</literal> bis <literal>12</literal> (es können auch
+           zweistellige Zahlen größer als 12 angegeben werden; in diesem Fall
+           wird die Differenz auf das nächste Jahr übertragen. Zum Beispiel
+           bedeutet 13 den Januar des nächsten Jahres)
+          </entry>
+         </row>
+         <row>
+          <entry align="center"><emphasis>Jahr</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry><literal>X</literal> und <literal>x</literal></entry>
+          <entry>
+           Vollständige numerische Darstellung einer Jahreszahl; bis zu 19
+           Ziffern, optional mit vorangestelltem <literal>+</literal> oder
+           <literal>-1</literal>
+          </entry>
+          <entry>
+           Beispiele: <literal>0055</literal>, <literal>787</literal>,
+           <literal>1999</literal>, <literal>-2003</literal>,
+           <literal>+10191</literal>
+          </entry>
+         </row>
+         <row>
+          <entry><literal>Y</literal></entry>
+          <entry>
+           Vollständige numerische Darstellung einer Jahreszahl; bis zu vier Ziffern
+          </entry>
+          <entry>
+           Beispiele: <literal>0055</literal>, <literal>787</literal>,
+           <literal>1999</literal>, <literal>2003</literal>
+          </entry>
+         </row>
+         <row>
+          <entry><literal>y</literal></entry>
+          <entry>
+           Eine zweistellige Jahreszahl (für den Bereich 1970-2069).
+          </entry>
+          <entry>
+           Beispiele: <literal>99</literal> oder <literal>03</literal>
+           (werden interpretiert als <literal>1999</literal> bzw.
+           <literal>2003</literal>)
+          </entry>
+         </row>
+         <row>
+          <entry align="center"><emphasis>Zeit</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry><literal>a</literal> und <literal>A</literal></entry>
+          <entry>Ante meridiem (vor Mittag) und post meridiem (nach Mittag)</entry>
+          <entry><literal>am</literal> oder <literal>pm</literal></entry>
+         </row>
+         <row>
+          <entry><literal>g</literal> und <literal>h</literal></entry>
+          <entry>Stunde im 12-Stunden-Format; mit oder ohne vorangestellter Null</entry>
+          <entry>
+           <literal>1</literal> bis <literal>12</literal> oder
+           <literal>01</literal> bis <literal>12</literal> (es können auch
+           zweistellige Zahlen größer als 12 angegeben werden; in diesem Fall
+           wird die Differenz auf den nächsten Tag übertragen.
+           <literal>14</literal> bedeutet zum Beispiel <literal>02</literal>
+           im nächsten AM/PM-Zeitraum)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>G</literal> und <literal>H</literal></entry>
+          <entry>Stunde im 24-Stunden-Format; mit oder ohne vorangestellter Null</entry>
+          <entry>
+           <literal>0</literal> bis <literal>23</literal> oder
+           <literal>00</literal> bis <literal>23</literal> (es können auch
+           zweistellige Zahlen größer als 24 angegeben werden; in diesem Fall
+           wird die Differenz auf den nächsten Tag übertragen.
+           <literal>26</literal> bedeutet zum Beispiel
+           <literal>02:00</literal> am nächsten Tag)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>i</literal></entry>
+          <entry>Minuten; mit vorangestellter Null</entry>
+          <entry>
+           <literal>00</literal> to <literal>59</literal> (es können auch
+           zweistellige Zahlen größer als 59 angegeben werden; in diesem Fall
+           wird die Differenz auf die nächste Stunde übertragen.
+           <literal>66</literal> bedeutet zum Beispiel
+           <literal>:06</literal> in der nächsten Stunde)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>s</literal></entry>
+          <entry>Sekunden; mit vorangestellter Null</entry>
+          <entry>
+           <literal>00</literal> through <literal>59</literal> (es können auch
+           zweistellige Zahlen größer als 59 angegeben werden; in diesem Fall
+           wird die Differenz auf den nächsten Tag übertragen.
+           <literal>90</literal> bedeutet zum Beispiel
+           <literal>:30</literal> in der nächsten Minute)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>v</literal></entry>
+          <entry>Bruchteil in Millisekunden (bis zu drei Ziffern)</entry>
+          <entry>
+           Beispiel: <literal>12</literal> (<literal>0.12</literal> Sekunden),
+           <literal>345</literal> (<literal>0.345</literal> Sekunden)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>u</literal></entry>
+          <entry>Bruchteil in Mikrosekunden (bis zu sechs Ziffern)</entry>
+          <entry>
+           Beispiel: <literal>45</literal> (<literal>0.45</literal> Sekunden),
+           <literal>654321</literal> (<literal>0.654321</literal> Sekunden)
+          </entry>
+         </row>
+         <row>
+          <entry align="center"><emphasis>Zeitzone</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry>
+           <literal>e</literal>, <literal>O</literal>,
+           <literal>P</literal> und <literal>T</literal>
+          </entry>
+          <entry>
+           Bezeichner der Zeitzone, Differenz zu UTC (in Stunden), Differenz
+           zu UTC (mit Doppelpunkt zwischen Stunden und Minuten) oder
+           Zeitzonenkürzel
+          </entry>
+          <entry>
+           Beispiele: <literal>UTC</literal>, <literal>GMT</literal>,
+           <literal>Atlantic/Azores</literal>,
+           <literal>+0200</literal>, <literal>+02:00</literal>,
+           <literal>EST</literal>, <literal>MDT</literal>
+          </entry>
+         </row>
+         <row>
+          <entry align="center"><emphasis>Datum und Uhrzeit in voller Länge</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry><literal>U</literal></entry>
+          <entry>Sekunden seit der Unix-Epoche (1. Januar 1970 00:00:00 GMT)</entry>
+          <entry>Beispiel: <literal>1292177455</literal></entry>
+         </row>
+         <row>
+          <entry align="center"><emphasis>Whitespace und Trennzeichen</emphasis></entry>
+          <entry>---</entry>
+          <entry>---</entry>
+         </row>
+         <row>
+          <entry><literal> </literal> (Leerraum)</entry>
+          <entry>Ein Leerzeichen oder Tabulatorzeichen</entry>
+          <entry>Beispiel: <literal> </literal></entry>
+         </row>
+         <row>
+          <entry><literal>#</literal></entry>
+          <entry>
+           Eins der folgenden Trennzeichen: <literal>;</literal>,
+           <literal>:</literal>, <literal>/</literal>, <literal>.</literal>,
+           <literal>,</literal>, <literal>-</literal>, <literal>(</literal>
+           oder <literal>)</literal>
+          </entry>
+          <entry>Beispiel: <literal>/</literal></entry>
+         </row>
+         <row>
+          <entry>
+           <literal>;</literal>,
+           <literal>:</literal>, <literal>/</literal>, <literal>.</literal>,
+           <literal>,</literal>, <literal>-</literal>, <literal>(</literal>
+           oder <literal>)</literal>
+          </entry>
+          <entry>Das angegebene Zeichen</entry>
+          <entry>Beispiel: <literal>-</literal></entry>
+         </row>
+         <row>
+          <entry><literal>?</literal></entry>
+          <entry>Ein beliebiges Byte</entry>
+          <entry>
+           Beispiel: <literal>^</literal> (es ist zu beachten, dass für
+           UTF-8-Zeichen möglicherweise mehr als ein <literal>?</literal>
+           benötigt wird. In diesem Fall ist es wahrscheinlich besser,
+           <literal>*</literal> zu verwenden)
+          </entry>
+         </row>
+         <row>
+          <entry><literal>*</literal></entry>
+          <entry>
+           Beliebige Bytes bis zum nächsten Trennzeichen oder zur nächsten Ziffer
+          </entry>
+          <entry>
+           Beispiel: <literal>*</literal> in <literal>Y-*-d</literal>
+           entspricht in Verbindung mit der Zeichenkette
+           <literal>2009-aWort-08</literal> dem Wert
+           <literal>aWort</literal>
+          </entry>
+         </row>
+         <row>
+          <entry><literal>!</literal></entry>
+          <entry>
+           Setzt alle Felder (Jahr, Monat, Tag, Stunde, Minute, Sekunde,
+           Bruchteil und Zeitzone) auf ihre Ausgangswerte zurück
+           (<literal>0</literal> bei Stunde, Minute, Sekunde und Bruchteil;
+           <literal>1</literal> bei Monat und Tag; <literal>1970</literal> bei
+           Jahr und <literal>UTC</literal> bei der Zeitzone)
+          </entry>
+          <entry>
+           Ohne <literal>!</literal> werden alle Felder auf das aktuelle
+           Datum und die aktuelle Uhrzeit gesetzt.
+          </entry>
+         </row>
+         <row>
+          <entry><literal>|</literal></entry>
+          <entry>
+           Setzt die Werte der noch nicht ausgewerteten Felder (Jahr, Monat,
+           Tag, Stunde, Minute, Sekunde, Zeitzone) auf ihre Ausgangswerte zurück
+          </entry>
+          <entry>
+           <literal>Y-m-d|</literal> setzt Jahr, Monat und Tag entsprechend
+           der Informationen aus der ausgewerteten Zeichenkette und setzt
+           Stunde, Minute und Sekunde auf 0
+          </entry>
+         </row>
+         <row>
+          <entry><literal>+</literal></entry>
+          <entry>
+           Wenn dieses Formatzeichen verwendet wird, führen nachfolgende
+           Daten in der Zeichenkette nicht zu einem Fehler, sondern zu einer
+           Warnung
+          </entry>
+          <entry>
+           Um zu überprüfen, ob nachfolgende Daten vorhanden waren, kann
+           <methodname>DateTimeImmutable::getLastErrors</methodname> verwendet
+           werden.
+          </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </table>
+     </para>
+     <para>
+      Wenn die Formatzeichenkette Zeichen enthält, die nicht erkannt werden,
+      schlägt die Auswertung fehl und es wird eine Fehlermeldung an die
+      zurückgegebene Struktur angehängt. Die Fehlermeldungen können mit
+      <methodname>DateTimeImmutable::getLastErrors</methodname> abgefragt
+      werden.
+     </para>
+     <para>
+      Wenn literale Zeichen in <parameter>format</parameter> verwendet werden,
+      müssen diese mit einem Backslash (<literal>\</literal>) maskiert werden.
+     </para>
+     <para>
+      Wenn <parameter>format</parameter> nicht das Zeichen
+      <literal>!</literal> enthält, werden die Teile des Datums und der
+      Uhrzeit, die nicht in <parameter>format</parameter> angegeben sind, auf
+      die aktuelle Systemzeit gesetzt.
+     </para>
+     <para>
+      Wenn <parameter>format</parameter> das Zeichen <literal>!</literal>
+      enthält, werden die Teile des Datums und der Uhrzeit, die nicht in
+      <parameter>format</parameter> angegeben sind, sowie die Werte links von
+      <literal>!</literal> auf die entsprechenden Werte der Unix-Epoche gesetzt.
+     </para>
+     <para>
+      Wenn ein Zeichen der Uhrzeit ausgewertet wird, werden alle anderen
+      zeitbezogenen Felder auf "0" gesetzt, sofern sie nicht ebenfalls
+      ausgewertet werden.
+     </para>
+     <para>
+      Die Unix-Epoche ist 1970-01-01 00:00:00 UTC.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>datetime</parameter></term>
+    <listitem>
+     <para>
+      Eine Zeichenkette, die die Zeit angibt.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>timezone</parameter></term>
+    <listitem>
+     <para>
+      Ein <classname>DateTimeZone</classname>-Objekt, das die gewünschte
+      Zeitzone darstellt.
+     </para>
+     <para>
+      Wenn <parameter>timezone</parameter> nicht angegeben wird oder &null;
+      ist und <parameter>datetime</parameter> keine Zeitzone enthält, wird die
+      aktuelle Zeitzone verwendet.
+     </para>
+     <note>
+      <para>
+       Wenn der Parameter <parameter>datetime</parameter> entweder einen
+       UNIX-Zeitstempel enthält (z.B. <literal>946684800</literal>) oder
+       eine Zeitzone vorgibt (z.B.
+       <literal>2010-01-28T15:00:00+02:00</literal>), werden der Parameter
+       <parameter>timezone</parameter> und die aktuelle Zeitzone ignoriert.
+      </para>
+     </note>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt eine neue DateTimeImmutable-Instanz zurück. &return.falseforfailure;
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <para>
+   <informaltable>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>&Version;</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>8.2.0</entry>
+       <entry>
+        Die <parameter>format</parameter>-Zeichen <literal>X</literal> und
+        <literal>x</literal> wurden hinzugefügt.
+       </entry>
+      </row>
+      <row>
+       <entry>7.3.0</entry>
+       <entry>
+        Das <parameter>format</parameter>-Zeichen <literal>v</literal> wurde
+        hinzugefügt.
+       </entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title><function>DateTimeImmutable::createFromFormat</function>-Beispiel</title>
+   <para>&style.oop;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$date = DateTimeImmutable::createFromFormat('j-M-Y', '15-Feb-2009');
+echo $date->format('Y-m-d');
+?>
+]]>
+   </programlisting>
+  </example>
+  <example>
+   <title>Besonderheiten von <function>DateTimeImmutable::createFromFormat</function></title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+echo 'Aktuelle Zeit: ' . date('Y-m-d H:i:s') . "\n";
+
+$format = 'Y-m-d';
+$date = DateTimeImmutable::createFromFormat($format, '2009-02-15');
+echo "Format: $format; " . $date->format('Y-m-d H:i:s') . "\n";
+
+$format = 'Y-m-d H:i:s';
+$date = DateTimeImmutable::createFromFormat($format, '2009-02-15 15:16:17');
+echo "Format: $format; " . $date->format('Y-m-d H:i:s') . "\n";
+
+$format = 'Y-m-!d H:i:s';
+$date = DateTimeImmutable::createFromFormat($format, '2009-02-15 15:16:17');
+echo "Format: $format; " . $date->format('Y-m-d H:i:s') . "\n";
+
+$format = '!d';
+$date = DateTimeImmutable::createFromFormat($format, '15');
+echo "Format: $format; " . $date->format('Y-m-d H:i:s') . "\n";
+
+$format = 'i';
+$date = DateTimeImmutable::createFromFormat($format, '15');
+echo "Format: $format; " . $date->format('Y-m-d H:i:s') . "\n";
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Aktuelle Zeit: 2022-06-02 15:50:46
+Format: Y-m-d; 2009-02-15 15:50:46
+Format: Y-m-d H:i:s; 2009-02-15 15:16:17
+Format: Y-m-!d H:i:s; 1970-01-15 15:16:17
+Format: !d; 1970-01-15 00:00:00
+Format: i; 2022-06-02 00:15:00
+]]>
+   </screen>
+  </example>
+
+  <example>
+   <title>Formatzeichenkette mit literalen Zeichen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+echo DateTimeImmutable::createFromFormat('H\h i\m s\s','23h 15m 03s')->format('H:i:s');
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+23:15:03
+]]>
+   </screen>
+  </example>
+
+  <example>
+   <title>Verhalten bei einem Überlauf</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+echo DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2021-17-35 16:60:97')->format(DateTimeImmutable::RFC2822);
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Sat, 04 Jun 2022 17:01:37 +0000
+]]>
+   </screen>
+   <para>
+    Das Ergebnis sieht zwar merkwürdig aus, ist aber korrekt, da die
+    folgenden Überläufe erfolgen:
+   </para>
+   <orderedlist>
+    <listitem>
+     <simpara>
+      <literal>97</literal> Sekunden überschreiten <literal>1</literal>
+      Minute, sodass <literal>37</literal> Sekunden übrig bleiben.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      <literal>61</literal> Minuten überschreiten <literal>1</literal> Stunde,
+      sodass <literal>1</literal> Minute übrig bleibt.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      <literal>35</literal> Tage überschreiten <literal>1</literal> Monat,
+      sodass <literal>4</literal> Tage übrig bleiben. Da nicht jeder Monat die
+      gleiche Anzahl von Tagen hat, hängt die Anzahl der Tage, die übrig
+      bleiben, vom Monat ab.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      <literal>18</literal> Monate überschreiten <literal>1</literal> Jahr,
+      sodass <literal>6</literal> Monate übrig bleiben.
+     </simpara>
+    </listitem>
+   </orderedlist>
+  </example>
+
+  <example>
+   <title>Verhalten bei überlaufenden Tagesnamen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$d = DateTime::createFromFormat(DateTimeInterface::RFC1123, 'Mon, 3 Aug 2020 25:00:00 +0000');
+echo $d->format(DateTime::RFC1123), "\n";
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Mon, 10 Aug 2020 01:00:00 +0000
+]]>
+   </screen>
+   <para>
+    Das Ergebnis sieht zwar merkwürdig aus, ist aber korrekt, da die
+    folgenden Überläufe erfolgen:
+   </para>
+   <orderedlist>
+    <listitem>
+     <simpara>
+      <literal>3 Aug 2020 25:00:00</literal> geht über in <literal>(Tue) 4 Aug
+      2020 01:00</literal>.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      <literal>Mon</literal> wird eingesetzt, was das Datum auf <literal>Mon,
+      10 Aug 2020 01:00:00</literal> vorverlegt. Relative Schlüsselwörter wie
+      <literal>Mon</literal> werden im Abschnitt über
+      <link linkend="datetime.formats.relative">relative Formate</link>
+      erläutert.
+     </simpara>
+    </listitem>
+   </orderedlist>
+  </example>
+
+  <para>
+   Um Überläufe in Daten zu erkennen, kann die Methode
+   <methodname>DateTimeImmutable::getLastErrors</methodname> verwendet werden,
+   die eine Warnung enthält, wenn ein Überlauf aufgetreten ist.
+  </para>
+  <example>
+   <title>Erkennen von übergelaufenen Daten</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$d = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2021-17-35 16:60:97');
+echo $d->format(DateTimeImmutable::RFC2822), "\n\n";
+
+var_dump(DateTimeImmutable::GetLastErrors());
+?>
+]]>
+   </programlisting>
+   &example.outputs.similar;
+   <screen>
+<![CDATA[
+Sat, 04 Jun 2022 17:01:37 +0000
+
+array(4) {
+  'warning_count' =>
+  int(2)
+  'warnings' =>
+  array(1) {
+    [19] =>
+    string(27) "The parsed date was invalid"
+  }
+  'error_count' =>
+  int(0)
+  'errors' =>
+  array(0) {
+  }
+}
+]]>
+   </screen>
+  </example>
+
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <simplelist>
+   <member><function>DateTimeImmutable::__construct</function></member>
+   <member><function>DateTimeImmutable::getLastErrors</function></member>
+   <member><function>checkdate</function></member>
+   <member><function>strptime</function></member>
+  </simplelist>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->

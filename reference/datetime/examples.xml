@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 8cdc6621f9826d04abc3e50438c010804d7e8683 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+
+<chapter xml:id="datetime.examples" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ &reftitle.examples;
+
+ <section xml:id="datetime.examples-arithmetic">
+  <title>Rechnen mit Datum und Uhrzeit</title>
+  <para>
+   Die folgenden Beispiele zeigen einige Fallstricke beim Rechnen mit Datum
+   und Uhrzeit bezüglich der Sommerzeitumstellungen sowie der Monate mit
+   unterschiedlicher Anzahl von Tagen.
+  </para>
+  <para>
+   <example>
+    <title>DateTimeImmutable::add/sub addiert Intervalle, die die verstrichene Zeit umfassen</title>
+    <simpara>
+     Wenn PT24H über den Zeitpunkt einer Sommerzeitumstellung hinzugefügt
+     wird, scheinen 23/25 Stunden hinzugefügt zu werden (bei den meisten
+     Zeitzonen).
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$dt = new DateTimeImmutable("2015-11-01 00:00:00", new DateTimeZone("America/New_York"));
+echo "Beginn: ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+$dt = $dt->add(new DateInterval("PT3H"));
+echo "Ende:   ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Beginn: 2015-11-01 00:00:00 -04:00
+Ende:   2015-11-01 02:00:00 -05:00
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>DateTimeImmutable::modify und strtotime erhöhen oder verringern die Werte einzelner Komponenten</title>
+    <simpara>
+     Wenn +24 Stunden über den Zeitpunkt einer Sommerzeitumstellung
+     hinzugefügt werden, werden genau 24 Stunden hinzugefügt, wie sie in der
+     Datum/Zeit-Zeichenkette zu sehen sind (es sei denn, die Anfangs- oder
+     Endzeit liegt auf einem Übergangspunkt).
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$dt = new DateTimeImmutable("2015-11-01 00:00:00", new DateTimeZone("America/New_York"));
+echo "Beginn: ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+$dt = $dt->modify("+24 hours");
+echo "Ende:   ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Beginn: 2015-11-01 00:00:00 -04:00
+Ende:   2015-11-02 00:00:00 -05:00
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Durch die Addition oder Subtraktion von Zeiten kann das Datum über- oder unterschritten werden</title>
+    <simpara>
+     Zum Beispiel ergibt der 31. Januar + 1 Monat den 2. März (Schaltjahr)
+     oder den 3. März (normales Jahr).
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+echo "Normales Jahr:\n"; // Februar hat 28 Tage
+$dt = new DateTimeImmutable("2015-01-31 00:00:00", new DateTimeZone("America/New_York"));
+echo "Beginn: ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+$dt = $dt->modify("+1 month");
+echo "Ende:   ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+
+echo "Schaltjahr:\n"; // Februar hat 29 Tage
+$dt = new DateTimeImmutable("2016-01-31 00:00:00", new DateTimeZone("America/New_York"));
+echo "Beginn: ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+$dt = $dt->modify("+1 month");
+echo "Ende:   ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Normales Jahr:
+Beginn: 2015-01-31 00:00:00 -05:00
+Ende:   2015-03-03 00:00:00 -05:00
+Schaltjahr:
+Beginn: 2016-01-31 00:00:00 -05:00
+Ende:   2016-03-02 00:00:00 -05:00
+]]>
+    </screen>
+    <simpara>
+     Um den letzten Tag des nächsten Monats zu erhalten (d.h. um den Überlauf
+     zu verhindern), gibt es das Format <literal>last day of</literal>.
+    </simpara>
+    <programlisting role="php">
+<![CDATA[
+<?php
+echo "Normales Jahr:\n"; // Februar hat 28 Tage
+$dt = new DateTimeImmutable("2015-01-31 00:00:00", new DateTimeZone("America/New_York"));
+echo "Beginn: ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+$dt = $dt->modify("last day of next month");
+echo "Ende:   ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+
+echo "Schaltjahr:\n"; // Februar hat 29 Tage
+$dt = new DateTimeImmutable("2016-01-31 00:00:00", new DateTimeZone("America/New_York"));
+echo "Beginn: ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+$dt = $dt->modify("last day of next month");
+echo "Ende:   ", $dt->format("Y-m-d H:i:s P"), PHP_EOL;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Normales Jahr:
+Beginn: 2015-01-31 00:00:00 -05:00
+Ende:   2015-02-28 00:00:00 -05:00
+Schaltjahr:
+Beginn: 2016-01-31 00:00:00 -05:00
+Ende:   2016-02-29 00:00:00 -05:00
+]]>
+    </screen>
+   </example>
+  </para>
+ </section>
+
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
