@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 2ff6e6bcad9700adaf50f9e1639c6d7d7d1f059d Maintainer: cmb Status: ready -->
+<!-- EN-Revision: fb6ffde9728aa008bf89e9d0043de8d8acc2bb82 Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: c140370c354496b38b97dfafe2e31f3f8df8bb44 Reviewer: samesch -->
 <sect1 xml:id="language.types.array">
@@ -406,9 +406,6 @@ function getArray() {
 }
 
 $secondElement = getArray()[1];
-
-// oder
-list(, $secondElement) = getArray();
 ?>
 ]]>
     </programlisting>
@@ -580,6 +577,143 @@ Array
    </note>
 
   </sect3>
+
+  <sect3 xml:id="language.types.array.syntax.destructuring">
+   <title>Destrukturierung (Zerlegung) von Arrays</title>
+
+   <para>
+    Arrays können mit den Sprachkonstrukten <literal>[]</literal> (seit
+    PHP 7.1.0) oder <function>list</function> destrukuriert werden. Diese
+    Konstrukte können verwendet werden, um ein Array in einzelne Variablen zu
+    zerlegen.
+   </para>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$source_array = ['foo', 'bar', 'baz'];
+
+[$foo, $bar, $baz] = $source_array;
+
+echo $foo;    // gibt "foo" aus
+echo $bar;    // gibt "bar" aus
+echo $baz;    // gibt "baz" aus
+?>
+]]>
+    </programlisting>
+   </informalexample>
+
+   <para>
+    Die Destrukturierung von Arrays kann in &foreach; verwendet werden, um
+    ein mehrdimensionales Array zu zerlegen, während darüber iteriert wird.
+   </para>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$source_array = [
+    [1, 'John'],
+    [2, 'Jane'],
+];
+
+foreach ($source_array as [$id, $name]) {
+    // der Code mit $id und $name
+}
+?>
+]]>
+    </programlisting>
+   </informalexample>
+
+   <para>
+    Array-Elemente werden ignoriert, wenn die Variable nicht angegeben wird.
+    Die Destrukturierung von Arrays beginnt immer beim Index
+    <literal>0</literal>.
+   </para>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$source_array = ['foo', 'bar', 'baz'];
+
+// Zuweisen des Elements bei Index 2 an die Variable $baz
+[, , $baz] = $source_array;
+
+echo $baz;    // gibt "baz" aus
+?>
+]]>
+    </programlisting>
+   </informalexample>
+
+   <para>
+    Seit PHP 7.1.0 können auch assoziative Arrays destrukturiert werden. Dies
+    ermöglicht auch in numerisch indizierten Arrays eine einfachere Auswahl
+    des richtigen Elements, da der Index explizit angegeben werden kann.
+   </para>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$source_array = ['foo' => 1, 'bar' => 2, 'baz' => 3];
+
+// Zuweisen des Elements bei Index 'baz' an die Variable $three
+['baz' => $three] = $source_array;
+
+echo $three;    // gibt 3 aus
+
+$source_array = ['foo', 'bar', 'baz'];
+
+// Zuweisen des Elements bei Index 2 an die Variable $baz
+[2 => $baz] = $source_array;
+
+echo $baz;    // gibt "baz" aus
+?>
+]]>
+    </programlisting>
+   </informalexample>
+
+   <para>
+    Array-Destrukturierung kann verwendet werden, um auf einfache Weise zwei
+    Variablen zu vertauschen.
+   </para>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$a = 1;
+$b = 2;
+
+[$b, $a] = [$a, $b];
+
+echo $a;    // gibt 2 aus
+echo $b;    // gibt 1 aus
+?>
+]]>
+    </programlisting>
+   </informalexample>
+
+   <note>
+    <para>
+     Der Spread-Operator (<literal>...</literal>) wird bei Zuweisungen
+     nicht unterstützt.
+    </para>
+   </note>
+
+   <note>
+    <para>
+     Wird versucht, auf einen nicht definierten Array-Schlüssel zuzugreifen,
+     so ist dies dasselbe wie der Zugriff auf eine andere undefinierte
+     Variable: Eine Fehlermeldung der Stufe <constant>E_NOTICE</constant>
+     (der Stufe <constant>E_WARNING</constant> seit PHP 8.0.0) wird ausgegeben
+     und das Ergebnis ist &null;.
+    </para>
+   </note>
+  </sect3>
+
  </sect2><!-- end syntax -->
 
  <sect2 xml:id="language.types.array.useful-funcs">
