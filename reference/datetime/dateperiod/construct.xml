@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e2c7b3635d5353c05c248c29038bf9d5b7133d6e Maintainer: cmb Status: ready -->
+<!-- EN-Revision: c249f3bc56fcdb3ea3f64b1fa0c4fd96a7dcd5a4 Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: e2c7b3635d5353c05c248c29038bf9d5b7133d6e Reviewer: samesch -->
 
@@ -34,6 +34,20 @@
   <para>
    Erstellt ein neues DatePeriod-Objekt.
   </para>
+  <para>
+   <classname>DatePeriod</classname>-Objekte können als Iterator verwendet
+   werden, um aus einem <parameter>start</parameter>-Datum, einem
+   <parameter>interval</parameter> und einem <parameter>end</parameter>-Datum
+   oder der Anzahl der <parameter>recurrences</parameter> (Wiederholungen)
+   eine Reihe von <classname>DateTimeImmutable</classname>- oder
+   <classname>DateTime</classname>-Objekten zu erzeugen.
+  </para>
+  <para>
+   Die Klasse der zurückgegebenen Objekte entspricht der
+   <classname>DateTimeImmutable</classname>- oder
+   <classname>DateTime</classname>-Elternklasse des
+   <parameter>start</parameter>-Objekts.
+  </para>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -44,7 +58,8 @@
      <term><parameter>start</parameter></term>
      <listitem>
       <para>
-       Das Startdatum des Zeitraums.
+       Das Startdatum des Zeitraums; wird standardmäßig in die Ergebnismenge
+       aufgenommen.
       </para>
      </listitem>
     </varlistentry>
@@ -60,7 +75,9 @@
      <term><parameter>recurrences</parameter></term>
      <listitem>
       <para>
-       Die Anzahl der Wiederholungen.
+       Die Anzahl der Wiederholungen. Die Anzahl der zurückgegebenen Ergebnisse
+       ist um eins größer, da das Startdatum standardmäßig in die Ergebnismenge
+       aufgenommen wird; muss größer als <literal>0</literal> sein.
       </para>
      </listitem>
     </varlistentry>
@@ -68,7 +85,8 @@
      <term><parameter>end</parameter></term>
      <listitem>
       <para>
-       Das Enddatum des Zeitraums.
+       Das Enddatum des Zeitraums; wird standardmäßig nicht in die
+       Ergebnismenge aufgenommen.
       </para>
      </listitem>
     </varlistentry>
@@ -86,9 +104,18 @@
      <term><parameter>options</parameter></term>
      <listitem>
       <para>
-       Kann auf den Wert <constant>DatePeriod::EXCLUDE_START_DATE</constant>
-       gesetzt werden, um das Startdatum aus den wiederkehrenden Terminen
-       innnerhalb des Zeitraums auszuschließen.
+       Ein Bitfeld, mit dem ein bestimmtes Verhalten bezüglich der Start- und
+       Enddaten gesteuert werden kann.
+      </para>
+      <para>
+       Mit <constant>DatePeriod::EXCLUDE_START_DATE</constant> wird das
+       Startdatum aus der Menge der wiederkehrenden Termine innerhalb des
+       Zeitraums ausgeschlossen.
+      </para>
+      <para>
+       Mit <constant>DatePeriod::INCLUDE_END_DATE</constant> wird das Enddatum
+       in die Menge der wiederkehrenden Termine innerhalb des Zeitraums
+       aufgenommen.
       </para>
      </listitem>
     </varlistentry>
@@ -108,6 +135,13 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>8.2.0</entry>
+       <entry>
+        Die Konstante <constant>DatePeriod::INCLUDE_END_DATE</constant> wurde
+        hinzugefügt.
+       </entry>
+      </row>
       <row>
        <entry>7.2.19, 7.3.6, 7.4.0</entry>
        <entry>
@@ -189,6 +223,43 @@ foreach ($period as $date) {
 2012-07-15
 2012-07-22
 2012-07-29
+]]>
+    </screen>
+   </example>
+  </para>
+  <para>
+   <example>
+    <title>Ein DatePeriod-Beispiel, das alle letzten Donnerstage eines Jahres anzeigt</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$begin = new DateTime('2021-12-31');
+$end = new DateTime('2022-12-31 23:59:59');
+
+$interval = DateInterval::createFromDateString('last thursday of next month');
+$period = new DatePeriod($begin, $interval, $end, DatePeriod::EXCLUDE_START_DATE);
+
+foreach ($period as $dt) {
+    echo $dt->format('l Y-m-d'), "\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Thursday 2022-01-27
+Thursday 2022-02-24
+Thursday 2022-03-31
+Thursday 2022-04-28
+Thursday 2022-05-26
+Thursday 2022-06-30
+Thursday 2022-07-28
+Thursday 2022-08-25
+Thursday 2022-09-29
+Thursday 2022-10-27
+Thursday 2022-11-24
+Thursday 2022-12-29
 ]]>
     </screen>
    </example>
