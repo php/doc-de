@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: a96f81e58a20d5a4dc4041a7bb8a8304df6fe6df Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+ <chapter xml:id="features.gc" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Garbage Collection (Speicherbereinigung)</title>
+
+  <para>
+   Dieser Abschnitt erklärt die Vorzüge der neuen Garbage Collection (auch
+   bekannt als GC), die ein Bestandteil von PHP 5.3 ist.
+  </para>
+
+  <sect1 xml:id="features.gc.refcounting-basics">
+   <title>Grundlagen des Zählens von Referenzen</title>
+   <para>
+    Eine PHP-Variable wird in einem Container namens "zval" gespeichert. Ein
+    zval-Container enthält neben dem Typ und dem Wert der Variablen noch zwei
+    weitere Informationen. Die erste heißt "is_ref" und ist ein boolescher
+    Wert, der angibt, ob die Variable Teil einer "Referenzmenge" ist oder
+    nicht. Mit diesem Bit kann die PHP-Engine zwischen normalen Variablen und
+    Referenzen unterscheiden. Da PHP mit dem &amp;-Operator erzeugte
+    benutzerdefinierte Referenzen zulässt, hat ein zval-Container auch einen
+    internen Mechanismus zum Zählen von Referenzen, um die Speichernutzung zu
+    optimieren. Diese zweite zusätzliche Information wird "refcount" genannt
+    und enthält die Anzahl der Variablennamen (auch Symbole genannt), die auf
+    diesen einen zval-Container verweisen. Alle Symbole sind in einer
+    Symboltabelle gespeichert, von denen es eine pro Bereich gibt. Es gibt
+    einen Bereich für das Hauptskript (d.h. das vom Browser angeforderte),
+    sowie einen für jede Funktion oder Methode.
+   </para>
+   <para>
+    Ein zval-Container wird erstellt, wenn eine neue Variable mit einem
+    konstanten Wert erstellt wird, z.B.:
+    <example>
+     <title>Erstellen eines neuen zval-Containers</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$a = "new string";
+?>
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    In diesem Fall wird der neue Symbolname <literal>a</literal> im aktuellen
+    Bereich erstellt und ein neuer Variablencontainer mit dem Typ
+    <type>string</type> und dem Wert <literal>new string</literal> angelegt.
+    Das Bit "is_ref" ist standardmäßig auf &false; gesetzt, weil noch keine
+    benutzerdefinierte Referenz erstellt wurde. Der "refcount" ist auf
+    <literal>1</literal> gesetzt, da es nur ein Symbol gibt, das diesen
+    Variablencontainer verwendet. Es ist zu beachten, dass Referenzen (d.h.
+    "is_ref" ist &true;) mit "refcount" <literal>1</literal> so behandelt
+    werden, als ob sie keine Referenzen wären (d.h. als ob "is_ref" &false;
+    wäre). Wenn <link xlink:href="&url.xdebug;">Xdebug</link> installiert ist,
+    kann <function>xdebug_debug_zval</function> aufgerufen werden, um diese
+    Informationen anzuzeigen.
+   </para>
+   <para>
+    <example>
+     <title>Anzeigen von zval-Informationen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$a = "new string";
+xdebug_debug_zval('a');
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+a: (refcount=1, is_ref=0)='new string'
+]]>
+     </screen>
+    </example>
+   </para>
+   <para>
+    Wenn diese Variable einem anderen Variablennamen zugewiesen wird, erhöht
+    sich der Referenzzähler.
+   </para>
+   <para>
+    <example>
+     <title>Erhöhen des Referenzzählers eines Zval</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$a = "new string";
+$b = $a;
+xdebug_debug_zval( 'a' );
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+a: (refcount=2, is_ref=0)='new string'
+]]>
+     </screen>
+    </example>
+   </para>
+   <para>
+    Der Referenzzähler ist hier <literal>2</literal>, weil derselbe
+    Variablencontainer sowohl mit <varname>a</varname> als auch mit
+    <varname>b</varname> verknüpft ist. PHP ist schlau genug, den eigentlichen
+    Variablencontainer nicht zu kopieren, wenn es nicht notwendig ist.
+    Variablencontainer werden zerstört, wenn der "refcount" Null erreicht. Der
+    "refcount" wird um eins verringert, wenn ein Symbol, das mit dem
+    Variablencontainer verbunden ist, den Gültigkeitsbereich verlässt (z.B. am
+    Ende einer Funktion) oder wenn ein Symbol nicht mehr zugewiesen ist (z.B.
+    durch den Aufruf von <function>unset</function>). Das folgende Beispiel
+    zeigt dies:
+   </para>
+   <para>
+    <example>
+     <title>Verringern des zval-Referenzzählers</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$a = "new string";
+$c = $b = $a;
+xdebug_debug_zval( 'a' );
+$b = 42;
+xdebug_debug_zval( 'a' );
+unset( $c );
+xdebug_debug_zval( 'a' );
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+a: (refcount=3, is_ref=0)='new string'
+a: (refcount=2, is_ref=0)='new string'
+a: (refcount=1, is_ref=0)='new string'
+]]>
+     </screen>
+    </example>
+   </para>
+   <para>
+    Wenn nun <literal>unset($a);</literal> aufgerufen wird, wird der
+    Variablencontainer einschließlich Typ und Wert aus dem Speicher entfernt.
+   </para>
+
+   <sect2 xml:id="features.gc.compound-types">
+    <title>Zusammengesetzte Typen</title>
+
+    <para>
+     Etwas komplexer wird es bei zusammengesetzten Typen wie
+     <type>Array</type>s und <type>Objekt</type>en. Im Gegensatz zu
+     <type>scalar</type>en Werten speichern <type>Array</type>s und
+     <type>Objekt</type>e ihre Eigenschaften in einer eigenen Symboltabelle.
+     Das bedeutet, dass das folgende Beispiel drei zval-Container erzeugt:
+    </para>
+    <para>
+     <example>
+      <title>Erstellen eines <type>Array</type>-Zvals</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$a = array( 'meaning' => 'life', 'number' => 42 );
+xdebug_debug_zval( 'a' );
+?>
+]]>
+      </programlisting>
+      &example.outputs.similar;
+      <screen>
+<![CDATA[
+a: (refcount=1, is_ref=0)=array (
+   'meaning' => (refcount=1, is_ref=0)='life',
+   'number' => (refcount=1, is_ref=0)=42
+)
+]]>
+      </screen>
+      <para>Oder grafisch</para>
+      <mediaobject>
+       <alt>Zvals für ein einfaches Array</alt>
+       <imageobject>
+        <imagedata fileref="en/features/figures/simple-array.png" format="PNG"/>
+       </imageobject>
+      </mediaobject>
+     </example>
+    </para>
+    <para>
+     Die drei zval-Container sind: <varname>a</varname>,
+     <varname>meaning</varname> und <varname>number</varname>. Ähnliche
+     Regeln gelten für das Erhöhen und Verringern von "refcounts". Im
+     Folgenden fügen wir dem Array ein weiteres Element hinzu und setzen
+     seinen Wert auf den Inhalt eines bereits vorhandenen Elements:
+    </para>
+    <para>
+     <example>
+      <title>Hinzufügen eines bereits vorhandenen Elements zu einem Array</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$a = array( 'meaning' => 'life', 'number' => 42 );
+$a['life'] = $a['meaning'];
+xdebug_debug_zval( 'a' );
+?>
+]]>
+      </programlisting>
+      &example.outputs.similar;
+      <screen>
+<![CDATA[
+a: (refcount=1, is_ref=0)=array (
+   'meaning' => (refcount=2, is_ref=0)='life',
+   'number' => (refcount=1, is_ref=0)=42,
+   'life' => (refcount=2, is_ref=0)='life'
+)
+]]>
+      </screen>
+      <para>Oder grafisch</para>
+      <mediaobject>
+       <alt>Zvals für ein einfaches Array mit einer Referenz</alt>
+       <imageobject>
+        <imagedata fileref="en/features/figures/simple-array2.png" format="PNG"/>
+       </imageobject>
+      </mediaobject>
+     </example>
+    </para>
+    <para>
+     Aus der obigen Xdebug-Ausgabe geht hervor, dass sowohl das alte als auch
+     das neue Array-Element nun auf einen zval-Container zeigen, dessen
+     "refcount" <literal>2</literal> ist. Obwohl die Xdebug-Ausgabe zwei
+     zval-Container mit dem Wert <literal>'life'</literal> anzeigt, handelt es
+     sich um denselben. Die Funktion <function>xdebug_debug_zval</function>
+     zeigt dies nicht an, aber man könnte es sehen, wenn man sich auch den
+     Speicherzeiger anzeigen lässt.
+    </para>
+    <para>
+     Wenn ein Element aus dem Array entfernt wird, ist das so, als würde ein
+     Symbol aus einem Bereich entfernt. Dadurch wird der "refcount" eines
+     Containers, auf den ein Array-Element zeigt, verringert. Auch hier gilt:
+     Wenn der "refcount" Null erreicht, wird der Variablencontainer aus dem
+     Speicher entfernt. Ein weiteres Beispiel soll dies verdeutlichen:
+    </para>
+    <para>
+     <example>
+      <title>Entfernen eines Elements aus einem Array</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$a = array( 'meaning' => 'life', 'number' => 42 );
+$a['life'] = $a['meaning'];
+unset( $a['meaning'], $a['number'] );
+xdebug_debug_zval( 'a' );
+?>
+]]>
+      </programlisting>
+      &example.outputs.similar;
+      <screen>
+<![CDATA[
+a: (refcount=1, is_ref=0)=array (
+   'life' => (refcount=1, is_ref=0)='life'
+)
+]]>
+      </screen>
+     </example>
+    </para>
+    <para>
+     Interessant wird es nun, wenn das Array selbst als Element des Arrays
+     hinzugefügt wird. Das geschieht im nächsten Beispiel, in dem außerdem ein
+     Referenzoperator eingebaut wird, da PHP sonst eine Kopie erstellen würde:
+    </para>
+    <para>
+     <example>
+      <title>Hinzufügen des Arrays als Element von sich selbst</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+$a = array( 'one' );
+$a[] =& $a;
+xdebug_debug_zval( 'a' );
+?>
+]]>
+      </programlisting>
+      &example.outputs.similar;
+      <screen>
+<![CDATA[
+a: (refcount=2, is_ref=1)=array (
+   0 => (refcount=1, is_ref=0)='one',
+   1 => (refcount=2, is_ref=1)=...
+)
+]]>
+      </screen>
+      <para>Oder grafisch</para>
+      <mediaobject>
+       <alt>Zvals bei einem Array mit zyklischer Referenz</alt>
+       <imageobject>
+        <imagedata fileref="en/features/figures/loop-array.png" format="PNG"/>
+       </imageobject>
+      </mediaobject>
+     </example>
+    </para>
+    <para>
+     Wie man sieht, zeigen nun sowohl die Array-Variable
+     (<varname>a</varname>) als auch das zweite Element (<varname>1</varname>)
+     auf einen Variablencontainer, der einen "refcount" von
+     <literal>2</literal> hat. Das "..." in der obigen Darstellung zeigt, dass
+     es sich um eine Rekursion handelt, was natürlich in diesem Fall bedeutet,
+     dass das "..." zurück auf das ursprüngliche Array zeigt.
+    </para>
+    <para>
+     Genau wie zuvor wird beim Aufheben einer Variablen das Symbol entfernt,
+     und die Anzahl der Referenzen des Variablencontainers, auf den sie zeigt,
+     wird um eins verringert. Wenn also die Variable <varname>$a</varname>
+     nach der Ausführung des obigen Codes aufgehoben wird, wird die Anzahl der
+     Referenzen des Variablencontainers, auf den <varname>$a</varname> und das
+     Element "1" zeigen, um eins verringert, von "2" auf "1". Dies kann wie
+     folgt dargestellt werden:
+    </para>
+    <para>
+     <example>
+      <title>Aufheben von <varname>$a</varname></title>
+      <screen>
+<![CDATA[
+(refcount=1, is_ref=1)=array (
+   0 => (refcount=1, is_ref=0)='one',
+   1 => (refcount=1, is_ref=1)=...
+)
+]]>
+      </screen>
+      <para>Oder grafisch</para>
+      <mediaobject>
+       <alt>Zvals nach dem Entfernen eines Arrays mit einer zyklischen Referenz, was das Speicherleck deutlich macht</alt>
+       <imageobject>
+        <imagedata fileref="en/features/figures/leak-array.png" format="PNG"/>
+       </imageobject>
+      </mediaobject>
+     </example>
+    </para>
+   </sect2>
+
+   <sect2 xml:id="features.gc.cleanup-problems">
+    <title>Probleme bei der Bereinigung</title>
+    <para>
+     Obwohl es in keinem Bereich mehr ein Symbol gibt, das auf diese Struktur
+     zeigt, kann sie nicht bereinigt werden, weil das Array-Element "1" immer
+     noch auf dasselbe Array zeigt. Da es kein externes Symbol gibt, das
+     darauf verweist, gibt es für den Benutzer keine Möglichkeit, diese
+     Struktur zu bereinigen, was zu einem Speicherleck führt. Glücklicherweise
+     bereinigt PHP diese Datenstruktur am Ende der Anfrage, aber bis dahin
+     nimmt sie wertvollen Speicherplatz in Anspruch. Diese Situation tritt
+     häufig auf, wenn Parsing-Algorithmen oder andere Dinge implementiert
+     werden, bei denen ein untergeordnetes Element auf ein "übergeordnetes"
+     Element zurückverweist. Die gleiche Situation kann natürlich auch bei
+     Objekten eintreten, wobei dies sogar wahrscheinlicher ist, da Objekte
+     immer implizit per Referenz verwendet werden.
+    </para>
+    <para>
+     Das ist vielleicht kein Problem, wenn es nur ein- oder zweimal vorkommt,
+     aber wenn es Tausende oder sogar Millionen solcher Speicherverluste gibt,
+     fängt es natürlich an, zum Problem zu werden. Besonders problematisch ist
+     dies bei lang laufenden Skripten, z. B. Daemons, bei denen die Anfrage im
+     Grunde nie endet, oder bei großen Mengen von Unit-Tests. Letzteres führte
+     zu Problemen bei der Ausführung der Unit-Tests für die
+     Template-Komponente der eZ Components-Bibliothek. In einigen Fällen
+     wurden über 2 GB Speicher benötigt, die der Testserver nicht zur
+     Verfügung hatte.
+    </para>
+   </sect2>
+  </sect1>
+
+  <sect1 xml:id="features.gc.collecting-cycles">
+   <title>Sammeln zyklischer Referenzen</title>
+   <para>
+    In der Vergangenheit konnten referenzzählende Speichermechanismen, wie der
+    von PHP verwendete, zyklische Referenzspeicherlecks nicht beheben. Seit
+    Version 5.3.0 implementiert PHP jedoch den synchronen Algorithmus aus der
+    Abhandlung
+    <link xlink:href="&url.gc-paper;">Concurrent Cycle Collection in Reference Counted Systems</link>,
+    die dieses Problem behandelt.
+   </para>
+   <para>
+    Eine vollständige Erklärung der Funktionsweise des Algorithmus würde den
+    Rahmen dieses Abschnitts etwas sprengen, aber die Grundlagen werden hier
+    erläutert. Zunächst müssen ein paar Grundregeln festgelegt werden. Wenn
+    ein Referenzzähler erhöht wird, ist er noch in Gebrauch und daher kein
+    Garbage. Wenn der Referenzzähler verringert wird und Null erreicht, kann
+    das Zval freigegeben werden. Das bedeutet, dass problematische Zyklen nur
+    dann erzeugt werden können, wenn ein refcount-Argument auf einen Wert
+    ungleich Null verringert wird. Damit kann festgestellt werden, welche
+    Teile in einem problematischen Zyklus Garbage sind, indem geprüft wird, ob
+    es möglich ist, ihren Referenzzähler um eins zu verringern, und dann
+    geprüft wird, welche der Zvals einen Referenzzähler von Null haben.
+   </para>
+   <para>
+     <mediaobject>
+      <alt>Algorithmus für die Garbage Collection</alt>
+      <imageobject>
+       <imagedata fileref="en/features/figures/gc-algorithm.png" format="PNG"/>
+      </imageobject>
+     </mediaobject>
+   </para>
+   <para>
+    Um zu vermeiden, dass die Überprüfung von problematischen Zyklen bei jeder
+    möglichen Verringerung eines Referenzzählers aufgerufen werden muss, legt
+    der Algorithmus stattdessen alle möglichen Wurzeln (Zvals) in den
+    "Wurzelpuffer" (und markiert sie "lila"). Er sorgt auch dafür, dass jede
+    mögliche Wurzel nur einmal im Puffer landet. Erst wenn der Wurzelpuffer
+    voll ist, beginnt der Sammelmechanismus für alle verschiedenen Zvals
+    darin. Siehe Schritt A in der Abbildung oben.
+   </para>
+   <para>
+    In Schritt B führt der Algorithmus bei allen möglichen Wurzeln eine
+    Tiefensuche durch, um die Referenzzähler jedes gefundenen Zvals um eins zu
+    verringern. Dabei wird darauf geachtet, dass der Referenzzähler desselben
+    Zvals nicht zweimal verringert wird (indem sie als "grau" markiert
+    werden). In Schritt C führt der Algorithmus erneut eine Tiefensuche bei
+    jedem Wurzelknoten aus, um den Referenzzähler jedes Zvals erneut zu
+    überprüfen. Stellt er fest, dass der Referenzzähler Null ist, wird das
+    Zval als "weiß" markiert (in der Abbildung blau). Ist er größer als Null,
+    wird die Verringerung des Refcount um eins mit einer Tiefensuche von
+    diesem Punkt an rückgängig gemacht, und die Zvals werden wieder "schwarz"
+    markiert. Im letzten Schritt (D) geht der Algorithmus über den
+    Wurzelpuffer und entfernt die Zval-Wurzeln von dort, wobei er gleichzeitig
+    überprüft, welche Zvals im vorherigen Schritt als "weiß" markiert wurden.
+    Jedes Zval, das als "weiß" markiert wurde, wird freigegeben.
+   </para>
+   <para>
+    Nachdem nun ein grundlegendes Verständnis für die Funktionsweise des
+    Algorithmus vorhanden ist, wird nun erläutert, wie dieser in PHP
+    integriert ist. Standardmäßig ist der Garbage Collector von PHP aktiviert,
+    aber es gibt eine &php.ini;-Einstellung, mit der dies geändert werden
+    kann: <link linkend="ini.zend.enable-gc">zend.enable_gc</link>.
+   </para>
+   <para>
+    Wenn der Garbage Collector aktiviert ist, wird der oben beschriebene
+    Algorithmus zum Finden von Zyklen immer dann ausgeführt, wenn der
+    Wurzelpuffer voll ist. Der Wurzelpuffer hat eine feste Größe von 10.000
+    möglichen Wurzeln (obwohl man dies ändern kann, indem man im PHP-Quellcode
+    in <literal>Zend/zend_gc.c</literal> die Konstante
+    <literal>GC_ROOT_BUFFER_MAX_ENTRIES</literal> ändert und PHP neu
+    kompiliert). Wenn der Garbage Collector deaktiviert ist, wird der
+    Algorithmus zum Finden von Zyklen nie ausgeführt. Allerdings werden
+    mögliche Wurzeln immer im Wurzelpuffer aufgezeichnet, unabhängig davon, ob
+    der Mechanismus der Garbage Collection mit dieser
+    Konfigurationseinstellung aktiviert wurde.
+   </para>
+   <para>
+    Wenn der Wurzelpuffer bei deaktiviertem Mechanismus der Garbage Collection
+    vollständig mit möglichen Wurzeln gefüllt ist, werden weitere mögliche
+    Wurzeln einfach nicht aufgezeichnet. Die möglichen Wurzeln, die nicht
+    aufgezeichnet werden, werden vom Algorithmus nie analysiert. Wären sie
+    Teil eines zirkulären Referenzzyklus, würden sie nie bereinigt werden und
+    ein Speicherleck verursachen.
+   </para>
+   <para>
+    Dass mögliche Wurzeln aufgezeichnet werden, auch wenn der Mechanismus
+    deaktiviert wurde, liegt daran, dass es schneller ist, mögliche Wurzeln
+    aufzuzeichnen, als jedes Mal, wenn eine mögliche Wurzel gefunden wurde, zu
+    prüfen, ob der Mechanismus aktiviert ist. Der Mechanismus der Garbage
+    Collection und Analyse selbst kann jedoch sehr viel Zeit in Anspruch
+    nehmen.
+   </para>
+   <para>
+    Neben der Änderung der Konfigurationseinstellung
+    <link linkend="ini.zend.enable-gc">zend.enable_gc</link> ist es auch
+    möglich, den Mechanismus der Garbage Collection zu aktivieren oder zu
+    deaktivieren, indem man <function>gc_enable</function> bzw.
+    <function>gc_disable</function> aufruft. Diese Funktionen haben den
+    gleichen Effekt wie die Konfigurationseinstellung, mit der der Mechanismus
+    aktiviert oder deaktiviert wird. Es ist auch möglich, das Sammeln von
+    Zyklen zu erzwingen, selbst wenn der Wurzelpuffer noch nicht voll ist.
+    Dazu kann die Funktion <function>gc_collect_cycles</function> verwendet
+    werden. Diese Funktion ermittelt, wieviele Zyklen durch den Algorithmus
+    gesammelt wurden.
+   </para>
+   <para>
+    Der Grund für die Möglichkeit, den Mechanismus zu aktivieren und zu
+    deaktivieren und die zyklische Sammlung selbst einzuleiten, besteht darin,
+    dass einige Teile einer Anwendung sehr zeitkritisch sein könnten. In
+    diesen Fällen ist es vielleicht nicht erwünscht, dass der Mechanismus der
+    Garbage Collection ausgelöst wird. Wenn die Garbage Collection für
+    bestimmte Teile einer Anwendung ausgeschaltet wird, besteht natürlich die
+    Gefahr, dass Speicherlecks entstehen, weil einige mögliche Wurzeln nicht
+    in den begrenzten Wurzelpuffer passen. Daher ist es wahrscheinlich ratsam,
+    <function>gc_collect_cycles</function> kurz vor dem Aufruf von
+    <function>gc_disable</function> aufzurufen, um den Speicher freizugeben,
+    der durch eventuell bereits im Wurzelpuffer aufgezeichnete Wurzeln
+    verloren gegangen sein könnte. Dadurch bleibt ein leerer Puffer übrig,
+    sodass mehr Platz für die Speicherung möglicher Wurzeln vorhanden ist,
+    während der Mechanismus zum Sammeln von Zyklen deaktiviert ist.
+   </para>
+  </sect1>
+
+  <sect1 xml:id="features.gc.performance-considerations">
+   <title>Leistungsrelevante Überlegungen</title>
+   <para>
+    Wie bereits im vorangegangenen Abschnitt erwähnt, wirkt sich das einfache
+    Sammeln der möglichen Wurzeln nur geringfügig auf die Leistung aus. Dies
+    gilt jedoch nur im Vergleich zwischen PHP 5.2 und PHP 5.3. Obwohl die
+    Aufzeichnung möglicher Wurzeln langsamer ist als wenn sie wie in PHP 5.2
+    überhaupt nicht aufgezeichnet werden, haben andere Änderungen an der
+    PHP-Laufzeit in PHP 5.3 verhindert, dass dieser spezielle Leistungsverlust
+    überhaupt sichtbar wird.
+   </para>
+   <para>
+    Es gibt zwei Hauptbereiche, in denen die Leistung betroffen ist. Der erste
+    Bereich ist die verringerte Speichernutzung und der zweite Bereich ist die
+    Laufzeitverzögerung, wenn der Mechanismus der Garbage Collection seine
+    Speicherbereinigungen durchführt. Um diese beiden Punkte geht es im
+    Folgenden.
+   </para>
+
+   <sect2 xml:id="features.gc.performance-considerations.reduced-mem">
+    <title>Verringerte Speichernutzung</title>
+    <para>
+     In erster Linie soll durch die Implementierung des Mechanismus der
+     Garbage Collection der Speicherverbrauch reduziert werden, indem zirkulär
+     referenzierte Variablen gelöscht werden, sobald die Voraussetzungen dafür
+     erfüllt sind. In der PHP-Implementierung geschieht dies, sobald der
+     Wurzelpuffer voll ist oder wenn die Funktion
+     <function>gc_collect_cycles</function> aufgerufen wird. Im folgenden
+     Diagramm wird der Speicherverbrauch eines Skripts sowohl in PHP 5.2 als
+     auch in PHP 5.3 dargestellt, wobei der Basisspeicher, den PHP selbst beim
+     Starten verwendet, nicht berücksichtigt wird.
+    </para>
+    <para>
+     <example>
+      <title>Beispiel für die Speichernutzung</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+class Foo
+{
+    public $var = '3.14159265359';
+}
+
+$baseMemory = memory_get_usage();
+
+for ( $i = 0; $i <= 100000; $i++ )
+{
+    $a = new Foo;
+    $a->self = $a;
+    if ( $i % 500 === 0 )
+    {
+        echo sprintf( '%8d: ', $i ), memory_get_usage() - $baseMemory, "\n";
+    }
+}
+?>
+]]>
+      </programlisting>
+      <mediaobject>
+       <alt>Vergleich der Speichernutzung von PHP 5.2 und PHP 5.3</alt>
+       <imageobject>
+        <imagedata fileref="en/features/figures/gc-benchmark.png" format="PNG"/>
+       </imageobject>
+      </mediaobject>
+     </example>
+    </para>
+    <para>
+     In diesem sehr theoretischen Beispiel wird ein Objekt erstellt, in dem
+     eine Eigenschaft so gesetzt wird, dass sie auf das Objekt selbst
+     zurückverweist. Wenn die Variable <varname>$a</varname> im Skript in der
+     nächsten Iteration der Schleife neu zugewiesen wird, kommt es
+     normalerweise zu einem Speicherleck. In diesem Fall sind zwei
+     zval-Container betroffen (das Objekt zval und die Eigenschaft zval), aber
+     es wird nur eine mögliche Wurzel gefunden: die Variable, die nicht
+     gesetzt wurde. Wenn der Wurzelpuffer nach 10.000 Iterationen (mit
+     insgesamt 10.000 möglichen Wurzeln) voll ist, setzt der Mechanismus der
+     Garbage Collection ein und gibt den mit diesen möglichen Wurzeln
+     verbundenen Speicher frei. Dies ist sehr deutlich in der gezackten Grafik
+     der Speichernutzung für PHP 5.3 zu sehen. Nach jeweils 10.000
+     Iterationen schaltet sich der Mechanismus ein und gibt den Speicher frei,
+     der mit den zirkulär referenzierten Variablen verbunden ist. Der
+     Mechanismus selbst muss in diesem Beispiel nicht viel Arbeit leisten, da
+     die Struktur, die das Leck aufweist, extrem einfach ist. Aus dem Diagramm
+     ist ersichtlich, dass der maximale Speicherverbrauch in PHP 5.3 etwa 9 MB
+     beträgt, während der Speicherverbrauch in PHP 5.2 stetig ansteigt.
+    </para>
+   </sect2>
+
+   <sect2 xml:id="features.gc.performance-considerations.slowdowns">
+    <title>Verzögerungen in der Laufzeit</title>
+    <para>
+     Der zweite Bereich, in dem der Mechanismus der Garbage Collection die
+     Leistung beeinflusst, ist die Zeit, die benötigt wird, wenn die Garbage
+     Collection einsetzt, um den "ausgelaufenen" Speicher freizugeben. Um zu
+     sehen, wieviel das ist, wird das vorherige Skript leicht abgeändert, um
+     eine größere Anzahl von Iterationen zu ermöglichen und die Zahlen für die
+     zwischenzeitliche Speichernutzung zu entfernen. Das zweite Skript ist
+     hier:
+    </para>
+    <para>
+     <example>
+      <title>Einfluss der GC auf die Leistung</title>
+      <programlisting role="php">
+<![CDATA[
+<?php
+class Foo
+{
+    public $var = '3.14159265359';
+}
+
+for ( $i = 0; $i <= 1000000; $i++ )
+{
+    $a = new Foo;
+    $a->self = $a;
+}
+
+echo memory_get_peak_usage(), "\n";
+?>
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Dieses Skript wird zweimal ausgeführt, einmal ist die Einstellung
+     <link linkend="ini.zend.enable-gc">zend.enable_gc</link> aktiviert und
+     einmal ist sie deaktiviert:
+    </para>
+    <para>
+     <example>
+      <title>Ausführen des obigen Skripts</title>
+      <programlisting role="shell">
+<![CDATA[
+time php -dzend.enable_gc=0 -dmemory_limit=-1 -n example2.php
+# und
+time php -dzend.enable_gc=1 -dmemory_limit=-1 -n example2.php
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Auf dem verwendeten Rechner scheint der erste Befehl konstant etwa 10,7
+     Sekunden zu dauern, während der zweite Befehl etwa 11,4 Sekunden
+     benötigt. Das ist eine Verlangsamung um etwa 7%. Der vom Skript maximal
+     benötigte Speicherplatz wird jedoch um 98% von 931 MB auf 10 MB
+     reduziert. Dieser Benchmark ist nicht sehr wissenschaftlich oder gar
+     repräsentativ für reale Anwendungen, aber er zeigt die Vorteile, die
+     dieser Mechanismus der Garbage Collection bei der Speichernutzung bietet.
+     Das Gute daran ist, dass die Verlangsamung bei diesem speziellen Skript
+     immer dieselben 7% beträgt, während die Fähigkeit, Speicher zu sparen,
+     immer mehr Speicher einspart, je mehr zirkuläre Referenzen während der
+     Ausführung des Skripts gefunden werden.
+    </para>
+   </sect2>
+
+   <sect2 xml:id="features.gc.performance-considerations.internal-stats">
+    <title>PHPs interne GC-Statistik</title>
+    <para>
+     Es ist möglich, PHP etwas mehr Informationen darüber zu entlocken, wie
+     der Mechanismus der Garbage Collection abläuft. Dazu muss PHP jedoch neu
+     kompiliert werden, um den Code für den Benchmark und die Datenerfassung
+     zu aktivieren. Bevor <literal>./configure</literal> mit den gewünschten
+     Optionen ausgeführt wird, muss die Umgebungsvariable
+     <literal>CFLAGS</literal> auf <literal>-DGC_BENCH=1</literal> gesetzt
+     werden. Die folgende Befehlsfolge sollte dafür genügen:
+    </para>
+    <para>
+     <example>
+      <title>PHP neu kompilieren, um das GC-Benchmarking zu aktivieren</title>
+      <programlisting role="shell">
+<![CDATA[
+export CFLAGS=-DGC_BENCH=1
+./config.nice
+make clean
+make
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Wenn der obige Beispielcode mit der neu erstellten PHP-Binärdatei erneut
+     ausgeführt wird, wird Folgendes angezeigt, nachdem PHP die Ausführung
+     beendet hat:
+    </para>
+    <para>
+     <example>
+      <title>GC-Statistik</title>
+      <programlisting role="shell">
+<![CDATA[
+GC Statistics
+-------------
+Runs:               110
+Collected:          2072204
+Root buffer length: 0
+Root buffer peak:   10000
+
+      Possible            Remove from  Marked
+        Root    Buffered     buffer     grey
+      --------  --------  -----------  ------
+ZVAL   7175487   1491291    1241690   3611871
+ZOBJ  28506264   1527980     677581   1025731
+]]>
+      </programlisting>
+     </example>
+    </para>
+    <para>
+     Die aufschlussreichste Statistik wird im ersten Block angezeigt. Hier ist
+     zu sehen, dass der Mechanismus der Garbage Collection 110 mal ausgeführt
+     wurde und bei diesen 110 Durchläufen insgesamt mehr als 2 Millionen
+     Speicherzuweisungen freigegeben wurden. Nachdem der Mechanismus der
+     Garbage Collection mindestens einmal gelaufen ist, beträgt der "Root
+     buffer peak" immer 10000.
+    </para>
+   </sect2>
+
+   <sect2 xml:id="features.gc.performance-considerations.conclusion">
+    <title>Zusammenfassung</title>
+    <para>
+     Im Allgemeinen führt der Garbage Collector in PHP nur dann zu einer
+     Verlangsamung, wenn der Algorithmus für die Zyklussammlung tatsächlich
+     ausgeführt wird, während es bei normalen (kleineren) Skripten zu
+     keinerlei Leistungseinbußen kommen sollte.
+    </para>
+    <para>
+     In den Fällen, in denen der Mechanismus für die Zyklussammlung bei
+     normalen Skripten ausgeführt wird, ermöglicht die damit verbundene
+     Reduzierung des Speicherbedarfs die gleichzeitige Ausführung von mehr
+     Skripten auf dem Server, da insgesamt weniger Speicher benötigt wird.
+    </para>
+    <para>
+     Die Vorteile sind am deutlichsten bei länger laufenden Skripten, z. B.
+     bei langen Testsuiten oder Daemon-Skripten. Auch für
+     <link xlink:href="&url.php.gtk;">PHP-GTK</link>-Anwendungen, die in der
+     Regel länger laufen als Skripte für das Web, sollte der neue Mechanismus
+     einen großen Unterschied in Bezug auf Speicherlecks machen, die sich mit
+     der Zeit einschleichen.
+    </para>
+   </sect2>
+  </sect1>
+ </chapter>
+
+<!-- Keep this comment at the end of the file
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
