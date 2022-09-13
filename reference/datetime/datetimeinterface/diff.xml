@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 1a9ee818e554e116b4721d432c6d671e14281ea0 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: bc70945d852c43eb03b4235e42af868d88931993 Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
 <refentry xml:id="datetime.diff" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
@@ -77,6 +77,14 @@
    <parameter>$targetObject</parameter> zu erhalten. Dieser Prozess ist nicht
    immer umkehrbar.
   </para>
+  <para>
+   Die Methode berücksichtigt die Zeitumstellung und kann daher ein Intervall
+   von <literal>24 Stunden und 30 Minuten</literal> zurückgeben, wie in einem
+   der Beispiele. Wenn mit absoluter Zeit gerechnet werden soll, müssen die
+   beiden Parameter
+   <parameter>$this</parameter>/<parameter>$baseObject</parameter> und
+   <parameter>$targetObject</parameter> zuerst in UTC umgewandelt werden.
+  </para>
  </refsect1>
 
  <refsect1 role="examples">
@@ -109,6 +117,25 @@ echo $interval->format('%R%a Tage');
    <screen>
 <![CDATA[
 +2 Tage
+]]>
+   </screen>
+  </example>
+  <example>
+   <title><methodname>DateTimeInterface::diff</methodname> während der Zeitumstellung</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$originalTime = new DateTimeImmutable("2021-10-30 09:00:00 Europe/London");
+$targedTime = new DateTimeImmutable("2021-10-31 08:30:00 Europe/London");
+$interval = $originalTime->diff($targedTime);
+echo $interval->format("%H:%I:%S (Full days: %a)"), "\n";
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+24:30:00 (Full days: 0)
 ]]>
    </screen>
   </example>
