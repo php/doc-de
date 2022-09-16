@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
 <!-- EN-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Maintainer: nobody Status: ready -->
-<!-- Reviewed: no -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Reviewer: samesch -->
 <refentry xml:id="mysqli-stmt.data-seek" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli_stmt::data_seek</refname>
   <refname>mysqli_stmt_data_seek</refname>
-  <refpurpose>Springt zu einem beliebigen Datensatz einer Ergebnismenge</refpurpose>
+  <refpurpose>Springt zu einer beliebigen Zeile der Ergebnismenge einer Abfrage</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -23,7 +24,8 @@
    <methodparam><type>int</type><parameter>offset</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Springt zu einem beliebigen Datensatz in der Ergebnismenge einer Abfrage.
+   Bewegt den Ergebniszeiger an eine beliebige Position in der Ergebnismenge
+   einer Abfrage.
   </para>
   <para>
    <function>mysqli_stmt_store_result</function> muss vor
@@ -40,8 +42,8 @@
      <term><parameter>offset</parameter></term>
      <listitem>
       <para>
-       Muss zwischen Null und der Anzahl der Datensätze - 1 liegen (0..
-       <function>mysqli_stmt_num_rows</function> - 1).
+       Muss zwischen Null und der Anzahl der Zeilen - 1 liegen (0..
+       <function>mysqli_stmt_num_rows</function> - 1)
       </para>
      </listitem>
     </varlistentry>
@@ -63,10 +65,10 @@
    <programlisting role="php">
 <![CDATA[
 <?php
-/* öffne Verbindung */
+/* Verbindung aufbauen */
 $mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
-/* prüfe Verbindung */
+/* Verbindung prüfen */
 if (mysqli_connect_errno()) {
     printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
     exit();
@@ -75,28 +77,28 @@ if (mysqli_connect_errno()) {
 $query = "SELECT Name, CountryCode FROM City ORDER BY Name";
 if ($stmt = $mysqli->prepare($query)) {
 
-    /* führe Abfrage aus */
+    /* Abfrage ausführen */
     $stmt->execute();
 
-    /* binde die Ergebnisvariablen an das Ergebnis */
+    /* die Ergebnisvariablen an das Ergebnis binden */
     $stmt->bind_result($name, $code);
 
-    /* rufe Ergebnismenge ab */
+    /* Ergebnismenge abrufen */
     $stmt->store_result();
 
-    /* gehe zu Datensatz Nr. 400 */
+    /* zu Zeile Nr. 400 springen */
     $stmt->data_seek(399);
 
-    /* rufe Werte ab */
+    /* Werte abrufen */
     $stmt->fetch();
 
     printf ("Stadt: %s  Ländercode: %s\n", $name, $code);
 
-    /* schließe Abfrage */
+    /* Abfrage schließen */
     $stmt->close();
 }
 
-/* schließe Verbindung */
+/* Verbindung schließen */
 $mysqli->close();
 ?>
 ]]>
@@ -107,10 +109,10 @@ $mysqli->close();
    <programlisting role="php">
 <![CDATA[
 <?php
-/* öffne Verbindung */
+/* Verbindung aufbauen */
 $link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
-/* prüfe Verbindung */
+/* Verbindung prüfen */
 if (mysqli_connect_errno()) {
     printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
     exit();
@@ -119,28 +121,28 @@ if (mysqli_connect_errno()) {
 $query = "SELECT Name, CountryCode FROM City ORDER BY Name";
 if ($stmt = mysqli_prepare($link, $query)) {
 
-    /* führe Abfrage aus */
+    /* Abfrage ausführen */
     mysqli_stmt_execute($stmt);
 
-    /* binde die Ergebnisvariablen an das Ergebnis */
+    /* die Ergebnisvariablen an das Ergebnis binden */
     mysqli_stmt_bind_result($stmt, $name, $code);
 
-    /* rufe Ergebnismenge ab */
+    /* Ergebnismenge abrufen */
     mysqli_stmt_store_result($stmt);
 
-    /* gehe zu Datensatz Nr. 400 */
+    /* zu Zeile Nr. 400 springen */
     mysqli_stmt_data_seek($stmt, 399);
 
-    /* rufe Werte ab */
+    /* Werte abrufen */
     mysqli_stmt_fetch($stmt);
 
     printf ("Stadt: %s  Ländercode: %s\n", $name, $code);
 
-    /* schließe Abfrage */
+    /* Abfrage schließen */
     mysqli_stmt_close($stmt);
 }
 
-/* schließe Verbindung */
+/* Verbindung schließen */
 mysqli_close($link);
 ?>
 ]]>
