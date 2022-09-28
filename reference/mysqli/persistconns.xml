@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: a714378ed87cdbdbde3b10ded183e8df7b243cb4 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<chapter xml:id="mysqli.persistconns" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+ <title>Die Erweiterung mysqli und persistente (beständige) Verbindungen</title>
+
+ <para>
+  Die Idee hinter persistenten Verbindungen ist, dass eine Verbindung zwischen
+  einem Client-Prozess und einer Datenbank von einem Client-Prozess mehrfach
+  verwendet werden kann, anstatt jedes Mal neu erstellt und zerstört zu
+  werden. Da ungenutzte Verbindungen zwischengespeichert werden und zur
+  Wiederverwendung bereitstehen, reduziert sich der Mehraufwand, der entsteht,
+  wenn jedes Mal eine neue Verbindung erstellt werden muss.
+ </para>
+
+ <para>
+  Im Gegensatz zur Erweiterung mysql bietet mysqli keine eigene Funktion zum
+  Öffnen von persistenten Verbindungen. Um eine persistente Verbindung zu
+  öffnen, muss dem Hostnamen beim Aufbau der Verbindung das Präfix
+  <literal>p:</literal> vorangestellt werden.
+ </para>
+
+ <para>
+  Das Problem bei persistenten Verbindungen ist, dass sie von Clients in
+  unvorhersehbaren Zuständen hinterlassen werden können. Zum Beispiel könnte
+  eine Tabellensperre aktiviert werden, bevor ein Client unerwartet beendet
+  wird. Ein neuer Client-Prozess, der diese persistente Verbindung
+  wiederverwendet, erhält die Verbindung <quote>as is</quote> (so wie sie
+  ist). Der neue Client-Prozess müsste alle notwendigen Aufräumarbeiten
+  durchführen, bevor er die persistente Verbindung sinnvoll nutzen kann, was
+  den Aufwand für den Programmierer erhöht.
+ </para>
+
+ <para>
+  Für diese Aufräumarbeiten ist in der persistenten Verbindung der
+  Erweiterung <literal>mysqli</literal> jedoch ein entsprechender Code
+  enthalten. Die Aufräumarbeiten, die von <literal>mysqli</literal>
+  durchgeführt werden, umfassen:
+ </para>
+
+ <itemizedlist>
+
+  <listitem>
+   <para>
+    das Rollback aktiver Transaktionen
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    das Schließen und Löschen temporärer Tabellen
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    das Entsperren von Tabellen
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    das Zurücksetzen von Sessionvariablen
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    das Schließen vorbereiteter Anweisungen (geschieht bei PHP immer)
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    das Schließen von Handlern
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    die Freigabe von Sperren, die mit <function>GET_LOCK</function> gesetzt wurden
+   </para>
+  </listitem>
+
+ </itemizedlist>
+
+ <para>
+  Dadurch wird sichergestellt, dass sich eine persistente Verbindungen in
+  einem bereinigten Zustand befindet, wenn sie aus dem Verbindungs-Pool
+  abgerufen wird, bevor der Client-Prozess sie verwendet.
+ </para>
+
+ <para>
+  Die Erweiterung <literal>mysqli</literal> erledigt diese Bereinigung durch
+  den automatischen Aufruf der C-API-Funktion
+  <literal>mysql_change_user()</literal>.
+ </para>
+
+ <para>
+  Die automatisierte Bereinigung hat jedoch Vor- und Nachteile. Der Vorteil
+  ist, dass der Programmierer sich nicht mehr darum kümmern muss, den
+  Bereinigungscode hinzuzufügen, da er automatisch aufgerufen wird. Der
+  Nachteil ist jedoch, dass der Code <emphasis>eventuell</emphasis> etwas
+  langsamer sein könnte, da er zur Durchführung der Bereinigung jedes Mal
+  ausgeführt werden muss, wenn eine Verbindung aus dem Verbindungs-Pool
+  abgerufen wird.
+ </para>
+
+ <para>
+  Der Code für die automatische Bereinigung kann abgeschaltet werden, indem
+  PHP mit der Option <constant>MYSQLI_NO_CHANGE_USER_ON_PCONNECT</constant>
+  kompiliert wird.
+ </para>
+
+ <note>
+  <para>
+   Die Erweiterung <literal>mysqli</literal> unterstützt persistente
+   Verbindungen, wenn sie entweder den MySQL Native Driver oder die MySQL
+   Client Library verwendet.
+  </para>
+ </note>
+
+</chapter>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
