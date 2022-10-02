@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: d68e83b719028bb068785cccc3205c23be530564 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<refentry xml:id="mysqli.change-user" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysqli::change_user</refname>
+  <refname>mysqli_change_user</refname>
+  <refpurpose>Ändert den Benutzer der angegebenen Datenbankverbindung</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <para>&style.oop;</para>
+  <methodsynopsis role="oop">
+   <modifier>public</modifier> <type>bool</type><methodname>mysqli::change_user</methodname>
+   <methodparam><type>string</type><parameter>username</parameter></methodparam>
+   <methodparam><type>string</type><parameter>password</parameter></methodparam>
+   <methodparam><type class="union"><type>string</type><type>null</type></type><parameter>database</parameter></methodparam>
+  </methodsynopsis>
+  <para>&style.procedural;</para>
+  <methodsynopsis role="procedural">
+   <type>bool</type><methodname>mysqli_change_user</methodname>
+   <methodparam><type>mysqli</type><parameter>mysql</parameter></methodparam>
+   <methodparam><type>string</type><parameter>username</parameter></methodparam>
+   <methodparam><type>string</type><parameter>password</parameter></methodparam>
+   <methodparam><type class="union"><type>string</type><type>null</type></type><parameter>database</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Ändert den Benutzer der angegebenen Datenbankverbindung und legt die
+   aktuelle Datenbank fest.
+  </para>
+  <para>
+   Für einen erfolgreichen Benutzerwechsel müssen gültige Werte für die
+   Parameter <parameter>username</parameter> und
+   <parameter>password</parameter> angegeben werden und der Benutzer muss über
+   ausreichende Berechtigungen für den Zugriff auf die gewünschte Datenbank
+   verfügen. Wenn die Autorisierung aus irgendeinem Grund fehlschlägt, bleibt
+   die aktuelle Benutzerauthentifizierung unverändert.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysqli.link.description;
+    <varlistentry>
+     <term><parameter>username</parameter></term>
+     <listitem>
+      <para>
+       Der MySQL-Benutzername
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>password</parameter></term>
+     <listitem>
+      <para>
+       Das MySQL-Passwort
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>database</parameter></term>
+     <listitem>
+      <para>
+       Die Datenbank, zu der gewechselt werden soll
+      </para>
+      <para>
+       Falls gewünscht, kann der Wert &null; übergeben werden, was dazu führt,
+       dass nur der Benutzer gewechselt und keine Datenbank ausgewählt wird.
+       Um in diesem Fall eine Datenbank auszuwählen, muss die Funktion
+       <function>mysqli_select_db</function> verwendet werden.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title><methodname>mysqli::change_user</methodname>-Beispiel</title>
+   <para>&style.oop;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+/* Verbindung zur Datenbank test aufbauen */
+$mysqli = new mysqli("localhost", "my_user", "my_password", "test");
+
+/* Verbindung überprüfen */
+if (mysqli_connect_errno()) {
+    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
+    exit();
+}
+
+/* Variable a setzen */
+$mysqli->query("SET @a:=1");
+
+/* alles zurücksetzen und eine neue Datenbank auswählen */
+$mysqli->change_user("my_user", "my_password", "world");
+
+if ($result = $mysqli->query("SELECT DATABASE()")) {
+    $row = $result->fetch_row();
+    printf("Standard-Datenbank: %s\n", $row[0]);
+    $result->close();
+}
+
+if ($result = $mysqli->query("SELECT @a")) {
+    $row = $result->fetch_row();
+    if ($row[0] === NULL) {
+        printf("Der Wert der Variable a ist NULL\n");
+    }
+    $result->close();
+}
+
+/* Verbindung schließen */
+$mysqli->close();
+?>
+]]>
+   </programlisting>
+   <para>&style.procedural;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Verbindung zur Datenbank test aufbauen */
+$link = mysqli_connect("localhost", "my_user", "my_password", "test");
+
+/* Verbindung überprüfen */
+if (!$link) {
+    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
+    exit();
+}
+
+/* Variable a setzen */
+mysqli_query($link, "SET @a:=1");
+
+/* alles zurücksetzen und eine neue Datenbank auswählen */
+mysqli_change_user($link, "my_user", "my_password", "world");
+
+if ($result = mysqli_query($link, "SELECT DATABASE()")) {
+    $row = mysqli_fetch_row($result);
+    printf("Standard-Datenbank: %s\n", $row[0]);
+    mysqli_free_result($result);
+}
+
+if ($result = mysqli_query($link, "SELECT @a")) {
+    $row = mysqli_fetch_row($result);
+    if ($row[0] === NULL) {
+        printf("Der Wert der Variable a ist NULL\n");
+    }
+    mysqli_free_result($result);
+}
+
+/* Verbindung schließen */
+mysqli_close($link);
+?>
+]]>
+   </programlisting>
+   &examples.outputs;
+   <screen>
+<![CDATA[
+Standard-Datenbank: world
+Der Wert der Variable a ist NULL
+]]>
+   </screen>
+  </example>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    Wenn dieser Befehl verwendet wird, verhält sich die aktuelle
+    Datenbankverbindung immer so, als ob es sich um eine völlig neue
+    Datenbankverbindung handelt, unabhängig davon, ob der Vorgang erfolgreich
+    abgeschlossen wurde. Mit diesem Zurücksetzen werden auch alle aktiven
+    Transaktionen zurückgesetzt, alle temporären Tabellen geschlossen und alle
+    gesperrten Tabellen entsperrt.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysqli_connect</function></member>
+    <member><function>mysqli_select_db</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
