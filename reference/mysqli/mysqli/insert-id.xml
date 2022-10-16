@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: c85c9d1d4429496b45f03cd5e77e896821b4f7f3 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<refentry xml:id="mysqli.insert-id" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysqli::$insert_id</refname>
+  <refname>mysqli_insert_id</refname>
+  <refpurpose>Liefert den Wert, der bei der letzten Anweisung für die AUTO_INCREMENT-Spalte erzeugt wurde</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <para>&style.oop;</para>
+  <fieldsynopsis><type class="union"><type>int</type><type>string</type></type><varname linkend="mysqli.insert-id">mysqli-&gt;insert_id</varname></fieldsynopsis>
+  <para>&style.procedural;</para>
+  <methodsynopsis>
+   <type class="union"><type>int</type><type>string</type></type><methodname>mysqli_insert_id</methodname>
+   <methodparam><type>mysqli</type><parameter>mysql</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Gibt die ID zurück, die durch eine <literal>INSERT</literal>- oder
+   <literal>UPDATE</literal>-Anweisung für eine Tabelle mit einer Spalte mit
+   dem Attribut <literal>AUTO_INCREMENT</literal> erzeugt wurde. Im Fall
+   einer <literal>INSERT</literal>-Anweisung für mehrere Zeilen, wird der
+   erste automatisch erzeugte Wert zurückgegeben, der erfolgreich eingefügt
+   wurde.
+  </para>
+  <para>
+   Wenn eine <literal>INSERT</literal>- oder
+   <literal>UPDATE</literal>-Anweisung mit der MySQL-Funktion
+   <literal>LAST_INSERT_ID()</literal> ausgeführt wird, wird auch der von
+   <function>mysqli_insert_id</function> zurückgegebene Wert geändert. Wenn
+   <literal>LAST_INSERT_ID(expr)</literal> verwendet wurde, um den Wert von
+   <literal>AUTO_INCREMENT</literal> zu erzeugen, wird der Wert des letzten
+   Ausdrucks <literal>expr</literal> anstelle des erzeugten
+   <literal>AUTO_INCREMENT</literal>-Werts zurückgegeben.
+  </para>
+  <para>
+   Gibt <literal>0</literal> zurück, wenn die vorherige Anweisung einen
+   <literal>AUTO_INCREMENT</literal>-Wert nicht verändert hat.
+   <function>mysqli_insert_id</function> muss unmittelbar nach der Anweisung
+   aufgerufen werden, die den Wert erzeugt hat.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysqli.link.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt den Wert der <literal>AUTO_INCREMENT</literal>-Spalte zurück, die
+   durch die vorherige Anweisung aktualisiert wurde. Gibt Null zurück, wenn es
+   keine vorherige Anweisung für die Verbindung gab oder wenn die Anweisung
+   keinen <literal>AUTO_INCREMENT</literal>-Wert aktualisiert hat.
+  </para>
+  <para>
+   Nur Anweisungen, die über die aktuelle Verbindung gesendet werden,
+   beeinflussen den Rückgabewert. Der Wert wird nicht von Anweisungen
+   beeinflusst, die über andere Verbindungen oder Clients ausgegeben werden.
+  </para>
+  <note>
+   <para>
+    Wenn die Zahl größer ist als der maximale int-Wert, wird sie als
+    Zeichenkette zurückgegeben.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title><varname>$mysqli-&gt;insert_id</varname>-Beispiel</title>
+   <para>&style.oop;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+$mysqli->query("CREATE TABLE myCity LIKE City");
+
+$query = "INSERT INTO myCity VALUES (NULL, 'Stuttgart', 'DEU', 'Stuttgart', 617000)";
+$mysqli->query($query);
+
+printf("Der neue Datensatz hat die ID %d.\n", $mysqli->insert_id);
+
+/* Tabelle löschen */
+$mysqli->query("DROP TABLE myCity");
+]]>
+   </programlisting>
+   <para>&style.procedural;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
+
+mysqli_query($link, "CREATE TABLE myCity LIKE City");
+
+$query = "INSERT INTO myCity VALUES (NULL, 'Stuttgart', 'DEU', 'Stuttgart', 617000)";
+mysqli_query($link, $query);
+
+printf("Der neue Datensatz hat die ID %d.\n", mysqli_insert_id($link));
+
+/* Tabelle löschen */
+mysqli_query($link, "DROP TABLE myCity");
+]]>
+   </programlisting>
+   &examples.outputs;
+   <screen>
+<![CDATA[
+Der neue Datensatz hat die ID 1.
+]]>
+   </screen>
+  </example>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->

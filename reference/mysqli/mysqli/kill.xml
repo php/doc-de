@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<refentry xml:id="mysqli.kill" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysqli::kill</refname>
+  <refname>mysqli_kill</refname>
+  <refpurpose>Weist den Server an, einen MySQL-Thread zu beenden</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <para>&style.oop;</para>
+  <methodsynopsis role="oop">
+   <modifier>public</modifier> <type>bool</type><methodname>mysqli::kill</methodname>
+   <methodparam><type>int</type><parameter>process_id</parameter></methodparam>
+  </methodsynopsis>
+  <para>&style.procedural;</para>
+  <methodsynopsis role="procedural">
+   <type>bool</type><methodname>mysqli_kill</methodname>
+   <methodparam><type>mysqli</type><parameter>mysql</parameter></methodparam>
+   <methodparam><type>int</type><parameter>process_id</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Diese Funktion wird verwendet, um den Server aufzufordern, den durch den
+   Parameter <parameter>process_id</parameter> angegebenen MySQL-Thread zu
+   beenden. Dieser Wert muss mit der Funktion
+   <function>mysqli_thread_id</function> abgefragt werden.
+  </para>
+  <para>
+   Um eine laufende Abfrage zu beenden, sollte der SQL-Befehl
+   <literal>KILL QUERY processid</literal> verwendet werden.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysqli.link.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.success;
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title><methodname>mysqli::kill</methodname>-Beispiel</title>
+   <para>&style.oop;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+/* Verbindung überprüfen */
+if (mysqli_connect_errno()) {
+    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
+    exit();
+}
+
+/* Ermitteln der Thread-ID */
+$thread_id = $mysqli->thread_id;
+
+/* Verbindung beenden */
+$mysqli->kill($thread_id);
+
+/* Dies sollte einen Fehler erzeugen */
+if (!$mysqli->query("CREATE TABLE myCity LIKE City")) {
+    printf("Fehler: %s\n", $mysqli->error);
+    exit;
+}
+
+/* Verbindung schließen */
+$mysqli->close();
+?>
+]]>
+   </programlisting>
+   <para>&style.procedural;</para>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
+
+/* Verbindung überprüfen */
+if (mysqli_connect_errno()) {
+    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
+    exit();
+}
+
+/* Ermitteln der Thread-ID */
+$thread_id = mysqli_thread_id($link);
+
+/* Verbindung beenden */
+mysqli_kill($link, $thread_id);
+
+/* Dies sollte einen Fehler erzeugen */
+if (!mysqli_query($link, "CREATE TABLE myCity LIKE City")) {
+    printf("Fehler: %s\n", mysqli_error($link));
+    exit;
+}
+
+/* Verbindung schließen */
+mysqli_close($link);
+?>
+]]>
+   </programlisting>
+   &examples.outputs;
+   <screen>
+<![CDATA[
+Fehler: MySQL server has gone away
+]]>
+   </screen>
+  </example>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysqli_thread_id</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
