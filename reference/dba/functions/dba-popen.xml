@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b95d28e6ec86e4a71e012737d36ebdc1cf009180 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 9264401165d31437c4afd80ec936f775ae23d367 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
 <refentry xml:id="function.dba-popen" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>dba_popen</refname>
@@ -13,8 +14,10 @@
    <type class="union"><type>resource</type><type>false</type></type><methodname>dba_popen</methodname>
    <methodparam><type>string</type><parameter>path</parameter></methodparam>
    <methodparam><type>string</type><parameter>mode</parameter></methodparam>
-   <methodparam choice="opt"><type>string</type><parameter>handler</parameter></methodparam>
-   <methodparam rep="repeat"><type>mixed</type><parameter>args</parameter></methodparam>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>handler</parameter><initializer>&null;</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>permission</parameter><initializer>0644</initializer></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>map_size</parameter><initializer>0</initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>int</type><type>null</type></type><parameter>flags</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
    <function>dba_popen</function> stellt eine persistente Datenbankinstanz für
@@ -31,7 +34,7 @@
      <term><parameter>path</parameter></term>
      <listitem>
       <para>
-       Ein gültiger Pfad in Ihrem Dateisystem.
+       Ein gültiger Pfad im Dateisystem.
       </para>
      </listitem>
     </varlistentry>
@@ -42,9 +45,9 @@
        Das ist <literal>r</literal> für lesenden Zugriff, <literal>w</literal>
        für lesenden und schreibenden Zugriff auf eine existierende Datenbank,
        <literal>c</literal> für lesenden und schreibenden Zugriff und
-       Erstellen der Datenbank, falls sie noch nicht existiert und
+       Erstellen der Datenbank, falls sie noch nicht existiert, und
        <literal>n</literal> für das Erstellen einer Datenbank, bzw. deren
-       Zurücksetzen auf die Größe 0, falls sie schon existiert und lesenden
+       Zurücksetzen auf die Größe 0, falls sie schon existiert, und lesenden
        und schreibenden Zugriff.
       </para>
      </listitem>
@@ -53,44 +56,57 @@
      <term><parameter>handler</parameter></term>
      <listitem>
       <para>
-       Der Name des <link linkend="dba.requirements">handler</link>s, der für
+       Der Name des <link linkend="dba.requirements">Handler</link>s, der für
        den Zugriff auf <parameter>path</parameter> benutzt werden soll. Er
-       bekommt alle optionalen Argumente, die der Funktion
-       <function>dba_popen</function> mitgegeben wurden, übergeben und kann
-       damit in deren Name verfahren.
+       bekommt alle optionalen Argumente übergeben, die der Funktion
+       <function>dba_popen</function> mitgegeben wurden, und kann damit in
+       deren Name verfahren. Wenn <parameter>handler</parameter> &null; ist,
+       wird der Standard-Handler aufgerufen.
       </para>
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term><parameter>args</parameter></term>
+     <term><parameter>permission</parameter></term>
      <listitem>
       <para>
-       Optionale &string;-Parameter, die an den Treiber übergeben werden.
+       Ein optionaler &integer;-Parameter, der an den Treiber übergeben wird.
+       Er hat dieselbe Bedeutung wie der Parameter
+       <literal>permissions</literal> bei <function>chmod</function>. Der
+       Standardwert ist <literal>0644</literal>.
       </para>
       <para>
-       Die <literal>cdb</literal>-, <literal>cdb_make</literal>-,
-       <literal>flatfile</literal>-, <literal>inifile</literal>-,
-       <literal>qdbm</literal>- und <literal>tcadb</literal>-Treiber
-       unterstützen keine zusätzlichen Parameter.
-      </para>
-      <para>
-       Die <literal>db1</literal>-, <literal>db2</literal>-,
+       Der Parameter <parameter>permission</parameter> wird vom
+       <literal>db1</literal>-, <literal>db2</literal>-,
        <literal>db3</literal>-, <literal>db4</literal>-,
-       <literal>dbm</literal>-, <literal>gdbm</literal>- und
-       <literal>ndbm</literal>-Treiber unterstützen einen zusätzlichen
-       Parameter <literal>$filemode</literal>, der die gleiche Bedeutung hat
-       wie der <literal>$mode</literal>-Parameter in
-       <function>chmod</function> und den Standardwert <literal>0644</literal>
-       hat.
+       <literal>dbm</literal>-, <literal>gdbm</literal>-,
+       <literal>ndbm</literal>- und <literal>lmdb</literal>-Treiber
+       unterstützt.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>map_size</parameter></term>
+     <listitem>
+      <para>
+       Ein optionaler &integer;-Parameter, der an den Treiber übergeben wird.
+       Sein Wert sollte ein Vielfaches der Größe einer Speicherseite (Page
+       Size) des Betriebssystems sein. Wenn Null angegeben wird, wird die
+       Standard-Map-Size verwendet.
       </para>
       <para>
-       Der <literal>lmdb</literal>-Treiber akzeptiert zwei zusätzliche
-       Parameter. Der erste erlaubt es den <literal>$filemode</literal>
-       anzugeben (siehe Beschreibung weiter oben), und der zweite die
-       <literal>$mapsize</literal>, wobei der Wert ein Vielfaches der Pagesize
-       des Betriebssystems sein sollte, oder Null, um die voreingestellte
-       Mapsize zu verwenden. Der <literal>$mapsize</literal>-Parameter wird ab
-       PHP 7.3.14 bzw. 7.4.2 unterstützt.
+       Der Parameter <parameter>map_size</parameter> wird nur vom
+       <literal>lmdb</literal>-Treiber akzeptiert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+       Die Flags, die an den Datenbanktreiber übergeben werden. Derzeit
+       unterstützt nur der LMDB-Treiber die Flags
+       <constant>DBA_LMDB_USE_SUB_DIR</constant> und
+       <constant>DBA_LMDB_NO_SUB_DIR</constant>.
       </para>
      </listitem>
     </varlistentry>
@@ -105,6 +121,51 @@
   </para>
  </refsect1>
 
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <para>
+   Wenn <parameter>handler</parameter> &null; ist, aber kein Standard-Handler
+   zur Verfügung steht, wird &false; zurückgegeben und ein Fehler der Stufe
+   <constant>E_WARNING</constant> ausgegeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.2.0</entry>
+      <entry>
+       Der Parameter <parameter>flags</parameter> wurde hinzugefügt.
+      </entry>
+     </row>
+     <row>
+      <entry>8.1.0</entry>
+      <entry>
+       Der Parameter <parameter>handler</parameter> ist nun nullable
+       (akzeptiert den &null;-Wert).
+      </entry>
+     </row>
+     <row>
+      <entry>7.3.14, 7.4.2</entry>
+      <entry>
+       Der <literal>lmdb</literal>-Treiber unterstützt nun zusätzlich den
+       Parmeter <parameter>map_size</parameter>.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -116,7 +177,6 @@
  </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
