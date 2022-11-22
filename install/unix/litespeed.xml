@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 7d5b86855e408d3d15fea8f805032cda610df7e1 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<sect1 xml:id="install.unix.litespeed" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>LiteSpeed-/OpenLiteSpeed-Webserver auf Unix-Systemen</title>
+
+ <para>
+  LiteSpeed PHP ist ein PHP-Build, das für die Verwendung mit
+  LiteSpeed-Produkten über das LiteSpeed-SAPI optimiert wurde. LSPHP läuft als
+  eigener Prozess und verfügt über eine eigenständige Binärdatei, die als
+  einfache Befehlszeilen-Binärdatei zur Ausführung von PHP-Skripten über die
+  Befehlszeile verwendet werden kann.
+ </para>
+
+ <para>
+  Die LSAPI ist eine hochoptimierte API, die die Kommunikation zwischen
+  LiteSpeed und Web-Engines von Drittanbietern ermöglicht. Ihr Protokoll
+  ähnelt dem FCGI, ist aber effizienter.
+ </para>
+
+ <para>
+  Diese Dokumentation beschreibt die Installation und Konfiguration von PHP
+  mit LSAPI für den LiteSpeed-Webserver und den OpenLiteSpeed-Webserver.
+ </para>
+
+ <para>
+  In dieser Anleitung wird davon ausgegangen, dass entweder LSWS oder OLS
+  unter Verwendung der jeweiligen Standardpfade und -flags installiert wurde.
+  Das standardmäßige Installationsverzeichnis für beide Webserver ist
+  /usr/local/lsws und beide können aus dem Unterverzeichnis bin gestartet
+  werden.
+ </para>
+
+ <para>
+  Bitte beachten Sie, dass in dieser Dokumentation die Versionsnummern durch
+  ein <literal>x</literal> ersetzt wurden, um sicherzustellen, dass diese
+  Dokumentation auch in Zukunft korrekt bleibt. Bitte ersetzen Sie diese,
+  falls erforderlich, durch die entsprechenden Versionsnummern.
+ </para>
+
+ <orderedlist>
+  <listitem>
+   <para>
+    Um entweder den LiteSpeed-Webserver oder den OpenLiteSpeed-Webserver
+    herunterzuladen und zu installieren, besuchen Sie die
+    <link xlink:href="https://docs.litespeedtech.com/products/lsws/installation/">Installationsseite</link>
+    der LiteSpeed-Dokumentation oder die
+    <link xlink:href="https://openlitespeed.org/kb/category/installation/more-installation-methods/">Installationsseite</link>
+    der OpenLiteSpeed-Dokumentation.
+   </para>
+  </listitem>
+
+  <listitem>
+   <para>
+    Herunterladen und Entpacken des PHP-Quellcodes:
+   </para>
+
+   <informalexample xml:id="install.unix.litespeed.extract.php">
+    <screen>
+<![CDATA[
+mkdir /home/php
+cd /home/php
+wget http://us1.php.net/get/php-x.x.x.tar.gz/von/diesem/mirror
+tar -zxvf php-x.x.x.tar.gz
+cd php-x.x.x
+]]>
+    </screen>
+   </informalexample>
+  </listitem>
+
+  <listitem>
+   <para>
+    Konfigurieren und erstellen Sie PHP. Hier können Sie PHP mit verschiedenen
+    Optionen anpassen, &zb; welche Erweiterungen aktiviert werden sollen.
+    Führen Sie ./configure --help aus, um eine Liste der verfügbaren Optionen
+    zu erhalten. In diesem Beispiel verwenden wir die empfohlenen
+    Standardoptionen für die Konfiguration des LiteSpeed-Webservers:
+   </para>
+
+   <informalexample xml:id="install.unix.litespeed.build.php">
+    <screen>
+<![CDATA[
+./configure ... '--with-litespeed'
+make
+sudo make install
+]]>
+    </screen>
+   </informalexample>
+  </listitem>
+
+  <listitem>
+   <para>
+    Überprüfen der LSPHP-Installation
+   </para>
+
+   <para>
+    Eine der einfachsten Möglichkeiten zu überprüfen, ob die Installation von
+    PHP erfolgreich war, ist, den folgenden Code auszuführen:
+   </para>
+
+   <informalexample>
+    <screen>
+<![CDATA[
+cd /usr/local/lsws/fcgi-bin/
+./lsphp5 -v
+]]>
+    </screen>
+   </informalexample>
+
+   <para>
+    Dies sollte Informationen über den neuen PHP-Build zurückgeben:
+   </para>
+
+   <informalexample>
+    <screen>
+<![CDATA[
+PHP 5.6.17 (litespeed) (built: Mar 22 2016 11:34:19)
+Copyright (c) 1997-2014 The PHP Group
+Zend Engine v2.6.0, Copyright (c) 1998-2015 Zend Technologies
+]]>
+    </screen>
+   </informalexample>
+
+   <para>
+    Beachten Sie das <literal>litespeed</literal> in Klammern. Dies bedeutet,
+    dass die PHP-Binärdatei mit LSAPI-Unterstützung erstellt wurde.
+   </para>
+  </listitem>
+ </orderedlist>
+
+ <para>
+  Nach den oben beschriebenen Schritten sollte der
+  LiteSpeed-/OpenLiteSpeed-Webserver nun als SAPI-Erweiterung mit
+  Unterstützung für PHP laufen. Es gibt noch viele weitere Möglichkeiten der
+  Konfiguration von LSWS/OLS und PHP. Weitere Informationen finden Sie in der
+  LiteSpeed-Dokumentation über
+  <link xlink:href="https://docs.litespeedtech.com/extapp/php/configuration/control/">PHP</link>.
+ </para>
+
+ <para>
+  Verwendung von LSPHP über die Befehlszeile:
+ </para>
+
+ <para>
+  Der LSPHP- (LSAPI + PHP) Befehlszeilenmodus wird verwendet, um PHP-Skripte
+  auf einem entfernten Server zu verarbeiten, auf dem nicht unbedingt ein
+  Webserver läuft. Er wird verwendet, um PHP-Skripte zu verarbeiten, die sich
+  auf einem (separaten) lokalen Webserver befinden. Da die PHP-Verarbeitung
+  auf einen entfernten Server verlagert wird, eignet sich diese Konfiguration
+  für die Skalierbarkeit von Diensten.
+ </para>
+
+ <para>
+  LSPHP von der Befehlszeile auf einem entfernten Server starten:
+  LSPHP ist eine ausführbare Datei, die manuell gestartet und mit der
+  Kommandozeilenoption -b socket_address an eine IPv4-, IPv6- oder
+  Unix-Domain-Socket-Adresse gebunden werden kann.
+ </para>
+
+ <para>
+  Beispiele:
+ </para>
+
+ <para>
+  LSPHP soll sich auf allen IPv4- und IPv6-Adressen an Port 3000 binden:
+ </para>
+
+ <informalexample>
+  <screen>
+<![CDATA[
+/path/to/lsphp -b [::]:3000
+]]>
+  </screen>
+ </informalexample>
+
+ <para>
+  LSPHP soll sich auf allen IPv4-Adressen an Port 3000 binden:
+ </para>
+
+ <informalexample>
+  <screen>
+<![CDATA[
+/path/to/lsphp -b *:3000
+]]>
+  </screen>
+ </informalexample>
+
+ <para>
+  LSPHP soll sich an die Adresse 192.168.0.2:3000 binden:
+ </para>
+
+ <informalexample>
+  <screen>
+<![CDATA[
+/path/to/lsphp -b 192.168.0.2:3000
+]]>
+  </screen>
+ </informalexample>
+
+ <para>
+  LSPHP soll Anfragen auf dem Unix-Domain-Socket
+  <literal>/tmp/lsphp_manual.sock</literal> annehmen:
+ </para>
+
+ <informalexample>
+  <screen>
+<![CDATA[
+/path/to/lsphp -b /tmp/lsphp_manual.sock
+]]>
+  </screen>
+ </informalexample>
+
+ <para>
+  Umgebungsvariablen können vor der ausführbaren LSPHP-Datei hinzugefügt werden:
+ </para>
+
+ <informalexample>
+  <screen>
+<![CDATA[
+PHP_LSAPI_MAX_REQUESTS=500 PHP_LSAPI_CHILDREN=35 /path/to/lsphp -b IP_address:port
+]]>
+  </screen>
+ </informalexample>
+
+ <para>
+  Derzeit kann LiteSpeed PHP mit dem LiteSpeed-Webserver, dem
+  OpenLiteSpeed-Webserver und mit mod_lsapi von Apache verwendet werden.
+  Anweisungen für die serverseitige Konfiguration finden Sie in den
+  entsprechenden Dokumentationsseiten für den
+  <link xlink:href="https://docs.litespeedtech.com/extapp/php/getting_started/">LiteSpeed-Webserver</link>
+  und <link xlink:href="https://openlitespeed.org/kb/category/installation/php-installation-guides/">OpenLiteSpeed</link>.
+ </para>
+
+ <para>
+  LSPHP kann auf verschiedene Arten installiert werden.
+ </para>
+
+ <para>
+  CentOS:
+  Unter CentOS kann LSPHP mittels
+  <link xlink:href="https://docs.litespeedtech.com/extapp/php/getting_started/#litespeed-repo-search-packages">RPM</link>
+  aus dem LiteSpeed- oder dem Remi-Repositorium installiert werden.
+ </para>
+
+ <para>
+  Debian:
+  Unter Debian kann LSPHP mittels
+  <link xlink:href="https://docs.litespeedtech.com/extapp/php/getting_started/#litespeed-repo-search-packages">apt</link>
+  aus dem LiteSpeed-Repositorium installiert werden.
+ </para>
+
+ <para>
+  cPanel:
+  Die Installation von LSPHP mit cPanel und LSWS/OLS unter Verwendung von
+  EasyApache 4 wird auf der entsprechenden
+  <link xlink:href="https://docs.litespeedtech.com/cp/cpanel/quickstart/#easyapache-integration">Dokumentationsseite</link>
+  beschrieben.
+ </para>
+
+ <para>
+  Plesk:
+  Plesk kann mit LSPHP auf CentOS, CloudLinux, Debian und Ubuntu verwendet
+  werden. Weitere Details hierzu finden Sie auf der jeweiligen
+  <link xlink:href="https://docs.litespeedtech.com/cp/plesk/">Dokumentationsseite</link>.
+ </para>
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
