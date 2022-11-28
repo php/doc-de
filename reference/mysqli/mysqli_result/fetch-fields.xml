@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 52779f983f5fc2130c741fde46d84db77d6bbf5b Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<refentry xml:id="mysqli-result.fetch-fields" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>mysqli_result::fetch_fields</refname>
+  <refname>mysqli_fetch_fields</refname>
+  <refpurpose>Liefert ein Array von Objekten, die die Spalten einer Ergebnismenge darstellen</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <para>&style.oop;</para>
+  <methodsynopsis role="oop">
+   <modifier>public</modifier> <type>array</type><methodname>mysqli_result::fetch_fields</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>&style.procedural;</para>
+  <methodsynopsis role="procedural">
+   <type>array</type><methodname>mysqli_fetch_fields</methodname>
+   <methodparam><type>mysqli_result</type><parameter>result</parameter></methodparam>
+  </methodsynopsis>
+
+  <para>
+   Diese Funktion erfüllt den gleichen Zweck wie die Funktion
+   <function>mysqli_fetch_field</function>, mit dem einzigen Unterschied, dass
+   die Spalten als Array von Objekten zurückgegeben werden, anstatt für jede
+   Spalte ein einzelnes Objekt zurückzugeben.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    &mysqli.result.description;
+   </variablelist>
+  </para>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt ein Array von Objekten zurück, die Informationen über die Definition
+   der Spalten enthalten.
+  </para>
+  <para>
+   <table xml:id="mysqli-result.fetch-fields.returnvalues">
+    <title>Eigenschaften des Objekts</title>
+    <tgroup cols="2">
+     <thead>
+      <row>
+       <entry>Eigenschaft</entry>
+       <entry>&Description;</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>name</entry>
+       <entry>Der Name der Spalte</entry>
+      </row>
+      <row>
+       <entry>orgname</entry>
+       <entry>Der ursprüngliche Name der Spalte, falls ein Alias angegeben wurde</entry>
+      </row>
+      <row>
+       <entry>table</entry>
+       <entry>Der Name der Tabelle, zu der diese Spalte gehört (falls nicht berechnet)</entry>
+      </row>
+      <row>
+       <entry>orgtable</entry>
+       <entry>Der ursprüngliche Name der Tabelle, falls ein Alias angegeben wurde</entry>
+      </row>
+      <row>
+       <entry>max_length</entry>
+       <entry>Die maximale Breite der Spalte für die Ergebnismenge</entry>
+      </row>
+      <row>
+       <entry>length</entry>
+       <entry>
+        Die Breite der Spalte in Bytes, wie in der Tabellendefinition
+        angegeben. Es ist zu beachten, dass diese Zahl (Bytes) je nach
+        verwendetem Zeichensatz vom Wert in der Tabellendefinition (Zeichen)
+        abweichen kann. Zum Beispiel hat der Zeichensatz utf8 3 Bytes pro
+        Zeichen, so dass varchar(10) für utf8 (10*3) eine Länge von 30
+        zurückgibt, für latin1 (10*1) jedoch 10.
+       </entry>
+      </row>
+      <row>
+       <entry>charsetnr</entry>
+       <entry>Die Nummer (ID) des Zeichensatzes der Spalte</entry>
+      </row>
+      <row>
+       <entry>flags</entry>
+       <entry>Ein Integer, der die Bit-Flags der Spalte darstellt</entry>
+      </row>
+      <row>
+       <entry>type</entry>
+       <entry>Der für diese Spalte verwendete Datentyp</entry>
+      </row>
+      <row>
+       <entry>decimals</entry>
+       <entry>Die Anzahl der verwendeten Dezimalstellen (bei Integer-Spalten)</entry>      </row>
+     </tbody>
+    </tgroup>
+   </table>
+  </para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title>&style.oop;</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli = new mysqli("127.0.0.1", "root", "foofoo", "sakila");
+
+/* Verbindung überprüfen */
+if ($mysqli->connect_errno) {
+    printf("Verbindung fehlgeschlagen: %s\n", $mysqli->connect_error);
+    exit();
+}
+
+foreach (array('latin1', 'utf8') as $charset) {
+
+    // Zeichensatz ändern, um dessen Auswirkung auf einige Werte (&zb; die Länge in Bytes) zu zeigen
+    $mysqli->set_charset($charset);
+
+    $query = "SELECT actor_id, last_name from actor ORDER BY actor_id";
+
+    echo "======================\n";
+    echo "Zeichensatz: $charset\n";
+    echo "======================\n";
+
+    if ($result = $mysqli->query($query)) {
+
+        /* Informationen über alle Spalten abrufen */
+        $finfo = $result->fetch_fields();
+
+        foreach ($finfo as $val) {
+            printf("Name:            %s\n",   $val->name);
+            printf("Tabelle:         %s\n",   $val->table);
+            printf("max. Länge:      %d\n",   $val->max_length);
+            printf("Länge:           %d\n",   $val->length);
+            printf("Zeichensatz-Nr.: %d\n",   $val->charsetnr);
+            printf("Flags:           %d\n",   $val->flags);
+            printf("Typ:             %d\n\n", $val->type);
+        }
+        $result->free();
+    }
+}
+$mysqli->close();
+?>
+]]>
+   </programlisting>
+  </example>
+  <example>
+   <title>&style.procedural;</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$link = mysqli_connect("127.0.0.1", "my_user", "my_password", "sakila");
+
+/* Verbindung überprüfen */
+if (mysqli_connect_errno()) {
+    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
+    exit();
+}
+
+foreach (array('latin1', 'utf8') as $charset) {
+
+    // Zeichensatz ändern, um dessen Auswirkung auf einige Werte (&zb; die Länge in Bytes) zu zeigen
+    mysqli_set_charset($link, $charset);
+
+    $query = "SELECT actor_id, last_name from actor ORDER BY actor_id";
+
+    echo "======================\n";
+    echo "Zeichensatz: $charset\n";
+    echo "======================\n";
+
+    if ($result = mysqli_query($link, $query)) {
+
+        /* Informationen über alle Spalten abrufen */
+        $finfo = mysqli_fetch_fields($result);
+
+        foreach ($finfo as $val) {
+            printf("Name:            %s\n",   $val->name);
+            printf("Tabelle:         %s\n",   $val->table);
+            printf("max. Länge:      %d\n",   $val->max_length);
+            printf("Länge:           %d\n",   $val->length);
+            printf("Zeichensatz-Nr.: %d\n",   $val->charsetnr);
+            printf("Flags:           %d\n",   $val->flags);
+            printf("Typ:             %d\n\n", $val->type);
+        }
+        mysqli_free_result($result);
+    }
+}
+
+mysqli_close($link);
+?>
+]]>
+   </programlisting>
+   &examples.outputs;
+   <screen>
+<![CDATA[
+======================
+Zeichensatz: latin1
+======================
+Name:            actor_id
+Tabelle:         actor
+max. Länge:      3
+Länge:           5
+Zeichensatz-Nr.: 63
+Flags:           49699
+Typ:             2
+
+Name:            last_name
+Tabelle:         actor
+max. Länge:      12
+Länge:           45
+Zeichensatz-Nr.: 8
+Flags:           20489
+Typ:             253
+
+======================
+Zeichensatz: utf8
+======================
+Name:            actor_id
+Tabelle:         actor
+max. Länge:      3
+Länge:           5
+Zeichensatz-Nr.: 63
+Flags:           49699
+Typ:             2
+
+Name:            last_name
+Tabelle:         actor
+max. Länge:      12
+Länge:           135
+Zeichensatz-Nr.: 33
+Flags:           20489
+]]>
+   </screen>
+  </example>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>mysqli_num_fields</function></member>
+    <member><function>mysqli_fetch_field_direct</function></member>
+    <member><function>mysqli_fetch_field</function></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
