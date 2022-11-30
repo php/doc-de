@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: afec339bc5b7918baddd9ba3cd02b90f3b423230 Maintainer: simp Status: ready -->
+<!-- EN-Revision: b6f7d2d0762b52fe81ab510df30e2901fa2ff8ce Maintainer: simp Status: ready -->
  <sect1 xml:id="language.oop5.traits" xmlns="http://docbook.org/ns/docbook">
   <title>Traits</title>
   <para>
@@ -15,7 +15,7 @@
    mehreren unabhängigen Klassen, die in verschiedenen Klassenhierarchien
    stecken, wiederzuverwenden. Die Semantik der Kombination von Traits und
    Klassen ist so definiert, dass die Komplexität reduziert wird und die
-   üblichen Probleme vermeidet, die mit Mehrfachvererbung und Mixins in 
+   üblichen Probleme vermeidet, die mit Mehrfachvererbung und Mixins in
    Verbindung gebracht werden.
   </para>
   <para>
@@ -23,7 +23,7 @@
    Funktionalität in einer feingranularen und konsistenten Art und Weise zu
    bündeln. Es ist nicht möglich einen Trait alleinstehend zu instantiieren.
    Es handelt sich um einen Zusatz zur traditionellen Vererbung und erlaubt
-   horizontale Komposition von Verhaltensweisen, d.h. die Verwendung von 
+   horizontale Komposition von Verhaltensweisen, d.h. die Verwendung von
    Klassenmethoden ohne Vererbung vorauszusetzen.
   </para>
 
@@ -186,7 +186,7 @@ Hallo Welt!
     genau eine der Methoden des Konflikts auszuwählen.
    </para>
    <para>
-    Da dies es nur erlaubt Methoden auszuschließen kann der 
+    Da dies es nur erlaubt Methoden auszuschließen kann der
     <literal>as</literal>-Operator verwendet werden, um einen Alias zu einer der
     Methoden hinzuzufügen. Es ist zu beachten, dass der <literal>as</literal>
     Operator die Methode nicht umbenennt, und auch keine andere Methode
@@ -197,14 +197,14 @@ Hallo Welt!
     <para>
       In diesem Beispiel verwendet die Klasse Talker die Traits A und B.
       Nachdem A und B sich widersprechende Methoden besitzen definiert die
-      Klasse, dass sie die Variante von smallTalk aus dem Trait B und die 
+      Klasse, dass sie die Variante von smallTalk aus dem Trait B und die
       Variante von bigTalk des Traits A verwenden möchte.
     </para>
     <para>
       Die Klasse Aliased_Talker verwendet den <literal>as</literal>-Operator,
       damit sie außerdem die Implementierung der bigTalk-Methode von B unter dem
       Alias <literal>talk</literal> verwenden kann.
-    </para> 
+    </para>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -249,7 +249,7 @@ class Aliased_Talker {
   <sect2 xml:id="language.oop5.traits.visibility">
    <title>Veränderung der Sichtbarkeit von Methoden</title>
    <para>
-    Mit der <literal>as</literal>-Syntax ist es ebenso möglich, die 
+    Mit der <literal>as</literal>-Syntax ist es ebenso möglich, die
     Sichtbarkeit einer Methode in der darstellenden Klasse zu verändern.
    </para>
    <example xml:id="language.oop5.traits.visibility.ex1">
@@ -333,7 +333,7 @@ Hallo Welt!
     Traits unterstützen auch die Verwendung von abstrakten Methoden, um
     darstellenden Klassen Anforderungen vorzugeben. Es werden öffentliche,
     geschützte und private Methoden unterstützt. Vor PHP 8.0.0 wurden nur
-    öffentliche und geschützte abstrakte Methoden unterstützt. 
+    öffentliche und geschützte abstrakte Methoden unterstützt.
    </para>
    <caution>
     <simpara>
@@ -477,7 +477,8 @@ $example->x;
    <para>
     Definiert ein Trait eine Eigenschaft, dann kann eine Klasse keine Eigenschaft
     mit dem selben Namen definieren, es sei denn, sie ist kompatibel (selbe
-    Sichtbarkeit und Initialwert); andernfalls wird ein fataler Fehler auftreten.
+    Sichtbarkeit und Typ, readonly-Modifikator und Initialwert); andernfalls wird
+    ein fataler Fehler auftreten.
    </para>
    <example xml:id="language.oop5.traits.properties.conflicts">
     <title>Konfliktauflösung</title>
@@ -486,19 +487,74 @@ $example->x;
 <?php
 trait PropertiesTrait {
     public $same = true;
-    public $different = false;
+    public $different1 = false;
+    public bool $different2;
+    readonly public bool $different3;
 }
 
 class PropertiesExample {
     use PropertiesTrait;
     public $same = true;
-    public $different = true; // Fatal error
+    public $different1 = true; // Fatal error
+    public string $different2; // Fatal error
+    readonly public bool $different3; // Fatal error
 }
 ?>
 ]]>
     </programlisting>
    </example>
   </sect2>
+
+ <sect2 xml:id="language.oop5.traits.constants">
+  <title>&Constants;</title>
+  <para>
+   Seit PHP 8.2.0 können Traits auch Konstanten definieren.
+  </para>
+  <example xml:id="language.oop5.traits.constants.example">
+   <title>Definieren von Konstanten</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+trait ConstantsTrait {
+    public const FLAG_MUTABLE = 1;
+    final public const FLAG_IMMUTABLE = 5;
+}
+
+class ConstantsExample {
+    use ConstantTrait;
+}
+
+$example = new ConstantExample;
+$example::FLAG;
+?>
+]]>
+   </programlisting>
+  </example>
+  <para>
+   Wenn ein Trait eine Konstante definiert, kann eine Klasse keine Konstante
+   mit demselben Namen definieren, es sei denn, sie ist kompatibel (dieselbe
+   Sichtbarkeit, derselbe Initialwert und dieselbe Finalität), andernfalls
+   wird ein fataler Fehler ausgegeben.
+  </para>
+  <example xml:id="language.oop5.traits.constants.conflicts">
+   <title>Konfliktauflösung</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+trait ConstantsTrait {
+    public const FLAG_MUTABLE = 1;
+    final public const FLAG_IMMUTABLE = 5;
+}
+
+class ConstantsExample {
+    use ConstantTrait;
+    public const FLAG_IMMUTABLE = 5; // Fatal error
+}
+?>
+]]>
+   </programlisting>
+  </example>
+ </sect2>
 
  </sect1>
 <!-- Keep this comment at the end of the file
