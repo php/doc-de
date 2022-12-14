@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 54217f14f9ddeb734c7d439f44ce7491f66cc587 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+
+ <reference xml:id="ref.pdo-mysql" xmlns="http://docbook.org/ns/docbook">
+  <?phpdoc extension-membership="bundledexternal" ?>
+  <title>MySQL-Funktionen (PDO_MYSQL)</title>
+  <titleabbrev>MySQL (PDO)</titleabbrev>
+  <partintro>
+
+   <section xml:id="pdo-mysql.intro">
+   &reftitle.intro;
+    <para>
+     PDO_MYSQL ist ein Treiber, der die
+     <link linkend="intro.pdo">PHP Data Objects (PDO)-Schnittstelle</link>
+     implementiert, um von PHP aus auf MySQL Datenbanken zugreifen zu können.
+    </para>
+    <para>
+     PDO_MYSQL verwendet standardmäßig emulierte vorbereitete Anweisungen.
+    </para>
+
+    <para>
+      <emphasis role="bold">MySQL 8</emphasis>
+    </para>
+
+    <para>
+     Bei PHP-Versionen vor PHP 7.1.16 oder der 7.2-Serie vor 7.2.4 muss das
+     Standard-Passwort-Plugin des MySQL 8-Servers auf
+     <emphasis>mysql_native_password</emphasis> gesetzt werden, da sonst
+     Fehler angezeigt werden wie <emphasis>The server requested authentication
+     method unknown to the client [caching_sha2_password]</emphasis>, auch
+     wenn <emphasis>caching_sha2_password</emphasis> nicht verwendet wird.
+    </para>
+    <para>
+     Das liegt daran, dass MySQL 8 standardmäßig caching_sha2_password
+     verwendet und dieses Plugin von den älteren PHP- (mysqlnd) Versionen
+     nicht erkannt wird. Stattdessen muss die Voreinstellung durch den
+     Eintrag
+     <literal>default_authentication_plugin=mysql_native_password</literal> in
+     der Datei <filename>my.cnf</filename> geändert werden. Das Plugin
+     <emphasis>caching_sha2_password</emphasis> wird in einer zukünftigen
+     PHP-Version unterstützt werden. Bis dahin wird es von der Erweiterung
+     <link linkend="book.mysql-xdevapi">mysql_xdevapi</link> unterstützt.
+    </para>
+    <warning>
+     <para>
+      Vorsicht ist geboten: Einige MySQL-Tabellentypen (Speicher-Engines)
+      unterstützen keine Transaktionen. Wenn transaktionaler Datenbankcode für
+      einen Tabellentyp geschrieben wird, der keine Transaktionen unterstützt,
+      verhält sich MySQL so, als sei eine Transaktion erfolgreich initiiert
+      worden. Darüber hinaus werden alle ausgelösten DDL-Abfragen implizit
+      alle anstehenden Transaktionen festschreiben.
+     </para>
+    </warning>
+    <note>
+     <para>
+      Der MySQL-Treiber unterstützt die Konstante
+      <constant>PDO::PARAM_INPUT_OUTPUT</constant> über die Methode
+      <methodname>PDOStatement::bindParam</methodname> nicht korrekt; solche
+      Parameter können zwar verwendet werden, werden aber nicht aktualisiert
+      (&dh; die eigentliche Ausgabe wird ignoriert).
+     </para>
+    </note>
+   </section>
+   &reference.pdo-mysql.configure;
+   &reference.pdo-mysql.constants;
+   &reference.pdo-mysql.ini;
+  </partintro>
+
+  <refentry xml:id="ref.pdo-mysql.connection">
+   <refnamediv>
+    <refname>PDO_MYSQL DSN</refname>
+    <refpurpose>Verbinden mit MySQL-Datenbanken</refpurpose>
+   </refnamediv>
+
+   <refsect1 role="description">
+    &reftitle.description;
+    <para>
+     Der Data Source Name (Name der Datenquelle, DSN) von PDO_MYSQL setzt sich
+     aus den folgenden Elementen zusammen:
+     <variablelist>
+      <varlistentry>
+       <term>DSN-Präfix</term>
+       <listitem>
+        <para>
+         Das DSN-Präfix ist <userinput>mysql:</userinput>.
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><literal>host</literal></term>
+       <listitem>
+        <para>
+         Der Name des Rechners, auf dem sich der Datenbankserver befindet
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><literal>port</literal></term>
+       <listitem>
+        <para>
+         Die Nummer des Ports, an dem der Datenbankserver lauscht
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><literal>dbname</literal></term>
+       <listitem>
+        <para>
+         Der Name der Datenbank
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><literal>unix_socket</literal></term>
+       <listitem>
+        <para>
+         Der MySQL-Unix-Socket (sollte nicht mit <literal>host</literal> oder
+         <literal>port</literal> verwendet werden).
+        </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term><literal>charset</literal></term>
+       <listitem>
+        <para>
+         Der Zeichensatz. Weitere Informationen enthält die Dokumentation zum
+         <link linkend="mysqlinfo.concepts.charset">Zeichensatz</link>-Konzept.
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </para>
+   </refsect1>
+
+   <refsect1 role="examples">
+    &reftitle.examples;
+    <para>
+     <example>
+      <title>DSN-Beispiele für PDO_MYSQL</title>
+      <para>
+       Das folgende Beispiel zeigt einen PDO_MYSQL-DSN für die Verbindung zu
+       einer MySQL-Datenbank:
+       <programlisting>
+<![CDATA[
+mysql:host=localhost;dbname=testdb
+]]>
+       </programlisting>
+       Ein paar komplettere Beispiele:
+       <programlisting>
+<![CDATA[
+mysql:host=localhost;port=3307;dbname=testdb
+mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
+]]>
+       </programlisting>
+      </para>
+     </example>
+    </para>
+   </refsect1>
+
+   <refsect1 role="notes">
+    &reftitle.notes;
+    <note>
+     <title>Nur Unix:</title>
+     <para>
+      Wenn der Hostname auf <literal>"localhost"</literal> gesetzt ist, wird
+      die Verbindung zum Server über einen Domain-Socket hergestellt. Wenn
+      PDO_MYSQL gegen libmysqlclient kompiliert wurde, ist der Speicherort der
+      Socket-Datei der einkompilierte Speicherort von libmysqlclient. Wenn
+      PDO_MYSQL gegen mysqlnd kompiliert wurde, kann der Standard-Socket mit
+      der Einstellung
+      <link linkend="ini.pdo-mysql.default-socket">pdo_mysql.default_socket</link>
+      festgelegt werden.
+     </para>
+    </note>
+   </refsect1>
+  </refentry>
+
+ </reference>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->

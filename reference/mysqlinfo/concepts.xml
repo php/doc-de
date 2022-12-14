@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 383a659e1f0f7aa3330b31a095a1e927611d4c71 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<chapter xml:id="mysqlinfo.concepts" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Konzepte</title>
+ <para>
+  Diese Konzepte gelten speziell für die MySQL-Treiber für PHP.
+ </para>
+
+ <section xml:id="mysqlinfo.concepts.buffering">
+  <title>Gepufferte und ungepufferte Abfragen</title>
+
+  <para>
+   Abfragen werden standardmäßig im gepufferten Modus ausgeführt. Das
+   bedeutet, dass die Abfrageergebnisse sofort vom MySQL-Server an PHP
+   übertragen werden und dann im Speicher des PHP-Prozesses gehalten werden.
+   Dies ermöglicht weitere Aktionen wie die Anzahl der Zeilen zu zählen und
+   den aktuellen Ergebniszeiger zu verschieben (zu suchen). Außerdem ist es
+   möglich, weitere Abfragen über dieselbe Verbindung durchzuführen, während
+   die Ergebnismenge verarbeitet wird. Der Nachteil des gepufferten Modus ist,
+   dass größere Ergebnismengen viel Speicherplatz benötigen können. Der
+   Speicher bleibt so lange belegt, bis alle Verweise auf die Ergebnismenge
+   aufgehoben sind oder die Ergebnismenge explizit freigegeben wurde, was
+   spätestens beim Beenden der Abfrage automatisch geschieht. Weil beim
+   gepufferten Modus die gesamte Ergebnismenge auf einmal gespeichert wird,
+   wird auch der Ausdruck "store result" (Ergebnis speichern) verwendet.
+  </para>
+
+  <note>
+   <para>
+    Wenn die Bibliothek libmysqlclient verwendet wird, wird der für eine
+    Ergebnismenge verwendete Speicher nicht zum PHP-Speicherlimit gezählt, es
+    sei denn, die Daten werden in PHP-Variablen abgerufen. Mit mysqlnd wird
+    die gesamte Ergebnismenge in den Speicher mit eingerechnet.
+   </para>
+  </note>
+
+  <para>
+   Ungepufferte MySQL-Abfragen führen die Abfrage aus und geben dann eine
+   <type>Ressource</type> zurück, während die Daten noch auf dem MySQL-Server
+   darauf warten, abgerufen zu werden. Dadurch wird zwar weniger Speicher von
+   PHP verwendet, aber die Last auf dem Server kann steigen. Solange nicht die
+   gesamte Ergebnismenge vom Server abgerufen wurde, können keine weiteren
+   Abfragen über dieselbe Verbindung gesendet werden. Ungepufferte Abfragen
+   können auch als "use result" (Ergebnis verwenden) bezeichnet werden.
+  </para>
+
+  <para>
+   Diesen Merkmalen entsprechend sollten gepufferte Abfragen in Fällen
+   verwendet werden, in denen nur eine kleine Ergebnismenge erwartet wird oder
+   die Menge der zurückgegebenen Zeilen bekannt sein muss, bevor alle Zeilen
+   gelesen werden. Der ungepufferte Modus sollte verwendet werden, wenn
+   größere Ergebnismengen zu erwarten sind.
+  </para>
+
+  <para>
+   Da standardmäßig gepufferte Abfragen verwendet werden, zeigen die folgenden
+   Beispiele, wie ungepufferte Abfragen mit der jeweiligen API ausgeführt
+   werden.
+  </para>
+
+  <example>
+   <title>Beispiel für ungepufferte Abfragen: mysqli</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli  = new mysqli("localhost", "my_user", "my_password", "world");
+$uresult = $mysqli->query("SELECT Name FROM City", MYSQLI_USE_RESULT);
+
+if ($uresult) {
+   while ($row = $uresult->fetch_assoc()) {
+       echo $row['Name'] . PHP_EOL;
+   }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Beispiel für ungepufferte Abfragen: pdo_mysql</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$pdo = new PDO("mysql:host=localhost;dbname=world", 'my_user', 'my_pass');
+$pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+
+$uresult = $pdo->query("SELECT Name FROM City");
+if ($uresult) {
+   while ($row = $uresult->fetch(PDO::FETCH_ASSOC)) {
+       echo $row['Name'] . PHP_EOL;
+   }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+ </section>
+
+ <section xml:id="mysqlinfo.concepts.charset">
+  <title>Zeichensätze</title>
+
+  <para>
+   Idealerweise sollte der richtige Zeichensatz auf Serverebene eingestellt
+   werden. Dies wird im Abschnitt
+   <link xlink:href="&url.mysql.charsets.config;">Character Set Configuration</link>
+   des Handbuchs zum MySQL-Server beschrieben. Alternativ dazu bietet jede
+   MySQL-API eine Methode, um den Zeichensatz zur Laufzeit zu setzen.
+  </para>
+
+  <caution>
+   <title>Der Zeichensatz und die Maskierung von Zeichen</title>
+   <para>
+    Da sich der Zeichensatz auf jede Aktion auswirkt und auch Auswirkungen auf
+    die Sicherheit hat, sollte er bekannt und definiert sein. Zum Beispiel
+    orientiert sich der Mechanismus für das Maskieren (&zb;
+    <function>mysqli_real_escape_string</function> bei mysqli und
+    <methodname>PDO::quote</methodname> bei PDO_MySQL) an dieser Einstellung.
+    Es ist wichtig zu wissen, dass diese Funktionen nicht den Zeichensatz
+    verwenden, der für eine Abfrage definiert ist, sodass &zb; Folgendes
+    keinen Einfluss auf sie hat:
+   </para>
+  </caution>
+
+  <example>
+   <title>Probleme beim Einstellen des Zeichensatzes mit SQL</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+// Wirkt sich NICHT auf $mysqli->real_escape_string(); aus
+$mysqli->query("SET NAMES utf8mb4");
+
+// Wirkt sich NICHT auf $mysqli->real_escape_string(); aus
+$mysqli->query("SET CHARACTER SET utf8mb4");
+
+// Allerdings wirkt sich das auf $mysqli->real_escape_string(); aus
+$mysqli->set_charset('utf8mb4');
+
+// Aber das wirkt sich NICHT aus (UTF-8 vs. utf8mb4) - hier keine Bindestriche verwenden
+$mysqli->set_charset('UTF-8');
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <para>
+   Die folgenden Beispiele zeigen, wie der Zeichensatz mit der jeweiligen API
+   korrekt zur Laufzeit geändert werden kann.
+  </para>
+
+  <note>
+   <title>Möglicher Fehler mit UTF-8</title>
+   <para>
+    Da die Namen von Zeichensätzen in MySQL keine Bindestriche enthalten, muss
+    in MySQL die Zeichenkette "utf8" verwendet werden, um den Zeichensatz auf
+    UTF-8 zu setzen (bis zu 3 Byte UTF-8 Unicode Encoding). Die Zeichenkette
+    "UTF-8" ist dagegen ungültig, weshalb der Zeichensatz mit "UTF-8" nicht
+    geändert werden kann und ein Fehler ausgegeben wird.
+   </para>
+  </note>
+
+  <example>
+   <title>Beispiel für das Einstellen des Zeichensatzes: mysqli</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+echo 'Der ursprüngliche Zeichensatz: ' . $mysqli->character_set_name() . "\n";
+
+if (!$mysqli->set_charset('utf8mb4')) {
+    printf("Fehler beim Laden des Zeichensatzes utf8mb4: %s\n", $mysqli->error);
+    exit;
+}
+
+echo 'Der aktuelle Zeichensatz: ' . $mysqli->character_set_name() . "\n";
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Beispiel für das Einstellen des Zeichensatzes: <link linkend="ref.pdo-mysql.connection">pdo_mysql</link></title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$pdo = new PDO("mysql:host=localhost;dbname=world;charset=utf8mb4", 'my_user', 'my_pass');
+?>
+]]>
+   </programlisting>
+  </example>
+
+ </section>
+
+</chapter>

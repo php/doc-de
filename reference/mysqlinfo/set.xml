@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 67d2e5fb1dc83aea4e82ec1e6b5a39299eff6bab Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+
+<set xml:id="set.mysqlinfo">
+ <title>Treiber und Plugins für MySQL</title>
+ <titleabbrev>MySQL</titleabbrev>
+
+ <info xml:id="mysqlinfo.info">
+  <abstract>
+   <para>
+    PHP stellt mehrere Treiber und Plugins für den Zugriff auf MySQL und
+    dessen Handhabung zur Verfügung.
+   </para>
+   <para>
+    In der Übersicht dieses Abschnitts werden die Unterschiede und die
+    Funktionalitäten der MySQL-Erweiterungen beschrieben.
+   </para>
+  </abstract>
+ </info>
+
+ <book xml:id="mysql">
+  <title>Übersicht über die PHP-Treiber für MySQL</title>
+
+  <info xml:id="mysqlinfo.intro">
+   <title>Einleitung</title>
+   <abstract>
+    <para>
+     Es gibt mehrere PHP-APIs für den Zugriff auf die MySQL-Datenbank. Zur
+     Auswahl stehen die Erweiterungen
+     <link linkend="book.mysqli">mysqli</link> und
+     <link linkend="ref.pdo-mysql">PDO_MySQL</link>.
+    </para>
+    <para>
+     Dieser Leitfaden erklärt die
+     <link linkend="mysqlinfo.terminology">Terminologie</link>, die zur
+     Beschreibung der einzelnen APIs verwendet wird, gibt Informationen über
+     <link linkend="mysqlinfo.api.choosing">die Auswahl der zu verwendenden
+     API</link> sowie Informationen zur Auswahl der
+     <link linkend="mysqlinfo.library.choosing">MySQL-Bibliothek, die mit der API verwendet werden soll</link>.
+    </para>
+   </abstract>
+  </info>
+
+  <chapter xml:id="mysqlinfo.terminology" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <title>Übersicht über die Terminologie</title>
+   <para>
+    Dieser Abschnitt bietet eine Einführung in die Möglichkeiten, die bei der
+    Entwicklung einer PHP-Anwendung, die mit einer MySQL-Datenbank
+    interagieren muss, zur Verfügung stehen.
+   </para>
+
+   <para>
+    <emphasis role="bold">Was ist eine API?</emphasis>
+   </para>
+
+   <para>
+    Eine API (Application Programming Interface, Schnittstelle für die
+    Anwendungsprogrammierung) definiert die Klassen, Methoden, Funktionen und
+    Variablen, die eine Anwendung aufrufen muss, um die gewünschte Aufgabe zu
+    erfüllen. Im Falle von PHP-Anwendungen, die mit Datenbanken kommunizieren
+    müssen, werden die erforderlichen APIs in der Regel über PHP-Erweiterungen
+    bereitgestellt.
+   </para>
+
+   <para>
+    APIs können entweder prozedural oder objektorientiert sein. Bei einer
+    prozeduralen API werden Funktionen aufgerufen, um Aufgaben auszuführen,
+    während bei einer objektorientierten API Klassen instanziiert und dann die
+    Methoden der resultierenden Objekte aufgerufen werden. Von den beiden ist
+    die letztere in der Regel die bevorzugte Schnittstelle, da sie moderner
+    ist und zu besser strukturiertem Code führt.
+   </para>
+
+   <para>
+    Wenn eine PHP-Anwendung geschrieben wird, die sich mit dem MySQL-Server
+    verbinden muss, stehen mehrere APIs zur Verfügung. In diesem Dokument wird
+    beschrieben, welche Möglichkeiten es gibt und welche die beste Wahl für
+    die jeweilige Anwendung ist.
+   </para>
+
+   <para>
+    <emphasis role="bold">Was ist ein Konnektor?</emphasis>
+   </para>
+
+   <para>
+    Der Begriff Konnektor, wie er in der MySQL-Dokumentation verwendet wird,
+    bezieht sich auf Software, die es ermöglicht, von einer Anwendung aus eine
+    Verbindung zum MySQL-Datenbankserver herzustellen. MySQL bietet
+    Konnektoren für verschiedene Sprachen, darunter PHP.
+   </para>
+
+   <para>
+    Wenn eine PHP-Anwendung mit einem Datenbankserver kommunizieren soll, muss
+    PHP-Code geschrieben werden, der die Verbindung zum Datenbankserver, die
+    Abfrage der Datenbank und andere datenbankbezogene Funktionen ermöglicht.
+    Es wird eine Software benötigt, die die API für die Kommunikation zwischen
+    der Anwendung und dem Datenbankserver zur Verfügung stellt und
+    gegebenenfalls andere zwischengeschaltete Bibliotheken verwendet. Diese
+    Software wird allgemein als Konnektor bezeichnet, weil sie es der
+    Anwendung ermöglicht, sich mit einem Datenbankserver zu verbinden.
+   </para>
+
+   <para>
+    <emphasis role="bold">Was ist ein Treiber?</emphasis>
+   </para>
+
+   <para>
+    Ein Treiber ist ein Stück Software, das für die Kommunikation mit einem
+    bestimmten Typ von Datenbankserver entwickelt wurde. Der Treiber kann auch
+    eine Bibliothek aufrufen, &zb; die MySQL Client Library oder den MySQL
+    Native Driver. Diese Bibliotheken implementieren das Low-Level-Protokoll,
+    das für die Kommunikation mit dem MySQL-Datenbankserver verwendet wird.
+   </para>
+
+   <para>
+    So verwendet beispielsweise die Datenbank-Abstraktionsschicht
+    <link linkend="mysqli.overview.pdo">PHP Data Objects (PDO)</link> einen
+    von mehreren datenbankspezifischen Treibern. Einer der verfügbaren Treiber
+    ist der PDO-MYSQL-Treiber, der eine Schnittstelle zum MySQL-Server bietet.
+   </para>
+
+   <para>
+    Manchmal werden die Begriffe Konnektor und Treiber synonym verwendet, was
+    verwirrend sein kann. In der MySQL-Dokumentation ist der Begriff "Treiber"
+    für Software reserviert, die den datenbankspezifischen Teil eines
+    Konnektor-Pakets bereitstellt.
+   </para>
+
+   <para>
+    <emphasis role="bold">Was ist eine Erweiterung?</emphasis>
+   </para>
+
+   <para>
+    In der PHP-Dokumentation wird häufig der Begriff
+    <emphasis>Erweiterung</emphasis> verwendet. Der PHP-Code besteht aus einem
+    Kern und optionalen Erweiterungen der Kernfunktionalität. Die
+    PHP-Erweiterung für MySQL, <literal>mysqli</literal>, wird mit Hilfe des
+    PHP-Frameworks für Erweiterungen implementiert.
+   </para>
+
+   <para>
+    Damit die Funktionen einer Erweiterung von PHP-Programmierern
+    programmtechnisch genutzt werden können, stellt diese in der Regel eine
+    API zur Verfügung. Allerdings stellen nicht alle Erweiterungen, die das
+    Framework für PHP-Erweiterungen verwenden, dem PHP-Programmierer eine API
+    zur Verfügung.
+   </para>
+
+   <para>
+    Der PDO-Treiber für MySQL beispielsweise stellt dem PHP-Programmierer
+    keine API zur Verfügung, sondern eine Schnittstelle zur darüber liegenden
+    PDO-Schicht.
+   </para>
+
+   <para>
+    Die Begriffe API und Erweiterung sollten nicht als gleichbedeutend
+    angesehen werden, da eine Erweiterung dem Programmierer nicht unbedingt
+    eine API zur Verfügung stellt.
+   </para>
+  </chapter>
+
+  <chapter xml:id="mysqlinfo.api.choosing" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <title>Auswahl einer API</title>
+   <para>
+    PHP bietet verschiedene APIs für die Verbindung zu MySQL. Im Folgenden
+    werden die APIs beschrieben, die von den Erweiterungen mysqli und PDO
+    bereitgestellt werden. In jedem Codeschnipsel wird eine Verbindung zu
+    einem MySQL-Server auf "example.com" mit dem Benutzernamen "user" und dem
+    Passwort "password" hergestellt und es wird eine Abfrage zur Begrüßung des
+    Benutzers ausgeführt.
+   </para>
+   <para>
+    <example>
+     <title>Vergleich der MySQL-APIs</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+// mysqli
+$mysqli = new mysqli("example.com", "user", "password", "database");
+$result = $mysqli->query("SELECT 'Hello, dear MySQL user!' AS _message FROM DUAL");
+$row = $result->fetch_assoc();
+echo htmlentities($row['_message']);
+
+// PDO
+$pdo = new PDO('mysql:host=example.com;dbname=database', 'user', 'password');
+$statement = $pdo->query("SELECT 'Hello, dear MySQL user!' AS _message FROM DUAL");
+$row = $statement->fetch(PDO::FETCH_ASSOC);
+echo htmlentities($row['_message']);
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    <emphasis role="bold">Vergleich der Merkmale</emphasis>
+   </para>
+   <para>
+    Die Leistung der beiden Erweiterungen ist insgesamt gesehen in etwa
+    gleich. Allerdings macht die Leistung der Erweiterungen nur einen
+    Bruchteil der Gesamtlaufzeit einer PHP-Webanforderung aus. Oft liegt der
+    Einfluss bei nur 0,1%.
+   </para>
+   <informaltable xml:id="mysqlinfo.api.choosing.changelog">
+    <tgroup cols="3">
+     <thead>
+      <row>
+       <entry></entry>
+       <entry>ext/mysqli</entry>
+       <entry>PDO_MySQL</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>PHP-Version der Einführung</entry>
+       <entry>5.0</entry>
+       <entry>5.1</entry>
+      </row>
+      <row>
+       <entry>Enthalten in PHP 7.x und 8.x</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Entwicklungsstatus</entry>
+       <entry>Aktiv</entry>
+       <entry>Aktiv</entry>
+      </row>
+      <row>
+       <entry>Lebenszyklus</entry>
+       <entry>Aktiv</entry>
+       <entry>Aktiv</entry>
+      </row>
+      <row>
+       <entry>Für neue Projekte empfohlen</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>OOP-Schnittstelle</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Prozedurale Schnittstelle</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>API unterstützt nicht-blockierende, asynchrone Abfragen mit mysqlnd</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>Persistente (dauerhafte) Verbindungen</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>API unterstützt Zeichensätze</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>API unterstützt serverseitige vorbereitete Anweisungen</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>API unterstützt clientseitige vorbereitete Anweisungen</entry>
+       <entry>Nein</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>API unterstützt gespeicherte Prozeduren</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>API unterstützt Mehrfachanweisungen</entry>
+       <entry>Ja</entry>
+       <entry>Weitestgehend</entry>
+      </row>
+      <row>
+       <entry>API unterstützt Transaktionen</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Transaktionen können mit SQL gesteuert werden</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Unterstützt die gesamte Funktionalität von MySQL 5.1+</entry>
+       <entry>Ja</entry>
+       <entry>Weitestgehend</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </chapter>
+
+  <chapter xml:id="mysqlinfo.library.choosing" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <title>Auswahl einer Bibliothek</title>
+   <para>
+    Die PHP-Erweiterungen mysqli und PDO_MySQL sind schlanke Wrapper, die auf
+    einer C-Clientbibliothek aufbauen. Es kann eine der beiden Bibliotheken
+    <link linkend="book.mysqlnd">mysqlnd</link> und
+    <literal>libmysqlclient</literal> verwendet werden. Die Bibliothek muss
+    beim Kompilieren ausgewählt werden.
+   </para>
+   <para>
+    Die Bibliothek mysqlnd ist Teil der PHP-Distribution. Sie bietet
+    Funktionen wie Lazy Connections und Abfrage-Caching, Funktionen, die mit
+    libmysqlclient nicht verfügbar sind, weshalb dringend empfohlen wird, die
+    eingebaute Bibliothek mysqlnd zu verwenden. Die
+    <link linkend="book.mysqlnd">mysqlnd-Dokumentation</link> enthält
+    zusätzliche Details und eine Auflistung der Funktionen, die sie bietet.
+   </para>
+   <para>
+    <example>
+     <title>Konfigurationsoptionen für die Verwendung von mysqlnd oder libmysqlclient</title>
+     <programlisting role="shell">
+<![CDATA[
+// Empfohlen, kompiliert mit mysqlnd
+$ ./configure --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd
+
+// Alternativ empfohlen, kompiliert mit mysqlnd
+$ ./configure --with-mysqli --with-pdo-mysql
+
+// Nicht empfohlen, kompiliert mit libmysqlclient
+$ ./configure --with-mysqli=/path/to/mysql_config --with-pdo-mysql=/path/to/mysql_config
+]]>
+     </programlisting>
+    </example>
+   </para>
+   <para>
+    <emphasis role="bold">Vergleich der Merkmale der Bibliotheken</emphasis>
+   </para>
+   <para>
+    Es wird empfohlen, die Bibliothek
+    <link linkend="book.mysqlnd">mysqlnd</link> anstelle der
+    Client-Server-Bibliothek von MySQL (libmysqlclient) zu verwenden. Beide
+    Bibliotheken werden unterstützt und ständig verbessert.
+   </para>
+   <informaltable xml:id="mysqlinfo.library.choosing.changelog">
+    <tgroup cols="3">
+     <thead>
+      <row>
+       <entry></entry>
+       <entry>MySQL native driver (<link linkend="book.mysqlnd">mysqlnd</link>)</entry>
+       <entry>Client-Server-Bibliothek von MySQL (<literal>libmysqlclient</literal>)</entry>
+      </row>
+     </thead>
+     <tbody>
+      <row>
+       <entry>Teil der PHP-Distribution</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>PHP-Version der Einführung</entry>
+       <entry>5.3.0</entry>
+       <entry>N/A</entry>
+      </row>
+      <row>
+       <entry>Lizenz</entry>
+       <entry>PHP-Lizenz 3.01</entry>
+       <entry>Duale Lizenz</entry>
+      </row>
+      <row>
+       <entry>Entwicklungsstatus</entry>
+       <entry>Aktiv</entry>
+       <entry>Aktiv</entry>
+      </row>
+      <row>
+       <entry>Lebenszyklus</entry>
+       <entry>Kein Ende angekündigt</entry>
+       <entry>Kein Ende angekündigt</entry>
+      </row>
+      <row>
+       <entry>Voreinstellung beim Kompilieren (bei allen MySQL-Erweiterungen)</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>Unterstützung des Komprimierungsprotokolls</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>SSL-Unterstützung</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Unterstützung von benannten Pipes</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Nicht-blockierende, asynchrone Abfragen</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>Statistiken zur Leistung</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>LOAD LOCAL INFILE berücksichtigt die Direktive <link linkend="ini.open-basedir">open_basedir</link></entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>Verwendet das PHP-eigene Speicherverwaltungssystem (hält sich &zb; an die PHP-Speichergrenzen)</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>Rückgabe numerischer Spalten als Doubles (COM_QUERY)</entry>
+       <entry>Ja</entry>
+       <entry>Nein</entry>
+      </row>
+      <row>
+       <entry>Rückgabe numerischer Spalten als Zeichenketten (COM_QUERY)</entry>
+       <entry>Ja</entry>
+       <entry>Ja</entry>
+      </row>
+      <row>
+       <entry>Plugin-API</entry>
+       <entry>Ja</entry>
+       <entry>Eingeschränkt</entry>
+      </row>
+      <row>
+       <entry>Automatische Wiederherstellung der Verbindung</entry>
+       <entry>Nein</entry>
+       <entry>Optional</entry>
+      </row>
+     </tbody>
+    </tgroup>
+   </informaltable>
+  </chapter>
+
+  &reference.mysqlinfo.concepts;
+
+ </book>
+
+ &reference.mysqli.book;
+ &reference.mysql-xdevapi.book;
+ &reference.mysql.book;
+ &reference.mysqlnd.book;
+
+</set>
