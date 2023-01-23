@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 035c126c0393fe154bac46e2c3c489ebadce48a5 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 51c34024efa35d5691825b3e61037ffe61c46d20 Maintainer: nobody Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 7e5d0d1bb69180c9de1992edf9613215c975fa57 Reviewer: samesch -->
 <refentry xml:id="mysqli-stmt.data-seek" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>mysqli_stmt::data_seek</refname>
   <refname>mysqli_stmt_data_seek</refname>
-  <refpurpose>Springt zu einer beliebigen Zeile der Ergebnismenge einer Abfrage</refpurpose>
+  <refpurpose>Verschiebt den Ergebniszeiger auf eine beliebige Zeile im gepufferten Ergebnis</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -24,11 +24,13 @@
    <methodparam><type>int</type><parameter>offset</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Bewegt den Ergebniszeiger an eine beliebige Position in der Ergebnismenge
-   einer Abfrage.
+   Diese Funktion verschiebt den Ergebnismengenzeiger der gepufferten
+   Ergebnismenge in die mit dem Parameter <parameter>offset</parameter>
+   angegebene beliebige Zeile.
   </para>
   <para>
-   <function>mysqli_stmt_store_result</function> muss vor
+   Diese Funktion funktioniert nur bei einer gepufferten internen
+   Ergebnismenge. <function>mysqli_stmt_store_result</function> muss vor
    <function>mysqli_stmt_data_seek</function> aufgerufen werden.
   </para>
  </refsect1>
@@ -65,42 +67,24 @@
    <programlisting role="php">
 <![CDATA[
 <?php
-/* Verbindung aufbauen */
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $mysqli = new mysqli("localhost", "my_user", "my_password", "world");
 
-/* Verbindung prüfen */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
-
 $query = "SELECT Name, CountryCode FROM City ORDER BY Name";
-if ($stmt = $mysqli->prepare($query)) {
+$stmt = $mysqli->prepare($query);
+$stmt->execute();
 
-    /* Abfrage ausführen */
-    $stmt->execute();
+$stmt->bind_result($name, $code);
 
-    /* die Ergebnisvariablen an das Ergebnis binden */
-    $stmt->bind_result($name, $code);
+$stmt->store_result();
 
-    /* Ergebnismenge abrufen */
-    $stmt->store_result();
+/* zu Zeile Nr. 400 springen */
+$stmt->data_seek(399);
 
-    /* zu Zeile Nr. 400 springen */
-    $stmt->data_seek(399);
+$stmt->fetch();
 
-    /* Werte abrufen */
-    $stmt->fetch();
-
-    printf ("Stadt: %s  Ländercode: %s\n", $name, $code);
-
-    /* Abfrage schließen */
-    $stmt->close();
-}
-
-/* Verbindung schließen */
-$mysqli->close();
-?>
+printf ("Stadt: %s  Ländercode: %s\n", $name, $code);
 ]]>
    </programlisting>
   </example>
@@ -109,42 +93,25 @@ $mysqli->close();
    <programlisting role="php">
 <![CDATA[
 <?php
-/* Verbindung aufbauen */
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $link = mysqli_connect("localhost", "my_user", "my_password", "world");
 
-/* Verbindung prüfen */
-if (mysqli_connect_errno()) {
-    printf("Verbindung fehlgeschlagen: %s\n", mysqli_connect_error());
-    exit();
-}
-
 $query = "SELECT Name, CountryCode FROM City ORDER BY Name";
-if ($stmt = mysqli_prepare($link, $query)) {
+$stmt = mysqli_prepare($link, $query);
 
-    /* Abfrage ausführen */
-    mysqli_stmt_execute($stmt);
+mysqli_stmt_execute($stmt);
 
-    /* die Ergebnisvariablen an das Ergebnis binden */
-    mysqli_stmt_bind_result($stmt, $name, $code);
+mysqli_stmt_bind_result($stmt, $name, $code);
 
-    /* Ergebnismenge abrufen */
-    mysqli_stmt_store_result($stmt);
+mysqli_stmt_store_result($stmt);
 
-    /* zu Zeile Nr. 400 springen */
-    mysqli_stmt_data_seek($stmt, 399);
+/* zu Zeile Nr. 400 springen */
+mysqli_stmt_data_seek($stmt, 399);
 
-    /* Werte abrufen */
-    mysqli_stmt_fetch($stmt);
+mysqli_stmt_fetch($stmt);
 
-    printf ("Stadt: %s  Ländercode: %s\n", $name, $code);
-
-    /* Abfrage schließen */
-    mysqli_stmt_close($stmt);
-}
-
-/* Verbindung schließen */
-mysqli_close($link);
-?>
+printf ("Stadt: %s  Ländercode: %s\n", $name, $code);
 ]]>
    </programlisting>
    &examples.outputs;
@@ -161,6 +128,9 @@ Stadt: Benin City  Ländercode: NGA
   <para>
    <simplelist>
     <member><function>mysqli_prepare</function></member>
+    <member><function>mysqli_stmt_store_result</function></member>
+    <member><function>mysqli_stmt_num_rows</function></member>
+    <member><function>mysqli_data_seek</function></member>
    </simplelist>
   </para>
  </refsect1>
