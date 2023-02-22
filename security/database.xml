@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: fa6c0138655159c9a360fbbf0364ac0f38274abd Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 5f7a949cfc6f43d481d3a9513f9ee19db9afe21d Maintainer: hholzgra Status: ready -->
 <!-- Credits: tom -->
   <chapter xml:id="security.database" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
    <title>Datenbank-Sicherheit</title>
@@ -17,9 +17,9 @@
     zur Datenbank herstellen, eine legitime Abfrage senden, das Ergebnis
     holen, und die Verbindung schließen. Heutzutage ist die allgemein
     verwendete Abfragesprache für solche Interaktionen die Structured Query
-    Language (SQL). Sehen Sie, wie sich ein Angreifer <link
-    linkend="security.database.sql-injection">an einer SQL-Abfrage zu schaffen
-    machen</link> kann.
+    Language (SQL). Sehen Sie, wie sich ein Angreifer
+    <link linkend="security.database.sql-injection">an einer SQL-Abfrage zu
+    schaffen machen</link> kann.
    </simpara>
    <simpara>
     Sie werden merken, dass <acronym>PHP</acronym> Ihre Datenbank nicht selbst
@@ -50,7 +50,7 @@
     <simpara>
      Anwendungen sollten sich mit der Datenbank nie als deren Eigentümer oder
      als ein Superuser verbinden, da diese Benutzer jede beliebige Abfrage
-     ausführen können, um z.B. das Schema zu modifizieren (z.B. Tabellen
+     ausführen können, um &zb; das Schema zu modifizieren (&zb; Tabellen
      löschen) oder den gesamten Inhalt löschen.
     </simpara>
     <simpara>
@@ -105,8 +105,8 @@
      eigenes Verschlüsselungspaket zu erstellen, und dieses dann in Ihren
      <acronym>PHP</acronym>-Skripten zu nutzen. <acronym>PHP</acronym> kann
      Ihnen in diesem Fall mit seinen verschiedenen Erweiterungen helfen, wie
-     z.B. <link linkend="book.openssl">OpenSSL</link> und <link
-     linkend="book.sodium">Sodium</link>, welche eine große Auswahl an
+     &zb; <link linkend="book.openssl">OpenSSL</link> und
+     <link linkend="book.sodium">Sodium</link>, welche eine große Auswahl an
      Verschlüsselungsalgorithmen abdecken. Das Skript verschlüsselt die Daten
      vor dem Speichern und entschlüsselt diese wieder beim Erhalt. Siehe die
      Verweise für weitere Beispiele, wie Verschlüsselung funktioniert.
@@ -116,7 +116,7 @@
      <title>Hashing</title>
      <simpara>
       Im Fall von wirklich versteckten Daten, wenn deren unverschlüsselte
-      Darstellung nicht nötig ist (d.h. die nicht angezeigt werden sollen),
+      Darstellung nicht nötig ist (&dh; die nicht angezeigt werden sollen),
       ist Hashing ebenfalls überlegenswert. Das bekannte Beispiel für Hashing
       ist das Speichern des kryptographischen Hashes eines Passwortes in einer
       Datenbank, anstatt des Passworts selbst.
@@ -139,7 +139,7 @@
 <![CDATA[
 <?php
 
-// Speichern des Passwort-Hash
+// Speichern des Passwort-Hashes
 $query  = sprintf("INSERT INTO users(name,pwd) VALUES('%s','%s');",
             pg_escape_string($username),
             password_hash($password, PASSWORD_DEFAULT));
@@ -166,36 +166,31 @@ if ($row && password_verify($password, $row['pwd'])) {
    <sect1 xml:id="security.database.sql-injection">
     <title>SQL-Injection</title>
     <simpara>
-     Viele Webentwickler sind sich nicht bewusst, wie SQL-Abfragen manipuliert
-     werden können und gehen davon aus, dass eine SQL-Abfrage ein
-     vertrauenswürdiges Kommando ist. Das heißt, dass SQL-Abfragen in der Lage
-     sind, Zugriffskontrollen und dadurch Standard-Authentifizierungs- und
-     Autorisierungsprüfungen zu umgehen, und manchmal können SQL-Abfragen
-     sogar Zugriff zu Kommandos auf Betriebssystemebene erlauben.
-    </simpara>
-    <simpara>
-     Direct SQL Command Injection ist eine Technik, wo ein Angreifer
-     SQL-Kommandos erstellt oder existierende verändert, um versteckte Daten
-     sichtbar zu machen, wertvolle Daten zu überschreiben oder sogar
-     gefährliche Kommandos auf Systemebene des Datenbank-Hosts auszuführen.
-     Dies wird durch die Anwendung erreicht, welche den Input des Benutzers
-     mit statischen Parametern kombiniert, um eine SQL-Abfrage zu erstellen.
-     Die folgenden Beispiele basieren - leider - auf wahren Begebenheiten.
+     SQL-Injection ist eine Technik, bei der ein Angreifer Schwachstellen im
+     Anwendungscode ausnutzt, mit dem dynamische SQL-Abfragen erstellt werden.
+     Ein Angreifer kann sich Zugang zu besonders geschützten Bereichen der
+     Anwendung verschaffen, sämtliche Informationen aus der Datenbank abrufen,
+     vorhandene Daten manipulieren oder sogar gefährliche Befehle auf der
+     Systemebene des Datenbank-Hosts ausführen. Die Schwachstelle entsteht,
+     wenn Entwickler in ihren SQL-Anweisungen beliebige Eingaben miteinander
+     verknüpfen oder einfügen.
     </simpara>
     <para>
-     Aufgrund der fehlenden Eingabevalidierung und dem Verbinden zum
-     Datenbankserver als ein Superuser oder jemand, der Benutzer anlegen kann,
-     kann ein Angreifer einen Superuser in Ihrer Datenbank anlegen.
      <example>
       <title>
        Die Ergebnisliste in mehrere Seiten aufsplitten ... und Superuser anlegen
        (PostgreSQL)
       </title>
+      <simpara>
+       Im folgenden Beispiel wird die Benutzereingabe direkt in die
+       SQL-Abfrage eingefügt, wodurch der Angreifer ein Superuser-Konto für
+       die Datenbank erlangen kann.
+      </simpara>
       <programlisting role="php">
 <![CDATA[
 <?php
 
-$offset = $argv[0]; // Vorsicht, keine Validierung der Eingabe!
+$offset = $_GET['offset']; // Vorsicht, keine Validierung der Eingabe!
 $query  = "SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET $offset;";
 $result = pg_query($conn, $query);
 
@@ -205,10 +200,9 @@ $result = pg_query($conn, $query);
      </example>
      Normale Benutzer klicken auf die 'nächste'- bzw. 'vorige'-Links, wo der
      <varname>$offset</varname> in der <acronym>URL</acronym> enthalten ist.
-     Das Skript erwartet, dass der ankommende <varname>$offset</varname>
-     einen Dezimalwert enthält. Was aber, wenn jemand versucht einzubrechen,
-     indem er das folgende in einer <function>urlencode</function>'d Form an
-     die <acronym>URL</acronym> anhängt:
+     Das Skript erwartet, dass der ankommende <varname>$offset</varname> eine
+     Zahl enthält. Was aber, wenn jemand versucht einzubrechen, indem er das
+     Folgende an die <acronym>URL</acronym> anhängt:
      <informalexample>
       <programlisting role="sql">
 <![CDATA[
@@ -220,9 +214,9 @@ insert into pg_shadow(usename,usesysid,usesuper,usecatupd,passwd)
 ]]>
       </programlisting>
      </informalexample>
-     In diesem Fall würde ihm das Skript einen Superuser-Zugang zur Verfügung
-     stellen. Beachten Sie, dass <literal>0;</literal> einen gültigen Offset
-     zur ursprünglichen Abfrage liefert, und sie beendet.
+     In diesem Fall würde das Skript dem Angreifer einen Superuser-Zugang zur
+     Verfügung stellen. Beachten Sie, dass <literal>0;</literal> einen
+     gültigen Offset zur ursprünglichen Abfrage liefert, und sie beendet.
     </para>
     <note>
      <para>
@@ -241,8 +235,9 @@ insert into pg_shadow(usename,usesysid,usesuper,usecatupd,passwd)
      <literal>SELECT</literal>-Statements angepasst werden. Wenn Ihre
      Datenbank das <literal>UNION</literal>-Konstrukt unterstützt, kann der
      Angreifer versuchen, eine komplette Abfrage an das Original anzuhängen,
-     um Passwörter aus einer beliebigen Tabelle aufzulisten. Die Verwendung
-     von verschlüsselten Passwortfeldern wird ausdrücklich empfohlen.
+     um Passwörter aus einer beliebigen Tabelle aufzulisten. Es wird dringend
+     empfohlen, nur sichere Hashes von Passwörtern zu speichern und nicht die
+     Passwörter selbst.
      <example>
       <title>
        Artikel auflisten ... und ein paar Passwörter (beliebiger Datenbankserver)
@@ -271,20 +266,10 @@ union select '1', concat(uname||'-'||passwd) as name, '1971-01-01', '0' from use
 ]]>
       </programlisting>
      </informalexample>
-     Wenn diese Abfrage (mit dem <literal>'</literal> und
-     <literal>--</literal>) einer der in <varname>$query</varname> verwendeten
-     Variablen zugewiesen würde, wird das Abfrage-Biest erwachen.
     </para>
     <para>
-     Auch SQL-UPDATEs sind anfällig für Angriffe. Diese Abfragen sind
-     ebenfalls durch das Ändern und Anhängen einer komplett neuen Abfrage
-     gefährdet. Aber der Angreifer könnte auch mit der
-     <literal>SET</literal>-Klausel herumspielen. In diesem Fall muss eine
-     Schemainformation vorhanden sein, um die Abfrage erfolgreich manipulieren
-     zu können. Diese kann durch Untersuchen der Variablennamen im Formular,
-     oder simpel mittels Brute-Forcing gesammelt werden. Es gibt nicht so
-     viele Namenskonventionen für Felder, welche Passwörter oder Benutzernamen
-     speichern.
+     Auch <literal>UPDATE</literal>- und <literal>INSERT</literal>-Anweisungen
+     sind für derartige Angriffe anfällig.
      <example>
       <title>
        Vom Zurücksetzen eines Passworts ... zum Erlangen von mehr Rechten
@@ -298,7 +283,7 @@ $query = "UPDATE usertable SET pwd='$pwd' WHERE uid='$uid';";
 ]]>
       </programlisting>
      </example>
-     Aber wenn ein böswilliger Benutzer den Wert <literal>' or uid
+     Wenn ein böswilliger Benutzer den Wert <literal>' or uid
      like'%admin%</literal> an <varname>$uid</varname> übermittelt, um das
      Administrator-Passwort zu ändern, oder einfach <varname>$pwd</varname>
      auf <literal>hehehe', trusted=100, admin='yes</literal> setzt, um mehr
@@ -320,11 +305,26 @@ $query = "UPDATE usertable SET pwd='hehehe', trusted=100, admin='yes' WHERE
       </programlisting>
      </informalexample>
     </para>
+    <simpara>
+     Obwohl es offensichtlich ist, dass ein Angreifer zumindest ein wenig
+     Kenntnis der genutzten Datenbankarchitektur besitzen muss, um einen
+     erfolgreichen Angriff durchzuführen, ist es oft sehr einfach, diese
+     Informationen zu erhalten. Der Code kann &zb; Teil einer
+     Open-Source-Software und öffentlich zugänglich sein. Diese Informationen
+     können auch durch Closed-Source-Code preisgegeben werden - selbst wenn
+     dieser kodiert, verschleiert oder kompiliert ist - und sogar durch Ihren
+     eigenen Code durch die Anzeige von Fehlermeldungen. Andere Methoden
+     beinhalten die Nutzung typischer Tabellen- und Spaltennamen. Ein
+     Login-Formular etwa, dass eine Tabelle 'users' mit den Spaltennamen 'id',
+     'username' und 'password' nutzt.
+    </simpara>
     <para>
-     Ein erschreckendes Beispiel, wie der Zugriff auf Befehle auf
-     Betriebssystemebene bei manchen Datenbankservern erfolgen kann:
      <example>
       <title>Angriff auf das Betriebssystem des Datenbank-Hosts (MSSQL-Server)</title>
+      <simpara>
+       Ein erschreckendes Beispiel, wie der Zugriff auf Befehle auf
+       Betriebssystemebene bei manchen Datenbankservern erfolgen kann:
+      </simpara>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -362,132 +362,134 @@ $result = mssql_query($query);
     <note>
      <para>
       Manche der obigen Beispiele sind an einen spezifischen Datenbankserver
-      gebunden. Das heißt jedoch nicht, dass nicht ein ähnlicher Angriff auf
-      andere Produkte möglich wäre. Ihr Datenbankserver könnte auf andere
-      Weise genauso verwundbar sein.
+      gebunden, aber das bedeutet nicht, dass ein ähnlicher Angriff auf andere
+      Produkte unmöglich wären. Ihr Datenbankserver könnte auf andere Weise
+      genauso verwundbar sein.
      </para>
     </note>
     <para>
      <mediaobject>
-      <alt>Ein praktisches Beispiel für die Problematik der SQL-Injection</alt>
+      <alt>Ein lustiges Beispiel für die Problematik der SQL-Injection</alt>
       <imageobject>
        <imagedata fileref="de/security/figures/xkcd-bobby-tables.png" format="PNG"/>
       </imageobject>
      </mediaobject>
-     Bild mit freundlicher Genehmigung von <link xlink:href="&url.xkcd;327">xkcd</link>
+     Bild mit freundlicher Genehmigung von
+     <link xlink:href="&url.xkcd;327">xkcd</link>
     </para>
 
     <sect2 xml:id="security.database.avoiding">
      <title>Techniken zur Vermeidung</title>
-     <simpara>
-      Obwohl es offensichtlich ist, dass ein Angreifer zumindest ein wenig
-      Kenntnis der genutzten Datenbankarchitektur besitzen muss, um einen
-      erfolgreichen Angriff durchzuführen, ist es oft sehr einfach, diese
-      Informationen zu erhalten. Wenn die Datenbank zum Beispiel Teil eines
-      Open-Source- oder eines anderen öffentlich verfügbaren Softwarepakets
-      mit einer Standardinstallation ist, dann sind diese Informationen
-      vollkommen offen und frei zugänglich. Diese Informationen können auch
-      durch Closed-Source-Code preisgegeben werden - selbst wenn dieser
-      kodiert, verschleiert oder kompiliert ist - und sogar durch Ihren
-      ureigenen Code durch die Anzeige von Fehlermeldungen. Andere Methoden
-      beinhalten die Nutzung typischer Tabellen- und Spaltennamen. Ein
-      Login-Formular etwa, dass eine Tabelle 'users' mit den Spaltennamen
-      'id', 'username' und 'password' nutzt.
-     </simpara>
-     <simpara>
-      Diese Angriffe basieren hauptsächlich auf dem Ausnutzen des Codes, der
-      nicht mit Blick auf die Sicherheit geschrieben wurde. Vertrauen Sie nie
-      auf irgendeine Art von Eingabe, insbesondere wenn sie von der
-      Clientseite kommt, selbst wenn er von einer Auswahlbox, einem
-      versteckten Eingabefeld oder einem Cookie kommt. Das erste Beispiel
-      zeigt, dass solch eine tadellose Abfrage ein Desaster anrichten kann.
-     </simpara>
-
-     <itemizedlist>
-      <listitem>
-       <simpara>
-        Stellen Sie nie als Superuser oder Eigentümer einer Datenbank eine
-        Verbindung zur Datenbank her. Verwenden Sie immer speziell angelegte
-        Benutzer mit sehr limitierten Rechten.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Verwenden Sie Prepared-Statements mit gebundenden Variablen. Sie
-        werden von <link linkend="pdo.prepared-statements">PDO</link>, <link
-        linkend="mysqli.quickstart.prepared-statements">MySQLi</link> und
-        anderen Bibliotheken angeboten.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Prüfen Sie, ob die gegebene Eingabe dem erwarteten Datentyp
-        entspricht. <acronym>PHP</acronym> bietet eine große Auswahl an
-        Funktionen zum Validieren der Eingaben, von den einfachsten unter
-        <link linkend="ref.var">Variablenfunktionen</link> und <link
-        linkend="ref.ctype">Character-Type-Funktionen</link> (z.B.
-        <function>is_numeric</function>, bzw.
-        <function>ctype_digit</function>), bis hin zu den <link
-        linkend="ref.pcre">Perl-kompatiblen regulären Ausdrücken</link>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <para>
-        Wenn die Anwendung eine numerische Eingabe erwartet, erwägen Sie die
-        Prüfung der Daten mit <function>ctype_digit</function> oder die
-        Änderung des Typs mit <function>settype</function> oder verwenden Sie
-        die numerische Darstellung mittels <function>sprintf</function>.
-        <example>
-         <title>Ein sicherer Weg, eine Abfrage zu erstellen</title>
-         <programlisting role="php">
+     <para>
+      Um das Risiko einer SQL-Injection zu verringern, wird empfohlen, alle
+      Daten über vorbereitete Anweisungen zu binden. Die Verwendung von
+      parametrisierten Abfragen ist zwar nicht ausreichend, um SQL-Injections
+      vollständig zu verhindern, aber es ist der einfachste und sicherste Weg,
+      um Daten für SQL-Anweisungen bereitzustellen. Alle dynamischen
+      Datenliterale in <literal>WHERE</literal>-, <literal>SET</literal>- und
+      <literal>VALUES</literal>-Klauseln müssen durch Platzhalter ersetzt
+      werden. Die eigentlichen Daten werden bei der Ausführung gebunden und
+      getrennt vom SQL-Befehl gesendet.
+     </para>
+     <para>
+      Die Parameterbindung kann nur für Daten verwendet werden. Andere
+      dynamische Teile der SQL-Abfrage müssen gegen eine bekannte Liste
+      zulässiger Werte gefiltert werden.
+     </para>
+     <para>
+      <example>
+       <title>Ein sicherer Weg, eine Abfrage zu erstellen</title>
+       <programlisting role="php">
 <![CDATA[
 <?php
 
-settype($offset, 'integer');
-$query = "SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET $offset;";
-
-// Beachten Sie %d im Formatstring, %s zu verwenden wäre sinnlos
-$query = sprintf("SELECT id, name FROM products ORDER BY name LIMIT 20 OFFSET %d;",
-                 $offset);
+// Der dynamische SQL-Teil wird anhand der erwarteten Werte validiert
+$sortingOrder = $_GET['sortingOrder'] === 'DESC' ? 'DESC' : 'ASC';
+$productId = $_GET['productId'];
+// Das SQL wird mit einem Platzhalter vorbereitet
+$stmt = $pdo->prepare("SELECT * FROM products WHERE id LIKE ? ORDER BY price {$sortingOrder}");
+// Der Wert wird mit LIKE-Wildcards versehen
+$stmt->execute(["%{$productId}%"]);
 
 ?>
 ]]>
-         </programlisting>
-        </example>
-       </para>
-      </listitem>
-      <listitem>
-       <simpara>
-        Unterstützt die Datenbank-Ebene das Binden von Variablen nicht, so
-        maskieren Sie jede nichtnumerische Benutzereingabe, welche zur
-        Datenbank weitergereicht werden soll, mit der jeweiligen
-        datenbankspezifischen Maskierungsfunktion für Zeichenketten (z.B.
-        <function>mysql_real_escape_string</function>,
-        <function>sqlite_escape_string</function> usw.). Generische Funktionen
-        wie <function>addslashes</function> sind nur in einer sehr
-        spezifischen Umgebung nützlich (z.B. MySQL mit einem
-        SingleByte-Zeichensatz bei deaktiviertem
-        <varname>NO_BACKSLASH_ESCAPES</varname>), so dass es besser ist, diese
-        zu vermeiden.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Geben Sie um keinen Preis irgendwelche datenbankspezifischen
-        Informationen aus, speziell über das Schema. Siehe auch <link
-        linkend="security.errors">Fehlerbehandlung</link> und <link
-        linkend="ref.errorfunc">Fehlerbehandlungsfunktionen</link>.
-       </simpara>
-      </listitem>
-      <listitem>
-       <simpara>
-        Sie können Stored-Procedures und vorher definierte Cursor verwenden,
-        um den Datenzugriff zu abstrahieren, sodass Benutzer nicht direkt auf
-        Tabellen oder Views zugreifen, aber diese Lösung hat andere
-        Auswirkungen.
-       </simpara>
-      </listitem>
-     </itemizedlist>
+       </programlisting>
+      </example>
+     </para>
+
+     <simpara>
+      Vorbereitete Anweisungen werden von
+      <link linkend="pdo.prepared-statements">PDO</link>,
+      <link linkend="mysqli.quickstart.prepared-statements">MySQLi</link> und
+      anderen Bibliotheken angeboten.
+     </simpara>
+
+     <simpara>
+      Angriffe durch SQL-Injection basieren hauptsächlich darauf, Code
+      auszunutzen, der nicht unter dem Aspekt der Sicherheit geschrieben
+      wurde. Vertrauen Sie niemals einer Eingabe, insbesondere nicht von der
+      Clientseite, selbst wenn sie von einer Auswahlbox, einem versteckten
+      Eingabefeld oder einem Cookie kommt. Das erste Beispiel zeigt, dass eine
+      so einfache Abfrage zu einer Katastrophe führen kann.
+     </simpara>
+
+     <para>
+      Eine umfassende Verteidigungsstrategie umfasst mehrere bewährte
+      Programmierpraktiken:
+      <itemizedlist>
+       <listitem>
+        <simpara>
+         Stellen Sie nie als Superuser oder Eigentümer einer Datenbank eine
+         Verbindung zur Datenbank her. Verwenden Sie immer speziell angelegte
+         Benutzer mit sehr limitierten Rechten.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Prüfen Sie, ob die gegebene Eingabe dem erwarteten Datentyp
+         entspricht. <acronym>PHP</acronym> bietet eine große Auswahl an
+         Funktionen zum Validieren der Eingaben, von den einfachsten unter
+         <link linkend="ref.var">Variablenfunktionen</link> und
+         <link linkend="ref.ctype">Character-Type-Funktionen</link> (&zb;
+         <function>is_numeric</function>, bzw.
+         <function>ctype_digit</function>), bis hin zu den
+         <link linkend="ref.pcre">Perl-kompatiblen regulären Ausdrücken</link>.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Wenn die Anwendung eine numerische Eingabe erwartet, sollten Sie die
+         Daten mittels <function>ctype_digit</function> überprüfen, den Typ
+         stillschweigend mittels <function>settype</function> ändern oder
+         deren numerische Darstellung mittels <function>sprintf</function>
+         verwenden.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Unterstützt die Datenbank-Ebene das Binden von Variablen nicht, so
+         maskieren Sie jede nichtnumerische Benutzereingabe, welche zur
+         Datenbank weitergereicht werden soll, mit der jeweiligen
+         datenbankspezifischen Maskierungsfunktion für Zeichenketten (&zb;
+         <function>mysql_real_escape_string</function>,
+         <function>sqlite_escape_string</function> usw.). Generische Funktionen
+         wie <function>addslashes</function> sind nur in einer sehr
+         spezifischen Umgebung nützlich (&zb; MySQL mit einem
+         SingleByte-Zeichensatz bei deaktiviertem
+         <varname>NO_BACKSLASH_ESCAPES</varname>), sodass es besser ist, diese
+         zu vermeiden.
+        </simpara>
+       </listitem>
+       <listitem>
+        <simpara>
+         Geben Sie um keinen Preis irgendwelche datenbankspezifischen
+         Informationen aus, speziell über das Schema. Siehe auch
+         <link linkend="security.errors">Fehlerbehandlung</link> und
+         <link linkend="ref.errorfunc">Fehlerbehandlungsfunktionen</link>.
+        </simpara>
+       </listitem>
+      </itemizedlist>
+     </para>
 
      <simpara>
       Abgesehen davon profitieren Sie von einer Protokollierung der Abfragen
