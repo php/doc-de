@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 082ddc19f53e6e254010de1a1fbbe485ff744ec1 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<refentry xml:id="pdostatement.rowcount" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>PDOStatement::rowCount</refname>
+  <refpurpose>
+   Liefert die Anzahl der von der letzten SQL-Anweisung betroffenen Zeilen
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis role="PDOStatement">
+   <modifier>public</modifier> <type>int</type><methodname>PDOStatement::rowCount</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   <methodname>PDOStatement::rowCount</methodname> gibt die Anzahl der Zeilen
+   zurück, die von der letzten DELETE-, INSERT- oder UPDATE-Anweisung des
+   zugehörigen <literal>PDOStatement</literal>-Objekts betroffen waren.
+  </para>
+  <para>
+   Bei Anweisungen, die Ergebnismengen erzeugen, &zb;
+   <literal>SELECT</literal>, ist das Verhalten nicht definiert und kann je
+   nach Treiber unterschiedlich sein. Einige Datenbanken können die Anzahl der
+   von dieser Anweisung erzeugten Zeilen zurückgeben (&zb; MySQL im
+   gepufferten Modus), aber dieses Verhalten ist nicht für alle Datenbanken
+   garantiert und sollte nicht für portable Anwendungen verwendet werden.
+  </para>
+  <note>
+   <para>
+    Diese Methode gibt beim SQLite-Treiber immer "0" (Null) zurück, beim
+    PostgreSQL-Treiber nur dann, wenn das Statement-Attribut
+    <constant>PDO::ATTR_CURSOR</constant> auf
+    <constant>PDO::CURSOR_SCROLL</constant> gesetzt ist.
+   </para>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  &no.function.parameters;
+ </refsect1>
+
+  <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   Gibt die Anzahl der Zeilen zurück.
+  </para>
+ </refsect1>
+
+ <refsect1 role="errors">
+  &reftitle.errors;
+  &pdo.errors;
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title>Ermitteln der Anzahl der gelöschten Zeilen</title>
+    <para>
+     <methodname>PDOStatement::rowCount</methodname> gibt die Anzahl der
+     Zeilen zurück, die von einer DELETE-, INSERT- oder UPDATE-Anweisung
+     betroffen sind.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+/* Löschen aller Zeilen aus der Tabelle FRUIT */
+$del = $dbh->prepare('DELETE FROM fruit');
+$del->execute();
+
+/* Rückgabe der Anzahl der gelöschten Zeilen */
+print("Rückgabe der Anzahl der gelöschten Zeilen:\n");
+$count = $del->rowCount();
+print("Es wurden $count Zeilen gelöscht.\n");
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Rückgabe der Anzahl der gelöschten Zeilen:
+Es wurden 9 Zeilen gelöscht.
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Zählen der Zeilen, die von einer SELECT-Anweisung zurückgegeben wurden</title>
+    <para>
+     Bei den meisten Datenbanken gibt
+     <methodname>PDOStatement::rowCount</methodname> die Anzahl der von einer
+     SELECT-Anweisung betroffenen Zeilen nicht zurück. Stattdessen sollte
+     mittels <methodname>PDO::query</methodname> eine SELECT COUNT(*)-Anweisung
+     ausgeführt werden, die dieselben Bedingungen erfüllt wie die gewünschte
+     SELECT-Anweisung. Mit <methodname>PDOStatement::fetchColumn</methodname>
+     kann dann die Anzahl der betroffenen Zeilen ermittelt werden.
+    </para>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$sql = "SELECT COUNT(*) FROM fruit WHERE calories > 100";
+$res = $conn->query($sql);
+$count = $res->fetchColumn();
+
+print "Es gibt " .  $count . " übereinstimmende Datensätze.";
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Es gibt 2 übereinstimmende Datensätze.
+]]>
+    </screen>
+   </example>
+  </para>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><methodname>PDOStatement::columnCount</methodname></member>
+    <member><methodname>PDOStatement::fetchColumn</methodname></member>
+    <member><methodname>PDO::query</methodname></member>
+   </simplelist>
+  </para>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
