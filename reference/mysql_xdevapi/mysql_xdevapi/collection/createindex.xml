@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 5a20fd035d9e63be7ccc3b4ac2e361a10a5add32 Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+
+<refentry xml:id="mysql-xdevapi-collection.createindex" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>Collection::createIndex</refname>
+  <refpurpose>Erzeugt einen Index für die Sammlung</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <modifier>public</modifier> <type>void</type><methodname>mysql_xdevapi\Collection::createIndex</methodname>
+   <methodparam><type>string</type><parameter>index_name</parameter></methodparam>
+   <methodparam><type>string</type><parameter>index_desc_json</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Erzeugt einen Index für die Sammlung.
+  </para>
+  <para>
+   Wenn bereits ein Index mit dem angegebenen Namen existiert oder wenn der
+   Index falsch definiert ist, wird eine Exception ausgelöst.
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <variablelist>
+   <varlistentry>
+    <term><parameter>index_name</parameter></term>
+    <listitem>
+     <para>
+      Der Name des Indexes, der erstellt werden soll. Dieser Name muss ein
+      gültiger Indexname sein, der von der SQL-Anweisung
+      <literal>CREATE INDEX</literal> akzeptiert wird.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>index_desc_json</parameter></term>
+    <listitem>
+     <para>
+      Die Definition des zu erstellenden Indexes. Er enthält ein Array von
+      IndexField-Objekten, wobei jedes Objekt ein einzelnes Dokument
+      beschreibt, das in den Index aufgenommen werden soll, sowie eine
+      optionale Zeichenkette für den Typ des Index, der INDEX (Standard) oder
+      SPATIAL sein kann.
+     </para>
+     <para>
+      Eine einzelne IndexField-Beschreibung besteht aus den folgenden Feldern:
+     </para>
+     <itemizedlist>
+      <listitem>
+       <para>
+        <code>field</code>: Zeichenkette; der vollständige Pfad zum zu
+        indizierenden Dokument oder Feld.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        <code>type</code>: Zeichenkette; einer der unterstützten
+        SQL-Spaltentypen, dem das Feld zugeordnet werden soll. Bei numerischen
+        Typen kann das optionale Schlüsselwort UNSIGNED folgen. Beim Typ TEXT
+        kann die bei der Indizierung zu berücksichtigende Länge hinzugefügt
+        werden.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        <code>required</code>: Boolean; (optional) true, wenn das Feld im
+        Dokument vorhanden sein muss. Der Standardwert ist &false;, außer bei
+        <literal>GEOJSON</literal>, wo standardmäßig &true; verwendet wird.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        <code>options</code>: Integer; (optional) spezielle Optionsflags, die
+        beim Dekodieren von <literal>GEOJSON</literal>-Daten verwendet werden
+        sollen.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        <code>srid</code>: Integer; (optional) der srid-Wert, der beim
+        Dekodieren von <literal>GEOJSON</literal>-Daten verwendet werden soll.
+       </para>
+      </listitem>
+      </itemizedlist>
+      <para>
+       Es ist nicht zulässig, andere, oben nicht beschriebene Felder in
+       IndexDefinition- oder IndexField-Dokumente aufzunehmen.
+      </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para></para>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title><function>mysql_xdevapi\Collection::createIndex</function>-Beispiel</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$session = mysql_xdevapi\getSession("mysqlx://user:password@localhost");
+$session->sql("DROP DATABASE IF EXISTS addressbook")->execute();
+$session->sql("CREATE DATABASE addressbook")->execute();
+
+$schema     = $session->getSchema("addressbook");
+$collection = $schema->createCollection("people");
+
+// Erstellen eines Textindexes
+$collection->createIndex(
+  'myindex1',
+  '{"fields": [{
+    "field": "$.name",
+    "type": "TEXT(25)",
+    "required": true}],
+    "unique": false}'
+);
+
+// Ein räumlicher ndex
+$collection->createIndex(
+  'myindex2',
+  '{"fields": [{
+    "field": "$.home",
+    "type": "GEOJSON",
+    "required": true}],
+    "type": "SPATIAL"}'
+);
+
+// Ein Index mit mehreren Feldern
+$collection->createIndex(
+  'myindex3',
+  '{"fields": [
+    {
+      "field": "$.name",
+      "type": "TEXT(20)",
+      "required": true
+    },
+    {
+      "field": "$.age",
+      "type": "INTEGER"
+    },
+    {
+      "field": "$.job",
+      "type": "TEXT(30)",
+      "required": false
+    }
+  ],
+  "unique": true
+  }'
+);
+]]>
+   </programlisting>
+  </example>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
