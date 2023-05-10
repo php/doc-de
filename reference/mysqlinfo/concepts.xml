@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 383a659e1f0f7aa3330b31a095a1e927611d4c71 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 968c2bc60de3e93d7f38be0b9d2d1b9685a16ea7 Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
 <chapter xml:id="mysqlinfo.concepts" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <title>Konzepte</title>
@@ -37,21 +37,24 @@
   </note>
 
   <para>
-   Ungepufferte MySQL-Abfragen führen die Abfrage aus und geben dann eine
-   <type>Ressource</type> zurück, während die Daten noch auf dem MySQL-Server
-   darauf warten, abgerufen zu werden. Dadurch wird zwar weniger Speicher von
-   PHP verwendet, aber die Last auf dem Server kann steigen. Solange nicht die
-   gesamte Ergebnismenge vom Server abgerufen wurde, können keine weiteren
-   Abfragen über dieselbe Verbindung gesendet werden. Ungepufferte Abfragen
-   können auch als "use result" (Ergebnis verwenden) bezeichnet werden.
+   Ungepufferte MySQL-Abfragen führen die Abfrage aus und warten dann darauf,
+   dass die Daten vom MySQL-Server abgerufen werden. Dadurch wird zwar weniger
+   Speicher von PHP verwendet, aber die Last auf dem Server kann steigen.
+   Solange nicht die gesamte Ergebnismenge vom Server abgerufen wurde, können
+   keine weiteren Abfragen über dieselbe Verbindung gesendet werden.
+   Ungepufferte Abfragen können auch als "use result" (Ergebnis verwenden)
+   bezeichnet werden. Nachdem alle Zeilen der Ergebnismenge abgerufen wurden,
+   ist die Ergebnismenge weg, und kann nicht mehr durchlaufen werden.
   </para>
 
   <para>
-   Diesen Merkmalen entsprechend sollten gepufferte Abfragen in Fällen
-   verwendet werden, in denen nur eine kleine Ergebnismenge erwartet wird oder
-   die Menge der zurückgegebenen Zeilen bekannt sein muss, bevor alle Zeilen
-   gelesen werden. Der ungepufferte Modus sollte verwendet werden, wenn
-   größere Ergebnismengen zu erwarten sind.
+   Aufgrund dieser Merkmale sollten ungepufferte Abfragen nur verwendet
+   werden, wenn eine große Ergebnismenge erwartet wird, die sequentiell
+   verarbeitet werden soll. Ungepufferte Abfragen weisen eine Reihe von
+   Fallstricken auf, die ihre Verwendung erschweren, &zb; ist die Anzahl der
+   Zeilen in der Ergebnismenge erst bekannt, nachdem die letzte Zeile
+   abgerufen wurde. Gepufferte Abfragen sind die einfachere und flexiblere
+   Lösung, um Ergebnismengen zu verarbeiten.
   </para>
 
   <para>
@@ -66,12 +69,10 @@
 <![CDATA[
 <?php
 $mysqli  = new mysqli("localhost", "my_user", "my_password", "world");
-$uresult = $mysqli->query("SELECT Name FROM City", MYSQLI_USE_RESULT);
+$unbufferedResult = $mysqli->query("SELECT Name FROM City", MYSQLI_USE_RESULT);
 
-if ($uresult) {
-   while ($row = $uresult->fetch_assoc()) {
-       echo $row['Name'] . PHP_EOL;
-   }
+foreach ($unbufferedResult as $row) {
+    echo $row['Name'] . PHP_EOL;
 }
 ?>
 ]]>
@@ -83,14 +84,12 @@ if ($uresult) {
    <programlisting role="php">
 <![CDATA[
 <?php
-$pdo = new PDO("mysql:host=localhost;dbname=world", 'my_user', 'my_pass');
+$pdo = new PDO("mysql:host=localhost;dbname=world", 'my_user', 'my_password');
 $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
-$uresult = $pdo->query("SELECT Name FROM City");
-if ($uresult) {
-   while ($row = $uresult->fetch(PDO::FETCH_ASSOC)) {
-       echo $row['Name'] . PHP_EOL;
-   }
+$unbufferedResult = $pdo->query("SELECT Name FROM City");
+foreach ($unbufferedResult as $row) {
+    echo $row['Name'] . PHP_EOL;
 }
 ?>
 ]]>

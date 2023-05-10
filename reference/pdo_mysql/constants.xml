@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: d4d537e6a2a9e11b24d5a42e8be7b2d4763c3f0e Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 968c2bc60de3e93d7f38be0b9d2d1b9685a16ea7 Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
 <section xml:id="pdo-mysql.constants" xmlns="http://docbook.org/ns/docbook">
  &reftitle.constants;
@@ -9,25 +9,27 @@
   <varlistentry xml:id="pdo.constants.mysql-attr-use-buffered-query">
    <term>
     <constant>PDO::MYSQL_ATTR_USE_BUFFERED_QUERY</constant>
-    (<type>int</type>)
+     (<type>bool</type>)
    </term>
    <listitem>
     <simpara>
-     Wenn dieses Attribut bei einem <classname>PDOStatement</classname> auf
-     &true; gesetzt ist, verwendet der MySQL-Treiber die gepufferten Versionen
-     der MySQL-API. Wenn der Code portabel sein soll, sollte stattdessen
-     <function>PDOStatement::fetchAll</function> verwendet werden.
+     In der Voreinstellung werden alle Anweisungen im
+     <link linkend="mysqlinfo.concepts.buffering">gepufferten Modus</link>
+     ausgeführt. Wenn dieses Attribut bei einem
+     <classname>PDO</classname>-Objekt auf &false; gesetzt ist, verwendet der
+     MySQL-Treiber den ungepufferten Modus.
     </simpara>
     <para>
-     <example><title>Erzwingen der Pufferung von Abfragen mit mysql</title>
+     <example><title>Den ungepufferten Modus von MySQL aktivieren</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-if ($db->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
-    $stmt = $db->prepare('select * from foo',
-        array(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true));
-} else {
-    die("Meine Anwendung funktioniert nur mit mysql; ich sollte stattdessen \$stmt->fetchAll() verwenden");
+$pdo = new PDO("mysql:host=localhost;dbname=world", 'my_user', 'my_password');
+$pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+
+$unbufferedResult = $pdo->query("SELECT Name FROM City");
+foreach ($unbufferedResult as $row) {
+    echo $row['Name'] . PHP_EOL;
 }
 ?>
 ]]>
