@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b6f10b97e0d9405144b6100110e935af24161ab6 Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: b676d0b9c968ebb0b7429835f2f6bd364275eed1 Maintainer: wiesemann Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: a223531900823441f82d178ca4e94c0444f24576 Reviewer: samesch -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.utf8-encode">
@@ -125,6 +125,88 @@ echo bin2hex($utf8_string), "\n";
 ]]>
    </screen>
   </example>
+ </refsect1>
+
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <title>Wegfall und Alternativen</title>
+   <para>
+    Diese Funktion ist ab PHP 8.2.0 <emphasis>veraltet</emphasis> und wird in
+    einer zukünftigen Version entfernt. Bereits vorhandene Verwendungen
+    sollten überprüft und durch geeignete Alternativen ersetzt werden.
+   </para>
+   <para>
+    Die Funktion <function>mb_convert_encoding</function> bietet eine ähnliche
+    Funktionalität und unterstützt ISO-8859-1 und viele andere
+    Zeichenkodierungen.
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$iso8859_1_string = "\xEB"; // 'ë' (e mit Trema) in ISO-8859-1
+$utf8_string = mb_convert_encoding($iso8859_1_string, 'UTF-8', 'ISO-8859-1');
+echo bin2hex($utf8_string), "\n";
+
+$iso8859_7_string = "\xEB"; // in ISO-8859-7 steht dieselbe Zeichenkette für 'λ' (griechisches Lambda kleingeschrieben)
+$utf8_string = mb_convert_encoding($iso8859_7_string, 'UTF-8', 'ISO-8859-7');
+echo bin2hex($utf8_string), "\n";
+
+$windows_1252_string = "\x80"; // '€' (Euro-Zeichen) in Windows-1252, aber nicht in ISO-8859-1
+$utf8_string = mb_convert_encoding($windows_1252_string, 'UTF-8', 'Windows-1252');
+echo bin2hex($utf8_string), "\n";
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+c3ab
+cebb
+e282ac
+]]>
+     </screen>
+    </informalexample>
+   </para>
+   <para>
+    Andere Optionen, die in Abhängigkeit von den installierten Erweiterungen
+    verfügbar sein können, sind <methodname>UConverter::transcode</methodname>
+    und <function>iconv</function>.
+   </para>
+   <para>
+    Die folgenden Beispiele führen alle zum selben Ergebnis:
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$iso8859_1_string = "\x5A\x6F\xEB"; // 'Zoë' in ISO-8859-1
+
+$utf8_string = utf8_encode($iso8859_1_string);
+echo bin2hex($utf8_string), "\n";
+
+$utf8_string = mb_convert_encoding($iso8859_1_string, 'UTF-8', 'ISO-8859-1');
+echo bin2hex($utf8_string), "\n";
+
+$utf8_string = UConverter::transcode($iso8859_1_string, 'UTF8', 'ISO-8859-1');
+echo bin2hex($utf8_string), "\n";
+
+$utf8_string = iconv('ISO-8859-1', 'UTF-8', $iso8859_1_string);
+echo bin2hex($utf8_string), "\n";
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+5a6fc3ab
+5a6fc3ab
+5a6fc3ab
+5a6fc3ab
+]]>
+     </screen>
+    </informalexample>
+   </para>
+  </note>
  </refsect1>
 
  <refsect1 role="seealso">
