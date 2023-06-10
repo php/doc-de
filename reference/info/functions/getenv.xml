@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 8dd14a886c7e954cef181c374b6f05cc7149e643 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 1299a9808782769bba9f6a48bf52cb1c68182e78 Maintainer: hholzgra Status: ready -->
 <refentry xml:id="function.getenv" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>getenv</refname>
-  <refpurpose>Liefert den Wert einer Umgebungsvariable</refpurpose>
+  <refpurpose>Liefert den Wert einer einzelnen oder aller Umgebungsvariablen</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>string</type><type>false</type></type><methodname>getenv</methodname>
-   <methodparam><type>string</type><parameter>varname</parameter></methodparam>
+   <type class="union"><type>string</type><type>array</type><type>false</type></type><methodname>getenv</methodname>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>name</parameter><initializer>&null;</initializer></methodparam>
    <methodparam choice="opt"><type>bool</type><parameter>local_only</parameter><initializer>&false;</initializer></methodparam>
   </methodsynopsis>
-  <methodsynopsis>
-   <type>array</type><methodname>getenv</methodname>
-   <void/>
-  </methodsynopsis>
   <para>
-   Gibt den Wert einer Umgebungsvariable zurück.
+   Gibt den Wert einer Umgebungsvariableinzelnen oder aller Umgebungsvariablen
+   zurück.
   </para>
   <para>
    Eine Liste aller Umgebungsvariablen können Sie über die Funktion
@@ -35,10 +32,10 @@
   <para>
    <variablelist>
     <varlistentry>
-     <term><parameter>varname</parameter></term>
+     <term><parameter>name</parameter></term>
      <listitem>
       <para>
-       Der Variablenname.
+       Der Variablenname als &string; oder &null;.
       </para>
      </listitem>
     </varlistentry>
@@ -47,7 +44,8 @@
      <listitem>
       <para>
        Bei &true; werden nur lokale Umgebungsvariablen zurückgegeben, die vom
-       Betriebsystem oder durch putenv() gesetzt wurden.
+       Betriebsystem oder durch putenv() gesetzt wurden. Es hat nur dann eine
+       Auswirkung, wenn <parameter>name</parameter> ein &string; ist.
       </para>
      </listitem>
     </varlistentry>
@@ -59,9 +57,9 @@
   &reftitle.returnvalues;
   <para>
    Gibt den Wert der Umgebungsvariable <parameter>varname</parameter> zurück
-   oder &false;, wenn die Umgebungsvariable <parameter>varname</parameter>
-   nicht existiert. Wird <parameter>varname</parameter> ausgelassen, werden
-   alle Umgebungsvariablen als assoziatives &array; zurückgegeben.
+   oder &false;, wenn die Umgebungsvariable <parameter>name</parameter> nicht
+   existiert. Ist <parameter>name</parameter> &null;, werden alle
+   Umgebungsvariablen als assoziatives <type>Array</type> zurückgegeben.
   </para>
  </refsect1>
 
@@ -77,10 +75,18 @@
     </thead>
     <tbody>
      <row>
+      <entry>8.0.0</entry>
+      <entry>
+       Der <parameter>name</parameter> ist nun nullable (akzeptiert den
+       &null;-Wert).
+      </entry>
+     </row>
+     <row>
       <entry>7.1.0</entry>
       <entry>
-       Der Parameter <parameter>varname</parameter> kann nun ausgelassen
-       werden, um ein assoziatives &array; aller Umgebungsvariablen abzurufen.
+       Der Parameter <parameter>name</parameter> kann nun ausgelassen werden,
+       um ein assoziatives <type>Array</type> aller Umgebungsvariablen
+       abzurufen.
       </entry>
      </row>
      <row>
@@ -102,10 +108,10 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Verwenden Sie von getenv() ...
+// Verwendung von getenv() ...
 $ip = getenv('REMOTE_ADDR');
 
-// ... oder einfach die superglobalen Arrays ($_SERVER oder $_ENV)
+// ... oder einfach eines superglobalen Arrays ($_SERVER oder $_ENV)
 $ip = $_SERVER['REMOTE_ADDR'];
 
 // Sicheres Lesen eines Wertes einer Umgebungsvariablen, wobei ignoriert wird,
@@ -117,7 +123,7 @@ $ip = getenv('REMOTE_ADDR', true) ?: getenv('REMOTE_ADDR')
    </example>
   </para>
  </refsect1>
- 
+
  <refsect1 role="notes">
   &reftitle.notes;
   <warning>
