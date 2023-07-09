@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b7f8c11e56ff1c57a2993e2ed7e5c5ace18637fd Maintainer: cmb Status: ready -->
-<!-- Reviewed: no -->
-<refentry xml:id="function.curl-escape" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- EN-Revision: 52dc204a77076e1404257cf39f179882b90b5780 Maintainer: joshuaruesweg Status: ready -->
+<refentry xml:id="function.curl-unescape" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
-  <refname>curl_escape</refname>
-  <refpurpose>URL-kodiert den angegebenen String</refpurpose>
+  <refname>curl_unescape</refname>
+  <refpurpose>Dekodiert die angegebene URL-kodierte Zeichenkette</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>string</type><type>false</type></type><methodname>curl_escape</methodname>
+   <type class="union"><type>string</type><type>false</type></type><methodname>curl_unescape</methodname>
    <methodparam><type>CurlHandle</type><parameter>handle</parameter></methodparam>
    <methodparam><type>string</type><parameter>string</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Diese Funktion URL-kodiert den angegebenen String gemäß <link xlink:href="&url.rfc;3986">RFC 3986</link>.
+   Dekodiert die angegebene URL-kodierte Zeichenkette.
   </para>
-
  </refsect1>
 
  <refsect1 role="parameters">
@@ -29,7 +27,7 @@
     <term><parameter>string</parameter></term>
     <listitem>
      <para>
-      Der zu kodierende String.
+      Die URL-kodierte Zeichenkette, die dekodiert werden soll.
      </para>
     </listitem>
    </varlistentry>
@@ -39,7 +37,7 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den kodierten String zurück. &return.falseforfailure;
+   Gibt die URL-dekodierte Zeichenkette zurück. &return.falseforfailure;
   </para>
  </refsect1>
 
@@ -68,21 +66,22 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Neues cURL-Handle erstellen
-$ch = curl_init();
+// Erzeuge einen neuen cURL-Handle
+$ch = curl_init('http://example.com/redirect.php');
 
-// String kodieren, der als GET-Parameter verwendet wird
-$location = curl_escape($ch, 'Hofbräuhaus / München');
-// Ergebnis: Hofbr%C3%A4uhaus%20%2F%20M%C3%BCnchen
-
-// URL mit dem kodierten String erstellen
-$url = "http://example.com/add_location.php?location={$location}";
-// Ergebnis: http://example.com/add_location.php?location=Hofbr%C3%A4uhaus%20%2F%20M%C3%BCnchen
-
-// HTTP-Anfrage senden und cURL-Handle schließen
-curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// Sendet die HTTP-Anfrage und folgt explizit einer Weiterleitung
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 curl_exec($ch);
+
+// Speichere die letzte URL
+$effective_url = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+// ie. "http://example.com/show_location.php?loc=M%C3%BCnchen"
+
+// Dekodiere diese URL
+$effective_url_decoded = curl_unescape($ch, $effective_url);
+// "http://example.com/show_location.php?loc=München"
+
+// Schließe den cURL-Handle
 curl_close($ch);
 ?>
 ]]>
@@ -91,14 +90,24 @@ curl_close($ch);
   </para>
  </refsect1>
 
+ <refsect1 role="notes">
+  &reftitle.notes;
+  <note>
+   <para>
+    <function>curl_unescape</function> dekodiert Pluszeichen (+) nicht in Leerzeichen. <function>urldecode</function> tut dies.
+   </para>
+  </note>
+ </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><function>curl_unescape</function></member>
+    <member><function>curl_escape</function></member>
     <member><function>urlencode</function></member>
+    <member><function>urldecode</function></member>
     <member><function>rawurlencode</function></member>
-    <member><link xlink:href="&url.rfc;3986">RFC 3986</link></member>
+    <member><function>rawurldecode</function></member>
    </simplelist>
   </para>
  </refsect1>

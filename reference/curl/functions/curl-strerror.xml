@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 73fae4ee51b644b72028e610abefefced57c18ad Maintainer: tihox Status: ready -->
-<refentry xml:id="function.curl-multi-strerror" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- EN-Revision: 52dc204a77076e1404257cf39f179882b90b5780 Maintainer: joshuaruesweg Status: ready -->
+<refentry xml:id="function.curl-strerror" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
-  <refname>curl_multi_strerror</refname>
+  <refname>curl_strerror</refname>
   <refpurpose>Gibt einen String zurück, der den angegebenen Fehlercode beschreibt</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>string</type><type>null</type></type><methodname>curl_multi_strerror</methodname>
+   <type class="union"><type>string</type><type>null</type></type><methodname>curl_strerror</methodname>
    <methodparam><type>int</type><parameter>error_code</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Gibt eine Fehlermeldung in Textform zurück, die den gegebenen CURLM Fehlercode beschreibt.
+   Gibt eine Fehlermeldung in Textform zurück, die den gegebenen Fehlercode beschreibt.
   </para>
 
  </refsect1>
@@ -26,7 +26,7 @@
     <term><parameter>error_code</parameter></term>
     <listitem>
      <para>
-      Eine der <link xlink:href="&url.curl.error;">CURLM Fehlercode</link>-Konstanten.
+      Eine der <link xlink:href="&url.curl.error;">cURL Fehlercode</link>-Konstanten.
      </para>
     </listitem>
    </varlistentry>
@@ -44,37 +44,34 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>curl_multi_strerror</function>-Beispiel</title>
+    <title><function>curl_errno</function>-Beispiel</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Erzeugt cURL-handles
-$ch1 = curl_init("http://example.com/");
-$ch2 = curl_init("http://php.net/");
+// Erstelle ein cURL-Handle mit einem falschen Protokoll
+$ch = curl_init("htp://example.com/");
 
-// Erzeugt ein cURL multi-Handle
-$mh = curl_multi_init();
+// Führe den cURL-Handle aus
+curl_exec($ch);
 
-// Fügt die Handles zum multi-handle hinzu
-curl_multi_add_handle($mh, $ch1);
-curl_multi_add_handle($mh, $ch2);
-
-// Führt das Multi-Handle aus
-do {
-    $status = curl_multi_exec($mh, $active);
-    if ($active) {
-        curl_multi_select($mh);
-    }
-} while ($active && $status === CURLM_OK);
-
-// Auf Fehler prüfen
-if ($status != CURLM_OK) {
-    // Fehlermeldung anzeigen
-    echo "FEHLER!\n " . curl_multi_strerror($status);
+// Prüfe ob die Anfrage fehlerhaft war und gebe den Fehler aus
+if($errno = curl_errno($ch)) {
+    $error_message = curl_strerror($errno);
+    echo "cURL error ({$errno}):\n {$error_message}";
 }
+
+// Schließe den Handle
+curl_close($ch);
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+cURL error (1):
+ Unsupported protocol
+]]>
+    </screen>
    </example>
   </para>
  </refsect1>
@@ -83,7 +80,8 @@ if ($status != CURLM_OK) {
   &reftitle.seealso;
   <para>
    <simplelist>
-    <member><function>curl_strerror</function></member>
+    <member><function>curl_errno</function></member>
+    <member><function>curl_error</function></member>
     <member><link xlink:href="&url.curl.error;">cURL Fehlercodes</link></member>
    </simplelist>
   </para>
