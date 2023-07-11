@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 4985eb0aa7bb240fa3bf7c17f76e1609faef327e Maintainer: samesch Status: wip -->
+<!-- Reviewed: no -->
+<chapter xml:id="language.fibers" xmlns="http://docbook.org/ns/docbook">
+ <title>Fibers</title>
+
+ <simplesect xml:id="language.fibers.overview">
+  <title>Übersicht über Fibers</title>
+  <?phpdoc print-version-for="fiber"?>
+  <para>
+   Fibers stellen unterbrechbare Funktionen dar, die den gesamten Aufrufstapel
+   (Call-Stack) umfassen. Sie können an jeder Stelle des Aufrufstapels
+   unterbrochen werden, wobei die Ausführung innerhalb der Fiber solange
+   unterbrochen wird, bis die Fiber zu einem späteren Zeitpunkt fortgesetzt
+   wird.
+  </para>
+  <para>
+   Fibers halten den gesamten Ausführungsstapel an, sodass der direkte
+   Aufrufer der Funktion nicht ändern muss, wie er die Funktion aufruft.
+  </para>
+  <para>
+   Mit <methodname>Fiber::suspend</methodname> kann die Ausführung an jeder
+   Stelle im Aufrufstapel unterbrochen werden (&dh; der Aufruf von
+   <methodname>Fiber::suspend</methodname> kann in einer tief verschachtelten
+   Funktion liegen oder auch gar nicht existieren).
+  </para>
+  <para>
+   Im Gegensatz zu einem <classname>Generator</classname>, der keinen Stapel
+   hat, hat jede <classname>Fiber</classname> ihren eigenen Aufrufstapel,
+   sodass sie innerhalb tief verschachtelter Funktionsaufrufe unterbrochen
+   werden kann. Im Gegensatz zu einer Funktion, die &yield; verwendet und eine
+   <classname>Generator</classname>-Instanz zurückgeben muss, muss eine
+   Funktion, die einen Unterbrechungspunkt deklariert (&dh;
+   <methodname>Fiber::suspend</methodname> aufruft), ihren Rückgabetyp nicht
+   ändern.
+  </para>
+  <para>
+   Fibers können beim Aufruf einer beliebigen Funktion unterbrochen werden.
+   Dies gilt auch für Funktionen, die innerhalb der PHP-VM aufgerufen werden,
+   &zb; Funktionen, die an <function>array_map</function> übergeben werden
+   oder Methoden eines <classname>Iterator</classname>-Objekts, die von
+   &foreach; aufgerufen werden.
+  </para>
+  <para>
+   Sobald die Ausführung einer Fiber unterbrochen wurde, kann sie wieder
+   aufgenommen werden, indem ein beliebiger Wert an
+   <methodname>Fiber::resume</methodname> übergeben wird oder indem
+   <methodname>Fiber::throw</methodname> verwendet wird, um eine Exception an
+   die Fiber zu senden. Bei der Wiederaufnahme wird von
+   <methodname>Fiber::suspend</methodname> ein Wert zurückgegeben (oder es
+   wird eine Ausnahme ausgelöst).
+  </para>
+  <note>
+   <simpara>
+    Aufgrund der derzeitigen Beschränkungen ist es nicht möglich Fibers im
+    Destruktor eines Objekts zu schalten.
+   </simpara>
+  </note>
+
+  <example xml:id="language.fiber.example.basic"><!-- {{{ -->
+   <title>Basic usage</title>
+   <programlisting role="php">
+    <![CDATA[
+<?php
+$fiber = new Fiber(function (): void {
+   $value = Fiber::suspend('fiber');
+   echo "Der Wert für die Wiederaufnahme der Fiber: ", $value, PHP_EOL;
+});
+
+$value = $fiber->start();
+
+echo "Der Wert vom Unterbrechen der Fiber: ", $value, PHP_EOL;
+
+$fiber->resume('test');
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+    <![CDATA[
+Der Wert vom Unterbrechen der Fiber: fiber
+Der Wert für die Wiederaufnahme der Fiber: test
+]]>
+   </screen>
+  </example><!-- }}} -->
+
+ </simplesect>
+
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->

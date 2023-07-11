@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 9155d793178b5fcd5131b734cd174fecc34c1ae6 Maintainer: samesch Status: wip -->
+<!-- Reviewed: no -->
+ <chapter xml:id="language.attributes" xmlns="http://docbook.org/ns/docbook">
+  <title>Attribute</title>
+  <sect1 xml:id="language.attributes.overview">
+   <title>Übersicht über die Attribute</title>
+   <?phpdoc print-version-for="attributes"?>
+
+   <para>
+    Attribute bieten die Möglichkeit, strukturierte, maschinenlesbare
+    Metadaten-Informationen über Deklarationen in den Code einfügen: Attribute
+    können für Klassen, Methoden, Funktionen, Parameter, Eigenschaften und
+    Klassenkonstanten verwendet werden. Die durch Attribute definierten
+    Metadaten können dann zur Laufzeit mit Hilfe der
+    <link linkend="book.reflection">Reflection-APIs</link> inspiziert werden.
+    Attribute können daher als eine direkt in den Code eingebettete
+    Konfigurationssprache betrachtet werden.
+   </para>
+
+   <para>
+    Mit Attributen können die allgemeine Implementierung eines Merkmals und
+    seine konkrete Verwendung in einer Anwendung voneinander getrennt werden.
+    In gewisser Weise ist dies vergleichbar mit Schnittstellen und deren
+    Implementierung. Während es aber bei Schnittstellen und deren
+    Implementierung um Code geht, geht es bei Attributen um die Angabe
+    zusätzlicher Informationen und Konfiguration. Schnittstellen können von
+    Klassen implementiert werden, während Attribute auch für Methoden,
+    Funktionen, Parameter, Eigenschaften und Klassenkonstanten deklariert
+    werden können. Attribute sind daher flexibler als Schnittstellen.
+   </para>
+
+    <para>
+     Ein einfaches Beispiel dafür, wie Attribute verwendet werden können,
+     wandelt eine Schnittstelle mit optionalen Methoden so um, dass Attribute
+     verwendet werden. Nehmen wir eine
+     <literal>ActionHandler</literal>-Schnittstelle an, die eine Operation in
+     einer Anwendung darstellt, bei der einige Implementierungen eines
+     Action-Handlers vorkonfiguriert werden müssen und andere nicht. Anstatt
+     von allen Klassen, die <literal>ActionHandler</literal> implementieren,
+     zu verlangen, eine <literal>setUp()</literal>-Methode zu implementieren,
+     kann ein Attribut verwendet werden. Ein Vorteil dieses Ansatzes ist, dass
+     wir das Attribut mehrfach verwenden können.
+    </para>
+
+   <example>
+    <title>Implementierung optionaler Methoden einer Schnittstelle mit Hilfe von Attributen</title>
+     <programlisting role="php">
+<![CDATA[
+<?php
+interface ActionHandler
+{
+    public function execute();
+}
+
+#[Attribute]
+class SetUp {}
+
+class CopyFile implements ActionHandler
+{
+    public string $fileName;
+    public string $targetDirectory;
+
+    #[SetUp]
+    public function fileExists()
+    {
+        if (!file_exists($this->fileName)) {
+            throw new RuntimeException("File does not exist");
+        }
+    }
+
+    #[SetUp]
+    public function targetDirectoryExists()
+    {
+        if (!file_exists($this->targetDirectory)) {
+            mkdir($this->targetDirectory);
+        } elseif (!is_dir($this->targetDirectory)) {
+            throw new RuntimeException("Das Zielverzeichnis $this->targetDirectory ist kein Verzeichnis");
+        }
+    }
+
+    public function execute()
+    {
+        copy($this->fileName, $this->targetDirectory . '/' . basename($this->fileName));
+    }
+}
+
+function executeAction(ActionHandler $actionHandler)
+{
+    $reflection = new ReflectionObject($actionHandler);
+
+    foreach ($reflection->getMethods() as $method) {
+        $attributes = $method->getAttributes(SetUp::class);
+
+        if (count($attributes) > 0) {
+            $methodName = $method->getName();
+
+            $actionHandler->$methodName();
+        }
+    }
+
+    $actionHandler->execute();
+}
+
+$copyAction = new CopyFile();
+$copyAction->fileName = "/tmp/foo.jpg";
+$copyAction->targetDirectory = "/home/user";
+
+executeAction($copyAction);
+]]>
+     </programlisting>
+    </example>
+  </sect1>
+
+  <sect1 xml:id="language.attributes.syntax">
+   <title>Syntax von Attributen</title>
+
+   <para>
+    Die Syntax von Attributen besteht aus mehreren Teilen. Zunächst wird eine
+    Attributdeklaration immer mit einem beginnenden <literal>#[</literal> und
+    einem dazugehörigen abschließenden <literal>]</literal> umschlossen. Darin
+    werden ein oder mehrere Attribute durch Komma getrennt aufgelistet. Die
+    Attribute können mit unqualifizierten, qualifizierten oder
+    vollqualifizierten Namen angegeben werden, wie es in den
+    <link linkend="language.namespaces.basics">Grundlagen der Verwendung von
+    Namespaces</link> beschrieben ist. Die Argumente für ein Attribut sind
+    optional und werden in der üblichen Klammer <literal>()</literal>
+    eingeschlossen. Die Argumente für Attribute können nur Literalwerte oder
+    konstante Ausdrücke sein. Es kann sowohl die Syntax für positionale als
+    auch für benannte Argumente verwendet werden.
+   </para>
+
+   <para>
+    Wenn ein Attribut über die Reflection-API angefordert wird, wird sein Name
+    wie ein Klassenname behandelt und seine Argumente werden an seinen
+    Konstruktor übergeben. Für jedes Attribut muss also eine entsprechende
+    Klasse existieren.
+   </para>
+
+   <example>
+    <title>Syntax von Attributen</title>
+
+    <programlisting role="php">
+<![CDATA[
+<?php
+// a.php
+namespace MyExample;
+
+use Attribute;
+
+#[Attribute]
+class MyAttribute
+{
+    const VALUE = 'value';
+
+    private $value;
+
+    public function __construct($value = null)
+    {
+        $this->value = $value;
+    }
+}
+
+// b.php
+
+namespace Another;
+
+use MyExample\MyAttribute;
+
+#[MyAttribute]
+#[\MyExample\MyAttribute]
+#[MyAttribute(1234)]
+#[MyAttribute(value: 1234)]
+#[MyAttribute(MyAttribute::VALUE)]
+#[MyAttribute(array("key" => "value"))]
+#[MyAttribute(100 + 200)]
+class Thing
+{
+}
+
+#[MyAttribute(1234), MyAttribute(5678)]
+class AnotherThing
+{
+}
+]]>
+    </programlisting>
+   </example>
+  </sect1>
+
+
+  <sect1 xml:id="language.attributes.reflection">
+   <title>Lesen von Attributen mit der Reflection-API</title>
+
+   <para>
+    Mit der Methode <function>getAttributes</function> der Reflection API kann
+    für jedes der jeweiligen Reflection-Objekte auf Attribute von Klassen,
+    Methoden, Funktionen, Parametern, Eigenschaften und Klassenkonstanten
+    zugegriffen werden. Diese Methode gibt ein Array von
+    <classname>ReflectionAttribute</classname>-Instanzen zurück, die nach
+    Attributnamen und Argumenten abgefragt werden können, um eine Instanz des
+    entsprechenden Attributs zu erzeugen.
+   </para>
+
+   <para>
+    Diese Trennung zwischen der Darstellung des reflektierten Attributs und
+    der tatsächlichen Instanz erleichtert es dem Programmierer, Fehler im
+    Zusammenhang mit fehlenden Attributklassen, Tippfehlern oder fehlenden
+    Argumenten zu kontrollieren. Das Attributobjekt wird erst nach dem Aufruf
+    von <function>ReflectionAttribute::newInstance</function> erstellt und auf
+    korrekte Argumente geprüft, nicht vorher.
+   </para>
+
+   <example>
+    <title>Lesen von Attributen mit der Reflection-API</title>
+
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+#[Attribute]
+class MyAttribute
+{
+    public $value;
+
+    public function __construct($value)
+    {
+        $this->value = $value;
+    }
+}
+
+#[MyAttribute(value: 1234)]
+class Thing
+{
+}
+
+function dumpAttributeData($reflection) {
+    $attributes = $reflection->getAttributes();
+
+    foreach ($attributes as $attribute) {
+       var_dump($attribute->getName());
+       var_dump($attribute->getArguments());
+       var_dump($attribute->newInstance());
+    }
+}
+
+dumpAttributeData(new ReflectionClass(Thing::class));
+/*
+string(11) "MyAttribute"
+array(1) {
+  ["value"]=>
+  int(1234)
+}
+object(MyAttribute)#3 (1) {
+  ["value"]=>
+  int(1234)
+}
+*/
+
+]]>
+    </programlisting>
+   </example>
+
+   <para>
+    Anstatt alle Attribute eines Reflection-Objekts der Reihe nach zu
+    durchlaufen, kann auch der Name einer bestimmten Attributklasse als
+    Argument übergeben werden, um nur die entsprechenden Attribute abzurufen.
+   </para>
+
+   <example>
+    <title>Lesen bestimmter Attribute mit der Reflection-API</title>
+
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+function dumpMyAttributeData($reflection) {
+    $attributes = $reflection->getAttributes(MyAttribute::class);
+
+    foreach ($attributes as $attribute) {
+       var_dump($attribute->getName());
+       var_dump($attribute->getArguments());
+       var_dump($attribute->newInstance());
+    }
+}
+
+dumpMyAttributeData(new ReflectionClass(Thing::class));
+]]>
+     </programlisting>
+    </example>
+  </sect1>
+
+  <sect1 xml:id="language.attributes.classes">
+   <title>Deklaration von Attributklassen</title>
+
+   <para>
+    Es ist zwar nicht unbedingt erforderlich, für jedes Attribut eine eigene
+    Klasse zu erstellen, aber es ist empfehlenswert. Im einfachsten Fall wird
+    nur eine leere Klasse benötigt, in der das Attribut
+    <literal>#[Attribut]</literal> deklariert wird, das mit einer use-Anweisung
+    aus dem globalen Namespace importiert werden kann.
+   </para>
+
+  <example>
+   <title>Einfache Attributklasse</title>
+
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+namespace Example;
+
+use Attribute;
+
+#[Attribute]
+class MyAttribute
+{
+}
+]]>
+   </programlisting>
+  </example>
+
+  <para>
+   Um den Typ der Deklaration einzuschränken, dem ein Attribut zugeordnet
+   werden kann, kann eine Bitmaske als erstes Argument an die
+   <literal>#[Attribut]</literal>-Deklaration übergeben werden.
+  </para>
+
+  <example>
+   <title>Verwendung der Zielspezifikation, um die Verwendung von Attributen zu beschränken</title>
+
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+namespace Example;
+
+use Attribute;
+
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+class MyAttribute
+{
+}
+]]>
+    </programlisting>
+
+    <para>
+     Wenn <classname>MyAttribute</classname> für einen anderen Typ deklariert
+     wird, wird nun beim Aufruf von
+     <function>ReflectionAttribute::newInstance</function> eine Exception
+     ausgelöst.
+    </para>
+   </example>
+
+   <para>Die folgenden Ziele können angegeben werden:</para>
+
+   <simplelist>
+    <member><constant>Attribute::TARGET_CLASS</constant></member>
+    <member><constant>Attribute::TARGET_FUNCTION</constant></member>
+    <member><constant>Attribute::TARGET_METHOD</constant></member>
+    <member><constant>Attribute::TARGET_PROPERTY</constant></member>
+    <member><constant>Attribute::TARGET_CLASS_CONSTANT</constant></member>
+    <member><constant>Attribute::TARGET_PARAMETER</constant></member>
+    <member><constant>Attribute::TARGET_ALL</constant></member>
+   </simplelist>
+
+   <para>
+    Standardmäßig kann ein Attribut nur einmal pro Deklaration verwendet
+    werden. Wenn das Attribut bei Deklarationen wiederholbar sein soll, muss
+    dies als Teil der Bitmaske der <literal>#[Attribut]</literal>-Deklaration
+    angegeben werden.
+   </para>
+
+   <example>
+    <title>Verwendung von IS_REPEATABLE um ein Attribut mehrfach in einer Deklaration zu erlauben</title>
+
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+namespace Example;
+
+use Attribute;
+
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE)]
+class MyAttribute
+{
+}
+]]>
+    </programlisting>
+
+   </example>
+  </sect1>
+ </chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
