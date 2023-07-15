@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 78d273c6d4b08d0ee04b69bc3a9230a39b99d60f Maintainer: joshuaruesweg Status: ready -->
+<sect1 xml:id="control-structures.match" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>match</title>
+ <?phpdoc print-version-for="match"?>
+ <para>
+  Der <literal>match</literal>-Ausdruck verzweigt die Auswertung auf
+  der Grundlage einer Identitätsprüfung eines Wertes. Ähnlich wie eine
+  <literal>switch</literal>-Anweisung, hat ein
+  <literal>match</literal>-Ausdruck ein Subjekt, welcher mit
+  mehreren Fällen verglichen wird. Im Gegensatz zu switch ist der
+  Vergleich typsicher (<code>===</code>) und nicht typschwache (<code>==</code>).
+  Match-Ausdrücke sind ab PHP 8.0.0 verfügbar.
+ </para>
+
+ <example>
+  <title>Struktur eines <literal>match</literal>-Ausdrucks</title>
+  <programlisting role="php">
+<![CDATA[
+<?php
+$return_value = match (subjekt) {
+    einfacher_bedingter_ausdruck => rückgabe_ausdruck,
+    bedingter_ausdruck1, bedingter_ausdruck2 => rückgabe_ausdruck,
+};
+?>
+]]>
+  </programlisting>
+
+   <example>
+   <title>Grundlegende Benutzung von <literal>match</literal></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$lebensmittel = 'kuchen';
+
+$return_value = match ($food) {
+    'apfel' => 'Das Lebensmittel ist ein Apfel',
+    'schokolade' => 'Das Lebensmittel ist Schokolade',
+    'kuchen' => 'Das Lebensmittel ist ein Kuchen',
+};
+
+var_dump($return_value);
+?>
+]]>
+  </programlisting>
+  &example.outputs;
+   <screen>
+<![CDATA[
+string(31) "Das Lebensmittel ist ein Kuchen"
+]]>
+   </screen>
+  </example>
+
+  <note>
+   <simpara>
+    Das Ergebnis eines <literal>match</literal>-Ausdrucks muss nicht verwendet werden.
+   </simpara>
+  </note>
+  <note>
+   <simpara>
+    Ein <literal>match</literal>-Ausdruck <emphasis>muss</emphasis> mit einem
+    Semikolon <literal>;</literal> abgeschlossen werden.
+   </simpara>
+  </note>
+ </example>
+
+ <para>
+  Der Ausdruck <literal>match</literal> ist ähnlich wie eine
+  <literal>switch</literal>-Anweisung, hat aber einige wesentliche Unterschiede:
+
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     Ein <literal>match</literal>-Fall vergleicht Werte typsicher (<code>===</code>)
+     statt typschwach, wie die switch-Anweisung.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Ein <literal>match</literal>-Ausdruck gibt einen Wert zurück.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     <literal>match</literal>-Fälle fallen nicht auf spätere Fälle durch, so wie
+     es <literal>switch</literal>-Fälle tun können.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Ein <literal>match</literal>-Ausdruck muss vollständig sein.
+    </simpara>
+   </listitem>
+  </itemizedlist>
+ </para>
+
+ <para>
+  Wie <literal>switch</literal>-Anweisungen, werden
+  <literal>match</literal>-Ausdrücke Fall für Fall ausgeführt.
+  Zu Beginn wird kein Code ausgeführt.
+  Die bedingten Ausdrücke werden nur ausgewertet, wenn alle vorherigen bedingten
+  Ausdrücke nicht mit dem betreffenden Ausdruck übereinstimmen.
+  Nur der Rückgabeausdruck, der dem passenden bedingten
+  Ausdruck entspricht, wird ausgewertet.
+  Ein Beispiel dafür:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$result = match ($x) {
+    foo() => ...,
+    $this->bar() => ..., // $this->bar() wird nicht aufgerufen, wenn foo() === $x
+    $this->baz => beep(), // beep() wird nur aufgerufen, wenn $x === $this->baz
+    // etc.
+};
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+
+ <para>
+  <literal>match</literal>-Bedingungen können mehrere Ausdrücke, die durch Kommata
+  getrennt sind, enthalten. Diese Ausdrücke werden durch ein logisches ODER
+  getrennt und sind ein Kürzel für mehrere <literal>match</literal>-Fälle,
+  welche die gleiche rechte Seite haben.
+ </para>
+ <para>
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$result = match ($x) {
+    // Dieser Fall:
+    $a, $b, $c => 5,
+    // ist der gleiche Fall wie:
+    $a => 5,
+    $b => 5,
+    $c => 5,
+};
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <para>
+  Ein Sonderfall ist die <literal>default</literal>-Klausel.
+  Diese fängt alle Fälle ab, die nicht durch einen der anderen Fälle behandelt wurden.
+  Zum Beispiel:
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$expressionResult = match ($condition) {
+    1, 2 => foo(),
+    3, 4 => bar(),
+    default => baz(),
+};
+?>
+]]>
+   </programlisting>
+  </informalexample>
+  <note>
+   <simpara>
+    Mehrere default-Anweisungen erzeugen einen
+    <constant>E_COMPILE_ERROR</constant>-Fehler.
+   </simpara>
+  </note>
+ </para>
+
+ <para>
+  Ein <literal>match</literal>-Ausdruck muss vollständig sein. Wenn
+  die Bedingung von keinem Fall behandelt wird, wird eine
+  <classname>UnhandledMatchError</classname>-Exception geworfen.
+ </para>
+
+ <example>
+  <title>Beispiel für einen unbehandelten Vergleichsausdruck</title>
+  <programlisting role="php">
+<![CDATA[
+<?php
+$bedingung = 5;
+
+try {
+    match ($bedingung) {
+        1, 2 => foo(),
+        3, 4 => bar(),
+    };
+} catch (\UnhandledMatchError $e) {
+    var_dump($e);
+}
+?>
+]]>
+  </programlisting>
+  &example.outputs;
+  <screen>
+<![CDATA[
+object(UnhandledMatchError)#1 (7) {
+  ["message":protected]=>
+  string(33) "Unhandled match value of type int"
+  ["string":"Error":private]=>
+  string(0) ""
+  ["code":protected]=>
+  int(0)
+  ["file":protected]=>
+  string(9) "/in/ICgGK"
+  ["line":protected]=>
+  int(6)
+  ["trace":"Error":private]=>
+  array(0) {
+  }
+  ["previous":"Error":private]=>
+  NULL
+}
+]]>
+  </screen>
+ </example>
+
+ <sect2>
+  <title>Verwendung von Ausdrücken zur Handhabung von Nicht-Vergleichsprüfungen</title>
+  <para>
+   Es ist möglich, einen <literal>match</literal>-Ausdruck zu verwenden,
+   um nicht-vergleichende Fälle zu behandeln, indem <code>true</code> als
+   Bedingung verwendet wird.
+  </para>
+
+  <example>
+   <title>Prüfung von ganzzahligen Bereichen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$alter = 23;
+
+$result = match (true) {
+    $alter >= 65 => 'Senior',
+    $alter >= 25 => 'Erwachsener',
+    $alter >= 18 => 'Junger Erwachsener',
+    default => 'Kind',
+};
+
+var_dump($result);
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+string(18) "Junger Erwachsener"
+]]>
+   </screen>
+  </example>
+
+  <example>
+   <title>Prüfung eines Textes auf enthaltene Zeichenfolgen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$text = 'Bienvenue chez nous';
+
+$result = match (true) {
+    str_contains($text, 'Welcome') || str_contains($text, 'Hello') => 'en',
+    str_contains($text, 'Bienvenue') || str_contains($text, 'Bonjour') => 'fr',
+    // ...
+};
+
+var_dump($result);
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+string(2) "fr"
+]]>
+   </screen>
+  </example>
+ </sect2>
+</sect1>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
