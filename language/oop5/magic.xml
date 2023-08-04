@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 0a89f2d43977ac8de515030b4f78317bf060f7f0 Maintainer: simp Status: ready -->
-<sect1 xml:id="language.oop5.magic" xmlns="http://docbook.org/ns/docbook">
+<!-- EN-Revision: 0eda461b7a8d5035cebf6cecba26f206a929058f Maintainer: simp Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 0eda461b7a8d5035cebf6cecba26f206a929058f Reviewer: samesch -->
+ <sect1 xml:id="language.oop5.magic" xmlns="http://docbook.org/ns/docbook">
   <title>Magische Methoden</title>
   <para>
    Magische Methoden sind Methoden, die PHPs Standardverhalten überschreiben,
@@ -11,7 +13,7 @@
    <simpara>
     Alle Methodennamen, die mit <literal>__</literal> beginnen, sind durch
     PHP reserviert. Es wird daher nicht empfohlen solche Methodennamen zu
-    verwenden, wenn man nicht PHPs Verhalten überschreiben möchte.
+    verwenden, außer wenn das Verhalten von PHP überschrieben werden soll.
    </simpara>
   </caution>
   <para>
@@ -38,34 +40,34 @@
   <warning>
    <!-- See for a code example of this behaviour: https://3v4l.org/Bov34 -->
    <simpara>
-    Alle magischen Methoden, mit der Ausnahme von
+    Mit Ausnahme von
     <link linkend="object.construct">__construct()</link>,
     <link linkend="object.destruct">__destruct()</link> und
-    <link linkend="object.clone">__clone()</link>,
-    <emphasis>müssen</emphasis> als <literal>public</literal> deklariert werden.
-    Andernfalls wird eine <constant>E_WARNING</constant> ausgegeben.
+    <link linkend="object.clone">__clone()</link> <emphasis>müssen</emphasis>
+    alle magischen Methoden als <literal>public</literal> deklariert werden,
+    andernfalls wird eine <constant>E_WARNING</constant> ausgegeben.
     Vor PHP 8.0.0 wurde für die magischen Methoden
     <link linkend="object.sleep">__sleep()</link>,
     <link linkend="object.wakeup">__wakeup()</link>,
     <link linkend="object.serialize">__serialize()</link>,
     <link linkend="object.unserialize">__unserialize()</link> und
-    <link linkend="object.set-state">__set_state()</link> keine
-    Diagnostik ausgegeben.
+    <link linkend="object.set-state">__set_state()</link> keine Diagnose
+    ausgegeben.
    </simpara>
   </warning>
   <warning>
    <para>
     Falls Typdeklarationen in der Definition der magischen Methoden angegeben
-    werden, müssen diese identisch zu den Signaturen sein die in diesem
-    Dokument beschrieben werden. Andernfalls wird ein fataler Fehler
-    hervorgerufen. Vor PHP 8.0.0 wurde keine Diagnostik ausgegeben. Allerdings
+    werden, müssen diese identisch zu den Signaturen sein, die in diesem
+    Dokument beschrieben werden, andernfalls wird ein fataler Fehler
+    hervorgerufen. Vor PHP 8.0.0 wurde keine Diagnose ausgegeben. Allerdings
     dürfen <link linkend="object.construct">__construct()</link> und
     <link linkend="object.destruct">__destruct()</link> keinen Rückgabetyp
     deklarieren, sonst wird ein fataler Fehler ausgegeben.
    </para>
   </warning>
 
- <sect2 xml:id="language.oop5.magic.sleep">
+  <sect2 xml:id="language.oop5.magic.sleep">
    <title>
     <link linkend="object.sleep">__sleep()</link> und
     <link linkend="object.wakeup">__wakeup()</link>
@@ -82,38 +84,46 @@
 
    <para>
     <function>serialize</function> prüft, ob die Klasse eine Funktion mit dem
-    magischen Namen <link linkend="object.sleep">__sleep()</link> besitzt. Wenn
-    dem so ist, wird die Funktion vor jeder Serialisierung ausgeführt. Sie kann
-    das Objekt aufräumen und es wird von ihr erwartet, dass sie ein Array mit den
-    Namen aller Variablen zurück liefert, die serialisiert werden sollen. Wenn die
-    Methode nichts zurück gibt, so wird &null; serialisiert und eine
-    <constant>E_NOTICE</constant> geworfen.
-  </para>
-  <note>
-   <para>
-    <link linkend="object.sleep">__sleep()</link> kann nicht Namen von privaten
-    Eigenschaften von Elternklassen zurückgeben. In diesem Fall wird eine
-    <constant>E_NOTICE</constant> geworfen. Stattdessen sollte das
-    <classname>Serializable</classname>-Interface verwendet werden.
+    magischen Namen <link linkend="object.sleep">__sleep()</link> besitzt.
+    Wenn dem so ist, wird die Funktion vor jeder Serialisierung ausgeführt.
+    Sie kann das Objekt aufräumen und es wird von ihr erwartet, dass sie ein
+    Array mit den Namen aller Variablen zurückgibt, die serialisiert werden
+    sollen. Wenn die Methode nichts zurückgibt, wird &null; serialisiert und
+    eine <constant>E_NOTICE</constant> ausgegeben.
    </para>
-  </note>
-  <para>
-   Die beabsichtigte Verwendung von <link linkend="object.sleep">__sleep()</link>
-   ist, nicht gespeicherte Daten zu sichern oder ähnliche Aufräumarbeiten zu
-   erledigen. Die Funktion ist ebenfalls nützlich, wenn ein sehr großes Objekt
-   nicht komplett gespeichert werden muss.
-  </para>
-  <para>
-   Umgekehrt überprüft <function>unserialize</function> die Anwesenheit einer
-   Funktion mit dem magischen Namen <link linkend="object.wakeup">__wakeup()</link>.
-   Falls vorhanden, kann diese Funktion alle Ressourcen, die das Objekt haben könnte,
-   wiederherstellen.
-  </para>
-  <para>
-   Der beabsichtigte Zweck von <link linkend="object.wakeup">__wakeup()</link> ist es,
-   alle Datenbankverbindungen wiederherzustellen, die während der Serialisierung
-   verloren gegangen sein könnten, oder auch andere Aufgaben zur erneuten Initialisierung.
-  </para>
+   <note>
+    <para>
+     <link linkend="object.sleep">__sleep()</link> kann keine Namen von
+     privaten Eigenschaften in Elternklassen zurückgeben. Dies würde zu einem
+     Fehler der Stufe <constant>E_NOTICE</constant> führen. Stattdessen sollte
+     das <classname>Serializable</classname>-Interface verwendet werden.
+    </para>
+   </note>
+   <note>
+    <para>
+     Seit PHP 8.0.0 erzeugt die Rückgabe eines Wertes von
+     <link linkend="object.sleep">__sleep()</link>, der kein Array ist, eine
+     Warnung; vorher führte dies zu einem Hinweis.
+    </para>
+   </note>
+   <para>
+    Der Zweck von von <link linkend="object.sleep">__sleep()</link> ist, nicht
+    gespeicherte Daten zu sichern oder ähnliche Aufräumarbeiten zu erledigen.
+    Die Funktion ist ebenfalls nützlich, wenn ein sehr großes Objekt nicht
+    komplett gespeichert werden muss.
+   </para>
+   <para>
+    Umgekehrt überprüft <function>unserialize</function>, ob eine Funktion mit
+    dem magischen Namen <link linkend="object.wakeup">__wakeup()</link>
+    vorhanden ist. Falls vorhanden, kann diese Funktion alle Ressourcen, die
+    das Objekt möglicherweise hat, wiederherstellen.
+   </para>
+   <para>
+    Der Zweck von <link linkend="object.wakeup">__wakeup()</link> ist es, alle
+    Datenbankverbindungen, die bei der Serialisierung verlorengegangen sind,
+    wiederherzustellen und andere Aufgaben der erneuten Initialisierung
+    durchzuführen.
+   </para>
   <example>
    <title>Sleep- und Wakeup-Beispiel</title>
    <programlisting role="php">
@@ -148,71 +158,78 @@ class Connection
     }
 }?>
 ]]>
-   </programlisting>
-  </example>
- </sect2>
+    </programlisting>
+   </example>
+  </sect2>
 
- <sect2 xml:id="language.oop5.magic.serialize">
-  <title>
-   <link linkend="object.serialize">__serialize()</link> und
-   <link linkend="object.unserialize">__unserialize()</link>
-  </title>
+  <sect2 xml:id="language.oop5.magic.serialize">
+   <title>
+    <link linkend="object.serialize">__serialize()</link> und
+    <link linkend="object.unserialize">__unserialize()</link>
+   </title>
 
-  <methodsynopsis xml:id="object.serialize">
-   <modifier>public</modifier> <type>array</type><methodname>__serialize</methodname>
-   <void/>
-  </methodsynopsis>
-  <methodsynopsis xml:id="object.unserialize">
-   <modifier>public</modifier> <type>void</type><methodname>__unserialize</methodname>
-   <methodparam><type>array</type><parameter>data</parameter></methodparam>
-  </methodsynopsis>
+   <methodsynopsis xml:id="object.serialize">
+    <modifier>public</modifier> <type>array</type><methodname>__serialize</methodname>
+    <void/>
+   </methodsynopsis>
+   <methodsynopsis xml:id="object.unserialize">
+    <modifier>public</modifier> <type>void</type><methodname>__unserialize</methodname>
+    <methodparam><type>array</type><parameter>data</parameter></methodparam>
+   </methodsynopsis>
 
-  <para>
-   <function>serialize</function> prüft, ob die Klasse eine Funktion mit dem
-   magischen Namen <link linkend="object.sleep">__serialize()</link> besitzt. Wenn
-   dem so ist, wird die Funktion vor jeder Serialisierung ausgeführt. Sie muss ein assoziatives Array von Schlüssel/Wert-Paaren
-   erzeugen und zurückgeben, die die serialisierte Form des Objekts darstellen. Wird kein Array
-   zurückgegeben, wird ein <classname>TypeError</classname> geworfen.
-  </para>
-  <note>
    <para>
-    Sind sowohl <link linkend="object.serialize">__serialize()</link> als auch
-    <link linkend="object.sleep">__sleep()</link> im selben Objekt definiert, wird nur
-    <link linkend="object.serialize">__serialize()</link> aufgerufen.
-    <link linkend="object.sleep">__sleep()</link> wird ignoriert.
-    Implementiert das Objekt das <link linkend="class.serializable">Serializable</link>
-    Interface, wird die <literal>serialize()</literal> Methode des Interface ignoriert und
-    <link linkend="object.serialize">__serialize()</link> statt dessen verwendet.
+    <function>serialize</function> prüft, ob die Klasse eine Funktion mit dem
+    magischen Namen <link linkend="object.serialize">__serialize()</link>
+    besitzt. Wenn dem so ist, wird die Funktion vor jeder Serialisierung
+    ausgeführt. Sie muss ein assoziatives Array von Schlüssel/Wert-Paaren
+    erzeugen und zurückgeben, die die serialisierte Form des Objekts
+    darstellen. Wird kein Array zurückgegeben, wird ein
+    <classname>TypeError</classname> geworfen.
    </para>
-  </note>
-  <para>
-   Die beabsichtigte Verwendung von <link linkend="object.serialize">__serialize()</link> ist,
-   eine serialisierungsfreundlich beliebige Darstellung eines Objekts zu definieren.
-   Elemente des Arrays dürfen Eigenschaften entsprechen, aber das ist nicht erforderlich.
-  </para>
-  <para>
-   Umgekehrt überprüft <function>unserialize</function> die Anwesenheit einer Funktion mit dem magischen
-   Namen <link linkend="object.unserialize">__unserialize()</link>. Falls vorhanden, wird dieser Funktion
-   das wiederhergestellte Array übergeben, das von <link linkend="object.serialize">__serialize()</link>
-   zurückgegeben wurde. Sie kann dann dementsprechend die Eigenschaften des Objekts aus diesem Array
-   wiederherstellen.
-  </para>
-  <note>
+   <note>
+    <para>
+     Sind sowohl <link linkend="object.serialize">__serialize()</link> als
+     auch <link linkend="object.sleep">__sleep()</link> im selben Objekt
+     definiert, wird nur <link linkend="object.serialize">__serialize()</link>
+     aufgerufen. <link linkend="object.sleep">__sleep()</link> wird ignoriert.
+     Implementiert das Objekt das
+     <link linkend="class.serializable">Serializable</link>-Interface, wird
+     die <literal>serialize()</literal>-Methode des Interfaces ignoriert und
+     stattdessen <link linkend="object.serialize">__serialize()</link> verwendet.
+    </para>
+   </note>
    <para>
-    Sind sowohl <link linkend="object.unserialize">__unserialize()</link> als auch
-    <link linkend="object.wakeup">__wakeup()</link> im selben Objekt definiert, wird nur
-    <link linkend="object.unserialize">__unserialize()</link> aufgerufen.
-    <link linkend="object.wakeup">__wakeup()</link> wird ignoriert.
+    Der Zweck von <link linkend="object.serialize">__serialize()</link> ist,
+    eine für die Serialisierung geeignete beliebige Darstellung eines Objekts
+    zu definieren. Die Elemente des Arrays können den Eigenschaften des
+    Objekts entsprechen, aber das ist nicht erforderlich.
    </para>
-  </note>
-  <note>
    <para>
-    Dieses Feature ist seit PHP 7.4.0 verfügbar.
+    Umgekehrt überprüft <function>unserialize</function>, ob eine Funktion mit
+    dem magischen Namen
+    <link linkend="object.unserialize">__unserialize()</link> vorhanden ist.
+    Falls vorhanden, wird dieser Funktion das wiederhergestellte Array
+    übergeben, das von <link linkend="object.serialize">__serialize()</link>
+    zurückgegeben wurde. Sie kann dann gegebenenfalls die Eigenschaften des
+    Objekts aus diesem Array wiederherstellen.
    </para>
-  </note>
-  <example>
-   <title>Serialize und unserialize</title>
-   <programlisting role="php">
+   <note>
+    <para>
+     Sind sowohl <link linkend="object.unserialize">__unserialize()</link> als
+     auch <link linkend="object.wakeup">__wakeup()</link> im selben Objekt
+     definiert, wird nur
+     <link linkend="object.unserialize">__unserialize()</link> aufgerufen.
+     <link linkend="object.wakeup">__wakeup()</link> wird ignoriert.
+    </para>
+   </note>
+   <note>
+    <para>
+     Dieses Feature ist seit PHP 7.4.0 verfügbar.
+    </para>
+   </note>
+   <example>
+    <title>Serialize und unserialize</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 class Connection
@@ -252,50 +269,52 @@ class Connection
     }
 }?>
 ]]>
-   </programlisting>
-  </example>
- </sect2>
+    </programlisting>
+   </example>
+  </sect2>
 
- <sect2 xml:id="language.oop5.magic.tostring">
+  <sect2 xml:id="language.oop5.magic.tostring">
    <title><link linkend="object.tostring">__toString()</link></title>
    <methodsynopsis xml:id="object.tostring">
     <modifier>public</modifier> <type>string</type><methodname>__toString</methodname>
     <void/>
    </methodsynopsis>
    <para>
-    Die <link linkend="object.tostring">__toString()</link> Methode erlaubt
-    einer Klasse zu entscheiden, wie sie reagieren soll, wenn sie in eine Zeichenkette
-    umgewandelt wird. Die beeinflusst beispielsweise, was <literal>echo $obj;</literal>
-    ausgeben wird.
+    Mit der Methode <link linkend="object.tostring">__toString()</link> kann
+    eine Klasse entscheiden, wie sie reagieren soll, wenn sie wie eine
+    Zeichenkette behandelt wird. Die beeinflusst beispielsweise, was
+    <literal>echo $obj;</literal> ausgeben wird.
    </para>
    <warning>
     <para>
-     Seit PHP 8.0.0 unterliegt der Rückgabewert dieser Methode der üblichen PHP Typsemantik.
-     Das heißt, er wird wenn möglich in einen <type>String</type> umgewandelt, wenn
-     <link linkend="language.types.declarations.strict">strikte Typisierung</link>
-     deaktiviert ist.
+     Seit PHP 8.0.0 unterliegt der Rückgabewert dieser Methode der üblichen
+     PHP-Semantik für Typen. Das heißt, er bei deaktivierter
+     <link linkend="language.types.declarations.strict">strikter Typisierung</link>
+     nach Möglichkeit in einen <type>String</type> umgewandelt.
     </para>
     <para>
-     Seit PHP 8.0.0 implementiert jede Klasse die eine
-     <link linkend="object.tostring">__toString()</link>-Methode enthält implizit auch das
-     Interface <interfacename>Stringable</interfacename> und erfüllen daher auch Typprüfungen auf
-     dieses Interface. Es wird dennoch empfohlen, dieses Interface explizit zu implementieren.
+     Seit PHP 8.0.0 implementiert jede Klasse, die eine
+     <link linkend="object.tostring">__toString()</link>-Methode enthält,
+     implizit auch das Interface <interfacename>Stringable</interfacename> und
+     erfüllt daher auch Typprüfungen auf dieses Interface. Es wird dennoch
+     empfohlen, dieses Interface explizit zu implementieren.
     </para>
     <para>
-     In PHP 7.4 <emphasis>muss</emphasis> der Rückgabewert ein <type>String</type>
-     sein, andernfalls wird ein <classname>Error</classname> geworfen.
+     In PHP 7.4 <emphasis>muss</emphasis> der Rückgabewert ein Wert vom Typ
+     <type>string</type> sein, andernfalls wird ein
+     <classname>Error</classname> geworfen.
     </para>
     <para>
-     Vor PHP 7.4.0 <emphasis>muss</emphasis> der Rückgabewert ein <type>String</type>
-     sein, ansonsten wird ein Fehler der Stufe <constant>E_RECOVERABLE_ERROR</constant>
-     hervorgerufen.
+     Vor PHP 7.4.0 <emphasis>muss</emphasis> der Rückgabewert ein Wert vom Typ
+     <type>string</type> sein, ansonsten wird ein Fehler der Stufe
+     <constant>E_RECOVERABLE_ERROR</constant> hervorgerufen.
     </para>
    </warning>
    <warning>
     <simpara>
      Es war vor PHP 7.4.0 nicht möglich eine Exception aus einer
-     <link linkend="object.tostring">__toString()</link>-Methode zu werfen. Dies resultierte
-     in einem fatalen Fehler.
+     <link linkend="object.tostring">__toString()</link>-Methode zu werfen.
+     Dies resultierte in einem fatalen Fehler.
     </simpara>
    </warning>
    <example>
@@ -306,17 +325,17 @@ class Connection
 // Deklariere eine einfache Klasse
 class TestClass
 {
- public $foo;
+    public $foo;
 
- public function __construct($foo)
- {
-  $this->foo = $foo;
- }
+    public function __construct($foo)
+    {
+        $this->foo = $foo;
+    }
 
- public function __toString()
- {
-  return $this->foo;
- }
+    public function __toString()
+    {
+        return $this->foo;
+    }
 }
 
 $class = new TestClass('Hallo');
@@ -331,29 +350,29 @@ Hallo
 ]]>
     </screen>
    </example>
- </sect2>
+  </sect2>
 
- <sect2 xml:id="language.oop5.magic.invoke">
-  <title><link linkend="object.invoke">__invoke()</link></title>
-  <methodsynopsis xml:id="object.invoke">
-   <type>mixed</type><methodname>__invoke</methodname>
-   <methodparam choice="opt"><parameter>...</parameter></methodparam>
-  </methodsynopsis>
-  <para>
-   Die <link linkend="object.invoke">__invoke()</link>-Methode wird aufgerufen,
-   wenn ein Skript versucht, ein Objekt als Funktion aufzurufen.
-  </para>
-  <example>
-   <title>Nutzung von <link linkend="object.invoke">__invoke()</link></title>
-   <programlisting role="php">
+  <sect2 xml:id="language.oop5.magic.invoke">
+   <title><link linkend="object.invoke">__invoke()</link></title>
+   <methodsynopsis xml:id="object.invoke">
+    <type>mixed</type><methodname>__invoke</methodname>
+    <methodparam rep="repeat"><parameter>values</parameter></methodparam>
+   </methodsynopsis>
+   <para>
+    Die Methode <link linkend="object.invoke">__invoke()</link> wird
+    aufgerufen, wenn ein Skript versucht, ein Objekt als Funktion aufzurufen.
+   </para>
+   <example>
+    <title>Nutzung von <link linkend="object.invoke">__invoke()</link></title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 class CallableClass
 {
- function __invoke($x)
- {
-  var_dump($x);
- }
+    public function __invoke($x)
+    {
+        var_dump($x);
+    }
 }
 $obj = new CallableClass;
 $obj(5);
@@ -459,32 +478,35 @@ Array
 ]]>
     </screen>
    </example>
- </sect2>
+  </sect2>
 
- <sect2 xml:id="language.oop5.magic.set-state">
-  <title><link linkend="object.set-state">__set_state()</link></title>
-  <methodsynopsis xml:id="object.set-state">
-   <modifier>static</modifier> <type>object</type><methodname>__set_state</methodname>
-   <methodparam><type>array</type><parameter>properties</parameter></methodparam>
-  </methodsynopsis>
-  <para>
-   Diese <link linkend="language.oop5.static">statische</link> Methode wird für Klassen
-   aufgerufen, die mittels <function>var_export</function> exportiert werden.
-  </para>
-  <para>
-   Der einzige Parameter dieser Methode ist ein Array, welches aus exportierten
-   Eigenschaften der Form <literal>array('Eigenschaft' => Wert, ...)</literal>
-   besteht.
-  </para>
-  <example>
-   <title>Verwendung von <link linkend="object.set-state">__set_state()</link></title>
+  <sect2 xml:id="language.oop5.magic.set-state">
+   <title><link linkend="object.set-state">__set_state()</link></title>
+   <methodsynopsis xml:id="object.set-state">
+    <modifier>static</modifier> <type>object</type><methodname>__set_state</methodname>
+    <methodparam><type>array</type><parameter>properties</parameter></methodparam>
+   </methodsynopsis>
+   <para>
+    Diese <link linkend="language.oop5.static">statische</link> Methode wird
+    für Klassen aufgerufen, die mittels <function>var_export</function>
+    exportiert werden.
+   </para>
+   <para>
+    Der einzige Parameter dieser Methode ist ein Array, welches aus
+    exportierten Eigenschaften der Form <literal>['Eigenschaft' => Wert,
+    ...]</literal> besteht.
+   </para>
+   <example>
+    <title>Verwendung von <link linkend="object.set-state">__set_state()</link></title>
     <programlisting role="php">
 <![CDATA[
 <?php
+
 class A
 {
     public $var1;
     public $var2;
+
     public static function __set_state($an_array)
     {
         $obj = new A;
@@ -493,9 +515,11 @@ class A
         return $obj;
     }
 }
+
 $a = new A;
 $a->var1 = 5;
 $a->var2 = 'foo';
+
 $b = var_export($a, true);
 var_dump($b);
 eval('$c = ' . $b . ';');
@@ -521,50 +545,52 @@ object(A)#2 (2) {
    </example>
    <note>
     <simpara>
-     Wenn ein Objekt exportiert wird, überprüft <function>var_export</function>
-     nicht, ob <link linkend="object.set-state">__set_state()</link> von der
+     Wenn ein Objekt exportiert wird, überprüft
+     <function>var_export</function> nicht, ob
+     <link linkend="object.set-state">__set_state()</link> von der
      Objektklasse implementiert wird, sodass der erneute Import von Objekten
      zu einer <classname>Error</classname>-Exception führt, falls
-     __set_state() nicht implementiert ist. Die betrifft im Besonderen einige
+     __set_state() nicht implementiert ist. Die betrifft insbesondere einige
      interne Klassen.
     </simpara>
     <simpara>
-     Es liegt im Aufgabenbereich des Programmiers sicherzustellen, dass nur Objekte
-     wieder re-importiert werden, welche auch __set_state() implementieren.
+     Es liegt im Aufgabenbereich des Programmiers, sicherzustellen, dass nur
+     Objekte wieder re-importiert werden, welche auch __set_state()
+     implementieren.
     </simpara>
    </note>
- </sect2>
+  </sect2>
 
- <sect2 xml:id="language.oop5.magic.debuginfo">
-  <title><link linkend="object.debuginfo">__debugInfo()</link></title>
-  <methodsynopsis xml:id="object.debuginfo">
-   <type>array</type><methodname>__debugInfo</methodname>
-   <void/>
-  </methodsynopsis>
-  <para>
-   Diese Methode wird von <function>var_dump</function> aufgerufen, wenn
-   ein Objekt ausgegeben wird, um die Eigenschaften auszulesen die gezeigt
-   werden sollen. Wenn diese Methode in einem Objekt nicht definiert ist,
-   so werden alle Eigenschaften die public, protected oder private sind
-   angezeigt.
-  </para>
-  <example>
-   <title>Verwendung von <link linkend="object.debuginfo">__debugInfo()</link></title>
-   <programlisting role="php">
+  <sect2 xml:id="language.oop5.magic.debuginfo">
+   <title><link linkend="object.debuginfo">__debugInfo()</link></title>
+   <methodsynopsis xml:id="object.debuginfo">
+    <type>array</type><methodname>__debugInfo</methodname>
+    <void/>
+   </methodsynopsis>
+   <para>
+    Diese Methode wird von <function>var_dump</function> aufgerufen, wenn
+    ein Objekt ausgegeben wird, um die Eigenschaften auszulesen die gezeigt
+    werden sollen. Wenn diese Methode in einem Objekt nicht definiert ist,
+    so werden alle Eigenschaften angezeigt, die public, protected oder private
+    sind.
+   </para>
+   <example>
+    <title>Verwendung von <link linkend="object.debuginfo">__debugInfo()</link></title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 class C {
- private $prop;
+    private $prop;
 
- public function __construct($val) {
-  $this->prop = $val;
- }
+    public function __construct($val) {
+        $this->prop = $val;
+    }
 
- public function __debugInfo() {
-  return [
-   'propSquared' => $this->prop ** 2,
-  ];
- }
+    public function __debugInfo() {
+        return [
+            'propSquared' => $this->prop ** 2,
+        ];
+    }
 }
 
 var_dump(new C(42));
@@ -581,10 +607,8 @@ object(C)#1 (1) {
 ]]>
     </screen>
    </example>
- </sect2>
-
-</sect1>
-
+  </sect2>
+ </sect1>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
