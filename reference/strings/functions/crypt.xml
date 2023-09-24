@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 2526581912be11d14da7006fba344ca525a8566a Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: cc88cbd3303ca3342dcdcd643eae793e564730c7 Maintainer: sammywg Status: ready -->
 <refentry xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://docbook.org/ns/docbook" xml:id="function.crypt">
  <refnamediv>
   <refname>crypt</refname>
@@ -209,8 +209,6 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Den Salt automatisch generieren lassen; nicht empfohlen
-$gehashtes_passwort = crypt('mein_Pwd');
 
 /* Sie sollten das vollständige Ergebnis von crypt() als Salt zum
    Passwort-Vergleich übergeben, um Problemen mit unterschiedlichen
@@ -219,70 +217,17 @@ $gehashtes_passwort = crypt('mein_Pwd');
    MD5-basierter hingegen nutzt 12 Zeichen. */
 if (crypt($benutzer_eingabe, $gehashtes_passwort) == $gehashtes_passwort) {
    echo "Passwort stimmt überein!";
+
+$benutzer_eingabe = 'rasmuslerdorf';
+$gehashtes_passwort = '$6$rounds=1000000$NJy4rIPjpOaU$0ACEYGg/aKCY3v8O8AfyiO7CTfZQ8/W231Qfh2tRLmfdvFD6XfHk12u6hMr9cYIA4hnpjLNSTRtUwYr9km9Ij/';
+
+// Prüfen eines vorhandenen crypt()-Hashs auf Kompatibilität mit Nicht-PHP-Software .
+if (hash_equals($gehashtes_passwort, crypt($benutzer_eingabe, $gehashtes_passwort))) {
+   echo "Passwort stimmt überein!";
 }
 ?>
 ]]>
     </programlisting>
-   </example>
-  </para>
-  <para>
-   <example>
-    <title>Verwendung von <function>crypt</function> für htpasswd</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-// Passwort setzen
-$passwort = 'mein_Pwd';
-
-// Hash mit automatisch erstelltem Salt generieren lassen; nicht empfohlen
-$hash = crypt($passwort);
-?>
-]]>
-    </programlisting>
-   </example>
-  </para>
-  <para>
-   <example>
-    <title>Verwendung von <function>crypt</function> mit verschiedenen Hash-Arten</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-/* Die im folgenden Code genutzen Salts sind nur Beispiele und sollten nicht
-   in dieser Form verwendet werden. Stattdessen muss für jedes Password ein
-   neuer, korrekt formatierter Salt generiert werden.
-*/
-echo 'Standard DES: ',
-    crypt('rasmuslerdorf', 'rl'),
-    "\n";
-echo 'Extended DES: ',
-    crypt('rasmuslerdorf', '_J9..rasm'),
-    "\n";
-echo 'MD5:          ',
-    crypt('rasmuslerdorf', '$1$rasmusle$'),
-    "\n";
-echo 'Blowfish:     ',
-    crypt('rasmuslerdorf', '$2a$07$usesomesillystringforsalt$'),
-    "\n";
-echo 'SHA-256:      ',
-    crypt('rasmuslerdorf', '$5$rounds=5000$usesomesillystringforsalt$'),
-    "\n";
-echo 'SHA-512:      ',
-    crypt('rasmuslerdorf', '$6$rounds=5000$usesomesillystringforsalt$'),
-    "\n";
-?>
-]]>
-    </programlisting>
-    &example.outputs.similar;
-    <screen>
-<![CDATA[
-Standard DES: rl.3StKT.4T8M
-Extended DES: _J9..rasmBYk8r9AiWNc
-MD5:          $1$rasmusle$rISCgZzpwk3UhDidwXvin0
-Blowfish:     $2y$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi
-SHA-256:      $5$rounds=5000$usesomesillystri$KqJWpanXZHKq2BOB43TSaYhEWsQ1Lr5QNyPCDH/Tp.6
-SHA-512:      $6$rounds=5000$usesomesillystri$D4IrlXatmP7rx3P3InaxBeoomnAihCKRVQP22JZ6EY47Wc6BkroIuUUBOov1i.S5KPgErtP/EN5mcO.ChWQW21
-]]>
-    </screen>
    </example>
   </para>
  </refsect1>
@@ -303,9 +248,10 @@ SHA-512:      $6$rounds=5000$usesomesillystri$D4IrlXatmP7rx3P3InaxBeoomnAihCKRVQ
    <simplelist>
     <member><function>hash_equals</function></member>
     <member><function>password_hash</function></member>
-    <member><function>md5</function></member>
-    <member>Lesen Sie die Manpages ihres Unix-Systems, wenn Sie weitere
-       Informationen zu crypt benötigen.</member>
+    <member>
+     Lesen Sie die Manpages ihres Unix-Systems, wenn Sie weitere Informationen
+     zu crypt benötigen.
+    </member>
    </simplelist>
   </para>
  </refsect1>
