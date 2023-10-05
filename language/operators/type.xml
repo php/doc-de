@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 52407313885d27a4e891e08dd2e2481bcc39e244 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: e4b889a3e8b9d87ab605aac9bbe85d2c16c69a1b Reviewer: samesch -->
+<!-- CREDITS: tzwenny, betz -->
+<sect1 xml:id="language.operators.type">
+ <title>Typ-Operatoren</title>
+ <para>
+  <literal>instanceof</literal> wird dazu verwendet um festzustellen, ob ein
+  gegebenes Objekt ein Objekt ist, das zu einer bestimmten
+  <link linkend="language.oop5.basic.class">Klasse</link> gehört.
+  <example>
+   <title>Die Verwendung von <literal>instanceof</literal> mit Klassen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class MyClass
+{
+}
+
+class NotMyClass
+{
+}
+$a = new MyClass;
+
+var_dump($a instanceof MyClass);
+var_dump($a instanceof NotMyClass);
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+bool(true)
+bool(false)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  <literal>instanceof</literal> kann auch verwendet werden, um zu bestimmen,
+  ob ein Variable ein Exemplar einer Klasse ist, die von einer Elternklasse
+  erbt:
+  <example>
+   <title>Verwendung von <literal>instanceof</literal> mit ererbten Klassen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class ParentClass
+{
+}
+
+class MyClass extends ParentClass
+{
+}
+
+$a = new MyClass;
+
+var_dump($a instanceof MyClass);
+var_dump($a instanceof ParentClass);
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+bool(true)
+bool(true)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  Um zu prüfen, ob ein Objekt <emphasis>nicht</emphasis> eine Instanz einer
+  Klasse ist, kann der
+  <link linkend="language.operators.logical">logische <literal>nicht</literal>-Operator</link>
+  verwendet werden.
+  <example>
+   <title>
+    Verwendung von <literal>instanceof</literal>, um zu prüfen, ob ein Objekt
+    <emphasis>nicht</emphasis> eine Instanz einer Klasse ist
+   </title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class MyClass
+{
+}
+
+$a = new MyClass;
+var_dump(!($a instanceof stdClass));
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+bool(true)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  Schließlich kann <literal>instanceof</literal> auch dazu verwendet werden,
+  um zu bestimmen, ob eine Variable ein instanziiertes Objekt einer Klasse
+  ist, die ein <link linkend="language.oop5.interfaces">Interface</link>
+  implementiert:
+  <example>
+   <title>Verwendung von <literal>instanceof</literal> mit Interfaces</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+interface MyInterface
+{
+}
+
+class MyClass implements MyInterface
+{
+}
+
+$a = new MyClass;
+
+var_dump($a instanceof MyClass);
+var_dump($a instanceof MyInterface);
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+bool(true)
+bool(true)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  Obwohl <literal>instanceof</literal> üblicherweise mit einem
+  Klassennamensbezeichner verwendet wird, kann es auch mit einem anderen
+  Objekt oder einer Zeichenkettenvariablen verwendet werden:
+  <example>
+   <title>Verwendung von <literal>instanceof</literal> mit anderen Variablen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+interface MyInterface
+{
+}
+
+class MyClass implements MyInterface
+{
+}
+
+$a = new MyClass;
+$b = new MyClass;
+$c = 'MyClass';
+$d = 'NotMyClass';
+
+var_dump($a instanceof $b); // $b ist ein Exemplar der Klasse MyClass
+var_dump($a instanceof $c); // $c ist die Zeichenkette 'MyClass'
+var_dump($a instanceof $d); // $d ist die Zeichenkette 'NotMyClass'
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+bool(true)
+bool(true)
+bool(false)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  instanceof löst keinen Fehler aus, wenn die getestete Variable kein Objekt
+  ist; es gibt dann einfach &false; zurück. Konstanten waren allerdings vor
+  PHP 7.3.0 nicht erlaubt.
+  <example>
+   <title>Verwendung von <literal>instanceof</literal> um andere Variablen zu prüfen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$a = 1;
+$b = NULL;
+$c = imagecreate(5, 5);
+var_dump($a instanceof stdClass); // $a ist eine Ganzzahl
+var_dump($b instanceof stdClass); // $b ist NULL
+var_dump($c instanceof stdClass); // $c ist ein Ressource
+var_dump(FALSE instanceof stdClass);
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+bool(false)
+bool(false)
+bool(false)
+PHP Fatal error:  instanceof expects an object instance, constant given
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  Von PHP 7.3.0 an sind Konstanten auf der linken Seite des
+  <literal>instanceof</literal>-Operators erlaubt.
+  <example>
+   <title>Verwendung von <literal>instanceof</literal> um Konstanten zu prüfen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+var_dump(FALSE instanceof stdClass);
+?>
+]]>
+   </programlisting>
+   &example.outputs.73;
+   <screen>
+<![CDATA[
+bool(false)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  Seit PHP 8.0.0 kann <literal>instanceof</literal> mit beliebigen Ausdrücken
+  verwendet werden. Der Ausdruck muss in Klammern eingeschlossen sein und
+  einen <type>&string;</type> erzeugen.
+-  <!-- RFC: https://wiki.php.net/rfc/variable_syntax_tweaks -->
+  <example>
+   <title>Verwendung von <literal>instanceof</literal> mit einem beliebigen Ausdruck</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+class ClassA extends \stdClass {}
+class ClassB extends \stdClass {}
+class ClassC extends ClassB {}
+class ClassD extends ClassA {}
+
+function getSomeClass(): string
+{
+    return ClassA::class;
+}
+
+var_dump(new ClassA instanceof ('std' . 'Class'));
+var_dump(new ClassB instanceof ('Class' . 'B'));
+var_dump(new ClassC instanceof ('Class' . 'A'));
+var_dump(new ClassD instanceof (getSomeClass()));
+?>
+]]>
+   </programlisting>
+   &example.outputs.8;
+   <screen>
+<![CDATA[
+bool(true)
+bool(true)
+bool(false)
+bool(true)
+]]>
+   </screen>
+  </example>
+ </para>
+ <simpara>
+  Der <literal>instanceof</literal>-Operator hat mit der Funktion
+  <function>is_a</function> eine funktionale Variante.
+ </simpara>
+
+ <sect2 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>get_class</function></member>
+    <member><function>is_a</function></member>
+   </simplelist>
+  </para>
+ </sect2>
+</sect1>

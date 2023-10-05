@@ -1,0 +1,684 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 52407313885d27a4e891e08dd2e2481bcc39e244 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: e4b889a3e8b9d87ab605aac9bbe85d2c16c69a1b Reviewer: samesch -->
+<!-- CREDITS: tzwenny, betz -->
+<sect1 xml:id="language.operators.bitwise">
+ <title>Bit-Operatoren</title>
+ <simpara>
+  Bit-Operatoren erlauben es die Prüfung und Manipulation von bestimmten Bits
+  in einem Integer.
+ </simpara>
+ <table>
+  <title>Bit-Operatoren</title>
+  <tgroup cols="3">
+   <thead>
+    <row>
+     <entry>Beispiel</entry>
+     <entry>Name</entry>
+     <entry>Ergebnis</entry>
+    </row>
+   </thead>
+   <tbody>
+    <row>
+     <entry><userinput>$a &amp; $b</userinput></entry>
+     <entry>Und</entry>
+     <entry>
+      Bits, die in <varname>$a</varname> und <varname>$b</varname> gesetzt
+      sind, werden gesetzt.
+     </entry>
+    </row>
+    <row>
+     <entry><userinput>$a | $b</userinput></entry>
+     <entry>Oder</entry>
+     <entry>
+      Bits, die in <varname>$a</varname> oder <varname>$b</varname> gesetzt
+      sind, werden gesetzt.
+     </entry>
+    </row>
+    <row>
+     <entry><userinput>$a ^ $b</userinput></entry>
+     <entry>Entweder oder (Xor)</entry>
+     <entry>
+      Bits, die entweder in <varname>$a</varname> oder <varname>$b</varname>,
+      jedoch nicht in beiden gesetzt sind, werden gesetzt.
+     </entry>
+    </row>
+    <row>
+     <entry><userinput>~ $a</userinput></entry>
+     <entry>Nicht</entry>
+     <entry>
+      Bits, die in <varname>$a</varname> nicht gesetzt sind, werden gesetzt,
+      und umgekehrt.
+     </entry>
+    </row>
+    <row>
+     <entry><userinput>$a &lt;&lt; $b</userinput></entry>
+     <entry>Nach links verschieben</entry>
+     <entry>
+      Verschiebung der Bits von <varname>$a</varname> um <varname>$b</varname>
+      Stellen nach links (jede Stelle entspricht einer Mulitplikation mit
+      zwei).
+     </entry>
+    </row>
+    <row>
+     <entry><userinput>$a &gt;&gt; $b</userinput></entry>
+     <entry>Nach rechts verschieben</entry>
+     <entry>
+      Verschiebung der Bits von <varname>$a</varname> um <varname>$b</varname>
+      Stellen nach rechts (jede Stelle entspricht einer Division durch zwei).
+     </entry>
+    </row>
+   </tbody>
+  </tgroup>
+ </table>
+ <para>
+  Bit-Verschiebungen in PHP sind arithmetisch. Bits, die an einem der Enden
+  herausgeschoben werden, werden verworfen. Bei Links-Verschiebungen werden
+  von rechts Nullen hereingeschoben, während das Vorzeichenbit links
+  herausgeschoben wird, was bedeutet, dass das Vorzeichen des Operanden nicht
+  erhalten bleibt. Bei Rechts-Verschiebungen werden Kopien des Vorzeichenbits
+  von links hereingeschoben, sodass das Vorzeichen des Operanden erhalten
+  bleibt.
+ </para>
+ <para>
+  Klammern sind zu verwenden, um die gewünschte
+  <link linkend="language.operators.precedence">Rangfolge</link>
+  sicherzustellen. Beispielsweise wird bei <literal>$a &amp; $b ==
+  true</literal> zunächst der Vergleich ausgewertet, und erst dann das
+  Bit-Und, während bei <literal>($a &amp; $b) == true</literal> zunächst das
+  Bit-Und, und erst dann der Vergleich ausgewertet wird.
+ </para>
+ <para>
+  Sind beide Operanden der <literal>&amp;</literal>, <literal>|</literal> und
+  <literal>^</literal> Operatoren Zeichenketten, dann wird die Operation auf
+  den ASCII-Werten der Zeichen der Zeichenketten durchgeführt, und das
+  Ergebnis ist wiederum eine Zeichenkette. In allen anderen Fällen werden
+  beide Operanden
+  <link linkend="language.types.integer.casting">nach Integer umgewandelt</link>
+  und das Ergebnis ist eine Ganzzahl.
+ </para>
+ <para>
+  Ist der Operand des <literal>~</literal> Operators eine Zeichenkette, dann
+  wird die Operation auf den ASCII-Werten der Zeichen der Zeichenkette
+  durchgeführt, Und das Ergebnis ist wiederum eine Zeichenkette. Andernfalls
+  werden Operand und Ergebnis als Ganzzahl behandelt.
+ </para>
+ <para>
+  Beide Operanden und das Ergebnis der <literal>&lt;&lt;</literal> und
+  <literal>&gt;&gt;</literal> Operatoren werden immer als Ganzzahl behandelt.
+ </para>
+ <para>
+  <informalexample>
+   <para>
+    <literallayout>
+     Die error_reporting ini-Einstellung von PHP verwendet Bitwerte, was die
+     realitätsnahe Demonstration des Ausschaltens einzelner Bits bietet. Um
+     alle Fehler außer Hinweisen anzuzeigen, muss den Anweisungen der
+     php.ini-Datei entsprechend verwendet werden:
+     <userinput>E_ALL &amp; ~E_NOTICE</userinput>
+    </literallayout>
+   </para>
+   <para>
+    <literallayout>
+     Dies funktioniert, indem mit E_ALL begonnen wird:
+     <computeroutput>00000000000000000111011111111111</computeroutput>
+     Dann wird der Wert von E_NOTICE genommen...
+     <computeroutput>00000000000000000000000000001000</computeroutput>
+     ... und dieser per <literal>~</literal> invertiert:
+     <computeroutput>11111111111111111111111111110111</computeroutput>
+     Schließlich wird UND (&amp;) verwendet, um die Bits zu ermitteln, die in
+     beiden Werten gesetzt sind:
+     <computeroutput>00000000000000000111011111110111</computeroutput>
+    </literallayout>
+   </para>
+   <para>
+    <literallayout>
+     Eine andere Möglichkeit dies zu bewerkstelligen, ist XOR
+     (<literal>^</literal>) zu verwenden, um diejenigen Bits zu finden, die
+     nur in einem der beiden Werte gesetzt sind:
+     <userinput>E_ALL ^ E_NOTICE</userinput>
+    </literallayout>
+   </para>
+  </informalexample>
+ </para>
+ <para>
+  <informalexample>
+   <para>
+    <literallayout>
+     error_reporting kann ebenfalls verwendet werden, um zu zeigen, wie Bits
+     gesetzt werden. Auf folgende Weise werden nur Fehler und behebbare Fehler
+     angezeigt:
+     <userinput>E_ERROR | E_RECOVERABLE_ERROR</userinput>
+    </literallayout>
+   </para>
+   <para>
+    <literallayout>
+     Dieser Vorgang kombiniert E_ERROR
+     <computeroutput>00000000000000000000000000000001</computeroutput>
+     und
+     <computeroutput>00000000000000000001000000000000</computeroutput>
+     unter Verwendung des ODER (<literal>|</literal>) Operators
+     um die Bits zu ermitteln, die in einem oder beiden Werten gesetzt sind:
+     <computeroutput>00000000000000000001000000000001</computeroutput>
+    </literallayout>
+   </para>
+  </informalexample>
+ </para>
+ <para>
+  <example>
+   <title>Bitweise UND, ODER und XODER Operationen mit Ganzzahlen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/*
+ * Der erste Abschnitt kann ignoriert werden;
+ * er dient nur zu Formatierungszwecken, um die Ausgabe deutlicher zu machen.
+ */
+
+$format = '(%1$2d = %1$04b) = (%2$2d = %2$04b)'
+      . ' %3$s (%4$2d = %4$04b)' . "\n";
+
+echo <<<EOH
+ ---------     ---------  -- ---------
+ Ergebnis      Wert 1     Op Wert 2
+ ---------     ---------  -- ---------
+EOH;
+
+
+/*
+ * Hier kommen die Beispiele.
+ */
+
+$values = array(0, 1, 2, 4, 8);
+$test = 1 + 4;
+
+echo "\n Bitweises UND \n";
+foreach ($values as $value) {
+    $result = $value & $test;
+    printf($format, $result, $value, '&', $test);
+}
+
+echo "\n Bitweises einschließendes ODER \n";
+foreach ($values as $value) {
+    $result = $value | $test;
+    printf($format, $result, $value, '|', $test);
+}
+
+echo "\n Bitweises ausschließendes ODER (XODER) \n";
+foreach ($values as $value) {
+    $result = $value ^ $test;
+    printf($format, $result, $value, '^', $test);
+}
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+ ---------     ---------  -- ---------
+ Ergebnis      Wert 1     Op Wert 2
+---------     ---------  -- ---------
+ Bitweises UND
+( 0 = 0000) = ( 0 = 0000) & ( 5 = 0101)
+( 1 = 0001) = ( 1 = 0001) & ( 5 = 0101)
+( 0 = 0000) = ( 2 = 0010) & ( 5 = 0101)
+( 4 = 0100) = ( 4 = 0100) & ( 5 = 0101)
+( 0 = 0000) = ( 8 = 1000) & ( 5 = 0101)
+
+ Bitweises einschließendes ODER
+( 5 = 0101) = ( 0 = 0000) | ( 5 = 0101)
+( 5 = 0101) = ( 1 = 0001) | ( 5 = 0101)
+( 7 = 0111) = ( 2 = 0010) | ( 5 = 0101)
+( 5 = 0101) = ( 4 = 0100) | ( 5 = 0101)
+(13 = 1101) = ( 8 = 1000) | ( 5 = 0101)
+
+ Bitweises ausschließendes ODER (XODER)
+( 5 = 0101) = ( 0 = 0000) ^ ( 5 = 0101)
+( 4 = 0100) = ( 1 = 0001) ^ ( 5 = 0101)
+( 7 = 0111) = ( 2 = 0010) ^ ( 5 = 0101)
+( 1 = 0001) = ( 4 = 0100) ^ ( 5 = 0101)
+(13 = 1101) = ( 8 = 1000) ^ ( 5 = 0101)
+]]>
+   </screen>
+  </example>
+ </para>
+ <para>
+  <example>
+   <title>Bitweise XODER Operationen mit Zeichenketten</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+echo 12 ^ 9; // Gibt '5' aus
+
+echo "12" ^ "9"; // Gibt das Backspace-Zeichen (ASCII 8) aus
+                 // ('1' (ASCII 49)) ^ ('9' (ASCII 57)) = #8
+
+echo "hallo" ^ "hello"; // Gibt die ASCII-Werte #0 #4 #0 #0 #0 aus
+                        // 'a' ^ 'e' = #4
+
+echo 2 ^ "3"; // Gibt 1 aus
+              // 2 ^ ((int)"3") == 1
+
+echo "2" ^ 3; // Gibt 1 aus
+              // ((int)"2") ^ 3 == 1
+?>
+]]>
+   </programlisting>
+  </example>
+ </para>
+ <para>
+  <example>
+   <title>Bit-Verschiebung mit Ganzzahlen</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/*
+ * Hier kommen die Beispiele.
+ */
+
+echo "\n--- RECHTSVERSCHIEBUNG MIT POSITIVEN GANZZAHLEN ---\n";
+
+$val = 4;
+$places = 1;
+$res = $val >> $places;
+p($res, $val, '>>', $places, 'Kopie des Vorzeichenbits wird links hereingeschoben');
+
+$val = 4;
+$places = 2;
+$res = $val >> $places;
+p($res, $val, '>>', $places);
+
+$val = 4;
+$places = 3;
+$res = $val >> $places;
+p($res, $val, '>>', $places, 'Bits werden rechts herausgeschoben');
+
+$val = 4;
+$places = 4;
+$res = $val >> $places;
+p($res, $val, '>>', $places, 'dasselbe Ergebnis wie oben; man kann nicht über 0 hinaus verschieben');
+
+
+echo "\n--- RECHTSVERSCHIEBUNG MIT NEGATIVEN GANZZAHLEN ---\n";
+
+$val = -4;
+$places = 1;
+$res = $val >> $places;
+p($res, $val, '>>', $places, 'Kopie des Vorzeichenbits wird links hereingeschoben');
+
+$val = -4;
+$places = 2;
+$res = $val >> $places;
+p($res, $val, '>>', $places, 'Bits werden rechts herausgeschoben');
+
+$val = -4;
+$places = 3;
+$res = $val >> $places;
+p($res, $val, '>>', $places, 'dasselbe Ergebnis wie oben; man kann nicht über -1 hinaus verschieben');
+
+
+echo "\n--- LINKSSVERSCHIEBUNG MIT POSITIVEN GANZZAHLEN ---\n";
+
+$val = 4;
+$places = 1;
+$res = $val << $places;
+p($res, $val, '<<', $places, 'Nullen werden rechts hereingeschoben');
+
+$val = 4;
+$places = (PHP_INT_SIZE * 8) - 4;
+$res = $val << $places;
+p($res, $val, '<<', $places);
+
+$val = 4;
+$places = (PHP_INT_SIZE * 8) - 3;
+$res = $val << $places;
+p($res, $val, '<<', $places, 'Vorzeichenbits werden herausgeschoben');
+
+$val = 4;
+$places = (PHP_INT_SIZE * 8) - 2;
+$res = $val << $places;
+p($res, $val, '<<', $places, 'Bits werden links herausgeschoben');
+
+
+echo "\n--- LINKSVERSCHIEBUNG MIT NEGATIVEN GANZZAHLEN ---\n";
+
+$val = -4;
+$places = 1;
+$res = $val << $places;
+p($res, $val, '<<', $places, 'Nullen werden rechts hereingeschoben');
+
+$val = -4;
+$places = (PHP_INT_SIZE * 8) - 3;
+$res = $val << $places;
+p($res, $val, '<<', $places);
+
+$val = -4;
+$places = (PHP_INT_SIZE * 8) - 2;
+$res = $val << $places;
+p($res, $val, '<<', $places, 'Bits werden links herausgeschoben, einschließlich des Vorzeichenbits');
+
+
+/*
+ * Dieser Abschnitt kann ignoriert werden;
+ * es handlet sich nur um Formatierung, um die Ausgabe deutlicher zu machen.
+ */
+
+function p($res, $val, $op, $places, $note = '') {
+    $format = '%0' . (PHP_INT_SIZE * 8) . "b\n";
+
+    printf("Ausdruck: %d = %d %s %d\n", $res, $val, $op, $places);
+
+    echo " Dezimal:\n";
+    printf("  Wert=%d\n", $val);
+    printf("  Erg.=%d\n", $res);
+
+    echo " Binär:\n";
+    printf('  Wert=' . $format, $val);
+    printf('  Erg.=' . $format, $res);
+
+    if ($note) {
+        echo " ANMERKUNG: $note\n";
+    }
+
+    echo "\n";
+}
+?>
+]]>
+   </programlisting>
+   &example.outputs.32bit;
+   <screen>
+<![CDATA[
+
+--- RECHTSVERSCHIEBUNG MIT POSITIVEN GANZZAHLEN ---
+Ausdruck: 2 = 4 >> 1
+ Dezimal:
+  Wert=4
+  Erg.=2
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=00000000000000000000000000000010
+ ANMERKUNG: Kopie des Vorzeichenbits wird links hereingeschoben
+
+Ausdruck: 1 = 4 >> 2
+ Dezimal:
+  Wert=4
+  Erg.=1
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=00000000000000000000000000000001
+
+Ausdruck: 0 = 4 >> 3
+ Dezimal:
+  Wert=4
+  Erg.=0
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=00000000000000000000000000000000
+ ANMERKUNG: Bits werden rechts herausgeschoben
+
+Ausdruck: 0 = 4 >> 4
+ Dezimal:
+  Wert=4
+  Erg.=0
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=00000000000000000000000000000000
+ ANMERKUNG: dasselbe Ergebnis wie oben; man kann nicht über 0 hinaus verschieben
+
+
+--- RECHTSVERSCHIEBUNG MIT NEGATIVEN GANZZAHLEN ---
+Ausdruck: -2 = -4 >> 1
+ Dezimal:
+  Wert=-4
+  Erg.=-2
+ Binär:
+  Wert=11111111111111111111111111111100
+  Erg.=11111111111111111111111111111110
+ ANMERKUNG: Kopie des Vorzeichenbits wird links hereingeschoben
+
+Ausdruck: -1 = -4 >> 2
+ Dezimal:
+  Wert=-4
+  Erg.=-1
+ Binär:
+  Wert=11111111111111111111111111111100
+  Erg.=11111111111111111111111111111111
+ ANMERKUNG: Bits werden rechts herausgeschoben
+
+Ausdruck: -1 = -4 >> 3
+ Dezimal:
+  Wert=-4
+  Erg.=-1
+ Binär:
+  Wert=11111111111111111111111111111100
+  Erg.=11111111111111111111111111111111
+ ANMERKUNG: dasselbe Ergebnis wie oben; man kann nicht über -1 hinaus verschieben
+
+
+--- LINKSSVERSCHIEBUNG MIT POSITIVEN GANZZAHLEN ---
+Ausdruck: 8 = 4 << 1
+ Dezimal:
+  Wert=4
+  Erg.=8
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=00000000000000000000000000001000
+ ANMERKUNG: Nullen werden rechts hereingeschoben
+
+Ausdruck: 1073741824 = 4 << 28
+ Dezimal:
+  Wert=4
+  Erg.=1073741824
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=01000000000000000000000000000000
+
+Ausdruck: -2147483648 = 4 << 29
+ Dezimal:
+  Wert=4
+  Erg.=-2147483648
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=10000000000000000000000000000000
+ ANMERKUNG: Vorzeichenbits werden herausgeschoben
+
+Ausdruck: 0 = 4 << 30
+ Dezimal:
+  Wert=4
+  Erg.=0
+ Binär:
+  Wert=00000000000000000000000000000100
+  Erg.=00000000000000000000000000000000
+ ANMERKUNG: Bits werden links herausgeschoben
+
+
+--- LINKSVERSCHIEBUNG MIT NEGATIVEN GANZZAHLEN ---
+Ausdruck: -8 = -4 << 1
+ Dezimal:
+  Wert=-4
+  Erg.=-8
+ Binär:
+  Wert=11111111111111111111111111111100
+  Erg.=11111111111111111111111111111000
+ ANMERKUNG: Nullen werden rechts hereingeschoben
+
+Ausdruck: -2147483648 = -4 << 29
+ Dezimal:
+  Wert=-4
+  Erg.=-2147483648
+ Binär:
+  Wert=11111111111111111111111111111100
+  Erg.=10000000000000000000000000000000
+
+Ausdruck: 0 = -4 << 30
+ Dezimal:
+  Wert=-4
+  Erg.=0
+ Binär:
+  Wert=11111111111111111111111111111100
+  Erg.=00000000000000000000000000000000
+ ANMERKUNG: Bits werden links herausgeschoben, einschließlich des Vorzeichenbits
+]]>
+   </screen>
+   &example.outputs.64bit;
+   <screen>
+<![CDATA[
+
+--- RECHTSVERSCHIEBUNG MIT POSITIVEN GANZZAHLEN ---
+Ausdruck: 2 = 4 >> 1
+ Dezimal:
+  Wert=4
+  Erg.=2
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0000000000000000000000000000000000000000000000000000000000000010
+ ANMERKUNG: Kopie des Vorzeichenbits wird links hereingeschoben
+
+Ausdruck: 1 = 4 >> 2
+ Dezimal:
+  Wert=4
+  Erg.=1
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0000000000000000000000000000000000000000000000000000000000000001
+
+Ausdruck: 0 = 4 >> 3
+ Dezimal:
+  Wert=4
+  Erg.=0
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0000000000000000000000000000000000000000000000000000000000000000
+ ANMERKUNG: Bits werden rechts herausgeschoben
+
+Ausdruck: 0 = 4 >> 4
+ Dezimal:
+  Wert=4
+  Erg.=0
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0000000000000000000000000000000000000000000000000000000000000000
+ ANMERKUNG: dasselbe Ergebnis wie oben; man kann nicht über 0 hinaus verschieben
+
+
+--- RECHTSVERSCHIEBUNG MIT NEGATIVEN GANZZAHLEN ---
+Ausdruck: -2 = -4 >> 1
+ Dezimal:
+  Wert=-4
+  Erg.=-2
+ Binär:
+  Wert=1111111111111111111111111111111111111111111111111111111111111100
+  Erg.=1111111111111111111111111111111111111111111111111111111111111110
+ ANMERKUNG: Kopie des Vorzeichenbits wird links hereingeschoben
+
+Ausdruck: -1 = -4 >> 2
+ Dezimal:
+  Wert=-4
+  Erg.=-1
+ Binär:
+  Wert=1111111111111111111111111111111111111111111111111111111111111100
+  Erg.=1111111111111111111111111111111111111111111111111111111111111111
+ ANMERKUNG: Bits werden rechts herausgeschoben
+
+Ausdruck: -1 = -4 >> 3
+ Dezimal:
+  Wert=-4
+  Erg.=-1
+ Binär:
+  Wert=1111111111111111111111111111111111111111111111111111111111111100
+  Erg.=1111111111111111111111111111111111111111111111111111111111111111
+ ANMERKUNG: dasselbe Ergebnis wie oben; man kann nicht über -1 hinaus verschieben
+
+
+--- LINKSSVERSCHIEBUNG MIT POSITIVEN GANZZAHLEN ---
+Ausdruck: 8 = 4 << 1
+ Dezimal:
+  Wert=4
+  Erg.=8
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0000000000000000000000000000000000000000000000000000000000001000
+ ANMERKUNG: Nullen werden rechts hereingeschoben
+
+Ausdruck: 4611686018427387904 = 4 << 60
+ Dezimal:
+  Wert=4
+  Erg.=4611686018427387904
+  Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0100000000000000000000000000000000000000000000000000000000000000
+
+Ausdruck: -9223372036854775808 = 4 << 61
+ Dezimal:
+  Wert=4
+  Erg.=-9223372036854775808
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=1000000000000000000000000000000000000000000000000000000000000000
+ ANMERKUNG: Vorzeichenbits werden herausgeschoben
+
+Ausdruck: 0 = 4 << 62
+ Dezimal:
+  Wert=4
+  Erg.=0
+ Binär:
+  Wert=0000000000000000000000000000000000000000000000000000000000000100
+  Erg.=0000000000000000000000000000000000000000000000000000000000000000
+ ANMERKUNG: Bits werden links herausgeschoben
+
+
+--- LINKSVERSCHIEBUNG MIT NEGATIVEN GANZZAHLEN ---
+Ausdruck: -8 = -4 << 1
+ Dezimal:
+  Wert=-4
+  Erg.=-8
+ Binär:
+  Wert=1111111111111111111111111111111111111111111111111111111111111100
+  Erg.=1111111111111111111111111111111111111111111111111111111111111000
+ ANMERKUNG: Nullen werden rechts hereingeschoben
+
+Ausdruck: -9223372036854775808 = -4 << 61
+ Dezimal:
+  Wert=-4
+  Erg.=-9223372036854775808
+ Binär:
+  Wert=1111111111111111111111111111111111111111111111111111111111111100
+  Erg.=1000000000000000000000000000000000000000000000000000000000000000
+
+Ausdruck: 0 = -4 << 62
+ Dezimal:
+  Wert=-4
+  Erg.=0
+ Binär:
+  Wert=1111111111111111111111111111111111111111111111111111111111111100
+  Erg.=0000000000000000000000000000000000000000000000000000000000000000
+ ANMERKUNG: Bits werden links herausgeschoben, einschließlich des Vorzeichenbits
+]]>
+   </screen>
+  </example>
+ </para>
+ <warning>
+  <para>
+   Für die bitweise Manipulation von Zahlen größer als
+   <literal>PHP_INT_MAX</literal> sind die Funktion der
+   <link linkend="book.gmp">GMP</link>-Erweiterung zu verwenden.
+  </para>
+ </warning>
+
+ <sect2 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <!-- <link linkend="language.oop5.basic.class.class">::class</link> -->
+    <member><function>pack</function></member>
+    <member><function>unpack</function></member>
+    <member><function>gmp_and</function></member>
+    <member><function>gmp_or</function></member>
+    <member><function>gmp_xor</function></member>
+    <member><function>gmp_testbit</function></member>
+    <member><function>gmp_clrbit</function></member>
+   </simplelist>
+  </para>
+ </sect2>
+</sect1>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 52407313885d27a4e891e08dd2e2481bcc39e244 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: e4b889a3e8b9d87ab605aac9bbe85d2c16c69a1b Reviewer: samesch -->
+<!-- CREDITS: tzwenny, betz -->
+<sect1 xml:id="language.operators.errorcontrol">
+ <title>Operator zur Fehlerkontrolle</title>
+ <simpara>
+  PHP unterstützt einen Operator für die Fehlerkontrolle: Das
+  <literal>@</literal>-Symbol. Stellt man das <literal>@</literal> in PHP vor
+  einen Ausdruck werden alle Fehlermeldungen, die von diesem Ausdruck erzeugt
+  werden könnten, unterdrückt.
+ </simpara>
+ <para>
+  Wurde eine benutzerdefinierte Fehlerbehandlungsfunktion mit
+  <function>set_error_handler</function> definiert, wird sie auch dann
+  aufgerufen, wenn die Diagnose unterdrückt wurde.
+ </para>
+
+ <warning>
+  <para>
+   Vor PHP 8.0.0 gab die Funktion <function>error_reporting</function> bei
+   einem Aufruf innerhalb einer benutzerdefinierten Fehlerbehandlung immer
+   <literal>0</literal> zurück, wenn Fehler mit dem Operator
+   <literal>@</literal> unterdückt wurden. Seit PHP 8.0.0 gibt sie den Wert
+   <literal>E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR |
+   E_RECOVERABLE_ERROR | E_PARSE</literal> zurück.
+  </para>
+ </warning>
+ <simpara>
+  Alle Fehlermeldungen, die von diesem Ausdruck erzeugt werden, sind im
+  <literal>"message"</literal>-Element des Arrays, das von
+  <function>error_get_last</function> zurückgegeben wird, enthalten. Da sich
+  das Ergebnis dieser Funktion bei jedem Fehlers ändert, sollte es möglichst
+  früh geprüft werden.
+ </simpara>
+ <para>
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+/* Beabsichtigter Dateifehler */
+$my_file = @file ('nicht_vorhandene_Datei') or
+    die ("Datei konnte nicht geöffnet werden: Fehler war:'" . error_get_last()['message'] . "'");
+
+// Das funktioniert bei jedem Ausdruck, nicht nur bei Funktionen:
+$value = @$cache[$key];
+// gibt keine Meldung aus, falls der Index $key nicht vorhanden ist.
+
+?>
+]]>
+   </programlisting>
+  </informalexample>
+ </para>
+ <note>
+  <simpara>
+   Der @-Operator funktioniert nur bei
+   <link linkend="language.expressions">Ausdrücken</link>. Eine einfache
+   Daumenregel: wenn der Wert von etwas bestimmt werden kann, dann kann der
+   <literal>@</literal>-Operator davor geschrieben werden. Zum Beispiel kann
+   er vor Variablen gesetzt werden, vor Funktionsaufrufen, vor Aufrufen
+   bestimmter Sprachkonstrukte (&zb; <function>include</function>), und so
+   weiter. Nicht verwendet werden kann er vor Funktions- oder
+   Klassendefinitionen oder vor Kontrollstrukturen wie <literal>if</literal>
+   und &foreach; und so weiter.
+  </simpara>
+ </note>
+ <warning>
+  <para>
+   Vor PHP 8.0.0 war es möglich, kritische Fehler, die die Skriptausführung
+   beenden, mit dem <literal>@</literal>-Operator zu deaktivieren. Wenn zum
+   Beispiel <literal>@</literal> dem Aufruf einer Funktion vorangestellt wird,
+   die nicht existiert, weil sie nicht verfügbar ist oder falsch eingegeben
+   wurde, würde das Skript ohne Hinweis auf die Ursache abbrechen.
+  </para>
+ </warning>
+
+ <sect2 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>error_reporting</function></member>
+    <member><link linkend="ref.errorfunc">Fehlerbehandlungs- und Protokollierfunktionen</link></member>
+   </simplelist>
+  </para>
+ </sect2>
+</sect1>
