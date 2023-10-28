@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 9b89d5c26bba2f062bfbaba2e8c4c8cd89646770 Maintainer: cmb Status: ready -->
+<!-- EN-Revision: 62421b98a97fe576987878055e17cf755eb395af Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 755faca201b5ba15e23735f21ed056b47d954398 Reviewer: samesch -->
 <!-- CREDITS: tom -->
@@ -21,6 +20,18 @@
   <para>
    Erstellt ein Array mit einem Bereich von Elementen.
   </para>
+  <para>
+   Wenn sowohl <parameter>start</parameter> als auch
+   <parameter>end</parameter> vom Typ <type>string</type> sind und
+   <parameter>step</parameter> vom Typ <type>int</type> ist, ist das erzeugte
+   Array eine Folge von Bytes. Andernfalls ist das erzeugte Array eine Folge
+   von Zahlen.
+  </para>
+  <para>
+   Wenn der <parameter>start</parameter> kleiner ist als
+   <parameter>end</parameter>, ist die Folge aufsteigend, andernfalls ist sie
+   absteigend.
+  </para>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -31,7 +42,7 @@
      <term><parameter>start</parameter></term>
      <listitem>
       <para>
-       Der erste Wert der Sequenz.
+       Der erste Wert der Folge.
       </para>
      </listitem>
     </varlistentry>
@@ -39,8 +50,7 @@
      <term><parameter>end</parameter></term>
      <listitem>
       <para>
-       Die Sequenz endet, wenn der <parameter>end</parameter>-Wert erreicht
-       ist.
+       Der letzte mögliche Wert der Folge.
       </para>
      </listitem>
     </varlistentry>
@@ -48,12 +58,15 @@
      <term><parameter>step</parameter></term>
      <listitem>
       <para>
-       Ist ein <parameter>step</parameter>-Wert angegeben, wird er in der
-       Sequenz als Erhöhung (oder Verringerung) zwischen den Elementen
-       verwendet. <parameter>step</parameter> darf nicht <literal>0</literal>
-       sein und darf den angegebenen Bereich nicht überschreiten. Ist
-       <parameter>step</parameter> nicht angegeben, wird automatisch der Wert
-       1 angenommen.
+       <parameter>step</parameter> gibt an, wie weit die einzelnen Werte
+       der erzeugten Folge auseinander liegen.
+      </para>
+      <para>
+       <parameter>step</parameter> kann für absteigende Folgen negativ sein.
+      </para>
+      <para>
+       Wenn <parameter>step</parameter> ein <type>float</type> ohne
+       Nachkommastelle ist, wird er als <type>int</type> interpretiert.
       </para>
      </listitem>
     </varlistentry>
@@ -64,9 +77,172 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt ein Array mit Elementen im Bereich von <parameter>start</parameter>
-   bis einschließlich <parameter>end</parameter> zurück.
+   Gibt eine Folge von Elementen als <type>Array</type> zurück, beginnend mit
+   <parameter>start</parameter> und endend mit <parameter>end</parameter>,
+   wobei die einzelnen Werte der Folge einen Abstand von
+   <parameter>step</parameter> voneinander haben.
   </para>
+  <para>
+   Das letzte Element des zurückgegebenen Arrays ist in Abhängigkeit vom Wert
+   von <parameter>step</parameter> entweder <parameter>end</parameter> oder
+   das vorherige Element der Folge.
+  </para>
+  <para>
+   Wenn sowohl <parameter>start</parameter> als auch <parameter>end</parameter>
+   vom Typ <type>string</type> sind und <parameter>step</parameter> vom Typ
+   <type>int</type> ist, besteht das erzeugte Array aus einer Folge von Bytes,
+   in der Regel lateinische <abbrev>ASCII</abbrev>-Zeichen.
+  </para>
+  <para>
+   Wenn mindestens einer der Parameter <parameter>start</parameter>,
+   <parameter>end</parameter> oder <parameter>step</parameter> vom Typ
+   <type>float</type> ist, ist das erzeugte Array eine Folge vom Typ
+   <type>float</type>.
+  </para>
+  <para>
+   Andernfalls ist das erzeugte Array eine Folge vom Typ <type>int</type>.
+  </para>
+ </refsect1>
+
+ <refsect1 role="errors">
+  &reftitle.errors;
+  <itemizedlist>
+   <listitem>
+    <simpara>
+     Wenn <parameter>step</parameter> <literal>0</literal> ist, wird ein
+     <classname>ValueError</classname> geworfen.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Wenn <parameter>start</parameter>, <parameter>end</parameter> oder
+     <parameter>step</parameter> nicht <function>is_finite</function> ist,
+     wird ein <classname>ValueError</classname> geworfen.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Wenn <parameter>step</parameter> negativ ist, aber der erzeugte Bereich
+     größer wird (&dh; <code>$start &lt;= $end</code>), wird ein
+     <classname>ValueError</classname> geworfen.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Wenn <parameter>start</parameter> oder <parameter>end</parameter> die
+     leere Zeichenkette <literal>''</literal> ist, wird ein
+     <constant>E_WARNING</constant> ausgegeben und die leere Zeichenkette wird
+     als <literal>0</literal> interpretiert.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Wenn <parameter>start</parameter> oder <parameter>end</parameter> eine
+     nicht-<link linkend="language.types.numeric-strings">numerische Zeichenkette</link>
+     mit mehr als einem Byte ist, wird ein <constant>E_WARNING</constant>
+     ausgegeben.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Wenn <parameter>start</parameter> oder <parameter>end</parameter> eine
+     Zeichenkette ist, die implizit in den Typ <type>int</type> umgewandelt
+     wird, weil der andere Begrenzungswert eine Zahl ist, wird ein
+     <constant>E_WARNING</constant> ausgegeben.
+    </simpara>
+   </listitem>
+   <listitem>
+    <simpara>
+     Wenn <parameter>step</parameter> vom Typ <type>float</type> ist, und
+     <parameter>start</parameter> und <parameter>end</parameter>
+     nicht-<link linkend="language.types.numeric-strings">numerische Zeichenketten</link>
+     sind, wird ein <constant>E_WARNING</constant> ausgegeben.
+    </simpara>
+   </listitem>
+  </itemizedlist>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn sowohl <parameter>start</parameter> als auch
+       <parameter>end</parameter> Zeichenketten sind, erzeugt
+       <function>range</function> nun immer ein <type>Array</type> aus Bytes.
+       Zuvor wurde, wenn einer der Begrenzungswerte eine numerische
+       Zeichenkette war, der andere Begrenzungswert implizit in
+       <type>int</type> umgewandelt.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>start</parameter> oder <parameter>end</parameter> eine
+       Zeichenkette ist, die implizit in <type>int</type> umgewandelt wird,
+       weil der andere Begrenzungswert eine Zahl ist, nun jetzt ein
+       <constant>E_WARNING</constant> ausgegeben.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>start</parameter> oder <parameter>end</parameter> eine
+       nicht-numerische Zeichenkette mit mehr als einem Byte ist, wird nun ein
+       <constant>E_WARNING</constant> ausgegeben.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>start</parameter> oder <parameter>end</parameter> die
+       leere Zeichenkette ist, wird nun ein <constant>E_WARNING</constant>
+       ausgegeben.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>step</parameter> ein <type>float</type> ohne
+       Nachkommastelle ist, wird er als <type>int</type> interpretiert.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>step</parameter> negativ ist, wird nun ein
+       <classname>ValueError</classname> ausgelöst, wenn ein aufsteigender
+       Bereich erzeugt wird.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>step</parameter> nicht endlich ist, wird nun ein
+       <classname>ValueError</classname> geworfen.
+      </entry>
+     </row>
+     <row>
+      <entry>8.3.0</entry>
+      <entry>
+       Wenn <parameter>start</parameter> oder <parameter>end</parameter> ein
+       <type>Array</type>, <type>Objekt</type> oder eine <type>Ressource</type>
+       ist, wird nun ein <classname>TypeError</classname> geworfen; zuvor
+       wurden diese Werte implizit in <type>int</type> umgewandelt.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -77,48 +253,30 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
-foreach (range(0, 12) as $number) {
-    echo $number;
-}
+echo implode(', ', range(0, 12)), PHP_EOL;
 
-echo "\n";
+echo implode(', ', range(0, 100, 10)), PHP_EOL;
 
-// Der Parameter step
-// array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-foreach (range(0, 100, 10) as $number) {
-    echo $number;
-}
+echo implode(', ', range('a', 'i')), PHP_EOL;
 
-echo "\n";
+echo implode(', ', range('c', 'a')), PHP_EOL;
 
-// Verwendung von Zeichenketten
-// array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
-foreach (range('a', 'i') as $letter) {
-    echo $letter;
-}
-
-echo "\n";
-
-// array('c', 'b', 'a');
-foreach (range('c', 'a') as $letter) {
-    echo $letter;
-}
+echo implode(', ', range('A', 'z')), PHP_EOL;
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100
+a, b, c, d, e, f, g, h, i
+c, b, a
+A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, [, \, ], ^, _, `, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
+]]>
+    </screen>
    </example>
   </para>
- </refsect1>
-
- <refsect1 role="notes">
-  &reftitle.notes;
-  <note>
-   <para>
-    Werte mit Zeichenketten sind auf eine Länge von 1 limitiert. Wird eine Länge
-    größer als 1 eingegeben, wird nur das erste Zeichen verwendet.
-   </para>
-  </note>
  </refsect1>
 
  <refsect1 role="seealso">
