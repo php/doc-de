@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 2d77c9fe145f74663128006eb71662b0c44e8987 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: ae0dfad417adaba25669003c69024aa96b71dddf Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
 <refentry xml:id="mysqli.real-connect" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -44,9 +44,10 @@
   <itemizedlist>
    <listitem>
     <para>
-     <function>mysqli_real_connect</function> benötigt ein gültiges Objekt,
-     das mit der Funktion <function>mysqli_init</function> erstellt werden
-     muss.
+     <function>mysqli_real_connect</function> benötigt eine Instanz des
+     <classname>mysqli</classname>-Objekts. Diese kann mittels
+     <methodname>mysqli::__construct</methodname> oder
+     <function>mysqli_connect</function> ohne Argumente erstellt werden.
     </para>
    </listitem>
    <listitem>
@@ -263,7 +264,7 @@
 
 $mysqli = mysqli_init();
 if (!$mysqli) {
-    die('mysqli_init ist fehlgeschlagen');
+    die('mysqli-Verbindung fehlgeschlagen');
 }
 
 if (!$mysqli->options(MYSQLI_INIT_COMMAND, 'SET AUTOCOMMIT = 0')) {
@@ -292,7 +293,8 @@ $mysqli->close();
 
 class foo_mysqli extends mysqli {
     public function __construct($host, $user, $pass, $db) {
-        parent::init();
+        // Der übergeordnete Konstruktor muss direkt aufgerufen werden, andernfalls wird ein E_FATAL-Fehler erzeugt
+        parent::__construct();
 
         if (!parent::options(MYSQLI_INIT_COMMAND, 'SET AUTOCOMMIT = 0')) {
             die('Setzen von MYSQLI_INIT_COMMAND ist fehlgeschlagen');
@@ -322,9 +324,9 @@ $db->close();
 <![CDATA[
 <?php
 
-$link = mysqli_init();
+$link = mysqli_connect();
 if (!$link) {
-    die('mysqli_init ist fehlgeschlagen');
+    die('mysqli_connect ist fehlgeschlagen');
 }
 
 if (!mysqli_options($link, MYSQLI_INIT_COMMAND, 'SET AUTOCOMMIT = 0')) {
@@ -365,7 +367,6 @@ Erfolg... MySQL host info: localhost via TCP/IP
   <para>
    <simplelist>
     <member><function>mysqli_connect</function></member>
-    <member><function>mysqli_init</function></member>
     <member><function>mysqli_options</function></member>
     <member><function>mysqli_ssl_set</function></member>
     <member><function>mysqli_close</function></member>
