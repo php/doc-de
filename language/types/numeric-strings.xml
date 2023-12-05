@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 7ba2406e555a240338d63f72d9ac54a46e0bee5d Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
 <!-- $Revision$ -->
 <sect1 xml:id="language.types.numeric-strings" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
- <title>Numeric strings</title>
+ <title>Numerische Zeichenketten</title>
  <para>
-  A PHP <type>string</type> is considered numeric if it can be interpreted as
-  an <type>int</type> or a <type>float</type>.
+  In PHP gilt eine Zeichenkette (Typ <type>string</type>) als numerisch, wenn
+  er als Ganzzahl (<type>int</type>) oder Gleitkommazahl (<type>float</type>)
+  interpretiert werden kann.
  </para>
 
  <para>
-  Formally as of PHP 8.0.0:
+  Formal seit PHP 8.0.0:
  </para>
 
  <informalexample>
@@ -16,7 +19,7 @@
    <![CDATA[
 WHITESPACES      \s*
 LNUM             [0-9]+
-DNUM             ([0-9]*)[\.]{LNUM}) | ({LNUM}[\.][0-9]*)
+DNUM             ([0-9]*[\.]{LNUM}) | ({LNUM}[\.][0-9]*)
 EXPONENT_DNUM    (({LNUM} | {DNUM}) [eE][+-]? {LNUM})
 INT_NUM_STRING   {WHITESPACES} [+-]? {LNUM} {WHITESPACES}
 FLOAT_NUM_STRING {WHITESPACES} [+-]? ({DNUM} | {EXPONENT_DNUM}) {WHITESPACES}
@@ -26,22 +29,23 @@ NUM_STRING       ({INT_NUM_STRING} | {FLOAT_NUM_STRING})
  </informalexample>
 
  <para>
-  PHP also has a concept of <emphasis>leading</emphasis> numeric strings.
-  This is simply a string which starts like a numeric string followed by
-  any characters.
+  In PHP gibt es auch das Konzept der <emphasis>vorangestellten</emphasis>
+  numerischen Zeichenkette. Dies ist einfach eine Zeichenkette, die wie eine
+  numerische Zeichenkette beginnt, auf die beliebige Zeichen folgen.
  </para>
 
  <note>
   <para>
-   Any string that contains the letter <literal>E</literal> (case insensitive)
-   bounded by numbers will be seen as a number expressed in scientific notation.
-   This can produce unexpected results.
+   Jede Zeichenkette, die den Buchstaben <literal>E</literal> (Groß- und
+   Kleinschreibung wird nicht berücksichtigt) enthält, wird als Zahl in
+   wissenschaftlicher Notation betrachtet. Dies kann zu unerwarteten
+   Ergebnissen führen.
    <programlisting role="php">
 <![CDATA[
 <?php
-var_dump("0D1" == "000"); // false, "0D1" is not scientific notation
-var_dump("0E1" == "000"); // true, "0E1" is 0 * (10 ^ 1), or 0
-var_dump("2E1" == "020"); // true, "2E1" is 2 * (10 ^ 1), or 20
+var_dump("0D1" == "000"); // false, "0D1" ist keine wissenschaftliche Schreibweise
+var_dump("0E1" == "000"); // true, "0E1" ist 0 * (10 ^ 1) also 0
+var_dump("2E1" == "020"); // true, "2E1" ist 2 * (10 ^ 1) also 20
 ?>
 ]]>
    </programlisting>
@@ -49,37 +53,40 @@ var_dump("2E1" == "020"); // true, "2E1" is 2 * (10 ^ 1), or 20
  </note>
 
  <sect2 xml:id="language.types.numeric-string.conversion">
-  <title>Strings used in numeric contexts</title>
+  <title>Zeichenketten, die im numerischen Kontext verwendet werden</title>
   <para>
-   When a <type>string</type> needs to be evaluated as number (e.g. arithmetic
-   operations, <type>int</type> type declaration, etc.) the following
-   steps are taken to determine the outcome:
+   Wenn ein Wert vom Typ <type>string</type> als Zahl ausgewertet werden muss
+   (&zb; arithmetische Operationen, Deklaration des Typs <type>int</type>
+   usw.), werden die folgenden Schritte durchgeführt, um das Ergebnis zu
+   ermitteln:
 
    <orderedlist>
     <listitem>
      <simpara>
-      If the <type>string</type> is numeric, resolve to an <type>int</type> if
-      the <type>string</type> is an integer numeric string and fits into the
-      limits of the <type>int</type> type limits (as defined by
-      <constant>PHP_INT_MAX</constant>), otherwise resolve to a
-      <type>float</type>.
+      Wenn der <type>String</type> numerisch ist, wird er in einen
+      <type>Int</type> aufgelöst, sofern er eine ganzzahlige numerische
+      Zeichenkette ist und gemäß der Definition von
+      <constant>PHP_INT_MAX</constant> innerhalb der Grenzen des Typs
+      <type>int</type> liegt, ansonsten wird er in einen <type>Float</type>
+      aufgelöst.
      </simpara>
     </listitem>
     <listitem>
      <simpara>
-      If the context allows leading numeric strings and the <type>string</type>
-      is one, resolve to an <type>int</type> if the leading part of the
-      <type>string</type> is an integer numeric string and fits into the
-      limits of the <type>int</type> type limits (as defined by
-      <constant>PHP_INT_MAX</constant>), otherwise resolve to a
-      <type>float</type>.
-      Additionally an error of level <constant>E_WARNING</constant> is raised.
+      Wenn der Kontext vorangestellte numerische Zeichenketten erlaubt und der
+      <type>String</type> eine solche ist, wird in einen <type>Int</type>
+      aufgelöst, sofern der vorangestellte Teil des <type>String</type>s eine
+      ganzzahlige numerische Zeichenkette ist und gemäß der Definition von
+      <constant>PHP_INT_MAX</constant> innerhalb der Grenzen des Typs
+      <type>int</type> liegt, ansonsten wird in einen <type>Float</type>
+      aufgelöst. Darüber hinaus wird ein Fehler der Stufe
+      <constant>E_WARNING</constant> ausgelöst.
      </simpara>
     </listitem>
     <listitem>
      <simpara>
-      The <type>string</type> is not numeric, throw a
-      <classname>TypeError</classname>.
+      Wenn der <type>String</type> nicht numerisch ist, wird eine
+      <classname>TypeError</classname>-Exception geworfen.
      </simpara>
     </listitem>
    </orderedlist>
@@ -87,47 +94,50 @@ var_dump("2E1" == "020"); // true, "2E1" is 2 * (10 ^ 1), or 20
  </sect2>
 
  <sect2 xml:id="language.types.numeric-string.prior">
-  <title>Behavior prior to PHP 8.0.0</title>
+  <title>Verhalten vor PHP 8.0.0</title>
   <para>
-   Prior to PHP 8.0.0, a <type>string</type> was considered numeric only if it
-   had <emphasis>leading</emphasis> whitespaces, if it had
-   <emphasis>trailing</emphasis> whitespaces then the string was considered to
-   be leading numeric.
+   Vor PHP 8.0.0 galt ein <type>String</type> nur dann als numerisch, wenn er
+   ein <emphasis>vorangestelltes</emphasis> Leerzeichen enthielt. Wenn er ein
+   <emphasis>nachgestelltes</emphasis> Leerzeichen enthielt, wurde er als
+   vorangestellt numerisch betrachtet.
   </para>
 
   <para>
-   Prior to PHP 8.0.0, when a string was used in a numeric context it would
-   perform the same steps as above with the following differences:
+   Wenn vor PHP 8.0.0 eine Zeichenkette in einem numerischen Kontext verwendet
+   wurde, wurden die gleichen Schritte wie oben beschrieben durchgeführt, mit
+   den folgenden Unterschieden:
    <itemizedlist>
     <listitem>
      <simpara>
-      The usage of a leading numeric string would raise an
-      <constant>E_NOTICE</constant> instead of an <constant>E_WARNING</constant>.
+      Bei Verwendung einer führenden numerischen Zeichenkette wurde ein
+      <constant>E_NOTICE</constant> anstelle eines
+      <constant>E_WARNING</constant> ausgelöst.
      </simpara>
      </listitem>
     <listitem>
      <simpara>
-      If the string is not numeric, an <constant>E_WARNING</constant> was
-      raised and the value <literal>0</literal> would be returned.
+      Wenn die Zeichenkette nicht numerisch war, wurde ein
+      <constant>E_WARNING</constant> ausgelöst und der Wert
+      <literal>0</literal> zurückgegeben.
      </simpara>
     </listitem>
    </itemizedlist>
-   Prior to PHP 7.1.0, neither <constant>E_NOTICE</constant>
-   nor <constant>E_WARNING</constant> was raised.
+   Vor PHP 7.1.0 wurde weder <constant>E_NOTICE</constant> noch
+   <constant>E_WARNING</constant> ausgelöst.
   </para>
 
   <informalexample>
    <programlisting role="php">
 <![CDATA[
 <?php
-$foo = 1 + "10.5";                // $foo is float (11.5)
-$foo = 1 + "-1.3e3";              // $foo is float (-1299)
-$foo = 1 + "bob-1.3e3";           // TypeError as of PHP 8.0.0, $foo is integer (1) previously
-$foo = 1 + "bob3";                // TypeError as of PHP 8.0.0, $foo is integer (1) previously
-$foo = 1 + "10 Small Pigs";       // $foo is integer (11) and an E_WARNING is raised in PHP 8.0.0, E_NOTICE previously
-$foo = 4 + "10.2 Little Piggies"; // $foo is float (14.2) and an E_WARNING is raised in PHP 8.0.0, E_NOTICE previously
-$foo = "10.0 pigs " + 1;          // $foo is float (11) and an E_WARNING is raised in PHP 8.0.0, E_NOTICE previously
-$foo = "10.0 pigs " + 1.0;        // $foo is float (11) and an E_WARNING is raised in PHP 8.0.0, E_NOTICE previously
+$foo = 1 + "10.5";                // $foo ist vom Typ float (11.5)
+$foo = 1 + "-1.3e3";              // $foo ist vom Typ float (-1299)
+$foo = 1 + "bob-1.3e3";           // TypeError seit PHP 8.0.0; davor ist $foo vom Typ integer (1)
+$foo = 1 + "bob3";                // TypeError seit PHP 8.0.0; davor ist $foo vom Typ integer (1)
+$foo = 1 + "10 Small Pigs";       // $foo ist vom Typ integer (11) und in PHP 8.0.0 wird ein E_WARNING ausgelöst; davor E_NOTICE
+$foo = 4 + "10.2 Little Piggies"; // $foo ist vom Typ float (14.2) und in PHP 8.0.0 wird ein E_WARNING ausgelöst; davor E_NOTICE
+$foo = "10.0 pigs " + 1;          // $foo ist vom Typ float (11) und in PHP 8.0.0 wird ein E_WARNING ausgelöst; davor E_NOTICE
+$foo = "10.0 pigs " + 1.0;        // $foo ist vom Typ float (11) und in PHP 8.0.0 wird ein E_WARNING ausgelöst; davor E_NOTICE
 ?>
 ]]>
    </programlisting>
