@@ -1,13 +1,12 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c6a8e42bdbbb814124b84d45d95cd793129aac6b Maintainer: nobody Status: ready -->
-
-<refentry xml:id="function.output-add-rewrite-var" xmlns="http://docbook.org/ns/docbook">
+<!-- EN-Revision: b0d9505811e05bc11b58ef23167f3855c742edba Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: b0d9505811e05bc11b58ef23167f3855c742edba Reviewer: samesch -->
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.output-add-rewrite-var">
  <refnamediv>
   <refname>output_add_rewrite_var</refname>
-  <refpurpose>
-   Setzt URL-Rewrite-Variablen
-  </refpurpose>
+  <refpurpose>Fügt Werte zum URL-Rewriter hinzu</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -18,27 +17,36 @@
    <methodparam><type>string</type><parameter>value</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Diese Funktion fügt ein Name/Wert-Paar zum URL Rewrite Mechanismus
-   hinzu. Name und Wert werden in der gleichen Art wie die Session-ID
-   als GET-Parameter zu URLs und als versteckte Felder zu Formularen
-   hinzugefügt wenn das transparente URL-Rewriting mit <link
-   linkend="ini.session.use-trans-sid">session.use_trans_sid</link>
-   aktiviert ist.
+   Diese Funktion startet den
+   <literal>"URL-Rewriter"</literal>-Ausgabepuffer-Handler, wenn dieser nicht
+   aktiv ist, speichert die Parameter <parameter>name</parameter> und
+   <parameter>value</parameter> und schreibt die <acronym>URL</acronym>s und
+   Formulare basierend auf den entsprechenden INI-Einstellungen neu, wenn der
+   Puffer geleert wird. Nachfolgende Aufrufe dieser Funktion speichern alle
+   zusätzlichen Name/Wert-Paare, bis der Handler beendet wird.
   </para>
   <para>
-   Diese Funktion wird auch über die &php.ini; Parameter <link
-   linkend="ini.url-rewriter.tags">url_rewriter.tags</link> und
-   <link linkend="ini.url-rewriter.hosts">url_rewriter.hosts</link>
-   gesteuert.
+   Wenn der Ausgabepuffer geleert wird (durch Aufruf von
+   <function>ob_flush</function>, <function>ob_end_flush</function>,
+   <function>ob_get_flush</function> oder am Ende des Skripts), fügt der
+   <literal>"URL-Rewriter"</literal>-Handler die Name/Wert-Paare entsprechend
+   den Werten der Konfigurationsanweisungen
+   <link linkend="ini.url-rewriter.tags">url_rewriter.tags</link> und
+   <link linkend="ini.url-rewriter.hosts">url_rewriter.hosts</link> als
+   Abfrageparameter zu <acronym>URL</acronym>s in Attributen von HTML-Tags und
+   als versteckte Felder zu Formularen hinzu.
   </para>
   <para>
-   Es ist zu beachten, dass diese Funktion höchstens einmal pro Request erfolgreich
-   aufgerufen werden kann.
+   Jedes Name/Wert-Paar, das dem <literal>"URL-Rewriter"</literal>-Handler
+   hinzugefügt wird, wird zu den <acronym>URL</acronym>s und/oder Formularen
+   hinzugefügt, auch wenn dies zu doppelten
+   <acronym>URL</acronym>-Abfrageparametern oder Elementen mit denselben
+   Namensattributen führt.
   </para>
   <note>
    <simpara>
-    Ein Aufruf dieser Funktion aktiviert automatisch die Ausgabepufferung,
-    falls sie nicht schon aktiv ist.
+    Wenn der <literal>"URL-Rewriter"</literal>-Handler deaktiviert wird, kann
+    er nicht mehr gestartet werden.
    </simpara>
   </note>
  </refsect1>
@@ -89,14 +97,15 @@
       <row>
        <entry>7.1.0</entry>
        <entry>
-        Vor PHP 7.1.0 verwendeten Rewrite-Variablen, die durch
-        <function>output_add_rewrite_var</function> gesetzt wurden, den trans
-        sid Ausgabepuffer des Session-Moduls. Seit PHP 7.1.0 wird ein eigener
-        Ausgabepuffer verwendet; <link
-        linkend="ini.url-rewriter.tags">url_rewriter.tags</link> wird nur noch
-        für die Ausgabefunktionen berücksichtigt. <link
-        linkend="ini.url-rewriter.tags">url_rewriter.hosts</link> wurde
+        Seit PHP 7.1.0 verwendet die Funktion einen eigenen Ausgabepuffer;
+        <link linkend="ini.url-rewriter.tags">url_rewriter.tags</link>
+        wird nun nur noch für die Ausgabefunktionen verwendet und die Direktive
+        <link linkend="ini.url-rewriter.tags">url_rewriter.hosts</link> wurde
         hinzugefügt.
+        Vor PHP 7.1.0 teilten sich die Rewrite-Variablen, die mit
+        <function>output_add_rewrite_var</function> gesetzt wurden, einen
+        Ausgabepuffer mit der transparenten Session-ID-Unterstützung (siehe
+        <link linkend="ini.session.trans-sid-tags">session.trans_sid_tags</link>).
        </entry>
       </row>
      </tbody>
@@ -109,17 +118,19 @@
   &reftitle.examples;
   <para>
    <example>
-      <title><function>output_add_rewrite_var</function> Beispiel</title>
-      <programlisting role="php">
+    <title><function>output_add_rewrite_var</function>-Beispiel</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
+ini_set('url_rewriter.tags', 'a=href,form=');
+
 output_add_rewrite_var('var', 'value');
 
-// some links
+// ein paar Links
 echo '<a href="file.php">link</a>
 <a href="http://example.com">link2</a>';
 
-// a form
+// ein Formular
 echo '<form action="script.php" method="post">
 <input type="text" name="var2" />
 </form>';
@@ -158,14 +169,11 @@ Array
     <member><function>ob_list_handlers</function></member>
     <member><link linkend="ini.url-rewriter.tags">url_rewriter.tags</link></member>
     <member><link linkend="ini.url-rewriter.hosts">url_rewriter.hosts</link></member>
-    <member><link linkend="ini.session.trans-sid-tags">session.trans_sid_tags</link></member>
-    <member><link linkend="ini.session.trans-sid-hosts">session.trans_sid_hosts</link></member>
    </simplelist>
   </para>
- </refsect1>  
+ </refsect1>
 
 </refentry>
-
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml
