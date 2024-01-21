@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6ab6ea465889620fc2a8cdaf7b008cbaed83c523 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 91ab4f5f898023b0eed0e642e1482ac11f749d20 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 91ab4f5f898023b0eed0e642e1482ac11f749d20 Reviewer: samesch -->
 <refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.flush">
  <refnamediv>
   <refname>flush</refname>
@@ -14,40 +16,32 @@
    <void/>
   </methodsynopsis>
   <para>
-   Leert den Ausgabepuffer des Systems und des darunterliegenden PHP-Backends
-   (CGI, Webserver, ...). Diese Funktion versucht, mit ein paar
-   Einschränkungen, die gesamte aktuelle Ausgabe an den Browser zu senden.
+   Leert die Ausgabepuffer des PHP-Systems und des von PHP verwendeten
+   Backends (&zb; CGI, Webserver). In einer Kommandozeilenumgebung versucht
+   <function>flush</function> nur den Inhalt der Puffer zu leeren, während in
+   einem webbasierten Kontext auch die Header geleert werden.
   </para>
-  <para>
-   <function>flush</function> ist möglicherweise nicht in der Lage, das
-   Pufferverhalten des Webservers zu beeinflussen und hat keine Auswirkungen
-   auf den clientseitigen Browserpuffer. Es hat auch keinen Einfluss auf den
-   Anzeigemechanismus des Userspace-Puffers von PHP. Das bedeutet, dass
-   <function>ob_flush</function> vor <function>flush</function> aufgerufen
-   werden sollte, um die Ausgabebuffer zu leeren, wenn sie verwendet werden.
-  </para>
-  <para>
-   Einige Webserver, besonders auf Windows (Win32), puffern ihre
-   Skriptausgaben weiterhin bis zum Skriptende bevor sie sie zum Browser
-   übertragen.
-  </para>
-  <para>
-   Auch Apache-Module wie mod_gzip puffern zum Teil Ausgaben und verhindern
-   so, dass Ausgaben nach <function>flush</function> direkt an den Client
-   weitergegeben werden.
-  </para>
-  <para>
-   Selbst Browser können empfangene Ausgaben puffern bevor sie sie darstellen.
-   Netscape &zb; puffert Text, bis er entweder einen Zeilenwechsel oder den
-   Anfang eines Tags enthält und zeigt Tabellen erst nach dem Empfang des
-   &lt;/table&gt;-Tags der äußersten Tabelle.
-  </para>
-  <para>
-   Einige Versionen des Microsoft Internet Explorers beginnen erst dann mit
-   der Ausgabe wenn sie mindestens 256 Bytes empfangen haben. Sie müssen daher
-   eventuell zusätzliche Leerzeichen in Ihre Ausgaben einfügen um eine
-   Darstellung vor Skriptende auf solchen Browsern zu erzwingen.
-  </para>
+  <note>
+   <simpara>
+    <function>flush</function> ist möglicherweise nicht in der Lage, das
+    Pufferverhalten des Webservers zu beeinflussen und hat keine Auswirkungen
+    auf die clientseitige Pufferung im Browser.
+   </simpara>
+  </note>
+  <note>
+   <simpara>
+    Diese Funktion hat keine Auswirkungen benutzerdefinierte Ausgabe-Handler,
+    also &zb; solche, die durch <function>ob_start</function> oder
+    <function>output_add_rewrite_var</function> gestartet werden.
+   </simpara>
+  </note>
+  <warning>
+   <simpara>
+    <function>flush</function> kann Ausgabe-Handler stören, die Header in einem
+    Web-Kontext setzen und senden (&zb; <function>ob_gzhandler</function>),
+    indem sie Header senden, bevor diese Handler dies tun können.
+   </simpara>
+  </warning>
  </refsect1>
 
  <refsect1 role="parameters">
