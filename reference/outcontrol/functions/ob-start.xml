@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9e0a39029d6e66cd5f7c7e8cfecf76fdb8ad7f49 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: e8f4c442c963211fd01031177619c41e220863bc Maintainer: nobody Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 9e0a39029d6e66cd5f7c7e8cfecf76fdb8ad7f49 Reviewer: samesch -->
 <refentry xml:id="function.ob-start" xmlns="http://docbook.org/ns/docbook">
@@ -19,39 +19,22 @@
   </methodsynopsis>
   <para>
    Diese Funktion aktiviert die Ausgabepufferung. Während die Ausgabepufferung
-   aktiv ist, werden Skriptausgaben (mit Ausnahme von Headerinformationen)
-   nicht direkt an den Client weitergegeben, sondern in einem internen Puffer
-   gesammelt.
+   aktiv ist, werden Skriptausgaben nicht direkt an den Client weitergegeben,
+   sondern in einem internen Puffer gesammelt. Welche Ausgaben genau betroffen
+   sind, ist unter <xref linkend="outcontrol.what-output-is-buffered"/>
+   beschrieben.
   </para>
-  <para>
-   Der Inhalt dieses internen Puffers kann mit Hilfe der Funktion
-   <function>ob_get_contents</function> in eine Zeichenketten-Variable kopiert
-   werden. Um auszugeben, was im internen Puffer gespeichert ist, wird
-   <function>ob_end_flush</function> verwendet. Alternativ wird der Puffer mit
-   <function>ob_end_clean</function> stillschweigend verworfen.
-  </para>
-  <warning>
-   <para>
-    Einige Webserver (&zb; Apache) ändern das Arbeitsverzeichnis des Skripts
-    vor dem Aufruf der Callback-Funktion. Bei Bedarf kann in der
-    Callback-Funktion mit Hilfe von beispielsweise
-    <literal>chdir(dirname($_SERVER['SCRIPT_FILENAME']))</literal> wieder in
-    das Skriptverzeichnis zurückgewechselt werden.
-   </para>
-  </warning>
   <para>
    Ausgabepuffer können verschachtelt werden, &dh;
    <function>ob_start</function> kann erneut aufgerufen werden, während
-   bereits ein anderer <function>ob_start</function>-Aufruf aktiv ist. Es muss
-   nur sichergestellt werden, dass später auch entsprechend oft
-   <function>ob_end_flush</function> aufgerufen wird. Sind mehrere
-   Callback-Funktionen aktiv, so werden die Ausgaben der Reihe nach von
-   Ausgabepuffer zu Ausgabepuffer weitergegeben und die Callback-Funktionen in
-   Verschachtelungsreihenfolge aufgerufen.
+   bereits ein anderer Puffer aktiv ist. Sind mehrere Ausgabepuffer aktiv,
+   wird die Ausgabe in der Reihenfolge der Verschachtelung durch jeden dieser
+   Puffer gefiltert. Siehe <xref linkend="outcontrol.nesting-output-buffers"/>
+   für weitere Einzelheiten.
   </para>
   <para>
-   Wenn die Ausgabepufferung am Ende des Skripts noch aktiv ist, gibt PHP den
-   Inhalt automatisch aus.
+   Eine ausführliche Beschreibung der Ausgabepuffer ist unter
+   <xref linkend="outcontrol.user-level-output-buffers"/> zu finden.
   </para>
  </refsect1>
 
@@ -63,18 +46,16 @@
      <term><parameter>callback</parameter></term>
      <listitem>
       <para>
-       Optional kann eine <parameter>callback</parameter>-Funktion angegeben
-       werden. Diese Funktion nimmt eine Zeichenkette als Parameter entgegen
-       und sollte eine Zeichenkette zurückgeben. Die Funktion wird aufgerufen,
-       wenn der Ausgabepuffer geleert (gesendet) oder bereinigt wird (mit
-       <function>ob_flush</function>, <function>ob_clean</function> oder einer
-       ähnlichen Funktion), oder wenn der Ausgabepuffer am Ende der Anfrage
-       zum Browser gesendet wird. Wenn <parameter>callback</parameter>
-       aufgerufen wird, dann empfängt es den Inhalt des Ausgabepuffers als
-       Parameter und sollte einen neuen Ausgabepuffer als Ergebnis
-       zurückgeben, der an den Browser gesendet wird. Ist
-       <parameter>callback</parameter> keine aufrufbare Funktion, gibt diese
-       Funktion &false; zurück. Dies ist die Signatur des Callbacks:
+       Optional kann ein
+       <parameter>callback</parameter>-<type>Callable</type> angegeben
+       werden. Dieses kann auch durch Übergabe von &null; umgangen werden.
+      </para>
+      <para>
+       <parameter>callback</parameter> wird aufgerufen, wenn der Ausgabepuffer
+       geleert (gesendet), bereinigt oder am Ende des Skripts geleert wird.
+      </para>
+      <para>
+       Die Signatur von <parameter>callback</parameter> ist wie folgt:
       </para>
       <para>
        <methodsynopsis>
@@ -95,43 +76,40 @@
          <term><parameter>phase</parameter></term>
          <listitem>
           <simpara>
-           Die Bitmaske von
-           <link linkend="outcontrol.constants"><constant>PHP_OUTPUT_HANDLER_*</constant>-Konstanten</link>.
+           Eine Bitmaske von
+           <link linkend="constant.php-output-handler-start">
+            <constant>PHP_OUTPUT_HANDLER_<replaceable>*</replaceable></constant>-Konstanten
+           </link>.
+           Weitere Einzelheiten sind unter
+           <xref linkend="outcontrol.flags-passed-to-output-handlers"/>
+           zu finden.
           </simpara>
          </listitem>
         </varlistentry>
        </variablelist>
       </para>
       <para>
-       Wenn <parameter>callback</parameter> &false; zurückgibt, wird die
-       ursprüngliche Eingabe an den Browser gesendet.
+       Wenn <parameter>callback</parameter> &false; zurückgibt, wird der
+       Inhalt des Puffers zurückgegeben.
+       Weitere Einzelheiten sind unter
+       <xref linkend="outcontrol.output-handler-return-values"/> zu finden.
       </para>
+      <warning>
+       <simpara>
+        Wenn eine der folgenden Funktionen innerhalb eines Ausgabe-Handlers
+        aufgerufen wird, führt dies zu einem schwerwiegenden Fehler:
+        <function>ob_clean</function>, <function>ob_end_clean</function>,
+        <function>ob_end_flush</function>, <function>ob_flush</function>,
+        <function>ob_get_clean</function>, <function>ob_get_flush</function>,
+        <function>ob_start</function>.
+       </simpara>
+      </warning>
       <para>
-       Um den Parameter <parameter>callback</parameter> auszulassen, kann ein
-       &null;-Wert übergeben werden.
+       Weitere Einzelheiten zu <parameter>callback</parameter>s
+       (Ausgabe-Handler) sind unter
+       <xref linkend="outcontrol.output-handlers"/> und
+       <xref linkend="outcontrol.working-with-output-handlers"/> zu finden.
       </para>
-      <para>
-       <function>ob_end_clean</function>, <function>ob_end_flush</function>,
-       <function>ob_clean</function>, <function>ob_flush</function> und
-       <function>ob_start</function> können nicht innerhalb einer
-       Callback-Funktion aufgerufen werden; das Ergebnis eines solchen Aufrufs
-       ist nicht definiert. Wenn der Inhalt eines Puffers gelöscht werden
-       soll, genügt es, "" (eine leere Zeichenkette) aus der Callback-Funktion
-       zurückzugeben. Auch Funktionen wie
-       <literal>print_r($expression, true)</literal> oder
-       <literal>highlight_file($filename, true)</literal>, die den
-       Ausgabepuffer-Mechanismus intern nutzen, können nicht innerhalb eines
-       Callbacks aufgerufen werden.
-      </para>
-      <note>
-       <para>
-        Die Funktion <function>ob_gzhandler</function> existiert, um es zu
-        erleichtern, gz-kodierte Daten an Webbrowser zu senden, die
-        komprimierte Webseiten unterstützen. <function>ob_gzhandler</function>
-        ermittelt, welche Art von Inhaltskodierung der Browser akzeptiert, und
-        liefert seine Ausgabe entsprechend.
-       </para>
-      </note>
      </listitem>
     </varlistentry>
     <varlistentry>
@@ -139,11 +117,13 @@
      <listitem>
       <para>
        Wird der optionale Parameter <parameter>chunk_size</parameter>
-       übergeben, dann wird der Puffer nach jedem Ausgabeaufruf geleert, was
-       dazu führt, dass die Länge des Puffers größer oder gleich
-       <parameter>chunk_size</parameter> ist. Der Vorgabewert
-       <literal>0</literal> bedeutet, dass die Ausgabefunktion nur aufgerufen
-       wird, wenn der Ausgabepuffer geschlossen wird.
+       übergeben, dann wird der Puffer nach jedem Codeblock geleert, der zu
+       einer Ausgabe führt, durch die der Puffer die Größe von
+       <parameter>chunk_size</parameter> erreicht oder überschreitet. Der
+       Vorgabewert <literal>0</literal> bedeutet, dass die gesamte Ausgabe
+       gepuffert wird, bis der Puffer ausgeschaltet wird.
+       Weitere Einzelheiten sind unter
+       <xref linkend="outcontrol.buffer-size"/> zu finden.
       </para>
      </listitem>
     </varlistentry>
@@ -155,11 +135,13 @@
        Bitmaske, die die Operationen steuert, die mit dem Ausgabepuffer
        durchgeführt werden können. Die Vorgabe ist, zu erlauben, dass
        Ausgabepuffer bereinigt, geleert und entfernt werden dürfen, was
-       ausdrücklich mit <constant>PHP_OUTPUT_HANDLER_CLEANABLE</constant> |
-       <constant>PHP_OUTPUT_HANDLER_FLUSHABLE</constant> |
-       <constant>PHP_OUTPUT_HANDLER_REMOVABLE</constant>, oder
-       <constant>PHP_OUTPUT_HANDLER_STDFLAGS</constant> als Abkürzung,
+       ausdrücklich mit den
+       <link linkend="outcontrol.constants.buffer-control-flags">
+        Flags für die Steuerung des Ausgabepuffers
+       </link>.
        eingestellt werden kann.
+       Weitere Einzelheiten sind unter
+       <xref linkend="outcontrol.operations-on-buffers"/> zu finden.
       </para>
       <para>
        Jedes Flag steuert den Zugriff auf einen Satz von Funktionen, wie im
@@ -176,25 +158,22 @@
           <row>
            <entry><constant>PHP_OUTPUT_HANDLER_CLEANABLE</constant></entry>
            <entry>
-            <function>ob_clean</function>,
-            <function>ob_end_clean</function> und
-            <function>ob_get_clean</function>.
+            <function>ob_clean</function>
            </entry>
           </row>
           <row>
            <entry><constant>PHP_OUTPUT_HANDLER_FLUSHABLE</constant></entry>
            <entry>
-            <function>ob_end_flush</function>,
-            <function>ob_flush</function> und
-            <function>ob_get_flush</function>.
+            <function>ob_end_flush</function>
            </entry>
           </row>
           <row>
            <entry><constant>PHP_OUTPUT_HANDLER_REMOVABLE</constant></entry>
            <entry>
             <function>ob_end_clean</function>,
-            <function>ob_end_flush</function> und
-            <function>ob_get_flush</function>.
+            <function>ob_end_flush</function>,
+            <function>ob_get_clean</function>,
+            <function>ob_get_flush</function>
            </entry>
           </row>
          </tbody>
