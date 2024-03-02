@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: c3b9bcfbee1f77830cfa086e88de6c0742cfb8ad Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<sect1 xml:id="migration83.incompatible" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Nicht abwärtskompatible Änderungen</title>
+
+ <sect2 xml:id="migration83.incompatible.core">
+  <title>PHP-Kern</title>
+
+  <sect3 xml:id="migration83.incompatible.core.overflowing-call-stack">
+
+   <title>Programme, die beinahe zum Stapelüberlauf geführt hätten</title>
+   <para>
+    Programme, die sehr nahe daran waren, einen Überlauf des Aufrufstapels zu
+    verursachen, können nun einen <classname>Error</classname> werfen, wenn
+    sie mehr als
+    <!-- link linkend="zend.max_allowed_stack_size-zend.reserved_stack_size" -->zend.max_allowed_stack_size-zend.reserved_stack_size<!-- </link>-->
+    Bytes des Stapels verwenden
+    (<!-- linkend="fiber.stack_size-zend.reserved_stack_size" -->fiber.stack_size-zend.reserved_stack_size<!-- </link>-->
+    bei Fibers).
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration83.incompatible.core.proc-get-status-multiple-times">
+   <title>Mehrmaliges Ausführen von proc_get_status()</title>
+   <para>
+    Die Funktion <function>proc_get_status</function> gibt auf POSIX-Systemen
+    nun immer den richtigen Wert zurück, wenn sie mehrfach ausgeführt wird.
+    Zuvor lieferte nur der erste Aufruf den richtigen Wert. Auch
+    <function>proc_close</function> gibt nun den richtigen Exit-Code zurück,
+    wenn es nach <function>proc_get_status</function> ausgeführt wird. Zuvor
+    wurde in diesem Fall <literal>-1</literal> zurückgegeben. Intern
+    funktioniert dies, indem das Ergebnis auf POSIX-Systemen
+    zwischengespeichert wird. Wenn das vorherige Verhalten benötigt wird, kann
+    der Schlüssel <literal>"cached"</literal> in dem von
+    <function>proc_get_status</function> zurückgegebenen Array überprüft
+    werden, um zu sehen, ob das Ergebnis zwischengespeichert wurde.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration83.incompatible.core.zend-max-execution-timers">
+   <title>Zend-Timer für die maximale Ausführungsdauer</title>
+   <para>
+    Die Zend-Timer für die maximale Ausführungsdauer (Zend Max Execution
+    Timers) sind nun standardmäßig für ZTS-Builds unter Linux aktiviert.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration83.incompatible.core.traits-with-static-properties">
+   <title>Verwendung von Traits mit statischen Eigenschaften</title>
+   <para>
+    Wenn Traits mit statischen Eigenschaften verwendet werden, werden nun die
+    von der Elternklasse geerbten statischen Eigenschaften neu deklariert.
+    Dadurch wird für die aktuelle Klasse ein separater Speicher für statische
+    Eigenschaften angelegt. Dies ist vergleichbar mit dem direkten Hinzufügen
+    statischer Eigenschaften zur Klasse ohne Traits.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration83.incompatible.core.negative-index-to-empty-array">
+   <title>Zuweisung eines negativen Indexes an ein leeres Array</title>
+   <para>
+    Wenn einem leeren Array ein negativer Index <varname>$n</varname>
+    zugewiesen wird, ist der nächste Index nun immer <code>$n+1</code>
+    anstelle von <literal>0</literal>.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration83.incompatible.core.class-constant-visibility-check">
+   <title>Überprüfung von Klassenkonstanten auf Sichtbarkeitsabweichungen</title>
+   <para>
+    Wenn eine Klassenkonstante von einer Schnittstelle geerbt wird, wird diese
+    nun korrekt auf Abweichung bei der Sichtbarkeit geprüft.
+   </para>
+  </sect3>
+
+  <sect3 xml:id="migration83.incompatible.core.weakmap-entries-maps-to-itself">
+   <title>WeakMap-Einträge, deren Schlüssel auf sich selbst verweisen</title>
+   <para>
+    Wenn der Schlüssel eines <classname>WeakMap</classname>-Eintrags auf sich
+    selbst verweist (möglicherweise transitiv) und nur durch Iteration über
+    die WeakMap erreichbar ist (die Erreichbarkeit durch Iteration wird als
+    schwach angesehen), kann dieser Eintrag nun während der Sammlung von Zyklen
+    entfernt werden. Zuvor wurden solche Einträge nie automatisch entfernt.
+   </para>
+  </sect3>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.date">
+  <title>Date</title>
+
+  <para>
+   Für die DateTime-Erweiterung wurden unter den Hierarchien
+   <classname>DateError</classname> und <classname>DateException</classname>
+   erweiterungsspezifische Fehler und Exceptions eingeführt, die Warnungen und
+   generische Exceptions ersetzen. Dies verbessert die Fehlerbehandlung,
+   erfordert aber eine Überprüfung auf Fehler und Exceptions.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.dom">
+  <title>DOM</title>
+
+  <para>
+   Der Aufruf von <methodname>DOMChildNode::after</methodname>,
+   <methodname>DOMChildNode::before</methodname> und
+   <methodname>DOMChildNode::replaceWith</methodname> auf einem Knoten, der
+   kein Elternteil hat, ist nun eine Nulloperation (bewirkt nichts), anstatt
+   eine Hierarchie-Exception zu werfen, was dem von der DOM-Spezifikation
+   geforderten Verhalten entspricht.
+  </para>
+
+  <para>
+   Die Methoden <classname>DOMParentNode</classname> und
+   <classname>DOMChildNode</classname> können nun auch ohne ein Dokument
+   verwendet werden, ohne dass eine
+   <constant>DOM_HIERARCHY_REQUEST_ERR</constant>-<classname>DOMException</classname>
+   geworfen wird. Dies entspricht dem von der DOM-Spezifikation geforderten
+   Verhalten.
+  </para>
+
+  <para>
+   Wenn <methodname>DOMDocument::createAttributeNS</methodname> ohne die
+   Angabe eines Präfixes aufgerufen wurde, wurde fälschlicherweise ein
+   Standard-Namensraum erstellt und das Element in den Namensraum statt in das
+   Attribut eingefügt. Dieser Fehler ist nun behoben.
+  </para>
+
+  <para>
+   Wenn ein Präfix bereits für einen anderen URI verwendet wurde, hat
+   <methodname>DOMDocument::createAttributeNS</methodname> bisher
+   fälschlicherweise eine
+   <constant>DOM_NAMESPACE_ERRNAMESPACE_ERR</constant>-<classname>DOMException</classname>
+   geworfen. Nun wird bei einem Konflikt mit dem Präfixnamen korrekterweise
+   ein anderes Präfix gewählt.
+  </para>
+
+  <para>
+   Zu einigen DOM-Klassen wurden neue Methoden und Eigenschaften hinzugefügt.
+   Wenn eine benutzerdefinierte Klasse von diesen Klassen erbt und eine
+   Methode oder Eigenschaft mit dem gleichen Namen deklariert, müssen die
+   Deklarationen kompatibel sein. Andernfalls führt dies zu einem typischen
+   Kompilierfehler wegen inkompatibler Deklarationen. Informationen über die
+   neu implementierten Methoden und Eigenschaften sind in den Listen der
+   <link linkend="migration83.new-features.dom">neuen Features</link> und
+   <link linkend="migration83.new-functions.dom">neuen Funktionen</link> zu
+   finden.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.ffi">
+  <title>FFI</title>
+
+  <para>
+   C-Funktionen, die den Rückgabetyp <type>void</type> haben, geben nun &null;
+   anstelle des Objekts <literal>object(FFI\CData:void) { }</literal> zurück
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.opcache">
+  <title>Opcache</title>
+
+  <para>
+   Die INI-Direktive
+   <link linkend="ini.opcache.consistency-checks">opcache.consistency_checks</link>
+   wurde entfernt. Dieses Feature war sowohl in Verbindung mit dem Tracing-JIT
+   als auch mit dem Vererbungscache defekt und ist seit PHP 8.1.18 und
+   PHP 8.2.5 deaktiviert, ohne dass es eine Möglichkeit gibt, es zu aktivieren.
+   Sowohl das Tracing-JIT als auch der Vererbungscache können den gemeinsamen
+   Speicher (shm) verändern, nachdem das Skript persistent gemacht wurde, indem
+   sie seine Prüfsumme ungültig machen. Die geplante Korrektur sah vor, die
+   veränderbaren Zeiger zu überspringen, wurde aber aufgrund der Komplexität
+   verworfen. Daher wurde stattdessen beschlossen, diese Funktion zu entfernen.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.phar">
+  <title>Phar</title>
+
+  <para>
+   Der Typ der <classname>Phar</classname>-Klassenkonstanten wird nun deklariert.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.standard">
+  <title>Standard</title>
+
+  <para>
+   An der Funktion <function>range</function> wurden mehrere Änderungen
+   vorgenommen:
+   <simplelist>
+    <member>
+     Wenn <type>Objekt</type>e, <type>Ressource</type>n oder
+     <type>Array</type>s als begrenzende Werte übergeben werden, wird nun ein
+     <classname>TypeError</classname> geworfen.
+    </member>
+    <member>
+     Wenn für <parameter>$step</parameter> <literal>0</literal> übergeben
+     wird, wird ein aussagekräftigerer <classname>ValueError</classname>
+     geworfen.
+    </member>
+    <member>
+     Wenn ein negativer von <parameter>$step</parameter> für steigende
+     Bereiche verwendet wird, wird nun ein <classname>ValueError</classname>
+     geworfen.
+    </member>
+    <member>
+     Wenn <parameter>$step</parameter> eine Gleitkommazahl ist, die als
+     Ganzzahl interpretiert werden kann, wird sie nun als solche behandelt.
+    </member>
+    <member>
+     Wenn ein Argument unendlich oder NAN ist, wird nun ein
+     <classname>ValueError</classname> geworfen.
+    </member>
+    <member>
+     Wenn <parameter>$start</parameter> oder <parameter>$end</parameter> eine
+     leere Zeichenkette ist, wird nun ein <constant>E_WARNING</constant>
+     ausgegeben. Der Wert wird weiterhin in den Wert <literal>0</literal>
+     umgewandelt.
+    </member>
+    <member>
+     Wenn <parameter>start</parameter> oder <parameter>end</parameter> eine
+     nicht-numerische Zeichenkette mit mehr als einem Byte ist, wird nun ein
+     <constant>E_WARNING</constant> ausgegeben.
+    </member>
+    <member>
+     Wenn <parameter>start</parameter> oder <parameter>end</parameter> eine
+     Zeichenkette ist, die implizit in eine Ganzzahl umgewandelt wird, weil
+     der andere begrenzende Werte eine Zahl ist (&zb;
+     <code>range(5, 'z');</code>), wird nun ein <constant>E_WARNING</constant>
+     ausgegeben.
+    </member>
+    <member>
+     Wenn <parameter>$step</parameter> eine Gleitkommazahl ist, wird nun ein
+     <constant>E_WARNING</constant> ausgegeben, wenn versucht wird, einen
+     Bereich von Zeichen zu erzeugen, es sei denn, beide begrenzenden Werte
+     sind numerische Zeichenketten (&zb; verursacht
+     <code>range('5', '9', 0.5);</code> keine Warnung).
+    </member>
+    <member>
+     Wenn einer der begrenzenden Werte eine Ziffer in Form einer Zeichenkette
+     ist (&zb; <code>range('9', 'A');</code>), erzeugt
+     <function>range</function> nun eine Liste von Zeichen, anstatt den
+     anderen Wert in eine Ganzzahl umzuwandeln.
+    </member>
+   </simplelist>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+range('9', 'A');  // ["9", ":", ";", "<", "=", ">", "?", "@", "A"], seit PHP 8.3.0
+range('9', 'A');  // [9, 8, 7, 6, 5, 4, 3, 2, 1, 0], vor PHP 8.3.0
+?>
+]]>
+    </programlisting>
+   </informalexample>
+  </para>
+
+  <para>
+   Die Flags-Fehlerprüfung der Funktion <function>file</function> fängt nun
+   alle ungültigen Flags ab. Insbesondere <constant>FILE_APPEND</constant>
+   wurde bisher stillschweigend akzeptiert.
+  </para>
+ </sect2>
+
+ <sect2 xml:id="migration83.incompatible.SNMP">
+  <title>SNMP</title>
+
+  <para>
+   Der Typ der <classname>SNMP</classname>-Klassenkonstanten wird nun deklariert.
+  </para>
+ </sect2>
+
+</sect1>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
