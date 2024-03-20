@@ -15,7 +15,7 @@
    <methodparam choice="opt"><type>int</type><parameter>mode</parameter><initializer><constant>CAL_EASTER_DEFAULT</constant></initializer></methodparam>
   </methodsynopsis>
   <para>
-   Diese Funktion liefert den Unix-Timestamp (in Sekunden seit 1970) zurück,
+   Diese Funktion gibt den Unix-Timestamp (in Sekunden seit 1970) zurück,
    der dem Begin des Ostersonntag im durch <parameter>year</parameter>
    spezifizierten Jahr entspricht.
   </para>
@@ -42,7 +42,7 @@
      <listitem>
       <para>
        Das Jahr muss auf 32-Bit-Systemen eine Zahl zwischen 1970 und 2037 sein
-       und auf 64-Bit-Systemen eine Zahl zwischen 1970 und 2000000000. Wenn
+       und auf 64-Bit-Systemen eine Zahl zwischen 1970 und 2.000.000.000. Wenn
        nicht angegeben oder &null;, wird das aktuelle Jahr gemäß der lokalen
        Zeit verwendet.
       </para>
@@ -93,7 +93,7 @@
       <entry>8.3.0</entry>
       <entry>
        Auf 64-Bit-Systemen akzeptiert der Parameter <parameter>Jahr</parameter>
-       nun Werte innerhalb des Bereichs von 1970 bis 2000000000.
+       nun Werte innerhalb des Bereichs von 1970 bis 2.000.000.000.
       </entry>
      </row>
      <row>
@@ -105,9 +105,10 @@
      <row>
       <entry>8.0.0</entry>
       <entry>
-       Wenn auf einem 32-bit System eine Jahreszahl vor 1970 oder nach 2037
-       oder auf einem 64-bit System eine Jahreszahl nach 2.000.000.000
-       angegeben wird, wird ein <classname>ValueError</classname> geworfen.
+       Wenn <parameter>year</parameter> außerhalb des zulässigen Bereichs
+       liegt, wird nun ein <classname>ValueError</classname> geworfen; zuvor
+       wurde ein Fehler der Stufe <constant>E_WARNING</constant> ausgegeben
+       und die Funktion gab &false; zurück.
       </entry>
      </row>
     </tbody>
@@ -157,18 +158,21 @@ echo $datetime->format('M-d-Y'); // Apr-09-2023
   &reftitle.notes;
   <note>
    <para>
-    <function>easter_date</function> verlässt sich auf die Zeitfunktionen der C Bibliothek
-    des Systems anstatt die internen Datums- und Zeitfunktionen von PHP zu verwenden.
-    Infolgedessen verwendet <function>easter_date</function> die <literal>TZ</literal>
-    Umgebungsvariable um die Zeitzone zu bestimmen, in der sie arbeiten soll,
-    anstatt PHPs <link linkend="ini.date.timezone">default time zone</link> zu
-    verwenden, was unerwartetes Verhalten zur Folge haben kann, wenn diese
-    Funktion in Verbindung mit anderen Datumsfunktionen in PHP verwendet wird.
+    <function>easter_date</function> verlässt sich auf die Zeitfunktionen der
+    C-Bibliothek des Systems, anstatt die internen Datums- und Zeitfunktionen
+    von PHP zu verwenden. Infolgedessen verwendet
+    <function>easter_date</function> die Umgebungsvariable
+    <literal>TZ</literal>, um die Zeitzone zu bestimmen, in der sie arbeiten
+    soll, anstatt die <link linkend="ini.date.timezone">Standardzeitzone</link>
+    von PHP zu verwenden. Dies kann unerwartetes Verhalten zur Folge haben,
+    wenn diese Funktion in Verbindung mit anderen Datumsfunktionen in PHP
+    verwendet wird.
    </para>
    <para>
     Als Workaround kann <function>easter_days</function> mit
     <classname>DateTime</classname> und <classname>DateInterval</classname>
-    verwendet werden, um den Beginn von Ostern in Ihrer PHP Zeitzone wie folgt zu berechnen:
+    verwendet werden, um den Beginn von Ostern in der von PHP eingestellten
+    Zeitzone wie folgt zu berechnen:
    </para>
    <informalexample>
     <programlisting role="php">
