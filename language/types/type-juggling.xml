@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: f94d903985119d3ac00f4528551df947f57b667f Maintainer: samesch Status: ready -->
+<!-- Reviewed: no -->
+<sect1 xml:id="language.types.type-juggling">
+ <title>Typumwandlung (Typen-Jonglage)</title>
+
+ <simpara>
+  PHP verlangt in der Variablendeklaration keine explizite Typdefinition. Der
+  Typ einer Variablen wird in diesem Fall durch den Wert bestimmt, der in ihr
+  gespeichert wird. Das heißt, wenn der Variable <varname>$var</varname> der
+  Typ <type>string</type> zugewiesen wird, dann ist <varname>$var</varname>
+  vom Typ <type>string</type>. Wenn <varname>$var</varname> anschließend ein
+  Wert vom Typ <type>int</type> zugewiesen wird, ist sie vom Typ
+  <type>int</type>.
+ </simpara>
+
+ <para>
+  PHP kann je nach Kontext versuchen, den Typ eines Wertes automatisch in
+  einen anderen umzuwandeln. Folgende Kontexte gibt es:
+  <itemizedlist>
+   <listitem>
+    <simpara>Numerisch</simpara>
+   </listitem>
+   <listitem>
+    <simpara>Zeichenkette</simpara>
+   </listitem>
+   <listitem>
+    <simpara>Logisch</simpara>
+   </listitem>
+   <listitem>
+    <simpara>Ganzzahlig und Zeichenkette</simpara>
+   </listitem>
+   <listitem>
+    <simpara>Vergleichend</simpara>
+   </listitem>
+   <listitem>
+    <simpara>Funktion</simpara>
+   </listitem>
+  </itemizedlist>
+ </para>
+
+ <note>
+  <simpara>
+   Wenn ein Wert als ein anderer Typ interpretiert werden muss, wird der Typ
+   des Wertes selbst <emphasis>nicht</emphasis> geändert.
+  </simpara>
+ </note>
+
+ <simpara>
+  Um zu erzwingen, dass eine Variable als ein bestimmter Typ ausgewertet wird,
+  siehe den Abschnitt über
+  <link linkend="language.types.typecasting">Explizite Typumwandlung (Type-Casting)</link>.
+  Um den Typ einer Variablen zu ändern, siehe die Funktion
+  <function>settype</function>.
+ </simpara>
+
+ <sect2>
+  <title>Numerischer Kontext</title>
+
+  <simpara>
+   Dieser Kontext liegt vor, wenn ein
+   <link linkend="language.operators.arithmetic">arithmetischer Operator</link>
+   verwendet wird.
+  </simpara>
+
+  <simpara>
+   Wenn in diesem Kontext einer der beiden Operanden vom Typ <type>float</type>
+   ist (oder nicht als <type>Int</type> interpretiert werden kann), werden
+   beide Operanden als <type>Float</type>s interpretiert, und das Ergebnis ist
+   vom Typ <type>float</type>. Andernfalls werden die Operanden als
+   <type>Int</type>s interpretiert, und das Ergebnis ist ebenfalls vom Typ
+   <type>int</type>. Wenn einer der Operanden nicht interpretiert werden kann,
+   wird seit PHP 8.0.0 ein <classname>TypeError</classname> geworfen.
+  </simpara>
+ </sect2>
+
+ <sect2>
+  <title>Zeichenketten-Kontext</title>
+
+  <simpara>
+   Dieser Kontext liegt vor, wenn <function>echo</function>,
+   <function>print</function>,
+   <link linkend="language.types.string.parsing">Zeichenketten-Interpolation</link>,
+   oder der
+   <link linkend="language.operators.string">Verkettungsoperator</link> für
+   Zeichenketten verwendet werden.
+  </simpara>
+
+  <simpara>
+   In diesem Kontext wird der Wert als <type>String</type> interpretiert. Wenn
+   der Wert nicht interpretiert werden kann, wird ein
+   <classname>TypeError</classname> geworfen. Vor PHP 7.4.0 wurde ein
+   <constant>E_RECOVERABLE_ERROR</constant> ausgelöst.
+  </simpara>
+ </sect2>
+
+ <sect2>
+  <title>Logischer Kontext</title>
+
+  <simpara>
+   Dieser Kontext liegt vor, wenn bedingte Anweisungen, der
+   <link linkend="language.operators.comparison.ternary">ternäre Operator</link>
+   oder ein <link linkend="language.operators.logical">logischer Operator</link>
+   verwendet werden.
+  </simpara>
+
+  <simpara>
+   In diesem Kontext wird der Wert als <type>Bool</type> interpretiert.
+  </simpara>
+ </sect2>
+
+ <sect2>
+  <title>Kontext für ganzzahlige Werte und Zeichenketten</title>
+
+  <simpara>
+   Dieser Kontext liegt vor, wenn
+   <link linkend="language.operators.bitwise">bitweise Operatoren</link>
+   verwendet werden.
+  </simpara>
+
+  <simpara>
+   Wenn in diesem Kontext alle Operanden vom Typ <type>string</type> sind, ist
+   auch das Ergebnis vom Typ <type>string</type>. Andernfalls werden die
+   Operanden als <type>Int</type>s interpretiert, und das Ergebnis ist
+   ebenfalls vom Typ <type>int</type>. Wenn einer der Operanden nicht
+   interpretiert werden kann, wird seit PHP 8.0.0 ein
+   <classname>TypeError</classname> geworfen.
+  </simpara>
+ </sect2>
+
+ <sect2>
+  <title>Vergleichender Kontext</title>
+
+  <simpara>
+   Dieser Kontext liegt vor, wenn ein
+   <link linkend="language.operators.comparison">Vergleichsoperator</link>
+   verwendet wird.
+  </simpara>
+
+  <simpara>
+   Die in diesem Zusammenhang auftretenden Typumwandlungen werden in der Tabelle
+   <link linkend="language.operators.comparison.types">Vergleich mit verschiedenen Typen</link>
+   erläutert.
+  </simpara>
+ </sect2>
+
+ <sect2 xml:id="language.types.type-juggling.function">
+  <title>Funktionskontext</title>
+
+  <simpara>
+   Dieser Kontext liegt vor, wenn ein Wert an einen typisierten Parameter oder
+   eine Eigenschaft übergeben oder von einer Funktion zurückgegeben wird, die
+   einen Rückgabetyp deklariert.
+  </simpara>
+
+  <para>
+   In diesem Kontext muss der Wert ein Wert dieses Typs sein. Hiervon gibt es
+   zwei Ausnahmen. Die Erste: Wenn der Wert vom Typ <type>int</type> ist und
+   der deklarierte Typ ist <type>float</type>, dann wird die Ganzzahl in eine
+   Gleitkommazahl umgewandelt. Die Zweite: Wenn der deklarierte Typ ein
+   <emphasis>skalarer</emphasis> Typ ist,
+   <!-- z.B. übergibt ein Objekt, das __toString implementiert, einen Wert vom Typ string- -->
+   der Wert in einen skalaren Typ umgewandelt werden kann und der
+   Modus der zwangsweisen Typisierung aktiv ist (Standard), kann der Wert in
+   einen akzeptierten skalaren Wert umgewandelt werden. Siehe unten für eine
+   Beschreibung dieses Verhaltens.
+  </para>
+
+  <warning>
+   <simpara>
+    <link linkend="functions.internal">Interne Funktionen</link> wandeln
+    &null; automatisch in skalare Typen um. Dieses Verhalten ist seit
+    PHP 8.1.0 <emphasis>DEPRECATED</emphasis> (veraltet).
+   </simpara>
+  </warning>
+
+  <sect3 xml:id="language.types.type-juggling.function.simple">
+   <title>Automatische Typisierung mit einfachen Typdeklarationen</title>
+   <itemizedlist>
+    <listitem>
+     <simpara>
+      Deklaration des Typs <type>bool</type>: Der Wert wird als
+      <type>bool</type> interpretiert.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Deklaration des Typs <type>int</type>: Der Wert wird als
+      <type>int</type> interpretiert, wenn die Umwandlung wohldefiniert ist,
+      &zb; wenn die Zeichenkette
+      <link linkend="language.types.numeric-strings">numerisch</link> ist.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Deklaration des Typs <type>float</type>: Der Wert wird als
+      <type>float</type> interpretiert, wenn die Umwandlung wohldefiniert ist,
+      &zb; wenn die Zeichenkette
+      <link linkend="language.types.numeric-strings">numerisch</link> ist.
+     </simpara>
+    </listitem>
+    <listitem>
+     <simpara>
+      Deklaration des Typs <type>string</type>: Der Wert wird als
+      <type>string</type> interpretiert.
+     </simpara>
+    </listitem>
+   </itemizedlist>
+  </sect3>
+
+  <sect3 xml:id="language.types.type-juggling.function.union">
+   <title>Automatische Typisierung mit Union-Typen</title>
+   <para>
+    Wenn <literal>strict_types</literal> nicht aktiviert ist, unterliegen
+    skalare Typdeklarationen einer begrenzten impliziten Typumwandlung. Wenn
+    der genaue Typ des Wertes nicht Teil der Union ist, wird der Zieltyp in der
+    folgenden Reihenfolge gewählt:
+
+    <orderedlist>
+     <listitem>
+      <simpara>
+       <type>int</type>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <type>float</type>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <type>string</type>
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       <type>bool</type>
+      </simpara>
+     </listitem>
+    </orderedlist>
+
+    Wenn der Typ in der Union existiert und der Wert gemäß der PHP-Semantik
+    zur Typüberprüfung in diesen Typ umgewandelt werden kann, wird dieser Typ
+    ausgewählt. Andernfalls wird der nächste Typ geprüft.
+   </para>
+
+   <caution>
+    <para>
+     Wenn es sich bei dem Wert um eine Zeichenkette handelt und sowohl int als
+     auch float Teil der Union sind, wird der bevorzugte Typ durch die
+     bestehende Semantik
+     <link linkend="language.types.numeric-strings">numerischer Zeichenketten</link>
+     bestimmt. Zum Beispiel wird für <literal>"42"</literal> <type>int</type>
+     gewählt, während für <literal>"42.0"</literal> <type>float</type>
+     gewählt wird.
+    </para>
+   </caution>
+
+   <note>
+    <para>
+     Typen, die nicht in der obigen Präferenzliste aufgeführt sind, kommen als
+     Ziele für implizite Umwandlungen nicht in Frage. Insbesondere gibt es
+     keine impliziten Umwandlungen in die Typen <type>null</type>,
+     <type>false</type> und <type>true</type>.
+    </para>
+   </note>
+
+   <example>
+    <title>Beispiel für Typen, die in einen Typ umgewandelt werden, der Teil einer Union ist</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+// int|string
+42    --> 42          // exakter Typ
+"42"  --> "42"        // exakter Typ
+new ObjectWithToString --> "Result of __toString()"
+                      // object nicht kompatibel mit int, greift auf string zurück
+42.0  --> 42          // float kompatibel mit int
+42.1  --> 42          // float kompatibel mit int
+1e100 --> "1.0E+100"  // float zu groß für Typ int, greift auf string zurück
+INF   --> "INF"       // float zu groß für Typ int, greift auf string zurück
+true  --> 1           // bool kompatibel mit int
+[]    --> TypeError   // array nicht kompatibel mit int oder string
+
+// int|float|bool
+"45"    --> 45        // Zeichenkette im numerischen Format für int
+"45.0"  --> 45.0      // Zeichenkette im numerischen Format für float
+
+"45X"   --> true      // keine numerische Zeichenkette, greift auf bool zurück
+""      --> false     // keine numerische Zeichenkette, greift auf bool zurück
+"X"     --> true      // keine numerische Zeichenkette, greift auf bool zurück
+[]      --> TypeError // array nicht kompatibel mit int, float oder bool
+?>
+]]>
+    </programlisting>
+   </example>
+  </sect3>
+
+ </sect2>
+
+ <sect2 xml:id="language.types.typecasting">
+  <title>Explizite Typumwandlung (Type-Casting)</title>
+
+  <simpara>
+   Typ-Casting wandelt den Wert in einen bestimmten Typ um, indem der Typ in
+   Klammern vor den umzuwandelnden Wert geschrieben wird.
+  </simpara>
+
+  <informalexample>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$foo = 10;   // $foo ist ein Integer
+$bar = (bool) $foo;   // $bar ist ein Boolean
+?>
+]]>
+   </programlisting>
+  </informalexample>
+
+  <simpara>
+   Folgende Umwandlungen sind erlaubt:
+  </simpara>
+
+  <simplelist>
+   <member><literal>(int)</literal> - Umwandlung in <type>int</type></member>
+   <member><literal>(bool)</literal> - Umwandlung in <type>bool</type></member>
+   <member><literal>(float)</literal> - Umwandlung in <type>float</type></member>
+   <member><literal>(string)</literal> - Umwandlung in <type>string</type></member>
+   <member><literal>(array)</literal> - Umwandlung in <type>array</type></member>
+   <member><literal>(object)</literal> - Umwandlung in <type>object</type></member>
+   <member><literal>(unset)</literal> - Umwandlung in <type>NULL</type></member>
+  </simplelist>
+
+  <note>
+   <para>
+    <literal>(integer)</literal> ist ein Alias des <literal>(int)</literal>-Casts.
+    <literal>(boolean)</literal> ist ein Alias des <literal>(bool)</literal>-Casts.
+    <literal>(binary)</literal> ist ein Alias des <literal>(string)</literal>-Casts.
+    <literal>(double)</literal> und <literal>(real)</literal> sind Aliase des
+    <literal>(float)</literal>-Casts.
+    Da diese Casts nicht den kanonischen Typnamen verwenden, werden sie nicht
+    empfohlen.
+   </para>
+  </note>
+
+  <warning>
+   <simpara>
+    Der Cast-Alias <literal>(real)</literal> ist seit PHP 8.0.0 veraltet.
+   </simpara>
+  </warning>
+
+  <warning>
+   <simpara>
+    Der <literal>(unset)</literal>-Cast ist seit PHP 7.2.0 veraltet und wurde
+    in PHP 8.0.0 entfernt. Es ist zu beachten, dass der
+    <literal>(unset)</literal>-Cast gleichbedeutend ist mit der Zuweisung des
+    Wertes <type>NULL</type> an eine Variable oder einen Aufruf.
+   </simpara>
+  </warning>
+
+  <caution>
+   <simpara>
+    Der <literal>(binary)</literal>-Cast und das Präfix <literal>b</literal>
+    existieren im Hinblick auf zukünftige Versionen. Derzeit sind
+    <literal>(binary)</literal> und <literal>(string)</literal> identisch,
+    aber weil sich dies in Zukunft ändern könnte, sollte man sich nicht darauf
+    verlassen.
+   </simpara>
+  </caution>
+
+  <note>
+   <para>
+    Leerzeichen werden innerhalb der Klammern eines Casts ignoriert, weshalb
+    die beiden folgenden Ausdrücke gleichwertig sind:
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$foo = (int) $bar;
+$foo = ( int ) $bar;
+?>
+]]>
+     </programlisting>
+    </informalexample>
+   </para>
+  </note>
+
+  <informalexample>
+   <simpara>
+    Umwandlung literaler <type>String</type>s und Variablen in binäre
+    <type>String</type>s:
+   </simpara>
+
+   <programlisting role="php">
+<![CDATA[
+<?php
+$binary = (binary) $string;
+$binary = b"binary string";
+?>
+]]>
+   </programlisting>
+  </informalexample>
+
+  <!-- TODO Remove or move into string context section? -->
+  <note>
+   <simpara>
+    Anstatt eine Variable in einen <type>String</type> umzuwandeln, kann die
+    Variable auch in doppelte Anführungszeichen gesetzt werden.
+   </simpara>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$foo = 10;            // $foo ist eine ganze Zahl
+$str = "$foo";        // $str ist eine Zeichenkette
+$fst = (string) $foo; // $fst ist ebenfalls eine Zeichenkette
+
+// Dies gibt aus "sie sind identisch"
+if ($fst === $str) {
+    echo "sie sind identisch";
+}
+?>
+]]>
+    </programlisting>
+   </informalexample>
+  </note>
+
+  <para>
+   In den folgenden Abschnitten wird beschrieben, was genau passiert, wenn
+   zwischen bestimmten Typen umgewandelt wird:
+   <simplelist>
+    <member><link linkend="language.types.boolean.casting">Umwandlung in boolean</link></member>
+    <member><link linkend="language.types.integer.casting">Umwandlung in integer</link></member>
+    <member><link linkend="language.types.float.casting">Umwandlung in float</link></member>
+    <member><link linkend="language.types.string.casting">Umwandlung in string</link></member>
+    <member><link linkend="language.types.array.casting">Umwandlung in array</link></member>
+    <member><link linkend="language.types.object.casting">Umwandlung in ein Objekt</link></member>
+    <member><link linkend="language.types.resource.casting">Umwandlung in eine Ressource</link></member>
+    <member><link linkend="language.types.null.casting">Umwandlung in NULL</link></member>
+    <member>Die <link linkend="types.comparisons">Tabellen zu Typenvergleichen</link></member>
+   </simplelist>
+  </para>
+
+  <note>
+   <simpara>
+    Da <type>String</type>s in PHP mit derselben Syntax wie
+    <type>Array</type>s über Offsets indiziert werden können, gilt das
+    folgende Beispiel für alle PHP-Versionen:
+   </simpara>
+
+   <informalexample>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$a    = 'car'; // $a ist eine Zeichenkette
+$a[0] = 'b';   // $a ist immer noch eine Zeichenkette
+echo $a;       // bar
+?>
+]]>
+    </programlisting>
+   </informalexample>
+
+   <simpara>
+    Weitere Informationen sind im Abschnitt
+    <link linkend="language.types.string.substr">Zugriff auf Zeichen in einem String</link>
+    zu finden.
+   </simpara>
+  </note>
+ </sect2>
+
+</sect1>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
