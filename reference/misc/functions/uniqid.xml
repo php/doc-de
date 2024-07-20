@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 52c495140bdb84f45f186bfb1cccf09788b0121e Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: b65b98da1039e01b4a8f51f94560822ec9a113d9 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: b65b98da1039e01b4a8f51f94560822ec9a113d9 Reviewer: samesch -->
 <refentry xml:id="function.uniqid" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>uniqid</refname>
-  <refpurpose>Erzeugt eine eindeutige ID</refpurpose>
+  <refpurpose>Erzeugt eine zeitsbasierte ID</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -15,18 +17,18 @@
    <methodparam choice="opt"><type>bool</type><parameter>more_entropy</parameter><initializer>&false;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Gibt eine eindeutige ID mit Präfix zurück, die auf der aktuellen Zeit in
-   Mikrosekunden basiert.
+   Gibt eine ID zurück, die auf der aktuellen Zeit mit einer Genauigkeit von
+   einer Mikrosekunde basiert. Als Präfix wird der angegebene
+   <parameter>prefix</parameter> verwendet und optional wird ein zufällig
+   generierter Wert angehängt.
   </para>
   &caution.cryptographically-insecure;
   <warning>
     <para>
-     Diese Funktion garantiert nicht die Eindeutigkeit der Rückgabewerte. Da die
-     meisten System die Systemzeit durch NTP oder ähnlich justieren, ändert sich
-     die Systemzeit kontinuierlich. Daher ist es möglich, dass diese Funktion
-     keine eindeutige ID für den Prozess/Thread zurückgibt.
-     <parameter>more_entropy</parameter> kann verwendet werden, um die
-     Wahrscheinlichkeit der Eindeutigkeit zu erhöhen.
+     Diese Funktion garantiert nicht die Eindeutigkeit des Rückgabewerts,
+     weil dieser auf der aktuellen Zeit in Mikrosekunden basiert oder, wenn
+     <parameter>more_entropy</parameter> &true; ist, auf der aktuellen Zeit
+     mit einer kleinen Menge an Zufallsdaten.
     </para>
   </warning>
  </refsect1>
@@ -39,14 +41,16 @@
      <term><parameter>prefix</parameter></term>
      <listitem>
       <para>
-       Kann &zb; dann hilfreich sein, wenn Sie auf mehreren Hosts
-       gleichzeitig IDs erzeugen, was im ungünstigsten Fall zur selben
-       Mikrosekunde geschehen kann.
+       Dieser Parameter ist &zb; nützlich, wenn IDs auf mehreren Hosts erzeugt
+       werden und die Gefahr besteht, dass sie in derselben Mikrosekunde
+       dieselbe Kennung erzeugen. Dies kann sogar auf einem einzelnen Host
+       passieren, wenn die Systemuhr &zb; durch NTP angepasst und dadurch
+       zurückgestellt wird.
       </para>
       <para>
        Bei leerem <parameter>prefix</parameter> ist die zurückgegebene
-       Zeichenkette 13 Zeichen lang. Falls
-       <parameter>more_entropy</parameter> &true; ist, sind es 23 Zeichen.
+       Zeichenkette 13 Zeichen lang. Falls <parameter>more_entropy</parameter>
+       &true; ist, sind es 23 Zeichen.
       </para>
      </listitem>
     </varlistentry>
@@ -54,11 +58,11 @@
      <term><parameter>more_entropy</parameter></term>
      <listitem>
       <para>
-       Falls dieser Parameter auf &true; gesetzt ist, wird
+       Falls dieser Parameter auf &true; gesetzt ist, fügt
        <function>uniqid</function> am Ende des Rückgabewertes zusätzliche mit
        dem Kongruenzgenerator für Pseudozufallszahlen (Combined Linear
-       Congruential Generator) erzeugte Entropie anfügen, wodurch die Wahrscheinlichkeit
-       erhöht wird, dass das Ergebnis eindeutig ist.
+       Congruential Generator) erzeugte Entropie an, wodurch die
+       Wahrscheinlichkeit erhöht wird, dass das Ergebnis eindeutig ist.
       </para>
      </listitem>
     </varlistentry>
@@ -69,12 +73,11 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt eine zeitstempelbasierte eindeutige ID als Zeichenkette zurück.
+   Gibt eine zeitstempelbasierte ID als Zeichenkette zurück.
   </para>
   <warning>
    <para>
-    Diese Funktion versucht eine eindeutige Kennung zu erzeugen, aber sie
-    garantiert nicht die hunderprozentige Eindeutigkeit des Rückgabewerts.
+    Diese Funktion garantiert nicht die Eindeutigkeit des Rückgabewerts.
    </para>
   </warning>
  </refsect1>
@@ -88,19 +91,22 @@
 <![CDATA[
 <?php
 /* Eine eindeutige ID, beispielsweise: 4b3403665fea6 */
-$uniqid = uniqid();
+printf("uniqid(): %s\r\n", uniqid());
 
 /* Zusätzlich kann ein Präfix genutzt werden. Dabei sind die
  * folgenden beiden Anweisungen identisch:
+ *
+ * $uniqid = $prefix . uniqid();
+ * $uniqid = uniqid($prefix);
  */
-$uniqid = uniqid($prefix);
-$uniqid = $prefix . uniqid();
+printf("uniqid('php_'): %s\r\n", uniqid('php_'));
 
-/* Weiterhin kann der more_entropy Parameter aktiviert werden (auf einigen Systemen
- * wie Cygwin ist dies sogar zwangsweise erforderlich). Dadurch generiert uniqid()
- * einen Wert ähnlich dem folgenden: 4b340550242239.64159797
+/* Weiterhin kann der Parameter more_entropy aktiviert werden (auf einigen
+ * Systemen wie Cygwin ist dies sogar erforderlich). Dadurch generiert
+ * uniqid() einen Wert ähnlich dem folgenden: 4b340550242239.64159797
  */
-$uniqid = uniqid('', true);
+printf("uniqid('', true): %s\r\n", uniqid('', true));
+?>
 ]]>
     </programlisting>
    </example>
@@ -112,7 +118,7 @@ $uniqid = uniqid('', true);
   <note>
    <para>
     Unter Cygwin muss der Parameter <parameter>more_entropy</parameter> auf
-    &true; gesetzt sein, damit die Funktion arbeitet.
+    &true; gesetzt sein, damit die Funktion funktioniert.
    </para>
   </note>
  </refsect1>
