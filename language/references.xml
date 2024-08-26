@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 6d29533483657c036e49edb5ea88c7103d126681 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: d58ee8eaaa7f716c51f66f5f1058ab3c42376d98 Maintainer: nobody Status: ready -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<!-- Rev-Revision: fe18943c11c6fe9be88688574153013ff249452d Reviewer: samesch -->
  <chapter xml:id="language.references" xmlns="http://docbook.org/ns/docbook">
   <title>Referenzen</title>
 
@@ -14,7 +14,8 @@
     in C zu vergleichen; zum Beispiel ist damit keine Zeigerarithmetik
     möglich, sie sind keine tatsächlichen Speicheradressen usw. Siehe
     <xref linkend="language.references.arent" /> für weitere Informationen.
-    Stattdessen sind sie Aliasdefinitionen für die Symboltabelle. PHP
+    Stattdessen sind sie Aliasdefinitionen für die
+    <link linkend="features.gc.refcounting-basics">Symboltabelle</link>. PHP
     unterscheidet zwischen Variablenname und Variableninhalt, wobei der
     gleiche Variableninhalt unterschiedliche Namen besitzen kann. Der
     bestmögliche Vergleich ist der mit Dateinamen und Dateien im Dateisystem
@@ -43,7 +44,9 @@
       <programlisting role="php">
 <![CDATA[
 <?php
+
 $a =& $b;
+
 ?>
 ]]>
       </programlisting>
@@ -68,7 +71,8 @@ $a =& $b;
        <programlisting role="php">
 <![CDATA[
 <?php
-function foo(&$var) { }
+
+function foo(&$var) {}
 
 foo($a); // $a wird "erstellt" und dem Wert null zugewiesen
 
@@ -76,9 +80,10 @@ $b = array();
 foo($b['b']);
 var_dump(array_key_exists('b', $b)); // bool(true)
 
-$c = new stdClass;
+$c = new stdClass();
 foo($c->d);
 var_dump(property_exists($c, 'd')); // bool(true)
+
 ?>
 ]]>
        </programlisting>
@@ -92,7 +97,9 @@ var_dump(property_exists($c, 'd')); // bool(true)
       <programlisting role="php">
 <![CDATA[
 <?php
+
 $foo =& find_var($bar);
+
 ?>
 ]]>
       </programlisting>
@@ -119,12 +126,14 @@ $foo =& find_var($bar);
        <programlisting role="php">
 <![CDATA[
 <?php
+
 $var1 = "Beispiel-Variable";
 $var2 = "";
 
 function global_references($use_globals)
 {
     global $var1, $var2;
+
     if (!$use_globals) {
         $var2 =& $var1; // nur innerhalb der Funktion sichtbar
     } else {
@@ -134,8 +143,10 @@ function global_references($use_globals)
 
 global_references(false);
 echo "Der Wert von var2 ist '$var2'\n"; // Der Wert von var2 ist ''
+
 global_references(true);
 echo "Der Wert von var2 ist '$var2'\n"; // Der Wert von var2 ist 'Beispiel-Variable'
+
 ?>
 ]]>
        </programlisting>
@@ -155,12 +166,16 @@ echo "Der Wert von var2 ist '$var2'\n"; // Der Wert von var2 ist 'Beispiel-Varia
        <programlisting role="php">
 <![CDATA[
 <?php
+
 $ref = 0;
 $row =& $ref;
+
 foreach (array(1, 2, 3) as $row) {
-    // mach was
+    // Mach was
 }
+
 echo $ref; // 3 - letztes Element des durchlaufenen Arrays
+
 ?>
 ]]>
        </programlisting>
@@ -177,11 +192,16 @@ echo $ref; // 3 - letztes Element des durchlaufenen Arrays
       <programlisting role="php">
 <![CDATA[
 <?php
+
 $a = 1;
 $b = array(2, 3);
+
 $arr = array(&$a, &$b[0], &$b[1]);
-$arr[0]++; $arr[1]++; $arr[2]++;
+$arr[0]++;
+$arr[1]++;
+$arr[2]++;
 /* $a == 2, $b == array(3, 4); */
+
 ?>
 ]]>
       </programlisting>
@@ -199,19 +219,21 @@ $arr[0]++; $arr[1]++; $arr[2]++;
       <programlisting role="php">
 <![CDATA[
 <?php
+
 /* Zuweisung skalarer Variablen */
 $a = 1;
 $b =& $a;
 $c = $b;
-$c = 7; //$c ist keine Referenz; keine Änderung an $a oder $b
+$c = 7; // $c ist keine Referenz; keine Änderung an $a oder $b
 
 /* Zuweisung von Array-Variablen */
 $arr = array(1);
-$a =& $arr[0]; //$a und $arr[0] sind in derselben Referenzmenge
-$arr2 = $arr; //keine Referenzzuweisung!
+$a =& $arr[0]; // $a und $arr[0] sind in derselben Referenzmenge
+$arr2 = $arr; // Keine Referenzzuweisung!
 $arr2[0]++;
 /* $a == 2, $arr == array(2) */
 /* Der Inhalt von $arr hat sich geändert, obwohl es keine Referenz ist! */
+
 ?>
 ]]>
       </programlisting>
@@ -232,6 +254,7 @@ $arr2[0]++;
       <programlisting role="php">
 <![CDATA[
 <?php
+
 function foo(&$var)
 {
     $var++;
@@ -239,6 +262,7 @@ function foo(&$var)
 
 $a=5;
 foo($a);
+
 ?>
 ]]>
       </programlisting>
@@ -269,11 +293,14 @@ foo($a);
      <programlisting role="php">
 <![CDATA[
 <?php
+
 function foo(&$var)
 {
     $var =& $GLOBALS["baz"];
 }
+
 foo($bar);
+
 ?>
 ]]>
      </programlisting>
@@ -288,8 +315,8 @@ foo($bar);
     binden, da <varname>$bar</varname> in der Funktion <varname>foo</varname>
     nicht zur Verfügung steht (es wird durch <varname>$var</varname>
     repräsentiert, aber <varname>$var</varname> hat in der aufrufenden
-    Symboltabelle nur Variableninhalte und keine Name-an-Wert-Bindung). Man
-    kann die
+    <link linkend="features.gc.refcounting-basics">Symboltabelle</link>) nur
+    Variableninhalte und keine Name-an-Wert-Bindung). Man kann die.
     <link linkend="language.references.return">Rückgabe von Referenzen</link>
     verwenden, um die von der Funktion ausgewählten Variablen zu
     referenzieren.
@@ -306,14 +333,17 @@ foo($bar);
      <programlisting role="php">
 <![CDATA[
 <?php
+
 function foo(&$var)
 {
     $var++;
 }
 
 $a=5;
+
 foo($a);
 // $a ist 6
+
 ?>
 ]]>
      </programlisting>
@@ -341,16 +371,20 @@ foo($a);
         <programlisting role="php">
 <![CDATA[
 <?php
+
 function foo(&$var)
 {
     $var++;
 }
+
 function &bar()
 {
     $a = 5;
     return $a;
 }
+
 foo(bar());
+
 ?>
 ]]>
         </programlisting>
@@ -368,26 +402,28 @@ foo(bar());
      <programlisting role="php">
 <![CDATA[
 <?php
+
 function foo(&$var)
 {
     $var++;
 }
+
 function bar() // Beachte das fehlende &
 {
     $a = 5;
     return $a;
 }
+
 foo(bar()); // Erzeugt einen Hinweis
 
 foo($a = 5); // Ausdruck, nicht Variable
 foo(5); // Erzeugt einen fatalen Fehler
 
-class Foobar
-{
-}
+class Foobar {}
 
 foo(new Foobar()) // Erzeugt einen Hinweis von PHP 7.0.7 an
                   // Hinweis: Nur Variablen sollten als Referenz übergeben werden
+
 ?>
 ]]>
      </programlisting>
@@ -409,18 +445,22 @@ foo(new Foobar()) // Erzeugt einen Hinweis von PHP 7.0.7 an
      <programlisting role="php">
 <![CDATA[
 <?php
-class foo {
+
+class Foo
+{
     public $value = 42;
 
-    public function &getValue() {
+    public function &getValue()
+    {
         return $this->value;
     }
 }
 
-$obj = new foo;
-$myValue = &$obj->getValue(); // $myValue ist eine Referenz auf $obj->value, was den Wert 42 hat.
+$obj = new Foo();
+$myValue = &$obj->getValue(); // $myValue ist eine Referenz auf $obj->value, was den Wert 42 hat
 $obj->value = 2;
 echo $myValue;                // Zeigt den neuen Wert von $obj->value, also 2.
+
 ?>
 ]]>
      </programlisting>
@@ -456,12 +496,16 @@ echo $myValue;                // Zeigt den neuen Wert von $obj->value, also 2.
      <programlisting role="php">
 <![CDATA[
 <?php
-function &collector() {
-  static $collection = array();
-  return $collection;
+
+function &collector()
+{
+    static $collection = array();
+    return $collection;
 }
+
 $collection = &collector();
 $collection[] = 'foo';
+
 ?>
 ]]>
      </programlisting>
@@ -472,11 +516,15 @@ $collection[] = 'foo';
      <programlisting role="php">
 <![CDATA[
 <?php
-function &collector() {
-  static $collection = array();
-  return $collection;
+
+function &collector()
+{
+    static $collection = array();
+    return $collection;
 }
+
 array_push(collector(), 'foo');
+
 ?>
 ]]>
      </programlisting>
@@ -501,9 +549,11 @@ array_push(collector(), 'foo');
      <programlisting role="php">
 <![CDATA[
 <?php
+
 $a = 1;
 $b =& $a;
 unset($a);
+
 ?>
 ]]>
      </programlisting>
@@ -537,7 +587,9 @@ unset($a);
       <programlisting role="php">
 <![CDATA[
 <?php
+
 $var =& $GLOBALS["var"];
+
 ?>
 ]]>
       </programlisting>

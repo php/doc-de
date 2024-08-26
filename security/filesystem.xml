@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: c5d92fd7127e059d448d43ba339f19956f83b05a Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 91570644fbbe4d23e79908e1a04c4c4d003fe587 Maintainer: hholzgra Status: ready -->
 <!-- Credits: tom -->
   <chapter xml:id="security.filesystem" xmlns="http://docbook.org/ns/docbook">
-   <title>Dateisystem - Sicherheit</title>
+   <title>Sicherheit des Dateisystems</title>
    <simpara>
-    <acronym>PHP</acronym> ist von den in den meisten Serversystemen implementierten
-    Sicherheitseinstellungen hinsichtlich der Berechtigungen auf Datei-
-    und Verzeichnisebene abhängig. Dies verleiht Ihnen Kontrolle darüber,
-    welche Dateien in dem Dateisystem gelesen werden dürfen. Vorsicht ist
-    bei weltweit lesbaren Dateien geboten um sicherzustellen, dass diese
-    sicher von allen Usern mit Zugriff auf dieses Dateisystem (nur) gelesen
-    werden können.
+    <acronym>PHP</acronym> ist hinsichtlich der Berechtigungen auf Datei-
+    und Verzeichnisebene von den in den meisten Serversystemen implementierten
+    Sicherheitseinstellungen abhängig. Dies verleiht Ihnen Kontrolle darüber,
+    welche Dateien im Dateisystem gelesen werden dürfen. Es sollte
+    sichergestellt werden, dass alle öffentlich zugänglichen Dateien von allen
+    Benutzern, die Zugang zu diesem Dateisystem haben, gelesen werden können,
+    ohne die Sicherheit zu gefährden.
    </simpara>
    <simpara>
-    Da <acronym>PHP</acronym> entwickelt wurde, um Zugriffe auf das Dateisystem auf Benutzebene
-    zu erlauben, ist es natürlich auch möglich, ein <acronym>PHP</acronym> Skript zu schreiben,
-    dass Ihnen erlaubt, Systemdateien wie /etc/passwd zu lesen,
-    Ethernetverbindungen zu modifizieren, enorme Druckaufträge zu senden,
+    Da <acronym>PHP</acronym> entwickelt wurde, um Zugriffe auf das Dateisystem
+    auf Benutzebene zu erlauben, ist es natürlich auch möglich, ein
+    <acronym>PHP</acronym>-Skript zu schreiben, dass Ihnen erlaubt,
+    Systemdateien wie <filename>/etc/passwd</filename> zu lesen,
+    Ethernetverbindungen zu modifizieren, enorme Druckaufträge zu senden
     etc. Dies hat offensichtliche Implikationen, indem Sie sicherstellen
     müssen, dass alle von Ihnen zu lesenden bzw. zu schreibenden Dateien
     auch die richtigen sind.
    </simpara>
    <simpara>
-    Stellen Sie sich folgendes Skript vor, in dem ein User zum Ausdruck
-    bringt, dass gerne eine Datei in seinem Heimatverzeichnis löschen
-    möchte. Dies geht von einer Situation aus, in der ein <acronym>PHP</acronym> Web-Interface
-    regelmäßig zum Dateimanagement verwendet wird, und der Apache User
-    ist auch berechtigt, in seinem Heimatverzeichnis Dateien zu löschen.
+    Stellen Sie sich folgendes Skript vor, in dem ein Benutzer zum Ausdruck
+    bringt, dass er eine Datei in seinem Heimatverzeichnis löschen möchte.
+    Es wird davon ausgegangen, dass ein <acronym>PHP</acronym>-Webinterface
+    regelmäßig für das Dateimanagement verwendet wird und dass der
+    Apache-Benutzer berechtigt ist, in seinem Heimatverzeichnis Dateien zu
+    löschen.
    </simpara>
    <para>
     <example>
@@ -35,30 +37,36 @@
      <programlisting role="php">
 <![CDATA[
 <?php
+
 // Löschen einer Datei aus dem Heimatverzeichnis des Users
 $username = $_POST['user_submitted_name'];
 $userfile = $_POST['user_submitted_filename'];
 $homedir  = "/home/$username";
+
 unlink("$homedir/$userfile");
+
 echo "Die Datei wurde gelöscht!";
+
 ?>
 ]]>
      </programlisting>
     </example>
-   Da der Benutzer- und Dateiname über ein Benutzerformular bereitgestellt
-   werden kann jeder jemand anderes Benutzer- und Dateinamen übertragen und
-   so Dateien ohne über die entsprechnde Erlaubnis zu verfügen.
-   In diesem Fall empfiehlt es sich, eine andere
-   Form der Authentifizierung zu verwenden. Stellen Sie sich vor was
-   passieren würde, wenn die übertragenen Variablen "../etc/" und
-   "passwd" beinhalten würden. Der Code würde dann effektiv lesen:
+    Da Benutzer- und Dateiname über ein Benutzerformular bereitgestellt werden,
+    kann jeder jemand anderes Benutzer- und Dateinamen übertragen und so
+    Dateien löschen, ohne über die entsprechnde Erlaubnis zu verfügen.
+    In diesem Fall empfiehlt es sich, eine andere Form der Authentifizierung zu
+    verwenden. Stellen Sie sich vor was passieren würde, wenn die übertragenen
+    Variablen <literal>"../etc/"</literal> und <literal>"passwd"</literal>
+    beinhalten würden.
+    Der Code würde dann folgendermaßen aussehen:
     <example>
      <title>... Ein Angriff auf das Dateisystem</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-// löscht eine Datei irgendwo auf der Festplatte, wo der
-// Benutzer die nötigen Rechte besitzt. Wenn PHP root hat:
+
+// Löscht eine Datei irgendwo auf der Festplatte, wo der Benutzer
+// die nötigen Rechte besitzt. Wenn PHP root-Zugriff hat:
 $username = $_POST['user_submitted_name']; // "../etc"
 $userfile = $_POST['user_submitted_filename']; // "passwd"
 $homedir  = "/home/$username"; // "/home/../etc"
@@ -66,6 +74,8 @@ $homedir  = "/home/$username"; // "/home/../etc"
 unlink("$homedir/$userfile"); // "/home/../etc/passwd"
 
 echo "Die Datei wurde gelöscht!";?>
+
+?>
 ]]>
      </programlisting>
     </example>
@@ -89,8 +99,9 @@ echo "Die Datei wurde gelöscht!";?>
      <programlisting role="php">
 <![CDATA[
 <?php
-// löscht eine Datei von der Festplatte, auf die
-// der PHP user Zugriff hat.
+
+// Löscht eine Datei von der Festplatte, auf die
+// der PHP-Benutzer Zugriff hat.
 $username = $_SERVER['REMOTE_USER']; // using an authentication mechanism
 $userfile = basename($_POST['user_submitted_filename']);
 $homedir  = "/home/$username";
@@ -102,26 +113,29 @@ if (file_exists($filepath) && unlink($filepath)) {
 } else {
     $logstring = "$filepath konnte nicht gelöscht\n";
 }
+
 $fp = fopen("/home/logging/filedelete.log", "a");
 fwrite($fp, $logstring);
 fclose($fp);
 
 echo htmlentities($logstring, ENT_QUOTES);
+
 ?>
 ]]>
      </programlisting>
     </example>
-    Auch dies nicht völlig makellos. Wenn Ihr Authentifizierungssystem
+    Auch dies nicht ohne Schwachstellen. Wenn Ihr Authentifizierungssystem
     Benutzern erlauben sollte, deren eigene Logins zu kreieren, und ein
-    Benutzer wählt den Login "../etc", ist das System wieder aufgedeckt.
-    Aus diesem Grund ziehen Sie es vielleicht vor, einen besseren Check
-    zu schreiben:
+    Benutzer wählt den Login <literal>"../etc/"</literal>, ist das System
+    erneut angreifbar. Aus diesem Grund sollten Sie eventuell eine speziellere
+    Überprüfung durchführen
     <example>
      <title>Sicherere Dateinamensprüfung</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-$username     = $_SERVER['REMOTE_USER']; // Nutzung des Authentifikationsmechanismus
+
+$username     = $_SERVER['REMOTE_USER']; // Nutzung eines Authentifikationsmechanismus
 $userfile     = $_POST['user_submitted_filename'];
 $homedir      = "/home/$username";
 
@@ -131,77 +145,84 @@ if (!ctype_alnum($username) || !preg_match('/^(?:[a-z0-9_-]|\.(?!\.))+$/iD', $us
     die("Ungültiger Benutzer- oder Dateiname");
 }
 
-//etc...
+// etc.
+
 ?>
 ]]>
      </programlisting>
     </example>
    </para>
    <para>
-    Abhängig vom Betriebssystem gibt es eine große Anzahl Dateien mit der
-    Sie sich befassen sollten, inklusive Einträge für Geräte (/dev/ oder
-    com1), Konfigurationsdateien (/etc/ Dateien und die .ini Dateien), gut
-    bekannte Verzeichnisse (/home/, My Documents), etc. Aus diesem Grund
-    ist es gewöhnlich einfacher eine Vorgangsweise einzuführen, bei der
-    außer den von Ihnen explizit erlaubten Dingen alles verboten ist.
+    Abhängig vom Betriebssystem gibt es eine große Anzahl Dateien, auf die Sie
+    achten sollten, inklusive Einträge für Geräte (<filename>/dev/</filename>
+    oder <filename>com1</filename>), Konfigurationsdateien (die Dateien in
+    <filename>/etc/</filename> und die <literal>.ini</literal>-Dateien),
+    allgemein bekannte Verzeichnisse (<filename>/home/</filename>,
+    <filename>My Documents</filename>) etc. Aus diesem Grund ist es für
+    gewöhnlich einfacher, eine Richtlinie zu erstellen, in der alles verboten
+    ist, was Sie nicht ausdrücklich erlauben.
    </para>
-
    <sect1 xml:id="security.filesystem.nullbytes">
     <title>Probleme im Zusammenhang mit Nullbytes</title>
     <simpara>
-     Da <acronym>PHP</acronym> die Funktionen der C-Standardbibliothek für 
-     Dateisystemoperationen nutzt kann es Nullbytes in
-     unerwarteter Weise verarbeiten.
-     Da Nullbytes in C das Stringende festlegen werden
-     Strings die solche enthalten nicht vollständig 
-     verarbeitet sondern nur bis zum ersten Auftreten
-     eines Nullbytes.
-     Das folgende Beispiel zeigt verwundbaren Programmcode
-     der das Problem demonstriert:
+     Da <acronym>PHP</acronym> die Funktionen der C-Standardbibliothek für
+     Dateisystemoperationen nutzt kann es Nullbytes in unerwarteter Weise
+     verarbeiten.
+     Da Nullbytes in C das Stringende festlegen werden Strings die solche
+     enthalten nicht vollständig verarbeitet sondern nur bis zum ersten
+     Auftreten eines Nullbytes.
+     Das folgende Beispiel zeigt einen anfälligen Code, der dieses Problem
+     verdeutlicht:
     </simpara>
     <example>
      <title>Skript mit Nullbyte-Verwundbarkeit</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-  $file = $_GET['file']; // "../../etc/passwd\0"
-  if (file_exists('/home/wwwrun/'.$file.'.php')) {
-    // file_exists gibt true zurück da /home/wwwrun/../../etc/passwd existiert
-    include '/home/wwwrun/'.$file.'.php';
-    // die Datei /etc/passwd wird eingebunden
-  }
+
+$file = $_GET['file']; // "../../etc/passwd\0"
+
+if (file_exists('/home/wwwrun/' . $file . '.php')) {
+    // file_exists gibt true zurück, da /home/wwwrun/../../etc/passwd existiert
+    include '/home/wwwrun/' . $file . '.php';
+
+    // Die Datei /etc/passwd wird eingebunden
+}
+
 ?>
 ]]>
      </programlisting>
     </example>
     <para>
-     Daher sollte jede nicht vertrauenswürdige Zeichenkette, die in 
+     Daher sollte jede nicht vertrauenswürdige Zeichenkette, die in
      Dateisystemoperationen verwendet wird, ordentlich geprüft werden.
-     Hier sehen Sie eine eine bessere Versiond des vorhergehenden Beispiels:
+     Hier sehen Sie eine eine bessere Version des vorhergehenden Beispiels:
     </para>
     <example>
      <title>Korrekte Validierung der Eingabe</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-  $file = $_GET['file'];
-  
-  // Gestatte gültige Werte
-  switch ($file) {
+
+$file = $_GET['file'];
+
+// Liste zulässiger Werte (Whitelisting)
+switch ($file) {
     case 'main':
     case 'foo':
     case 'bar':
-      include '/home/wwwrun/include/'.$file.'.php';
-      break;
+        include '/home/wwwrun/include/' . $file . '.php';
+        break;
     default:
-      include '/home/wwwrun/include/main.php';
-  }
+        include '/home/wwwrun/include/main.php';
+}
+
 ?>
 ]]>
-       </programlisting>
-     </example>
+     </programlisting>
+    </example>
    </sect1>
-   
+
   </chapter>
 
 <!-- Keep this comment at the end of the file
