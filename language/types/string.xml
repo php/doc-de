@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: affa37e16f562d9297e83b2e21ec416aadc8b72d Maintainer: nobody Status: ready -->
+<!-- EN-Revision: ebc071c1911e87c34628027c46c3e48092e67173 Maintainer: nobody Status: wip -->
 <sect1 xml:id="language.types.string">
  <title>Strings (Zeichenketten)</title>
 
@@ -209,7 +209,8 @@ echo 'Variablen werden $ebenfalls $nicht ersetzt';
    <para>
     Das Auflösen von Variablen-Namen ist eine der wichtigsten Besonderheiten
     von in doppelten Anführungszeichen angegebenen <type>String</type>s. Siehe
-    hierzu <link linkend="language.types.string.parsing">String-Parsing</link>
+    hierzu
+    <link linkend="language.types.string.parsing">String-Interpolation</link>
     für weitere Details.
    </para>
   </sect3>
@@ -612,12 +613,13 @@ FOOBAR;
    <para>
     Nowdocs sind für Strings in einfachen Anführungszeichen das, was Heredocs
     für Strings in doppelten Anführungszeichen sind. Ein Nowdoc wird ähnlich
-    wie ein Heredoc angegeben, aber es wird <emphasis>kein Parsing</emphasis>
-    innerhalb eines Nowdocs durchgeführt. Das Konstrukt ist ideal für die
-    Einbettung von PHP-Code oder anderen großen Textblöcken ohne maskieren zu
-    müssen. Es hat einige Eigenschaften mit dem
-    <literal>&lt;![CDATA[ ]]&gt;</literal>-Konstrukt in SGML gemeinsam, indem
-    es einen Textblock deklariert, der nicht geparst werden soll.
+    wie ein Heredoc angegeben, aber es wird
+    <emphasis>keine String-Interpolation</emphasis> innerhalb eines Nowdocs
+    durchgeführt. Das Konstrukt ist ideal für die Einbettung von PHP-Code oder
+    anderen großen Textblöcken ohne maskieren zu müssen. Es hat einige
+    Eigenschaften mit dem <literal>&lt;![CDATA[ ]]&gt;</literal>-Konstrukt in
+    SGML gemeinsam, indem es einen Textblock deklariert, der nicht geparst
+    werden soll.
    </para>
 
    <para>
@@ -708,21 +710,21 @@ EOT;
   </sect3>
 
   <sect3 xml:id="language.types.string.parsing">
-   <title>Parsing (Analyse) von Variablen</title>
+   <title>String-Interpolation</title>
 
    <simpara>
     Wenn ein <type>string</type> in doppelten Anführungszeichen oder mit
-    Heredoc angegeben wird, werden darin
-    <link linkend="language.variables">Variablen</link> geparst.
+    Heredoc angegeben wird, können die
+    <link linkend="language.variables">Variablen</link> darin ersetzt werden.
    </simpara>
 
    <simpara>
     Es gibt zwei Arten von Syntax: eine
-    <link linkend="language.types.string.parsing.simple">einfache</link> und
-    eine <link linkend="language.types.string.parsing.complex">komplexe</link>
-    Syntax. Die einfache Syntax ist die gebräuchlichste und bequemste. Sie
-    bietet eine Möglichkeit, eine Variable, einen <type>&array;</type>-Wert
-    oder eine <type>&object;</type>-Eigenschaft mit minimalem Aufwand in einen
+    <link linkend="language.types.string.parsing.basic">einfache</link> und eine
+    <link linkend="language.types.string.parsing.advanced">erweiterte</link>.
+    Die einfache Syntax ist die gebräuchlichste und bequemste. Sie bietet eine
+    Möglichkeit, eine Variable, einen <type>&array;</type>-Wert oder eine
+    <type>&object;</type>-Eigenschaft mit minimalem Aufwand in einen
     <type>String</type> einzubetten.
    </simpara>
 
@@ -731,16 +733,13 @@ EOT;
     Ausdruck umgeben.
    </simpara>
 
-   <sect4 xml:id="language.types.string.parsing.simple">
+   <sect4 xml:id="language.types.string.parsing.basic">
     <title>Einfache Syntax</title>
-
     <simpara>
-     Wenn ein Dollarzeichen (<literal>$</literal>) vorkommt, nimmt der Parser
-     gierig so viele Token wie möglich, um einen gültigen Variablennamen zu
-     bilden. Schließen Sie den Variablennamen in geschweifte Klammern ein, um
-     das Ende des Namens explizit anzugeben.
+     Wenn ein Dollarzeichen (<literal>$</literal>) erkannt wird, werden die
+     darauf folgenden Zeichen, die in einem Variablennamen verwendet werden
+     können, als solche interpretiert und ersetzt.
     </simpara>
-
     <informalexample>
      <programlisting role="php">
 <![CDATA[
@@ -749,14 +748,6 @@ $juice = "apple";
 
 echo "He drank some $juice juice." . PHP_EOL;
 
-// Unbeabsichtigt. "s" ist ein gültiges Zeichen für einen Variablennamen,
-// also bezieht sich dies auf $juices, nicht auf $juice.
-echo "He drank some juice made of $juices." . PHP_EOL;
-
-// Geben Sie das Ende des Variablennamens explizit an, indem Sie die Referenz
-// in geschweifte Klammern einschließen.
-echo "He drank some juice made of {$juice}s.";
-
 ?>
 ]]>
      </programlisting>
@@ -764,8 +755,6 @@ echo "He drank some juice made of {$juice}s.";
      <screen>
 <![CDATA[
 He drank some apple juice.
-He drank some juice made of .
-He drank some juice made of apples.
 ]]>
      </screen>
     </informalexample>
@@ -777,32 +766,123 @@ He drank some juice made of apples.
      des Indexes. Für Objekteigenschaften gelten die gleichen Regeln wie für
      einfache Variablen.
     </simpara>
+    <informalexample>
+     <programlisting>
+<![CDATA[
+String-Variable::
+     Variablen-Name   (Offset-oder-Eigenschaft)?
+   | ${   Ausdruck   }
+
+Offset-oder-Eigenschaft::
+     Offset-im-String
+   | Eigenschaft-im-String
+
+Offset-im-String::
+     [   Name    ]
+   | [   Variablen-Name   ]
+   | [   Ganzzahl-Literal   ]
+
+Eigenschaft-im-String::
+     ->  Name
+
+Variablen-Name::
+     $   Name
+
+Name::
+     [a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*
+
+]]>
+     </programlisting>
+    </informalexample>
+
+    <warning>
+     <para>
+      The <literal>${ expression }</literal> syntax is deprecated as of
+      PHP 8.2.0, as it can be interpreted as
+      <link linkend="language.variables.variable">variable variables</link>:
+      <informalexample>
+       <programlisting role="php">
+<![CDATA[
+<?php
+const foo = 'bar';
+$foo = 'foo';
+$bar = 'bar';
+var_dump("${foo}");
+var_dump("${(foo)}");
+?>
+]]>
+       </programlisting>
+       &example.outputs.82;
+       <screen>
+<![CDATA[
+Deprecated: Using ${var} in strings is deprecated, use {$var} instead in file on line 6
+
+Deprecated: Using ${expr} (variable variables) in strings is deprecated, use {${expr}} instead in file on line 9
+string(3) "foo"
+string(3) "bar"
+]]>
+       </screen>
+       &example.outputs;
+       <screen>
+<![CDATA[
+string(3) "foo"
+string(3) "bar"
+]]>
+       </screen>
+      </informalexample>
+      The <link linkend="language.types.string.parsing.advanced">advanced</link>
+      string interpolation syntax should be used instead.
+     </para>
+    </warning>
+
+    <note>
+     <simpara>
+      If it is not possible to form a valid name the dollar sign remains
+      as verbatim in the string:
+     </simpara>
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+echo "No interpolation $  has happened\n";
+echo "No interpolation $\n has happened\n";
+echo "No interpolation $2 has happened\n";
+?>
+]]>
+      </programlisting>
+      &example.outputs;
+      <screen>
+<![CDATA[
+No interpolation $  has happened
+No interpolation $
+ has happened
+No interpolation $2 has happened
+]]>
+      </screen>
+     </informalexample>
+    </note>
 
     <example>
-     <title>Beispiel für einfache Syntax</title>
+     <title>Interpolating the value of the first dimension of an array or property</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-$juices = array("apple", "orange", "koolaid1" => "purple");
+$juices = array("apple", "orange", "string_key" => "purple");
 
-echo "He drank some $juices[0] juice.".PHP_EOL;
-echo "He drank some $juices[1] juice.".PHP_EOL;
-echo "He drank some $juices[koolaid1] juice.".PHP_EOL;
+echo "He drank some $juices[0] juice.";
+echo PHP_EOL;
+echo "He drank some $juices[1] juice.";
+echo PHP_EOL;
+echo "He drank some $juices[string_key] juice.";
+echo PHP_EOL;
 
-class people {
-    public $john = "John Smith";
-    public $jane = "Jane Smith";
-    public $robert = "Robert Paulsen";
-
-    public $smith = "Smith";
+class A {
+    public $s = "string";
 }
 
-$people = new people();
+$o = new A();
 
-echo "$people->john drank some $juices[0] juice.".PHP_EOL;
-echo "$people->john then said hello to $people->jane.".PHP_EOL;
-echo "$people->john's wife greeted $people->robert.".PHP_EOL;
-echo "$people->robert greeted the two $people->smiths."; // Won't work
+echo "Object value: $o->s.";
 ?>
 ]]>
      </programlisting>
@@ -812,13 +892,19 @@ echo "$people->robert greeted the two $people->smiths."; // Won't work
 He drank some apple juice.
 He drank some orange juice.
 He drank some purple juice.
-John Smith drank some apple juice.
-John Smith then said hello to Jane Smith.
-John Smith's wife greeted Robert Paulsen.
-Robert Paulsen greeted the two .
+Object value: string.
 ]]>
      </screen>
     </example>
+
+    <note>
+     <simpara>
+      The array key must be unquoted, and it is therefore not possible to
+      refer to a constant as a key with the basic syntax. Use the
+      <link linkend="language.types.string.parsing.advanced">advanced</link>
+      syntax instead.
+     </simpara>
+    </note>
 
     <simpara>
      Seit PHP 7.1.0 werden auch <emphasis>negative</emphasis> numerische
@@ -847,12 +933,14 @@ Die Änderung des Zeichens an Index -3 auf o ergibt strong.
     </example>
 
     <simpara>
-     Für alles, das komplexer ist, sollten Sie die komplexe Syntax verwenden.
+     Für alles, das komplexer ist, muss die
+     <link linkend="language.types.string.parsing.advanced">advanced</link>
+     Syntax verwendet werden.
     </simpara>
    </sect4>
 
-   <sect4 xml:id="language.types.string.parsing.complex">
-    <title>Komplexe (geschweifte) Syntax</title>
+   <sect4 xml:id="language.types.string.parsing.advanced">
+    <title>Erweiterte (geschweifte) Syntax</title>
 
     <simpara>
      Diese Syntax wird nicht komplex genannt, weil sie komplex ist, sondern
