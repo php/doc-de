@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5bc68add3da3cd18c40f851e944b15095d3a26aa Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 110ac43250fdb3531fe26d4d29292e33df7855e8 Maintainer: nobody Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 110ac43250fdb3531fe26d4d29292e33df7855e8 Reviewer: samesch -->
 <refentry xml:id="function.openssl-open" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_open</refname>
@@ -19,15 +21,17 @@
    <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>iv</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Die Funktion <function>openssl_open</function> öffnet (entschlüsselt)
-   <parameter>data</parameter> unter Verwendung des privaten Schlüssels, der
-   mit der Schlüsselkennung <parameter>private_key</parameter> und dem
-   Umschlagschlüssel <parameter>encrypted_key</parameter> verknüpft ist und
-   füllt <parameter>output</parameter> mit den entschlüsselten Daten. Der
-   Umschlagschlüssel wird bei der Versiegelung erzeugt und kann ausschließlich
-   für einen bestimmten privaten Schlüssel verwendet werden. Mehr
-   Informationen sind der Dokumentation zu <function>openssl_seal</function>
-   zu entnehmen.
+   <function>openssl_open</function> öffnet (entschlüsselt)
+   <parameter>data</parameter> mit einem Umschlagschlüssel, der mit
+   <parameter>private_key</parameter> aus <parameter>encrypted_key</parameter>
+   entschlüsselt wird. Die Entschlüsselung erfolgt mit
+   <parameter>cipher_algo</parameter> und <parameter>iv</parameter>. Der IV
+   wird nur benötigt, wenn die Verschlüsselungsmethode dies erfordert. Die
+   Funktion füllt <parameter>output</parameter> mit den entschlüsselten Daten.
+   Der Umschlagschlüssel wird normalerweise erzeugt, wenn die Daten mit einem
+   öffentlichen Schlüssel versiegelt werden, der mit dem privaten Schlüssel
+   verknüpft ist. Siehe <function>openssl_seal</function> für weitere
+   Informationen.
   </para>
  </refsect1>
 
@@ -39,6 +43,7 @@
      <term><parameter>data</parameter></term>
      <listitem>
       <para>
+       Die versiegelten Daten.
       </para>
      </listitem>
     </varlistentry>
@@ -55,6 +60,8 @@
      <term><parameter>encrypted_key</parameter></term>
      <listitem>
       <para>
+       Der verschlüsselte symmetrische Schlüssel, der mit
+       <parameter>private_key</parameter> entschlüsselt werden kann.
       </para>
      </listitem>
     </varlistentry>
@@ -62,6 +69,8 @@
      <term><parameter>private_key</parameter></term>
      <listitem>
       <para>
+       Der private Schlüssel, der für die Entschlüsselung von
+       <parameter>encrypted_key</parameter> verwendet wird.
       </para>
      </listitem>
     </varlistentry>
@@ -69,12 +78,13 @@
      <term><parameter>cipher_algo</parameter></term>
      <listitem>
       <para>
-       Die Verschlüsselungsmethode.
+       Die Verschlüsselungsmethode, die für die Entschlüsselung von
+       <parameter>data</parameter> verwendet wird.
        <caution>
         <simpara>
-         Der Standardwert (<literal>'RC4'</literal>) wird als unsicher
-         eingestuft. Es wird dringend empfohlen, explizit eine sichere
-         Verschlüsselungsmethode anzugeben.
+         Der Standardwert für PHP-Versionen vor 8.0 ist
+         <literal>'RC4'</literal>, was als unsicher gilt. Es wird dringend
+         empfohlen, explizit eine sichere Verschlüsselungsmethode anzugeben.
         </simpara>
        </caution>
       </para>
@@ -84,7 +94,11 @@
      <term><parameter>iv</parameter></term>
      <listitem>
       <para>
-       Der Initialisierungsvektor.
+       Der Initialisierungsvektor, der für die Entschlüsselung von
+       <parameter>data</parameter> verwendet wird. Er wird benötigt, wenn die
+       Verschlüsselungsmethode einen IV erfordert. Dies kann durch den Aufruf
+       von <function>openssl_cipher_iv_length</function> mit
+       <parameter>cipher_algo</parameter> ermittelt werden.
       </para>
      </listitem>
     </varlistentry>
@@ -116,7 +130,7 @@
        <parameter>private_key</parameter> akzeptiert nun eine
        <classname>OpenSSLAsymmetricKey</classname>- oder
        <classname>OpenSSLCertificate</classname>-Instanz; vorher wurde eine
-       &resource; vom Typ <literal>OpenSSL-Schlüssel</literal> oder
+       &resource; vom Typ <literal>OpenSSL key</literal> oder
        <literal>OpenSSL X.509 CSR</literal> akzeptiert.
       </entry>
      </row>
@@ -140,24 +154,18 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-// Annahme: $sealed und $env_key enthalten versiegelte Daten bzw. unseren
-// Umschlagschlüssel; beide haben wir von dem Versiegelnden erhalten
+// Annahme: $sealed, $env_key und $iv enthalten die versiegelten Daten, unseren
+// Umschlagschlüssel und den IV; alles haben wir vom Versiegelnden erhalten
 
-// privaten Schlüssel aus einer Datei holen und vorbereiten
-$fp = fopen("/src/openssl-0.9.6/demos/sign/key.pem", "r");
-$priv_key = fread($fp, 8192);
-fclose($fp);
-$pkeyid = openssl_get_privatekey($priv_key);
+// Holen des privaten Schlüssels aus der Datei private_key.pem
+$pkey = openssl_get_privatekey("file://private_key.pem);
 
-// entschlüsseln der Daten und speichern in $open
-if (openssl_open($sealed, $open, $env_key, $pkeyid)) {
+// Entschlüsseln der Daten und speichern in $open
+if (openssl_open($sealed, $open, $env_key, $pkey, 'AES256', $iv)) {
     echo "Das sind die geöffneten Daten: ", $open;
 } else {
     echo "Öffnen der Daten nicht möglich!";
 }
-
-// löschen des privaten Schlüssels aus dem Speicher
-openssl_free_key($pkeyid);
 ?>
 ]]>
     </programlisting>
