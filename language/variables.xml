@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5700871f9d037a59d137be318f89deb7e146bbf6 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: b7dbf6357d4c2d68ffb52158076f692ed532b546 Maintainer: nobody Status: ready -->
 <!-- Credits: betz -->
  <chapter xml:id="language.variables" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Variablen</title>
@@ -15,18 +15,20 @@
    </simpara>
 
    <para>
-    Variablennamen werden in PHP nach den gleichen Regeln wie andere
-    Bezeichner erstellt. Ein gültiger Variablenname beginnt mit einem
-    Buchstaben oder einem Unterstrich ("_"), gefolgt von einer beliebigen
-    Anzahl von Buchstaben, Zahlen oder Unterstrichen. Als regulärer Ausdruck
-    (regular expression) würde das wie folgt ausgedrückt:
-    <code>^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$</code>.
+    Ein gültiger Variablenname beginnt mit einem Buchstaben
+    (<literal>A-Z</literal>, <literal>a-z</literal> oder die Bytes von 128 bis 255)
+    oder einem Unterstrich ("_"), gefolgt von einer beliebigen Anzahl von
+    Buchstaben, Zahlen oder Unterstrichen. Als regulärer Ausdruck
+    (Regular Expression) würde das wie folgt ausgedrückt:
+    <code>^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$</code>
    </para>
 
    <note>
     <simpara>
-     Unserem Zweck entspricht also ein Buchstabe von a bis z bzw. A bis Z oder
-     ein Bytewert von 128 bis 255 (<literal>0x80-0xff</literal>).
+     PHP unterstützt keine Unicode-Variablennamen, aber einige
+     Zeichenkodierungen (&zb; UTF-8) kodieren Zeichen so, dass alle Bytes eines
+     Multi-Byte-Zeichens in den erlaubten Bereich fallen und somit einen
+     gültigen Variablennamen darstellen.
     </simpara>
    </note>
 
@@ -41,33 +43,53 @@
 
    &tip.userlandnaming;
 
-   <para>
-    Information zu Funktionen im Zusammenhang mit Variablen finden Sie im
-    Abschnitt
-    <link linkend="ref.var">Funktionen zur Behandlung von Variablen</link>.
-   </para>
-
-   <para>
-    <informalexample>
-     <programlisting role="php">
+   <example>
+    <title>Gültige und ungültige Variablennamen</title>
+    <programlisting role="php">
 <![CDATA[
 <?php
 $var = "du";
 $Var = "ich";
-echo "$var, $Var";           // gibt "du, ich" aus
+echo "$var, $Var";        // gibt "du, ich" aus
 
-$4site  = 'nicht jetzt';     // ungültig, da Anfang eine Zahl
-$_4site = 'nicht jetzt';     // gültig, da Unterstrich am Anfang
-$täbyte = 'irgendwas';       // gültig, da 'ä' dem (Erweiterten) ASCII-Wert 228 entspricht
+$4site  = 'nicht jetzt';  // ungültig, da Anfang eine Zahl
+$_4site = 'nicht jetzt';  // gültig, da Unterstrich am Anfang
+$täbyte = 'irgendwas';    // gültig, da 'ä' dem (Erweiterten) ASCII-Wert 228 entspricht
 ?>
 ]]>
-     </programlisting>
-    </informalexample>
-   </para>
+    </programlisting>
+   </example>
+
+   <simpara>
+    PHP akzeptiert eine Folge von beliebigen Bytes als Variablennamen. Auf
+    Variablennamen, die nicht den oben genannten Benennungsregeln entsprechen,
+    kann nur dynamisch zur Laufzeit zugegriffen werden. Siehe
+    <link linkend="language.variables.variable">variable Variablen</link>
+    für Informationen, wie man auf sie zugreifen kann.
+   </simpara>
+
+   <example>
+    <title>Zugriff auf unklare Variablennamen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+${'ungueltiger-name'} = 'bar';
+$name = 'ungueltiger-name';
+echo ${'ungueltiger-name'}, " ", $$name;
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+bar bar
+]]>
+    </screen>
+   </example>
 
    <para>
     Standardmäßig wird Variablen immer ein Wert zugewiesen. Das heißt, wenn
-    Sie einer Variablen einen Ausdruck zuweisen, wird der gesamte Inhalt des
+    einer Variablen ein Ausdruck zugewiesen wird, wird der gesamte Inhalt des
     Originalausdrucks in die Zielvariable kopiert. Das bedeutet zum Beispiel,
     dass nach der Zuweisung des Wertes einer Variablen an eine andere die
     Änderung einer der Variablen keinen Einfluss auf die andere hat. Für
@@ -93,11 +115,11 @@ $täbyte = 'irgendwas';       // gültig, da 'ä' dem (Erweiterten) ASCII-Wert 2
      <programlisting role="php">
 <![CDATA[
 <?php
-$foo = 'Bob';             // 'Bob' der Variablen $foo zuweisen.
-$bar = &$foo;             // $foo per $bar referenzieren.
-$bar = "Ich heiße $bar";  // $bar verändern...
+$foo = 'Bob';              // 'Bob' der Variablen $foo zuweisen.
+$bar = &$foo;              // $foo per $bar referenzieren.
+$bar = "Ich heiße $bar";   // $bar verändern...
 echo $bar;
-echo $foo;                // $foo wurde ebenfalls verändert.
+echo $foo;                 // $foo wurde ebenfalls verändert.
 ?>
 ]]>
      </programlisting>
@@ -105,7 +127,7 @@ echo $foo;                // $foo wurde ebenfalls verändert.
    </para>
 
    <para>
-    Zu beachten ist, dass nur Variablennamen referenziert werden können.
+    Zu beachten ist, dass nur Variablen referenziert werden können.
     <informalexample>
      <programlisting role="php">
 <![CDATA[
@@ -119,7 +141,7 @@ function test()
     return 25;
 }
 
-$bar = &test();    // Ungültig.
+$bar = &test();    // Ungültig, da test() keine Variable per Referenz zurückgibt.
 ?>
 ]]>
      </programlisting>
@@ -127,64 +149,64 @@ $bar = &test();    // Ungültig.
    </para>
 
    <para>
-    Es ist in PHP nicht zwingend notwendig, Variablen zu initialisieren, es
-    wird aber trotzdem empfohlen. Nicht initialisierte Variablen haben einen
-    Vorgabewert der vom Typ abhängt – boolesche Werte sind standardmäßig
-    &false;, Ganz- und Gleitkommazahlen sind standardmäßig Null (0),
-    Zeichenketten, die &zb; in <function>echo</function> verwendet werden,
-    sind standardmäßig leer, und Arrays ebenfalls.
+    Es ist in PHP nicht notwendig, Variablen zu deklarieren, aber es wird
+    empfohlen. Der Versuch, auf eine undefinierte Variable zuzugreifen, führt
+    zu einem Fehler der Stufe <constant>E_WARNING</constant> (vor PHP 8.0.0,
+    <constant>E_NOTICE</constant>).
+    Eine undefinierte Variable hat den Standardwert &null;.
+    Um zu prüfen, ob eine Variable bereits initialisiert wurde, kann das
+    Sprachkonstrukt <function>isset</function> verwendet werden.
    </para>
    <para>
     <example>
-     <title>Vorgabewerte uninitialisierter Variablen</title>
+     <title>Vorgabewert einer nicht initialisierten Variable</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-// Nicht gesetzte UND nicht referenzierte (kein Verwendungskontext) Variable;
-// gibt NULL aus
+// Nicht gesetzte UND nicht referenzierte (kein Verwendungskontext) Variable.
 var_dump($unset_var);
-
-// Verwendung als boolescher Wert; gibt 'false' aus (siehe den ternären
-// Operator für Details zu dieser Syntax)
-echo $unset_bool ? "true\n" : "false\n";
-
-// Verwendung als Zeichenkette; gibt 'string(3) "abc"' aus
-$unset_str .= 'abc';
-var_dump($unset_str);
-
-// Verwendung als Ganzzahl; gibt 'int(25)' aus
-$unset_int += 25; // 0 + 25 => 25
-var_dump($unset_int);
-
-// Verwendung als Gleitkommazahl; gibt 'float(1.25)' aus
-$unset_float += 1.25;
-var_dump($unset_float);
-
-// Verwendung als Array; gibt array(1) {  [3]=>  string(3) "def" } aus
-$unset_arr[3] = "def"; // array() + array(3 => "def") => array(3 => "def")
-var_dump($unset_arr);
-
-// Verwendung als Objekt; erzeugt ein neues stdClass-Objekt
-// (siehe http://www.php.net/manual/en/reserved.classes.php)
-// Gibt aus: object(stdClass)#1 (1) {  ["foo"]=>  string(3) "bar" }
-$unset_obj->foo = 'bar';
-var_dump($unset_obj);
 ?>
 ]]>
      </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+Warning: Undefined variable $unset_var in ...
+NULL
+]]>
+     </screen>
     </example>
    </para>
-   <para>
-    Es ist problematisch sich auf den Vorgabewert einer nicht initialisierten
-    Variable zu verlassen, wenn Sie eine Datei in eine andere inkludieren, die
-    den gleichen Variablennamen verwendet. Bei Zugriffen auf nicht
-    initialisierte Variablen wird ein Fehler der Stufe
-    <constant>E_WARNING</constant> (vor PHP 8.0.0
-    <constant>E_NOTICE</constant>) ausgelöst, allerdings trifft dies nicht auf
-    das Anfügen von Elementen an nicht initialisierte Arrays zu. Um zu prüfen
-    ob eine Variable bereits initialisiert wurde, kann das Sprachkonstrukt
-    <function>isset</function> verwendet werden.
-   </para>
+
+   <simpara>
+    PHP erlaubt die Autovivifikation von Arrays (automatische Erstellung neuer
+    Arrays) aus einer undefinierten Variable.
+    Das Anhängen eines Elements an eine undefinierte Variable erzeugt ein neues
+    Array und führt nicht zu einer Warnung.
+   </simpara>
+   <example>
+    <title>Autovivifikation eines Arrays aus einer undefinierten Variable</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$unset_array[] = 'value'; // Erzeugt keine Warnung.
+?>
+]]>
+    </programlisting>
+   </example>
+
+   <warning>
+    <simpara>
+     Sich auf den Standardwert einer nicht initialisierten Variablen zu
+     verlassen, ist problematisch, wenn eine Datei in eine andere eingebunden
+     wird, die denselben Variablennamen verwendet.
+    </simpara>
+   </warning>
+
+   <simpara>
+    Für Informationen zu variablenbezogenen Funktionen siehe
+    <link linkend="ref.var">Referenz zu Variablenfunktionen</link>.
+   </simpara>
   </sect1>
 
   <sect1 xml:id="language.variables.predefined">
@@ -283,11 +305,12 @@ test();
     so eingestellt ist, dass solche Meldungen nicht angezeigt werden, wird
     überhaupt nichts ausgegeben. Das liegt daran, dass sich die echo-Anweisung
     auf eine lokale Variable namens <varname>$a</varname> bezieht, und dieser
-    kein Wert im lokalen Geltungsbereich zugewiesen worden ist. Dies ist ein
-    kleiner Unterschied zu C, wo globale Variablen auch in Funktionen vorhanden
-    sind, es sei denn, sie werden durch eine funktionsinterne Definition
-    überschrieben. Das kann zu Problemen führen, sodass in PHP global geltende
-    Variablen innerhalb von Funktionen als solche deklariert werden müssen.
+    kein Wert im lokalen Geltungsbereich zugewiesen worden ist. Es ist zu
+    beachten, dass sich dies etwas von C unterscheidet, da in C globale
+    Variablen automatisch für Funktionen zur Verfügung stehen, es sei denn, sie
+    werden durch eine funktionsinterne Definition überschrieben. In PHP müssen
+    globale Variablen innerhalb einer Funktionen deklariert werden, wenn sie in
+    dieser Funktion verwendet werden sollen.
    </simpara>
 
    <sect2 xml:id="language.variables.scope.global">
@@ -450,10 +473,11 @@ function test()
    <simpara>
     Statische Variablen ermöglichen auch einen Weg zum Umgang mit rekursiven
     Funktionen. Das sind Funktionen, die sich selbst aufrufen. Hierbei besteht
-    die Gefahr, sogenannte Endlosschleifen zu programmieren. Sie müssen also
-    einen Weg vorsehen, diese Rekursion zu beenden. Die folgende einfache
-    Funktion zählt rekursiv bis 10. Die statische Variable
-    <varname>$count</varname> wird verwendet, um die Rekursion zu beenden:
+    die Gefahr, sogenannte Endlosschleifen zu programmieren. Es muss also
+    sichergestellt werden, dass die Rekursion in geeigneter Weise beendet
+    werden kann. Die folgende einfache Funktion zählt rekursiv bis 10. Die
+    statische Variable <varname>$count</varname> wird verwendet, um die
+    Rekursion zu beenden:
    </simpara>
    <para>
     <example>
@@ -478,9 +502,9 @@ function test()
     </example>
    </para>
    <para>
-    Statischen Variablen können Werte zugewiesen werden, die das Ergebnis
-    konstanter Ausdrücken sind, aber dynamische Ausdrücke, &zb;
-    Funktionsaufrufe, verursachen einen Parse-Fehler.
+    Vor PHP 8.3.0 konnten statische Variablen nur mit einem konstanten Ausdruck
+    initialisiert werden. Seit PHP 8.3.0 sind auch dynamische Ausdrücke (&zb;
+    Funktionsaufrufe) erlaubt:
    </para>
    <para>
     <example>
@@ -491,7 +515,7 @@ function test()
 function foo(){
     static $int = 0;          // korrekt
     static $int = 1+2;        // korrekt
-    static $int = sqrt(121);  // falsch (da es eine Funktion ist)
+    static $int = sqrt(121);  // korrekt seit PHP 8.3.0
 
     $int++;
     echo $int;
@@ -531,12 +555,6 @@ var_dump(Bar::counter()); // int(4), vor PHP 8.1.0 int(2)
 ]]>
     </programlisting>
    </example>
-
-   <note>
-    <para>
-     Statische Deklarationen werden bei der Kompilierung aufgelöst.
-    </para>
-   </note>
   </sect2>
 
   <sect2 xml:id="language.variables.scope.references">
@@ -738,25 +756,25 @@ echo "$a $Hallo";
    </simpara>
 
    <simpara>
-    Wenn Sie variable Variablen mit Arrays verwenden, müssen Sie eine
-    Doppeldeutigkeit beachten. Wenn Sie nämlich <varname>$$a[1]</varname>
-    schreiben, dann muss der Parser wissen, ob Sie <varname>$a[1]</varname>
-    als Variable oder <varname>$$a</varname> als Variable und dann [1] als
-    Index dieser Variablen verwenden wollen, bzw. gemeint haben. Die Syntax
-    zur Lösung dieser Doppeldeutigkeit: Verwenden Sie im ersten Fall
-    <varname>${$a[1]}</varname> und im zweiten Fall
-    <varname>${$a}[1]</varname>.
+    Um variable Variablen mit Arrays zu verwenden, muss ein Problem der
+    Zweideutigkeit gelöst werden. Das heißt, wenn der Parser auf
+    <varname>$$a[1]</varname> stößt, muss er erkennen können, ob
+    <varname>$a[1]</varname> als Variable verwendet werden soll, oder ob
+    <varname>$$a</varname> als Variable verwendet werden soll und dann der
+    <literal>[1]</literal>-Index dieser Variable. Die Syntax zur Auflösung
+    dieser Zweideutigkeit lautet: <varname>${$a[1]}</varname> für den ersten
+    Fall und <varname>${$a}[1]</varname> für den zweiten Fall.
    </simpara>
 
    <simpara>
     Auf Klasseneigenschaften kann ebenso unter Verwendung von variablen
     Eigenschaftsnamen zugegriffen werden. Der variable Eigenschaftsname wird
     innerhalb des Geltungsbereichs aufgelöst, aus dem der Aufruf erfolgt. Wenn
-    sie beispielsweise einen Ausdruck wie etwa <varname>$foo->$bar</varname>
-    haben, dann wird der lokale Geltungsbereich auf <varname>$bar</varname>
-    untersucht, und dessen Wert wird als Eigenschaftsname von
-    <varname>$foo</varname> verwendet. Dies gilt analog, wenn
-    <varname>$bar</varname> ein Arrayzugriff ist.
+    es &zb; einen Ausdruck wie <varname>$foo->$bar</varname> gibt, dann wird
+    der lokale Geltungsbereich auf <varname>$bar</varname> untersucht, und
+    dessen Wert wird als Eigenschaftsname von <varname>$foo</varname>
+    verwendet. Dies gilt analog, wenn <varname>$bar</varname> ein Arrayzugriff
+    ist.
    </simpara>
 
    <simpara>
@@ -848,13 +866,13 @@ Ich bin r.
     </para>
 
     <para>
-     Es gibt es nur zwei Möglichkeiten, um auf die Daten der HTML-Formulare
+     Es gibt es nur zwei Möglichkeiten, um auf die Daten von HTML-Formularen
      zuzugreifen. Die zurzeit verfügbaren Methoden werden unten aufgeführt:
     </para>
 
     <para>
      <example>
-      <title>Zugriff auf die Daten eines einfachen POST-HTML-Formular</title>
+      <title>Zugriff auf die Daten eines einfachen HTML-POST-Formulars</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -867,8 +885,8 @@ echo $_REQUEST['username'];
     </para>
 
     <para>
-     Die Verwendung eines GET Formulars ist, davon abgesehen, dass Sie
-     stattdessen die entsprechende vordefinierte GET-Variable erhalten,
+     Die Verwendung eines GET-Formulars ist, davon abgesehen, dass stattdessen
+     die entsprechende vordefinierte GET-Variable verwendet werden kann,
      ähnlich. Außerdem wird GET auch für den <literal>QUERY_STRING</literal>
      (die Information nach dem '?' in einer URL) verwendet. So enthält zum
      Beispiel <literal>http://www.example.com/test.php?id=3</literal>
@@ -886,11 +904,11 @@ echo $_REQUEST['username'];
 
     <simpara>
      Im Zusammenhang mit Formular-Variablen versteht PHP auch Arrays (siehe
-     auch die <link linkend="faq.html">zugehörige FAQ</link>). Sie können &zb;
-     die betreffenden Variablen gruppieren oder dieses Leistungsmerkmal
-     nutzen, um Werte aus Eingabeelementen mit Mehrfachauswahl zu erhalten.
-     Schicken wir zum Beispiel ein Formular an sich selbst und lassen nach dem
-     Versand die Daten anzeigen:
+     auch die <link linkend="faq.html">zugehörige FAQ</link>). So können &zb;
+     zusammengehörige Variablen gruppiert werden, oder diese Funktionalität
+     kann verwendet werden, um Werte aus einer Eingabe mit Mehrfachauswahl
+     abzurufen. Schicken wir zum Beispiel ein Formular an sich selbst und
+     lassen nach dem Versand die Daten anzeigen:
     </simpara>
 
     <para>
@@ -968,17 +986,16 @@ if ($_POST) {
      PHP unterstützt HTTP-Cookies auf völlig transparente Weise, wie in
      <link xlink:href="&url.rfc;6265">RFC 6265</link> definiert. Cookies sind
      ein Mechanismus zur Speicherung von Daten auf dem Client-Rechner, um
-     damit wiederkehrende Benutzer nachzuverfolgen oder zu identifizieren. Sie
-     können Cookies erzeugen, indem Sie die Funktion
-     <function>setcookie</function> verwenden. Cookies sind Teil des
-     HTTP-Headers, deshalb muss die Funktion <function>setcookie</function>
-     aufgerufen werden, bevor irgendeine Ausgabe an den Browser gesendet wird.
-     Dabei handelt es sich um die gleiche Einschränkung, die auch für die
-     Funktion <function>header</function> gilt. Cookie-Daten stehen dann in
-     den entsprechenden Cookie-Daten-Arrays, wie zum Beispiel
-     <varname>$_COOKIE</varname>, als auch in <varname>$_REQUEST</varname> zur
-     Verfügung. Für weitere Details und Beispiele lesen Sie bitte die
-     <function>setcookie</function>-Seite des Handbuchs.
+     damit wiederkehrende Benutzer nachzuverfolgen oder zu identifizieren. Mit
+     der Funktion <function>setcookie</function> ist es möglich, Cookies zu
+     erzeugen. Cookies sind Teil des HTTP-Headers, deshalb muss die Funktion
+     <function>setcookie</function> aufgerufen werden, bevor irgendeine Ausgabe
+     an den Browser gesendet wird. Dabei handelt es sich um die gleiche
+     Einschränkung, die auch für die Funktion <function>header</function> gilt.
+     Cookie-Daten stehen dann in den entsprechenden Cookie-Daten-Arrays, zum
+     Beispiel <varname>$_COOKIE</varname>, sowie in
+     <varname>$_REQUEST</varname> zur Verfügung. Weitere Details und Beispiele
+     sind auf der Seite <function>setcookie</function> des Handbuchs zu finden.
     </simpara>
 
     <note>
@@ -990,8 +1007,8 @@ if ($_POST) {
     </note>
 
     <simpara>
-     Wenn Sie einer einzelnen Cookie-Variablen mehrere Werte zuweisen wollen,
-     müssen Sie diese als Array zuweisen. Zum Beispiel:
+     Wenn einer einzelnen Cookie-Variablen mehrere Werte zugewiesen werden
+     sollen, müssen diese als Array zugewiesen werden. Zum Beispiel:
     </simpara>
     <informalexample>
      <programlisting role="php">
@@ -1005,18 +1022,18 @@ if ($_POST) {
     </informalexample>
 
     <simpara>
-     Das erzeugt zwei einzelne Cookies, obwohl <varname>MyCookie</varname> in
-     Ihrem Skript nun ein einziges Array ist. Wenn Sie nur ein Cookie mit
-     mehreren Werten setzen wollen, sollten Sie erwägen,
-     <function>serialize</function> oder <function>explode</function> auf das
-     Array anzuwenden.
+     Dadurch werden zwei einzelne Cookies erzeugt, obwohl
+     <varname>MyCookie</varname> im Skript nun ein einziges Array ist. Wenn nur
+     ein Cookie mit mehreren Werten gesetzt werden soll, empfiehlt es sich,
+     zuerst <function>serialize</function> oder <function>explode</function>
+     auf das Array anzuwenden.
     </simpara>
 
     <simpara>
-     Bedenken Sie, dass ein Cookie ein vorhergehendes Cookie gleichen Namens
-     überschreibt, es sei denn, der Pfad oder die Domain sind anders. Für eine
-     Warenkorb-Anwendung können Sie deshalb &zb; einen Zähler erstellen und
-     diesen weiterleiten:
+     Es ist zu bedenken, dass ein Cookie ein vorhergehendes Cookie gleichen
+     Namens im Browser überschreibt, es sei denn, der Pfad oder die Domain sind
+     anders. Für eine Warenkorb-Anwendung kann somit &zb; ein Zähler mitgeführt
+     und weitergegeben werden:
     </simpara>
 
     <example>
