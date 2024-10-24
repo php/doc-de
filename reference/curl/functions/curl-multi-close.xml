@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 52dc204a77076e1404257cf39f179882b90b5780 Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: e59d2eff8265de6b53b5e392a6ea62cec39ef7af Maintainer: jaenecke Status: ready -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<!-- Rev-Revision: 52dc204a77076e1404257cf39f179882b90b5780 Reviewer: samesch -->
 <refentry xml:id="function.curl-multi-close" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>curl_multi_close</refname>
-  <refpurpose>Schließt eine Gruppe von cURL-Handles</refpurpose>
+  <refpurpose>Entfernt alle cURL-Handles aus einem Mehrfach-Handle</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -15,9 +15,15 @@
    <type>void</type><methodname>curl_multi_close</methodname>
    <methodparam><type>CurlMultiHandle</type><parameter>multi_handle</parameter></methodparam>
   </methodsynopsis>
-  &note.resource-migration-8.0-dead-function;
   <para>
-   Schließt eine Gruppe von cURL-Handles.
+   Entfernt alle <classname>CurlHandle</classname>s, die an
+   <classname>CurlMultiHandle</classname> angehängt sind, so als ob
+   <function>curl_multi_remove_handle</function> für jedes von ihnen aufgerufen
+   würde.
+  </para>
+  <para>
+   Vor PHP 8.0.0 schloss diese Funktion auch die Ressource des
+   cURL-Mehrfach-Handles, was sie unbrauchbar machte.
   </para>
  </refsect1>
 
@@ -52,58 +58,6 @@
     </tbody>
    </tgroup>
   </informaltable>
- </refsect1>
-
- <refsect1 role="examples">
-  &reftitle.examples;
-  <para>
-   <example>
-    <title><function>curl_multi_close</function>-Beispiel</title>
-    <para>
-     In diesem Beispiel werden zwei cURL-Handles erstellt, einem
-     Mehrfach-Handle hinzugefügt und anschließend aysnchron ausgeführt.
-    </para>
-    <programlisting role="php">
-<![CDATA[
-<?php
-// zwei cURL-Ressourcen erstellen
-$ch1 = curl_init();
-$ch2 = curl_init();
-
-// URL und weitere geeignete Optionen setzen
-curl_setopt($ch1, CURLOPT_URL, "http://www.example.com/");
-curl_setopt($ch1, CURLOPT_HEADER, 0);
-curl_setopt($ch2, CURLOPT_URL, "http://www.php.net/");
-curl_setopt($ch2, CURLOPT_HEADER, 0);
-
-// cURL-Mehrfach-Handle erstellen
-$mh = curl_multi_init();
-
-// die zuvor erstellten Handles hinzufügen
-curl_multi_add_handle($mh,$ch1);
-curl_multi_add_handle($mh,$ch2);
-
-// Mehrfach-Handle ausführen
-
-do {
-    $status = curl_multi_exec($mh, $active);
-    if ($active) {
-        curl_multi_select($mh);
-    }
-} while ($active && $status == CURLM_OK);
-
-// Alle Handles schließen
-curl_multi_remove_handle($mh, $ch1);
-curl_close($ch1);
-curl_multi_remove_handle($mh, $ch2);
-curl_close($ch2);
-curl_multi_close($mh);
-
-?>
-]]>
-    </programlisting>
-   </example>
-  </para>
  </refsect1>
 
  <refsect1 role="seealso">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: b7dbf6357d4c2d68ffb52158076f692ed532b546 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: d6baeae3fa6e100b6b4b4ecd59fda030aa32f694 Maintainer: nobody Status: ready -->
 <!-- Credits: betz -->
  <chapter xml:id="language.variables" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Variablen</title>
@@ -115,9 +115,9 @@ bar bar
      <programlisting role="php">
 <![CDATA[
 <?php
-$foo = 'Bob';              // 'Bob' der Variablen $foo zuweisen.
-$bar = &$foo;              // $foo per $bar referenzieren.
-$bar = "Ich heiße $bar";   // $bar verändern...
+$foo = 'Bob';             // 'Bob' der Variablen $foo zuweisen.
+$bar = &$foo;             // $foo per $bar referenzieren.
+$bar = "Ich heiße $bar";  // $bar verändern...
 echo $bar;
 echo $foo;                 // $foo wurde ebenfalls verändert.
 ?>
@@ -204,6 +204,11 @@ $unset_array[] = 'value'; // Erzeugt keine Warnung.
    </warning>
 
    <simpara>
+    Eine Variable kann mit dem Sprachkonstrukt <function>unset</function>
+    gelöscht werden.
+   </simpara>
+
+   <simpara>
     Für Informationen zu variablenbezogenen Funktionen siehe
     <link linkend="ref.var">Referenz zu Variablenfunktionen</link>.
    </simpara>
@@ -213,25 +218,14 @@ $unset_array[] = 'value'; // Erzeugt keine Warnung.
    <title>Vordefinierte Variablen</title>
 
    <para>
-    PHP bietet jedem ausgeführten Skript eine Vielzahl vordefinierter
-    Variablen an. Viele dieser Variablen können jedoch nicht vollständig
-    erläutert werden, da sie abhängig sind vom Webserver, der Version und dem
-    Setup des Webservers sowie weiteren Faktoren. Einige dieser Variablen
-    stehen nicht zur Verfügung, wenn PHP-Skripte auf der
-    <link linkend="features.commandline">Kommando-Zeile</link> ausgeführt
-    werden. Details hierzu sind unter
-    <link linkend="reserved.variables">Vordefinierte Variablen</link> zu
-    finden.
-   </para>
-
-   <para>
-    In PHP steht zusätzlich eine Reihe vordefinierter Arrays zur Verfügung,
+    PHP bietet eine Reihe
+    <link linkend="reserved.variables">vordefinierter Variablen</link>.
+    Darüber hinaus bietet PHP eine Reihe zusätzlicher vordefinierter Arrays,
     die Variablen vom Webserver (gegebenenfalls), von der Umgebung und von
-    Benutzereingaben enthalten. Diese Arrays sind insofern etwas sehr
-    Spezielles, als sie automatisch global sind – &dh;, sie stehen automatisch
-    in jedem Geltungsbereich zur Verfügung. Deshalb sind sie auch bekannt als
-    "Superglobale". (Es gibt in PHP keinen Mechanismus für benutzerdefinierte
-    Superglobale.) Details hierzu sind unter
+    Benutzereingaben enthalten. Diese Arrays stehen automatisch in jedem
+    Geltungsbereich zur Verfügung. Aus diesem Grund werden sie oft als
+    "Superglobale" bezeichnet. (Es gibt in PHP keinen Mechanismus für
+    benutzerdefinierte Superglobale.) Details hierzu sind unter
     <link linkend="language.variables.superglobals">Liste der Superglobalen</link>
     zu finden.
    </para>
@@ -257,66 +251,79 @@ $unset_array[] = 'value'; // Erzeugt keine Warnung.
 
    <simpara>
     Der Geltungsbereich einer Variablen ergibt sich aus dem Zusammenhang, in
-    dem sie definiert wurde. Meistens besteht dieser aus einem einzigen
-    Bereich. Dieser beinhaltet auch den Bereich für Dateien, die per
-    <function>include</function> oder <function>require</function>-Anweisung
-    eingebunden wurden, &zb;:
+    dem sie definiert wurde.
+    PHP hat einen Funktionsbereich und einen globalen Bereich.
+    Jede Variable, die außerhalb einer Funktion definiert wird, ist auf den
+    globalen Bereich beschränkt. Wenn eine Datei eingebunden wird, erbt der
+    darin enthaltene Code den Variablenbereich der Zeile, in der die Einbindung
+    erfolgt.
    </simpara>
-   <informalexample>
+   <example>
+    <title>Beispiel für den Geltungsbereich globaler Variablen</title>
     <programlisting role="php">
 <![CDATA[
 <?php
 $a = 1;
-include 'b.inc';
+include 'b.inc'; // Die Variable $a wird in b.inc verfügbar sein
 ?>
 ]]>
     </programlisting>
-   </informalexample>
+   </example>
+
    <simpara>
-    Hier ist die Variable <varname>$a</varname> auch in der eingebundenen
-    Datei <filename>b.inc</filename> verfügbar. In benutzerdefinierten
-    Funktionen wird jedoch ein auf die Funktion beschränkter Geltungsbereich
-    eingeführt. Jede in einer Funktion verwendete Variable ist zunächst auf
-    den lokalen Bereich der Funktion beschränkt, &zb;:
+    Jede Variable, die innerhalb einer benannten Funktion oder einer
+    <link linkend="functions.anonymous">anonymen</link> Funktion erstellt
+    wird, ist auf den Bereich des Funktionskörpers beschränkt.
+    Im Gegensatz dazu binden
+    <link linkend="functions.arrow">Pfeilfunktionen</link> Variablen aus dem
+    übergeordneten Bereich, um sie im Körper verfügbar zu machen.
+    Wenn eine Datei innerhalb einer Funktion der aufrufenden Datei eingebunden
+    wird, sind die in der aufgerufenen Datei enthaltenen Variablen so
+    verfügbar, als wären sie innerhalb der aufrufenden Funktion definiert
+    worden.
    </simpara>
 
-   <informalexample>
+   <example>
+    <title>Beispiel für den Geltungsbereich lokaler Variablen</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-$a = 1; /* globaler Geltungsbereich */
+$a = 1; // globaler Geltungsbereich
 
 function test()
 {
-    echo $a; /* Referenz auf ein Variable im lokalen Geltungsbereich */
+    echo $a; // Die Variable $a ist undefiniert, da sie sich auf eine lokale
+             // Version von $a bezieht
 }
-
-test();
 ?>
 ]]>
     </programlisting>
-   </informalexample>
+   </example>
 
    <simpara>
-    Dieses Skript erzeugt bei einer nicht definierten Variable eine Meldung
-    der Stufe <constant>E_WARNING</constant> (oder der Stufe
-    <constant>E_NOTICE</constant> vor PHP 8.0.0). Wenn jedoch die
-    INI-Einstellung <link linkend="ini.display-errors">display_errors</link>
-    so eingestellt ist, dass solche Meldungen nicht angezeigt werden, wird
-    überhaupt nichts ausgegeben. Das liegt daran, dass sich die echo-Anweisung
-    auf eine lokale Variable namens <varname>$a</varname> bezieht, und dieser
-    kein Wert im lokalen Geltungsbereich zugewiesen worden ist. Es ist zu
-    beachten, dass sich dies etwas von C unterscheidet, da in C globale
-    Variablen automatisch für Funktionen zur Verfügung stehen, es sei denn, sie
-    werden durch eine funktionsinterne Definition überschrieben. In PHP müssen
-    globale Variablen innerhalb einer Funktionen deklariert werden, wenn sie in
-    dieser Funktion verwendet werden sollen.
+    Das obige Beispiel erzeugt ein <constant>E_WARNING</constant> wegen einer
+    undefinierten Variable (oder ein E_NOTICE vor PHP 8.0.0). Das liegt daran,
+    dass sich die echo-Anweisung auf eine lokale Variable namens
+    <varname>$a</varname> bezieht, und dieser kein Wert im lokalen
+    Geltungsbereich zugewiesen wurde. Es ist zu beachten, dass sich dies etwas
+    von C unterscheidet, da in C globale Variablen automatisch für Funktionen
+    zur Verfügung stehen, es sei denn, sie werden durch eine funktionsinterne
+    Definition überschrieben. Dies kann zu Problemen führen, da eine globale
+    Variable versehentlich geändert werden kann. In PHP müssen globale
+    Variablen innerhalb einer Funktionen deklariert werden, wenn sie in dieser
+    Funktion verwendet werden sollen.
    </simpara>
 
    <sect2 xml:id="language.variables.scope.global">
     <title>Das Schlüsselwort <literal>global</literal></title>
     <simpara>
-     Zunächst ein Beispiel für die Verwendung von <literal>global</literal>:
+     Das Schlüsselwort <literal>global</literal> wird verwendet, um eine
+     Variable aus einem globalen Bereich in einen lokalen Bereich zu binden.
+     Das Schlüsselwort kann mit einer Liste von Variablen oder einer einzelnen
+     Variablen verwendet werden. Es wird eine lokale Variable erstellt, die auf
+     die gleichnamige globale Variable verweist. Wenn die globale Variable
+     nicht existiert, wird sie im globalen Bereich erstellt und erhält den Wert
+     &null;.
     </simpara>
     <para>
      <example>
@@ -339,15 +346,21 @@ echo $b;
 ?>
 ]]>
       </programlisting>
+      &example.outputs;
+      <screen>
+<![CDATA[
+3
+]]>
+      </screen>
      </example>
     </para>
 
    <simpara>
-    Das obige Skript gibt <literal>3</literal> aus. Durch das Deklarieren der
-    Variablen <varname>$a</varname> und <varname>$b</varname> innerhalb der
-    Funktion als global weisen alle Referenzen zu beiden Variablen auf die nun
-    globalen Werte. Es gibt keine Beschränkungen bei der Anzahl an globalen
-    Variablen, die durch eine Funktion verändert werden können.
+    Durch das Deklarieren der Variablen <varname>$a</varname> und
+    <varname>$b</varname> innerhalb der Funktion als global weisen alle
+    Referenzen zu beiden Variablen auf die nun globalen Werte. Es gibt keine
+    Beschränkungen bei der Anzahl an globalen Variablen, die durch eine
+    Funktion verändert werden können.
    </simpara>
 
    <simpara>
@@ -403,11 +416,11 @@ function test_superglobal()
     </example>
    </para>
    <note>
-    <para>
+    <simpara>
      Die Verwendung des Schlüsselworts <literal>global</literal> außerhalb
      einer Funktion ist kein Fehler. Es kann verwendet werden, wenn die Datei
      innerhalb einer Funktion eingebunden wird.
-    </para>
+    </simpara>
    </note>
   </sect2>
 
@@ -472,10 +485,7 @@ function test()
 
    <simpara>
     Statische Variablen ermöglichen auch einen Weg zum Umgang mit rekursiven
-    Funktionen. Das sind Funktionen, die sich selbst aufrufen. Hierbei besteht
-    die Gefahr, sogenannte Endlosschleifen zu programmieren. Es muss also
-    sichergestellt werden, dass die Rekursion in geeigneter Weise beendet
-    werden kann. Die folgende einfache Funktion zählt rekursiv bis 10. Die
+    Funktionen. Die folgende einfache Funktion zählt rekursiv bis 10. Die
     statische Variable <varname>$count</varname> wird verwendet, um die
     Rekursion zu beenden:
    </simpara>
