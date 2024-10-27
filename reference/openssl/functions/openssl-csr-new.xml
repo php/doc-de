@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5bc68add3da3cd18c40f851e944b15095d3a26aa Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: b6d0da041ac2b5eee3820bf2c2062872f4459dfe Maintainer: jaenecke Status: ready -->
 <refentry xml:id="function.openssl-csr-new" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_csr_new</refname>
@@ -10,9 +10,9 @@
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type class="union"><type>OpenSSLCertificateSigningRequest</type><type>false</type></type><methodname>openssl_csr_new</methodname>
+   <type class="union"><type>OpenSSLCertificateSigningRequest</type><type>bool</type></type><methodname>openssl_csr_new</methodname>
    <methodparam><type>array</type><parameter>distinguished_names</parameter></methodparam>
-   <methodparam><modifier role="attribute">#[\SensitiveParameter]</modifier><type>OpenSSLAsymmetricKey</type><parameter role="reference">private_key</parameter></methodparam>
+   <methodparam><modifier role="attribute">#[\SensitiveParameter]</modifier><type class="union"><type>OpenSSLAsymmetricKey</type><type>null</type></type><parameter role="reference">private_key</parameter></methodparam>
    <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>options</parameter><initializer>&null;</initializer></methodparam>
    <methodparam choice="opt"><type class="union"><type>array</type><type>null</type></type><parameter>extra_attributes</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
@@ -42,11 +42,14 @@
      <term><parameter>private_key</parameter></term>
      <listitem>
       <para>
-       Der <parameter>private_key</parameter> muss ein privater Schlüssel
-       sein, der vorher mit <function>openssl_pkey_new</function> (oder einer
-       anderen Funktion aus der openssl_pkey-Familie) erzeugt wurde. Der
-       entsprechende öffentliche Teil des Schlüssels wird verwendet, um den
-       <acronym>CSR</acronym> zu signieren.
+       <parameter>private_key</parameter> muss auf einen zuvor mit
+       <function>openssl_pkey_new</function> erzeugten (oder anderweitig von
+       der openssl_pkey-Familie erhaltenen) privaten Schlüssel oder auf eine
+       &null;-Variable gesetzt werden. Wenn der Wert &null; ist, wird ein neuer
+       privater Schlüssel basierend auf den übergebenen
+       <parameter>options</parameter> erzeugt und der übergebenen Variablen
+       zugewiesen. Der zugehörige öffentliche Teil des Schlüssels wird zum
+       Signieren des <acronym>CSR</acronym> verwendet.
       </para>
      </listitem>
     </varlistentry>
@@ -55,16 +58,15 @@
      <listitem>
       <para>
        In der Standardeinstellung werden die Informationen für die Anfrage aus
-       der <literal>openssl.conf</literal> ihres Systems verwendet. Sie können
-       einen Konfigurationsabsschnitt mit dem Schlüssel
-       <literal>config_section_section</literal> des Arrays
-       <parameter>options</parameter> setzen. Außerdem haben Sie die
-       Möglichkeit, eine alternative OpenSSL-Konfigurationsdatei anzugeben,
-       indem Sie den Wert des Schlüssels <literal>config</literal> auf den
-       Pfad zu der Datei setzen, die Sie verwenden möchten. Die unten in der
-       Tabelle aufgeführten Schlüssel, soweit in
+       der <literal>openssl.conf</literal> des Systems verwendet; ein Abschnitt
+       der Konfigurationsdatei kann durch Setzen des Schlüssels
+       <literal>config_section</literal> in <parameter>options</parameter>
+       angegeben werden. Außerdem kann eine alternative
+       OpenSSL-Konfigurationsdatei angegeben, indem der Wert des Schlüssels
+       <literal>config</literal> auf den Pfad der zu verwendenden Datei gesetzt
+       wird. Die unten in der Tabelle aufgeführten Schlüssel, soweit in
        <parameter>options</parameter> vorhanden, verhalten sich genau gleich
-       wie die entsprechenden Werte in der <literal>openssl.conf</literal>
+       wie die entsprechenden Werte in der <literal>openssl.conf</literal>.
        <table>
         <title>Überschreiben der Konfiguration</title>
         <tgroup cols="3">
@@ -187,7 +189,9 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt den <acronym>CSR</acronym> zurück. &return.falseforfailure;
+   Gibt bei Erfolg die <acronym>CSR</acronym> zurück; &true; wenn die
+   CSR-Erstellung erfolgreich war, aber das Signieren fehlgeschlagen ist.
+   &return.falseforfailure;
   </para>
  </refsect1>
 
