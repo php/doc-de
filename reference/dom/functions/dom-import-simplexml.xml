@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9a511f92cb6574fb8a2622e204879303d0dab9d8 Maintainer: tihox Status: ready -->
+<!-- EN-Revision: d92352faa89a7faf6031ecb39d48b53d70236ce3 Maintainer: tihox Status: ready -->
 <refentry xml:id="function.dom-import-simplexml" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>dom_import_simplexml</refname>
@@ -9,19 +9,23 @@
    <classname>SimpleXMLElement</classname>-Objekt
   </refpurpose>
  </refnamediv>
+
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>DOMElement</type><methodname>dom_import_simplexml</methodname>
+   <type class="union"><type>DOMAttr</type><type>DOMElement</type></type><methodname>dom_import_simplexml</methodname>
    <methodparam><type>object</type><parameter>node</parameter></methodparam>
   </methodsynopsis>
   <para>
-   Diese Funktion verwendet den Knoten <parameter>node</parameter> der Klasse
-   <link linkend="ref.simplexml">SimpleXML</link> und macht ihn zu einem
-   <classname>DOMElement</classname>-Knoten. Dieses neue Objekt kann als
-   nativer <classname>DOMElement</classname>-Knoten verwendet werden.. 
+   Diese Funktion verwendet das angegebene Attribut oder Element
+   <parameter>node</parameter> (eine
+   <classname>SimpleXMLElement</classname>-Instanz) und erstellt einen
+   <classname>DOMAttr</classname>- bzw. <classname>DOMElement</classname>-Knoten.
+   Der neue <classname>DOMNode</classname> verweist auf denselben
+   zugrundeliegenden XML-Knoten wie das <classname>SimpleXMLElement</classname>.
   </para>
  </refsect1>
+
  <refsect1 role="parameters">
   &reftitle.parameters;
   <para>
@@ -30,20 +34,22 @@
      <term><parameter>node</parameter></term>
      <listitem>
       <para>
-       Der <classname>SimpleXMLElement</classname>-Knoten.
+       Der zu importierende Attribut- oder Elementknoten (eine Instanz von
+       <classname>SimpleXMLElement</classname>).
       </para>
      </listitem>
     </varlistentry>
    </variablelist>
   </para>
  </refsect1>
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Der hinzugefügte <classname>DOMElement</classname>-Knoten.
+   Das <classname>DOMAttr</classname> oder <classname>DOMElement</classname>.
   </para>
  </refsect1>
- 
+
  <refsect1 role="changelog">
   &reftitle.changelog;
   <informaltable>
@@ -65,11 +71,11 @@
    </tgroup>
   </informaltable>
  </refsect1>
- 
+
  <refsect1 role="examples">
   &reftitle.examples;
   <example>
-   <title>Importiert SimpleXML in DOM mit der Funktion <function>dom_import_simplexml</function></title>
+   <title>SimpleXML mit der Funktion <function>dom_import_simplexml</function> in DOM importieren</title>
    <programlisting role="php">
 <![CDATA[
 <?php
@@ -83,7 +89,7 @@ if ($sxe === false) {
 
 $dom_sxe = dom_import_simplexml($sxe);
 if (!$dom_sxe) {
-    echo 'Fehler bei Konvertierung zu XML';
+    echo 'Fehler bei der Konvertierung zu XML';
     exit;
 }
 
@@ -96,8 +102,41 @@ echo $dom->saveXML();
 ?>
 ]]>
    </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+<?xml version="1.0"?>
+<books><book><title>blah</title></book></books>
+]]>
+   </screen>
+  </example>
+  <example>
+   <title>SimpleXML in DOM importieren und SimpleXML über DOM modifizieren</title>
+   <simpara>
+    Die Fehlerbehandlung wurde der Kürze halber weggelassen.
+   </simpara>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$sxe = simplexml_load_string('<books><book><title>blah</title></book></books>');
+$elt = dom_import_simplexml($sxe);
+$elt->setAttribute("foo", "bar");
+echo $sxe->asXML();
+
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+<?xml version="1.0"?>
+<books foo="bar"><book><title>blah</title></book></books>
+]]>
+   </screen>
   </example>
  </refsect1>
+
  <refsect1 role="seealso">
   &reftitle.seealso;
   <para>
@@ -106,6 +145,7 @@ echo $dom->saveXML();
    </simplelist>
   </para>
  </refsect1>
+
 </refentry>
 <!-- Keep this comment at the end of the file
 Local variables:

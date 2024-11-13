@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 14767af0f05dffa6fdb9b49e1a1f4e9ca7022a60 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: cd391e65a613a729f9bbded2b1249e2d7143400c Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
 <reference xml:id="class.weakreference" role="class" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
 
@@ -16,6 +16,12 @@
     Schwache Referenzen erlauben es dem Programmierer, eine Referenz auf ein
     Objekt zu behalten, die nicht verhindert, dass das Objekt zerstört wird.
     Sie sind nützlich für die Implementierung von Cache-ähnlichen Strukturen.
+    Wenn das ursprüngliche Objekt zerstört wurde, wird beim Aufruf der Methode
+    <methodname>WeakReference::get</methodname> &null; zurückgegeben. Wenn der
+    <link linkend="features.gc.refcounting-basics">Referenzzähler</link> für
+    das ursprüngliche Objekt auf Null fällt, wird es zerstört; das
+    Erstellen von schwachen Referenzen erhöht den <literal>refcount</literal>
+    des referenzierten Objekts nicht.
    </para>
    <para>
     <classname>WeakReference</classname>s können nicht serialisiert werden.
@@ -53,11 +59,16 @@
      <programlisting role="php">
 <![CDATA[
 <?php
-$obj = new stdClass;
+
+$obj = new stdClass();
 $weakref = WeakReference::create($obj);
+
 var_dump($weakref->get());
+
 unset($obj);
+
 var_dump($weakref->get());
+
 ?>
 ]]>
      </programlisting>
