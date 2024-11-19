@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9f351a14a749721a74df1dc6ac9533cf796a652e Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 376d3f9c2ef7fcd64d8b8503d552013acefb8b5b Maintainer: hholzgra Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Reviewer: samesch -->
 <!-- Credits: simp -->
@@ -383,6 +383,26 @@ $obj = new MyDestructableClass();
     <function>exit</function> abgebrochen wird. Wenn <function>exit</function>
     innerhalb eines Destruktors aufgerufen wird, verhindert das die Ausführung
     von jeglichen weiteren Shutdown-Routinen.
+   </para>
+   <para>
+    Wenn ein Destruktor neue Referenzen auf sein Objekt erzeugt, wird er nicht
+    ein zweites Mal aufgerufen, wenn die Anzahl der Referenzen wieder Null
+    erreicht oder während der Abschaltsequenz.
+   </para>
+   <para>
+    Seit PHP 8.4.0 werden, wenn die
+    <link linkend="features.gc.collecting-cycles">Sammlung zyklischer Referenzen</link>
+    während der Ausführung einer <link linkend="language.fibers">Fiber</link>
+    stattfindet, die Destruktoren von Objekten, die für die Sammlung vorgesehen
+    sind, in einer separaten Fiber namens <literal>gc_destructor_fiber</literal>
+    ausgeführt.
+    Wenn diese Fiber unterbrochen wird, wird eine neue erstellt, um alle
+    verbleibenden Destruktoren auszuführen.
+    Die vorherige <literal>gc_destructor_fiber</literal> wird vom Garbage
+    Collector nicht mehr referenziert und kann, wenn sie nicht anderweitig
+    referenziert wird, eingesammelt werden.
+    Objekte, deren Destruktor ausgesetzt ist, werden nicht eingesammelt, bis
+    der Destruktor zurückgibt oder die Fiber selbst eingesammelt wird.
    </para>
    <note>
     <para>
