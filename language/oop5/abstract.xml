@@ -1,29 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 2e7c00fd314a708ecbd495ef7cc9ae8c8462c33c Maintainer: simp Status: ready -->
 <!-- Credits: wiesemann -->
  <sect1 xml:id="language.oop5.abstract" xmlns="http://docbook.org/ns/docbook">
   <title>Klassenabstraktion</title>
 
   <para>
-   PHP unterstützt abstrakte Klassen und Methoden. Abstrakt definierte
-   Klassen können nicht instantiiert werden. Jede Klasse,
-   die wenigstens eine abstrakte Methode enthält, muss ebenso abstrakt sein.
-   Abstrakt definierte Methoden deklarieren nur die Signatur der Methode -
-   sie können nicht die Implementierung definieren.
+   PHP unterstützt abstrakte Klassen und Methoden. Abstrakt definierte Klassen
+   können nicht instantiiert werden. Jede Klasse, die wenigstens eine abstrakte
+   Methode oder Eigenschaft enthält, muss ebenso abstrakt sein. Als abstrakt
+   definierte Methoden deklarieren nur die Signatur der Methode und ob sie
+   öffenlich oder geschützt ist - sie können nicht die Implementierung
+   definieren. Als abstrakt definierte Eigenschaften können eine Anforderung
+   für das Verhalten von <literal>get</literal> oder <literal>set</literal>
+   deklarieren und eine Implementierung für eine, aber nicht für beide
+   Operationen bereitstellen.
   </para>
 
   <para>
    Wenn von einer abstrakten Klasse abgeleitet wird, müssen alle in der Deklaration
-   der Elternklasse als abstrakt bezeichneten Methoden durch das Kind definiert 
+   der Elternklasse als abstrakt bezeichneten Methoden durch das Kind definiert
    werden und den üblichen Regeln zur
    <link linkend="language.oop5.inheritance">Vererbung</link> und
    <link linkend="language.oop.lsp">Signatur-Kompatibilität</link> folgen.
   </para>
 
+  <simpara>
+   Seit PHP 8.4 kann eine abstrakte Klasse eine abstrakte Eigenschaft
+   deklarieren, die entweder öffenlich oder geschützt ist.
+   Eine abstrakte Eigenschaft, die geschützt ist, kann durch eine Eigenschaft
+   erfüllt werden, die entweder vom geschützten oder vom öffenlichen
+   Geltungsbereich aus lesbar/schreibbar ist
+  </simpara>
+  <simpara>
+   Eine abstrakte Eigenschaft kann entweder durch eine Standardeigenschaft oder
+   durch eine Eigenschaft mit definierten
+   <link linkend="language.oop5.property-hooks">Hooks</link> erfüllt werden,
+   die der erforderlichen Operation entspricht.
+  </simpara>
+
   <example>
-   <title>Beispiel für abstrakte Klasse</title>
-    <programlisting role="php">
+   <title>Beispiel für eine abstrakte Methode</title>
+   <programlisting role="php">
 <![CDATA[
 <?php
 abstract class AbstractClass
@@ -80,9 +98,9 @@ FOO_ConcreteClass2
 ]]>
    </screen>
   </example>
-  
+
   <example>
-   <title>Beispiel für abstrakte Klasse</title>
+   <title>Beispiel für eine abstrakte Methode</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -95,18 +113,18 @@ abstract class AbstractClass
 
 class ConcreteClass extends AbstractClass
 {
-  // Unsere Kindklasse kann optionale Parameter definieren, die sich nicht in der
-  // Signatur der Elternklasse wiederfinden
-  public function prefixName($name, $separator = ".") {
-      if ($name == "Pacman") {
-          $prefix = "Mr";
-      } elseif ($name == "Pacwoman") {
-          $prefix = "Mrs";
-      } else {
-          $prefix = "";
-      }
-      return "{$prefix}{$separator} {$name}";
-  }
+    // Unsere Kindklasse kann optionale Parameter definieren, die sich nicht in der
+    // Signatur der Elternklasse wiederfinden
+    public function prefixName($name, $separator = ".") {
+        if ($name == "Pacman") {
+            $prefix = "Mr";
+        } elseif ($name == "Pacwoman") {
+            $prefix = "Mrs";
+        } else {
+            $prefix = "";
+        }
+        return "{$prefix}{$separator} {$name}";
+    }
 }
 
 $class = new ConcreteClass;
@@ -114,17 +132,83 @@ echo $class->prefixName("Pacman"), "\n";
 echo $class->prefixName("Pacwoman"), "\n";
 ?>
 ]]>
-    </programlisting>
-     &example.outputs;
-    <screen>
+   </programlisting>
+   &example.outputs;
+   <screen>
 <![CDATA[
 Mr. Pacman
 Mrs. Pacwoman
 ]]>
-    </screen>
-   </example>
- </sect1>
+   </screen>
+  </example>
+  <example>
+   <title>Beispiel für eine abstrakte Eigenschaft</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+abstract class A
+{
+    // Erweiternde Klassen müssen eine öffentlich lesbare Eigenschaft haben.
+    abstract public string $readable { get; }
 
+    // Erweiternde Klassen müssen eine geschützt oder öffentlich schreibbare
+    // Eigenschaft haben.
+    abstract protected string $writeable { set; }
+
+    // Erweiternde Klassen müssen eine geschützte oder öffentliche symmetrische
+    // Eigenschaft haben.
+    abstract protected string $both { get; set; }
+}
+
+class C extends A
+{
+    // Dies erfüllt die Anforderung und macht sie außerdem einstellbar, was
+    // gültig ist.
+    public string $readable;
+
+    // Dies würde die Anforderung NICHT erfüllen, da sie nicht öffentlich
+    // lesbar ist.
+    protected string $readable;
+
+    // Dies erfüllt die Anforderung genau, ist also ausreichend.
+    // Es darf nur geschrieben werden, und zwar nur aus dem geschützten Bereich.
+    protected string $writeable {
+        set => $value;
+    }
+
+    // Dies erweitert die Sichtbarkeit von geschützt auf öffentlich, was in
+    // Ordnung ist.
+    public string $both;
+}
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Eine abstrakte Eigenschaft einer abstrakten Klasse kann Implementierungen
+   für jeden Hook bereitstellen, muss aber entweder <literal>get</literal> oder
+   <literal>set</literal> deklariert, aber nicht definiert haben (wie im obigen
+   Beispiel).
+  </simpara>
+  <example>
+   <title>Beispiel für eine abstrakte Eigenschaft</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+abstract class A
+{
+    // Dies bietet eine vorgegebene (aber überschreibbare) set-Implementierung
+    // und erfordert, dass Kindklassen eine get-Implementierung bereitstellen.
+    abstract public string $foo {
+        get;
+        set { $this->foo = $value };
+    }
+}
+?>
+ ]]>
+   </programlisting>
+  </example>
+ </sect1>
 <!-- Keep this comment at the end of the file
 Local variables:
 mode: sgml

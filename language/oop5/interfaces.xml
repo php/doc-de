@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 3d522c890d98c563bb283cf89ec5da5f535cfb8f Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: 2e7c00fd314a708ecbd495ef7cc9ae8c8462c33c Maintainer: hholzgra Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: cc0198aafd5e2574511b539da241657c68738007 Reviewer: samesch -->
  <sect1 xml:id="language.oop5.interfaces" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Objekt-Interfaces (Schnittstellen)</title>
   <para>
    Objekt-Interfaces ermöglichen die Erzeugung von Code, der spezifiziert,
-   welche Methoden eine Klasse implementieren muss, ohne definieren zu müssen,
-   wie diese Methoden implementiert werden. Interfaces teilen sich einen
-   Namensraum mit Klassen und Traits, daher dürfen sie nicht denselben Namen
-   verwenden.
+   welche Methoden und Eigenschaften eine Klasse implementieren muss, ohne
+   definieren zu müssen, wie diese Methoden und Eigenschaften implementiert
+   werden. Interfaces teilen sich einen Namensraum mit Klassen und Traits,
+   daher dürfen sie nicht denselben Namen verwenden.
   </para>
   <para>
    Interfaces werden auf dieselbe Weise wie eine Klasse definiert, aber mit
@@ -85,14 +85,14 @@
    </warning>
    <note>
     <para>
-     Ein Interface kann ebenso wie eine Klasse mit Hilfe des Operators
+     Eine Schnittstelle kann ebenso wie eine Klasse mit Hilfe des Operators
      <link linkend="language.oop5.inheritance">extends</link> erweitert werden.
     </para>
    </note>
    <note>
     <para>
-     Die Klasse, die das Interface implementiert, muss alle Methoden des
-     Interfaces mit einer
+     Die Klasse, die die Schnittstelle implementiert, muss alle Methoden der
+     Schnittstelle mit einer
      <link linkend="language.oop.lsp">kompatiblen Signatur</link> deklarieren.
      Eine Klasse kann mehrere Schnittstellen implementieren, die eine Methode
      mit demselben Namen deklarieren. In diesem Fall muss die Implementierung
@@ -107,12 +107,97 @@
   <sect2 xml:id="language.oop5.interfaces.constants">
    <title>Konstanten</title>
    <para>
-    Ein Interface kann Konstanten definieren. Interface-Konstanten
+    Eine Schnittstelle kann Konstanten definieren. Schnittstellen-Konstanten
     funktionieren genauso wie
     <link linkend="language.oop5.constants">Klassenkonstanten</link>. Vor
     PHP 8.1.0 können sie nicht von einer Klasse/Schnittstelle überschrieben
     werden, die sie erbt.
    </para>
+  </sect2>
+  <sect2 xml:id="language.oop5.interfaces.properties">
+   <title>Eigenschaften</title>
+   <simpara>
+    Seit PHP 8.4.0 können Schnittstellen auch Eigenschaften deklarieren.
+    In diesem Fall muss die Deklaration angeben, ob die Eigenschaft lesbar,
+    schreibbar oder beides sein soll.
+    Die Deklaration der Schnittstelle gilt nur für den öffentlichen Lese- und
+    Schreibzugriff.
+   </simpara>
+   <simpara>
+    Eine Klasse kann eine Schnittstelleneigenschaft auf mehrere Arten erfüllen.
+    Sie kann eine öffentliche Eigenschaft definieren.
+    Sie kann eine öffentliche
+    <link linkend="language.oop5.property-hooks.virtual">virtuelle Eigenschaft</link>
+    definieren, die nur den entsprechenden Hook implementiert.
+    Oder eine lesbare Eigenschaft kann durch eine
+    <literal>readonly</literal>-Eigenschaft erfüllt werden.
+    Eine Schnittstelleneigenschaft, die gesetzt werden kann, kann jedoch nicht
+    <literal>readonly</literal> sein.
+   </simpara>
+   <example>
+    <title>Beispiel für Schnittstelleneigenschaften</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+interface I
+{
+    // Eine implementierende Klasse MUSS eine öffentlich lesbare Eigenschaft
+    // haben, wobei es keine Rolle spielt, ob sie öffentlich gesetzt werden kann.
+    public string $readable { get; }
+
+    // Eine implementierende Klasse MUSS eine öffentlich schreibbare Eigenschaft
+    // haben, wobei es keine Rolle spielt, ob sie öffentlich lesbar ist oder nicht.
+    public string $writeable { set; }
+
+    // Eine implementierende Klasse MUSS eine Eigenschaft haben, die sowohl
+    // öffentlich lesbar als auch öffentlich schreibbar ist.
+    public string $both { get; set; }
+}
+
+// Diese Klasse implementiert alle drei Eigenschaften als konventionelle, nicht
+// eingehängte Eigenschaften. Dies ist absolut gültig.
+class C1 implements I
+{
+    public string $readable;
+
+    public string $writeable;
+
+    public string $both;
+}
+
+// Diese Klasse implementiert alle drei Eigenschaften, indem sie nur die
+// angeforderten Hooks verwendet. Dies ist auch absolut gültig.
+class C2 implements I
+{
+    private string $written = '';
+    private string $all = '';
+
+    // Verwendet nur einen get-Hook, um eine virtuelle Eigenschaft zu erstellen.
+    // Damit wird die Anforderung "public get" erfüllt.
+    // Sie ist nicht schreibbar, aber das ist für die Schnittstelle nicht
+    // erforderlich.
+    public string $readable { get => strtoupper($this->writeable); }
+
+    // Die Schnittstelle verlangt nur, dass die Eigenschaft gesetzt werden
+    // kann, aber auch get-Operationen sind absolut zulässig.
+    // Dieses Beispiel erzeugt eine virtuelle Eigenschaft, was in Ordnung ist.
+    public string $writeable {
+        get => $this->written;
+        set => $value;
+    }
+
+    // Diese Eigenschaft verlangt, dass sowohl Lesen als auch Schreiben
+    // möglich ist, sodass entweder beides implementiert werden muss
+    // oder das Standardverhalten beibehalten werden kann.
+    public string $both {
+        get => $this->all;
+        set => strtoupper($value);
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
   </sect2>
   <sect2 xml:id="language.oop5.interfaces.examples">
    &reftitle.examples;
