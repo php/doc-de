@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: fdd2aca71cfb2af77e365633a57e79e22bc1786e Maintainer: hholzgra  Status: ready -->
+<!-- EN-Revision: 5fb1bb4a70dc9cf2538d9a78f423579b805137b4 Maintainer: hholzgra  Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: f739452fff4a12d64c78a3656640ed03fcfe91d0 Reviewer: samesch -->
 <refentry xml:id="function.glob" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -23,6 +23,14 @@
    C-Bibliothek und entspricht weitgehend den Regeln in den üblichen
    Kommandozeilen-Shells.
   </para>
+  <simpara>
+   Das Verhalten auf Unix- und macOS-Systemen wird durch die systemeigene
+   Implementierung von glob() bestimmt. Unter Windows wird eine Implementierung
+   verwendet, die der POSIX-Definition 1003.2 für glob() entspricht und eine
+   Erweiterung enthält, um die <literal>[!...]</literal>-Konvention für die
+   Negierung eines Bereichs zu behandeln.
+   negating a range.
+  </simpara>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -83,13 +91,9 @@
    Gibt ein Array mit den übereinstimmenden Datei- und Verzeichnisnamen zurück.
    Wenn keine Treffer gefunden wurden, wird ein leeres Array zurückgegeben,
    und im Fehlerfall &false;.
+   Wenn nicht <literal>GLOB_NOSORT</literal> verwendet wird, werden die Namen
+   alphanumerisch sortiert.
   </para>
-  <note>
-   <para>
-    Auf manchen Systemen ist es nicht möglich, zwischen einer leeren
-    Ergebnismenge und einem aufgetretenen Fehler zu unterscheiden.
-   </para>
-  </note>
  </refsect1>
 
  <refsect1 role="examples">
@@ -115,6 +119,30 @@ foreach (glob("*.txt") as $filename) {
 funclist.txt - Größe: 44686
 funcsummary.txt - Größe: 267625
 quickref.txt - Größe: 137820
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>
+     Beispiel mit einem komplexeren Muster
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+foreach (glob("path/*/*.{txt,md}", \GLOB_BRACE) as $filename) {
+    echo "$filename\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+path/docs/mailinglist-rules.md
+path/docs/README.md
+path/docs/release-process.md
+path/pear/install-pear.txt
+path/Zend/README.md
 ]]>
     </screen>
    </example>
