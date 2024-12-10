@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 18a59d257ac885abb0646b2646fb82b35b90ef56 Maintainer: cmb Status: ready -->
+<!-- EN-Revision: c938838be5a7f6d2a0b0710476afb9fb2ccb6e52 Maintainer: cmb Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: c938838be5a7f6d2a0b0710476afb9fb2ccb6e52 Reviewer: samesch -->
 <refentry xml:id="function.filter-var" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>filter_var</refname>
@@ -15,114 +17,106 @@
    <methodparam choice="opt"><type>int</type><parameter>filter</parameter><initializer><constant>FILTER_DEFAULT</constant></initializer></methodparam>
    <methodparam choice="opt"><type class="union"><type>array</type><type>int</type></type><parameter>options</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
+  <simpara>
+   Filtert eine Variable unter Verwendung eines
+   <constant>FILTER_VALIDATE_<replaceable>*</replaceable></constant>-Validierungsfilters, eines
+   <constant>FILTER_SANITIZE_<replaceable>*</replaceable></constant>-Bereinigungsfilters
+   oder eines benutzerdefinierten Filters.
+  </simpara>
  </refsect1>
 
  <refsect1 role="parameters">
   &reftitle.parameters;
-  <para>
-   <variablelist>
-    <varlistentry>
-     <term><parameter>value</parameter></term>
-     <listitem>
-      <para>
-       Der Wert, der gefiltert werden soll. Es ist zu beachten, dass skalare
-       Werte vor dem Filtern intern
-       <link linkend="language.types.string.casting">nach String konvertiert</link>
-       werden.
-      </para>
-     </listitem>
-    </varlistentry>
-    &filter.param.filter;
-    <varlistentry>
-     <term><parameter>options</parameter></term>
-     <listitem>
-      <para>
-       Ein assoziatives Array mit Optionen oder eine bitweise Disjunktion von Flags. Wenn der
-       Filter Optionen akzeptiert, können Flags im "flags" Feld des Arrays angegeben
-       werden. Für "callback" Filter sollte der <type>callback</type>-Typ angegeben werden.
-       Der Callback muss den zu filternden Wert als einziges Argument akzeptieren
-       und den gefilterten/bereinigten Wert zurückgeben.
-      </para>
-      <para>
-       <programlisting role="php">
-        <![CDATA[
-<?php
-// für Filter, die Optionen zulassen, verwenden Sie dieses Format
-$options = array(
-    'options' => array(
-        'default' => 3, // Rückgabewert, falls der Filter fehlschlägt
-        // andere Optionen hier
-        'min_range' => 0
-    ),
-    'flags' => FILTER_FLAG_ALLOW_OCTAL,
-);
-$var = filter_var('0755', FILTER_VALIDATE_INT, $options);
-
-// für Filter, die nur Flags zulassen, können Sie diese direkt übergeben
-$var = filter_var('oops', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-
-// für Filter, die nur Flags zulassen, können Sie sie ebenfalls als Array übergeben
-$var = filter_var('oops', FILTER_VALIDATE_BOOLEAN,
-                  array('flags' => FILTER_NULL_ON_FAILURE));
-
-// Callback-Validierungsfilter
-function foo($value)
-{
-    // Erwartetes Format: Nachname, Vornamen
-    if (strpos($value, ", ") === false) return false;
-    list($surname, $givennames) = explode(", ", $value, 2);
-    $empty = (empty($surname) || empty($givennames));
-    $notstrings = (!is_string($surname) || !is_string($givennames));
-    if ($empty || $notstrings) {
-        return false;
-    } else {
-        return $value;
-    }
-}
-$var = filter_var('Doe, Jane Sue', FILTER_CALLBACK, array('options' => 'foo'));
-?>
-        ]]>
-       </programlisting>
-      </para>
-     </listitem>
-    </varlistentry>
-   </variablelist>
-  </para>
+  <variablelist>
+   <varlistentry>
+    <term><parameter>value</parameter></term>
+    <listitem>
+     <simpara>
+      Der zu filternde Wert.
+     </simpara>
+     <warning>
+      <simpara>
+       Skalare Werte werden intern
+       <link linkend="language.types.string.casting">in eine Zeichenkette umgewandelt</link>,
+       bevor sie gefiltert werden.
+      </simpara>
+     </warning>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>filter</parameter></term>
+    <listitem>
+     <simpara>
+      Der anzuwendende Filter.
+      Dies kann entweder ein Validierungsfilter sein, indem eine der
+      <constant>FILTER_VALIDATE_<replaceable>*</replaceable></constant>-Konstanten
+      verwendet wird, ein Bereinigungsfilter, indem eine der
+      <constant>FILTER_SANITIZE_<replaceable>*</replaceable></constant>-Konstanten
+      verwendet wird, der Fiter <constant>FILTER_UNSAFE_RAW</constant> oder ein
+      benutzerdefinierter Filter durch Verwendung von
+      <constant>FILTER_CALLBACK</constant>.
+     </simpara>
+     <note>
+      <simpara>
+       Die Voreinstellung ist <constant>FILTER_DEFAULT</constant>, was ein
+       Alias von <constant>FILTER_UNSAFE_RAW</constant> ist.
+       Dies bedeutet, dass standardmäßig keine Filterung stattfindet.
+      </simpara>
+     </note>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>options</parameter></term>
+    <listitem>
+     <simpara>
+      Entweder ein assoziatives <type>array</type> von Optionen oder eine
+      Bitmaske der Filterflag-Konstanten
+      <constant>FILTER_FLAG_<replaceable>*</replaceable></constant>.
+     </simpara>
+     <simpara>
+      Wenn <parameter>filter</parameter> Optionen akzeptiert, können die Flags
+      durch Verwendung des Array-Schlüssels <literal>"flags"</literal>
+      angegeben werden.
+     </simpara>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
 
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
-  <para>
-   Gibt die gefilterten Daten zurück oder &false; wenn fehlgeschlagen.
-  </para>
+  <simpara>
+   Bei Erfolg werden die gefilterten Daten zurückgegeben.
+   Im Fehlerfall wird &false; zurückgegeben, es sei denn, das Flag
+   <constant>FILTER_NULL_ON_FAILURE</constant> wird verwendet; in diesem Fall
+   wird &null; zurückgegeben.
+  </simpara>
  </refsect1>
 
  <refsect1 role="examples">
   &reftitle.examples;
-  <para>
-   <example>
-    <title><function>filter_var</function>-Beispiel</title>
-    <programlisting role="php">
+  <example>
+   <title><function>filter_var</function>-Beispiel</title>
+   <programlisting role="php">
 <![CDATA[
 <?php
 var_dump(filter_var('bob@example.com', FILTER_VALIDATE_EMAIL));
-var_dump(filter_var('http://example.com', FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED));
+var_dump(filter_var('https://example.com', FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED));
 ?>
 ]]>
-    </programlisting>
-    &example.outputs;
-    <screen>
+   </programlisting>
+   &example.outputs;
+   <screen>
 <![CDATA[
 string(15) "bob@example.com"
 bool(false)
 ]]>
-    </screen>
-   </example>
-  </para>
-  <para>
-   <example>
-    <title>Beispiel für das Filtern eines Arrays</title>
-    <programlisting role="php">
+   </screen>
+  </example>
+
+  <example>
+   <title>Beispiel für das Validieren der Einträge eines Arrays</title>
+   <programlisting role="php">
 <![CDATA[
 <?php
 $emails = [
@@ -134,9 +128,9 @@ $emails = [
 var_dump(filter_var($emails, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_ARRAY));
 ?>
 ]]>
-    </programlisting>
-    &example.outputs;
-    <screen>
+   </programlisting>
+   &example.outputs;
+   <screen>
 <![CDATA[
 array(3) {
   [0]=>
@@ -147,21 +141,76 @@ array(3) {
   bool(false)
 }
 ]]>
-    </screen>
-   </example>
-  </para>
+   </screen>
+  </example>
+
+  <example>
+   <title>Beispiel für die Übergabe eines Arrays für <parameter>options</parameter></title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$options = [
+    'options' => [
+        'min_range' => 10,
+    ],
+    'flags' => FILTER_FLAG_ALLOW_OCTAL,
+];
+
+var_dump(filter_var('0755', FILTER_VALIDATE_INT, $options));
+var_dump(filter_var('011', FILTER_VALIDATE_INT, $options));
+
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+int(493)
+bool(false)
+]]>
+   </screen>
+  </example>
+
+  <example>
+   <title>Angabe von Flags entweder direkt oder über ein <type>array</type></title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+$str = 'string';
+
+var_dump(filter_var($str, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
+var_dump(filter_var($str, FILTER_VALIDATE_BOOLEAN, ['flags' => FILTER_NULL_ON_FAILURE]));
+
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+NULL
+NULL
+]]>
+   </screen>
+  </example>
  </refsect1>
 
  <refsect1 role="seealso">
   &reftitle.seealso;
-  <para>
-   <simplelist>
-    <member><function>filter_var_array</function></member>
-    <member><function>filter_input</function></member>
-    <member><function>filter_input_array</function></member>
-    <member><xref linkend="filter.filters"/></member>
-   </simplelist>
-  </para>
+  <simplelist>
+   <member><function>filter_var_array</function></member>
+   <member><function>filter_input</function></member>
+   <member><function>filter_input_array</function></member>
+   <member>
+    Validierungsfilter
+    <constant>FILTER_VALIDATE_<replaceable>*</replaceable></constant>
+   </member>
+   <member>
+    Bereinigungsfilter
+    <constant>FILTER_SANITIZE_<replaceable>*</replaceable></constant>
+   </member>
+  </simplelist>
  </refsect1>
 
 </refentry>
