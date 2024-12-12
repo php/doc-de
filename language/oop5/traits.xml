@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 1eec5a5abad2e54d02eb49161d5e7beffa632308 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 6564f8d246764451b71234921ed156376a4b4219 Maintainer: simp Status: ready -->
  <sect1 xml:id="language.oop5.traits" xmlns="http://docbook.org/ns/docbook">
   <title>Traits</title>
   <para>
@@ -409,24 +409,30 @@ class MyHelloWorld {
     <programlisting role="php">
 <![CDATA[
 <?php
-trait Counter {
-    public function inc() {
+
+trait Counter
+{
+    public function inc()
+    {
         static $c = 0;
         $c = $c + 1;
         echo "$c\n";
     }
 }
 
-class C1 {
+class C1
+{
     use Counter;
 }
 
-class C2 {
+class C2
+{
     use Counter;
 }
 
 $o = new C1(); $o->inc(); // echo 1
 $p = new C2(); $p->inc(); // echo 1
+
 ?>
 ]]>
     </programlisting>
@@ -436,17 +442,22 @@ $p = new C2(); $p->inc(); // echo 1
     <programlisting role="php">
 <![CDATA[
 <?php
-trait StaticExample {
-    public static function doSomething() {
+
+trait StaticExample
+{
+    public static function doSomething()
+    {
         return 'Tue etwas';
     }
 }
 
-class Example {
+class Example
+{
     use StaticExample;
 }
 
 Example::doSomething();
+
 ?>
 ]]>
     </programlisting>
@@ -455,23 +466,30 @@ Example::doSomething();
     <title>Statische Eigenschaften</title>
     <caution>
      <simpara>
-      Vor PHP 8.3.0 wurden statische Eigenschaften von allen Klassen, die den
-      Trait verwenden, gemeinsam genutzt. Seit PHP 8.3.0 hat jede Klasse, die
-      den Trait verwendet, ihre eigene Kopie der statischen Eigenschaft.
+      Vor PHP 8.3.0 wurden in einem Trait definierte statische Eigenschaften
+      innerhalb einer einzigen Hierarchie von Klassen, die den Trait verwenden,
+      gemeinsam genutzt. Seit PHP 8.3.0 überschreibt die statische Eigenschaft
+      des Traits, die in die Kindklasse eingefügt wird, die statische
+      Eigenschaft, die die Kindklasse von der Elternklasse geerbt hat, die mit
+      demselben Trait definiert wurde.
      </simpara>
     </caution>
     <programlisting role="php">
      <![CDATA[
 <?php
-trait StaticExample {
+
+trait StaticExample
+{
     public static $static = 'foo';
 }
 
-class Example {
+class Example
+{
     use StaticExample;
 }
 
 echo Example::$static;
+
 ?>
 ]]>
     </programlisting>
@@ -488,16 +506,20 @@ echo Example::$static;
     <programlisting role="php">
 <![CDATA[
 <?php
-trait PropertiesTrait {
+
+trait PropertiesTrait
+{
     public $x = 1;
 }
 
-class PropertiesExample {
+class PropertiesExample
+{
     use PropertiesTrait;
 }
 
-$example = new PropertiesExample;
+$example = new PropertiesExample();
 $example->x;
+
 ?>
 ]]>
     </programlisting>
@@ -588,27 +610,40 @@ class ConstantsExample {
   <title>Finale Methoden</title>
   <simpara>
    Seit PHP 8.3.0 kann der Modifikator
-   <link linkend="language.oop5.final">final</link> auf Methoden angewendet
-   werden, die aus Traits stammen.
+   <link linkend="language.oop5.final">final</link> mit dem Operator
+   <literal>as</literal> auf Methoden angewendet werden, die aus Traits
+   importiert wurden. Dadurch kann die Sichtbarkeit von Methoden, die aus
+   einem Trait stammen, in der Klasse, in der das Trait verwendet wird,
+   geändert werden.
   </simpara>
   <example xml:id="language.oop5.traits.final-methods.example">
    <title>Definieren einer Methode aus einem Trait als <literal>final</literal></title>
    <programlisting role="php">
     <![CDATA[
 <?php
-trait ConstantsTrait {
-    public function method() {
-        echo 'Hallo';
+
+trait CommonTrait
+{
+    public function method()
+    {
+        echo 'Hello';
     }
 }
 
-class ConstantsExample {
-    use ConstantsTrait;
-
-    final public function method() {
-        echo 'Hallo Welt';
+class FinalExampleA
+{
+    use CommonTrait {
+        CommonTrait::method as final; // Das "final" verhindert, dass Kindklassen
+                                      // eine Methode überschreiben.
     }
 }
+
+class FinalExampleB extends FinalExampleA
+{
+     public function method() {} // Fatal error: Cannot override final method
+                                 // FinalExampleA::method()
+}
+
 ?>
 ]]>
    </programlisting>
