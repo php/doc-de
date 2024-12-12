@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision$ -->
+<!-- EN-Revision: 51610360d58ed09bc9d1312f419057c0d1d1a998 Maintainer: lapistano Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 51610360d58ed09bc9d1312f419057c0d1d1a998 Reviewer: samesch -->
+<refentry xml:id="pdo-sqlite.createaggregate" xmlns="http://docbook.org/ns/docbook">
+ <refnamediv>
+  <refname>Pdo\Sqlite::createAggregate</refname>
+  <refpurpose>
+   Registriert eine benutzerdefinierte Aggregationsfunktion zur Verwendung in
+   SQL-Anweisungen
+  </refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis role="Pdo\\Sqlite">
+   <modifier>public</modifier> <type>bool</type><methodname>Pdo\Sqlite::createAggregate</methodname>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>step</parameter></methodparam>
+   <methodparam><type>callable</type><parameter>finalize</parameter></methodparam>
+   <methodparam choice="opt"><type>int</type><parameter>numArgs</parameter><initializer>-1</initializer></methodparam>
+  </methodsynopsis>
+  <simpara>
+   Diese Methode entspricht <methodname>Pdo\Sqlite::createFunction</methodname>,
+   mit dem Unterschied, dass sie Funktionen registriert, die verwendet werden
+   können, um ein über alle Zeilen einer Abfrage aggregiertes Ergebnis zu
+   berechnen.
+  </simpara>
+  <simpara>
+   Der Hauptunterschied zwischen dieser Methode und
+   <methodname>Pdo\Sqlite::createFunction</methodname> ist, dass zwei
+   Funktionen notwendig sind, um das Aggregat zu verwalten.
+  </simpara>
+  <tip>
+   <simpara>
+    Mit dieser Methode ist es möglich, native SQL-Funktionen zu überschreiben.
+   </simpara>
+  </tip>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <variablelist>
+   <varlistentry>
+    <term><parameter>name</parameter></term>
+    <listitem>
+     <simpara>
+      Der Name der in SQL-Anweisungen genutzten Funktion.
+     </simpara>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>step</parameter></term>
+    <listitem>
+     <simpara>
+      Die Callback-Funktion, welche für jede Zeile des Abfrageergebnisses
+      ausgeführt wird. Der Callback sollte das Ergebnis akkumulieren und im
+      Aggregationskontext speichern.
+     </simpara>
+     <para>
+      Es ist notwendig, diese Funktion wie folgt zu definieren:
+      <methodsynopsis>
+       <type>mixed</type><methodname><replaceable>step</replaceable></methodname>
+       <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
+       <methodparam><type>int</type><parameter>rownumber</parameter></methodparam>
+       <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
+       <methodparam rep="repeat"><type>mixed</type><parameter>values</parameter></methodparam>
+      </methodsynopsis>
+      <variablelist>
+       <varlistentry>
+        <term><parameter>context</parameter></term>
+        <listitem>
+         <simpara>
+          Der Aggregationskontext.
+          &null; für die erste Zeile; in den folgenden Zeilen hat er den Wert,
+          der zuvor von der Schritt-Funktion zurückgegeben wurde. Sie sollten
+          diesen nutzen, um den Aggregationszustand zu bewahren.
+         </simpara>
+        </listitem>
+       </varlistentry>
+       <varlistentry>
+        <term><parameter>rownumber</parameter></term>
+        <listitem>
+         <simpara>
+          Die Nummer der aktuellen Zeile.
+         </simpara>
+        </listitem>
+       </varlistentry>
+       <varlistentry>
+        <term><parameter>value</parameter></term>
+        <listitem>
+         <simpara>
+          Das erste Argument, das an das Aggregat übergeben wird.
+         </simpara>
+        </listitem>
+       </varlistentry>
+       <varlistentry>
+        <term><parameter>values</parameter></term>
+        <listitem>
+         <simpara>
+          Weitere Argumente, die an das Aggregat übergeben werden.
+         </simpara>
+        </listitem>
+       </varlistentry>
+      </variablelist>
+      Der Rückgabewert dieser Funktion wird im nächsten Aufruf der Schritt-
+      oder End-Funktion als Argument für <parameter>context</parameter>
+      verwendet.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>finalize</parameter></term>
+    <listitem>
+     <simpara>
+      Die Callback-Funktion, die die Informationen aller Zeilen aggregiert.
+      Sind alle Zeilen abgearbeitet, wird diese Funktion aufgerufen. Diese
+      sollte dann die Daten des Aggregationskontexts auswerten und das
+      Ergebnis zurückgeben. Diese Callback-Funktion sollte einen Variablentyp
+      zurückgeben, der von SQLite verstanden wird, &zb; den
+      <link linkend="language.types.intro">Skalar-Typ</link>.
+     </simpara>
+     <para>
+      Diese Funktion ist wie folgt zu definieren:
+      <methodsynopsis>
+       <type>mixed</type><methodname><replaceable>fini</replaceable></methodname>
+       <methodparam><type>mixed</type><parameter>context</parameter></methodparam>
+       <methodparam><type>int</type><parameter>rowcount</parameter></methodparam>
+      </methodsynopsis>
+      <variablelist>
+       <varlistentry>
+        <term><parameter>context</parameter></term>
+        <listitem>
+         <para>
+          Enthält den Rückgabewert des letzten Aufrufs der Schritt-Funktion.
+         </para>
+        </listitem>
+       </varlistentry>
+       <varlistentry>
+        <term><parameter>rowcount</parameter></term>
+        <listitem>
+         <para>
+          Enthält die Anzahl an Zeilen, die bereits aggregiert wurden.
+         </para>
+        </listitem>
+       </varlistentry>
+      </variablelist>
+      Der Rückgabewert dieser Funktion wird als Rückgabewert für die
+      Aggregation genutzt.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>numArgs</parameter></term>
+    <listitem>
+     <simpara>
+      Hinweis für den SQLite-Parser, ob die Callback-Funktion eine bestimmte
+      Anzahl an Parametern erwartet.
+     </simpara>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <simpara>
+   &return.success;
+  </simpara>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title><methodname>Pdo\Sqlite::createAggregate</methodname>-Beispiel</title>
+   <simpara>
+    In diesem Beispiel wird eine benutzerdefinierte Aggregationsfunktion mit
+    dem Namen <literal>max_length</literal> erstellt, die in SQL-Abfragen
+    verwendet werden kann.
+   </simpara>
+   <simpara>
+    In diesem Beispiel erzeugen wir eine Aggregationsfunktion mit dem Namen
+    <literal>max_length</literal>, die die Länge der längsten Zeichenkette
+    innerhalb einer der Tabellenspalten ermittelt.
+    Für jede durchlaufene Zeile wird die Funktion <literal>max_len_step</literal>
+    mit dem Parameter <literal>$context</literal> aufgerufen.
+    Der Parameter "context" ist eine normale PHP-Variable, welche ein
+    <type>array</type> oder sogar ein <type>object</type> beinhalten kann.
+    In diesem Beispiel benötigen wir ihn als Speicher für die größte bisher
+    gefundene Länge.
+    Wenn die Zeichenkette in <literal>$string</literal> länger ist, als die
+    aktuell längste, wird der Inhalt von "context" mit der neuen Länge
+    überschrieben.
+   </simpara>
+   <simpara>
+    Nachdem alle Zeilen abgearbeitet wurden, ruft SQLite die
+    <literal>max_len_finalize</literal>-Funktion auf, um das Endergebnis zu
+    ermitteln.
+    Auf Basis der in <literal>$context</literal> gesammelten Daten können
+    beliebige Berechnungen durchgeführt werden.
+    In diesem einfachen Beispiel wurde das Ergebnis bereits während der Abfrage
+    berechnet, so dass der Wert von "context" direkt zurückgegeben werden kann.
+   </simpara>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$data = [
+   'one',
+   'two',
+   'three',
+   'four',
+   'five',
+   'six',
+   'seven',
+   'eight',
+   'nine',
+   'ten',
+];
+$db = new Pdo\Sqlite('sqlite::memory:');
+$db->exec("CREATE TABLE strings(a)");
+$insert = $db->prepare('INSERT INTO strings VALUES (?)');
+foreach ($data as $str) {
+    $insert->execute(array($str));
+}
+$insert = null;
+
+function max_len_step($context, $row_number, $string)
+{
+    if (strlen($string) > $context) {
+        $context = strlen($string);
+    }
+    return $context;
+}
+
+function max_len_finalize($context, $row_count)
+{
+    return $context === null ? 0 : $context;
+}
+
+$db->createAggregate('max_len', 'max_len_step', 'max_len_finalize');
+
+var_dump($db->query('SELECT max_len(a) from strings')->fetchAll());
+
+?>
+]]>
+   </programlisting>
+   <tip>
+    <simpara>
+     Es ist NICHT ratsam, eine Kopie der Werte in 'context' zu speichern, um
+     diese dann am Ende auszuwerten. Das würde dazu führen, dass SQLite eine
+     große Menge an Speicher benötigt, um die Abfrage abzuarbeiten - stellen
+     Sie sich vor, wie viel Speicherplatz Sie benötigen würden, wenn eine
+     Million Zeilen im Speicher abgelegt würden, von denen jede eine
+     Zeichenkette von 32 Byte Länge enthält.
+    </simpara>
+   </tip>
+  </example>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <simplelist>
+   <member><methodname>Pdo\Sqlite::createFunction</methodname></member>
+   <member><methodname>Pdo\Sqlite::createCollation</methodname></member>
+   <member><function>sqlite_create_function</function></member>
+   <member><function>sqlite_create_aggregate</function></member>
+  </simplelist>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
