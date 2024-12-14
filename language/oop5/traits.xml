@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 6564f8d246764451b71234921ed156376a4b4219 Maintainer: simp Status: ready -->
+<!-- EN-Revision: b5f0c19bec9f70f1cbdc1480b3f3c92c608489d1 Maintainer: simp Status: ready -->
+<!-- Reviewed: no -->
  <sect1 xml:id="language.oop5.traits" xmlns="http://docbook.org/ns/docbook">
   <title>Traits</title>
   <para>
@@ -430,12 +430,21 @@ class C2
     use Counter;
 }
 
-$o = new C1(); $o->inc(); // echo 1
-$p = new C2(); $p->inc(); // echo 1
+$o = new C1();
+$o->inc();
+$p = new C2();
+$p->inc();
 
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+1
+1
+]]>
+    </screen>
    </example>
    <example xml:id="language.oop5.traits.static.ex2">
     <title>Statische Methoden</title>
@@ -456,43 +465,69 @@ class Example
     use StaticExample;
 }
 
-Example::doSomething();
+echo Example::doSomething();
 
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+Doing something
+]]>
+    </screen>
    </example>
    <example xml:id="language.oop5.traits.static.ex3">
     <title>Statische Eigenschaften</title>
     <caution>
      <simpara>
-      Vor PHP 8.3.0 wurden in einem Trait definierte statische Eigenschaften
-      innerhalb einer einzigen Hierarchie von Klassen, die den Trait verwenden,
-      gemeinsam genutzt. Seit PHP 8.3.0 überschreibt die statische Eigenschaft
-      des Traits, die in die Kindklasse eingefügt wird, die statische
-      Eigenschaft, die die Kindklasse von der Elternklasse geerbt hat, die mit
-      demselben Trait definiert wurde.
+      Vor PHP 8.3.0 wurden statische Eigenschaften, die in einem Trait
+      definiert waren, von allen Klassen in derselben Vererbungshierarchie, die
+      diesen Trait verwendeten, gemeinsam genutzt.
+      Seit PHP 8.3.0 wird eine statische Eigenschaft, die von einer Kindklasse
+      über einen Trait verwendet wird, als von der in der Elternklasse
+      definierte Eigenschaft unterschieden betrachtet.
      </simpara>
     </caution>
     <programlisting role="php">
      <![CDATA[
 <?php
 
-trait StaticExample
+trait T
 {
-    public static $static = 'foo';
+    public static $counter = 1;
 }
 
-class Example
+class A
 {
-    use StaticExample;
+    use T;
+
+    public static function incrementCounter()
+    {
+        static::$counter++;
+    }
 }
 
-echo Example::$static;
+class B extends A
+{
+    use T;
+}
+
+A::incrementCounter();
+
+echo A::$counter, "\n";
+echo B::$counter, "\n";
 
 ?>
 ]]>
     </programlisting>
+    &example.outputs.83;
+    <screen>
+<![CDATA[
+2
+1
+]]>
+    </screen>
    </example>
   </sect2>
 
@@ -575,10 +610,16 @@ class ConstantsExample {
 }
 
 $example = new ConstantsExample;
-echo $example::FLAG_MUTABLE; // 1
+echo $example::FLAG_MUTABLE;
 ?>
 ]]>
    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+1
+]]>
+    </screen>
   </example>
   <para>
    Wenn ein Trait eine Konstante definiert, kann eine Klasse keine Konstante
@@ -612,9 +653,9 @@ class ConstantsExample {
    Seit PHP 8.3.0 kann der Modifikator
    <link linkend="language.oop5.final">final</link> mit dem Operator
    <literal>as</literal> auf Methoden angewendet werden, die aus Traits
-   importiert wurden. Dadurch kann die Sichtbarkeit von Methoden, die aus
-   einem Trait stammen, in der Klasse, in der das Trait verwendet wird,
-   geändert werden.
+   importiert wurden. Dies kann verwendet werden, um zu verhindern, dass
+   Kindklassen die Methode überschreiben. Die Klasse, die den Trait verwendet,
+   kann die Methode jedoch weiterhin überschreiben.
   </simpara>
   <example xml:id="language.oop5.traits.final-methods.example">
    <title>Definieren einer Methode aus einem Trait als <literal>final</literal></title>
@@ -634,19 +675,24 @@ class FinalExampleA
 {
     use CommonTrait {
         CommonTrait::method as final; // Das "final" verhindert, dass Kindklassen
-                                      // eine Methode überschreiben.
+                                      // die Methode überschreiben.
     }
 }
 
 class FinalExampleB extends FinalExampleA
 {
-     public function method() {} // Fatal error: Cannot override final method
-                                 // FinalExampleA::method()
+    public function method() {}
 }
 
 ?>
 ]]>
    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Fatal error: Cannot override final method FinalExampleA::method() in ...
+]]>
+    </screen>
   </example>
  </sect2>
 
