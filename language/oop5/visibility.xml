@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: bda37a3a4dd7934642918455408d36b664e43a27 Maintainer: wiesemann Status: wip -->
+<!-- EN-Revision: bda37a3a4dd7934642918455408d36b664e43a27 Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: no -->
  <sect1 xml:id="language.oop5.visibility" xmlns="http://docbook.org/ns/docbook">
   <title>Sichtbarkeit</title>
   <para>
@@ -21,7 +21,7 @@
      Sichtbarkeit deklariert sind, werden als public definiert.
    </para>
    <example>
-    <title>Eigenschaftendeklaration</title>
+    <title>Deklarieren von Eigenschaften</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -78,17 +78,17 @@ $obj2->printHello(); // Zeigt Public2, Protected2, Undefined
     </programlisting>
    </example>
    <sect3 xml:id="language.oop5.visibility-members-aviz">
-    <title>Asymmetric Property Visibility</title>
+    <title>Asymmetrische Sichtbarkeit von Eigenschaften</title>
     <simpara>
-     As of PHP 8.4, properties may also have their
-     visibility set asymmetrically, with a different scope for
-     reading (<literal>get</literal>) and writing (<literal>set</literal>).
-     Specifically, the <literal>set</literal> visibility may be
-     specified separately, provided it is not more permissive than the
-     default visibility.
+     Seit PHP 8.4 kann die Sichtbarkeit von Eigenschaften auch asymmetrisch
+     festgelegt werden, mit unterschiedlichem Geltungsbereich für Lesen
+     (<literal>get</literal>) und Schreiben (<literal>set</literal>).
+     Insbesondere kann die Sichtbarkeit von <literal>set</literal> separat
+     spezifiziert werden, vorausgesetzt, sie erlaubt nicht mehr als die
+     standardmäßige Sichtbarkeit.
     </simpara>
     <example>
-     <title>Asymmetric Property visibility</title>
+     <title>Asymmetrische Sichtbarkeit von Eigenschaften</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -106,83 +106,92 @@ class SpecialBook extends Book
     public function update(string $author, int $year): void
     {
         $this->author = $author; // OK
-        $this->pubYear = $year; // Fatal Error
+        $this->pubYear = $year; // Fataler Fehler
     }
 }
 
 $b = new Book('How to PHP', 'Peter H. Peterson', 2024);
 
-echo $b->title; // Works
-echo $b->author; // Works
-echo $b->pubYear; // Fatal Error
+echo $b->title; // Funktioniert
+echo $b->author; // Funktioniert
+echo $b->pubYear; // Fataler Fehler
 
-$b->title = 'How not to PHP'; // Fatal Error
-$b->author = 'Pedro H. Peterson'; // Fatal Error
-$b->pubYear = 2023; // Fatal Error
+$b->title = 'How not to PHP'; // Fataler Fehler
+$b->author = 'Pedro H. Peterson'; // Fataler Fehler
+$b->pubYear = 2023; // Fataler Fehler
 ?>
 ]]>
      </programlisting>
     </example>
-    <para>There are a few caveats regarding asymmetric visibility:</para>
+    <para>Bei der asymmetrischen Sichtbarkeit gibt es ein paar Einschränkungen:</para>
     <itemizedlist>
      <listitem>
       <simpara>
-       Only typed properties may have a separate <literal>set</literal> visibility.
+       Nur typisierte Eigenschaften können eine separate Sichtbarkeit von
+       <literal>set</literal> haben.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       The <literal>set</literal> visibility must be the same
-       as <literal>get</literal> or more restrictive. That is,
-       <code>public protected(set)</code> and <code>protected protected(set)</code>
-       are allowed, but <code>protected public(set)</code> will cause a syntax error.
+       Die Sichtbarkeit von <literal>set</literal> muss dieselbe sein wie
+       <literal>get</literal> oder restriktiver. Das heißt,
+       <code>public protected(set)</code> und
+       <code>protected protected(set)</code> sind erlaubt, aber
+       <code>protected public(set)</code> führt zu einem Syntaxfehler.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       If a property is <literal>public</literal>, then the main visibility may be
-       omitted.  That is, <code>public private(set)</code> and <code>private(set)</code>
-       will have the same result.
+       Wenn eine Eigenschaft <literal>public</literal> ist, dann kann die
+       Hauptsichtbarkeit weggelassen werden. Das heißt,
+       <code>public private(set)</code> und <code>private(set)</code> haben das
+       gleiche Ergebnis.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       A property with <literal>private(set)</literal> visibility
-       is automatically <literal>final</literal>, and may not be redeclared in a child class.
+       Eine Eigenschaft mit der Sichtbarkeit <literal>private(set)</literal>
+       ist automatisch <literal>final</literal> und darf in einer Kindklasse
+       nicht neu deklariert werden.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Obtaining a reference to a property follows <literal>set</literal> visibility, not <literal>get</literal>.
-       That is because a reference may be used to modify the property value.
+       Der Zugriff auf eine Eigenschaftsreferenz folgt der Sichtbarkeit
+       von <literal>set</literal>, nicht <literal>get</literal>.
+       Das liegt daran, dass eine Referenz verwendet werden kann, um den
+       Eigenschaftswert zu ändern.
       </simpara>
      </listitem>
      <listitem>
       <simpara>
-       Similarly, trying to write to an array property involves both a <literal>get</literal> and
-       <literal>set</literal> operation internally, and therefore will follow the <literal>set</literal>
-       visibility, as that is always the more restrictive.
+       In ähnlicher Weise beinhaltet der Versuch, in eine Array-Eigenschaft zu
+       schreiben, intern sowohl eine <literal>get</literal>- als auch eine
+       <literal>set</literal>-Operation und folgt daher der Sichtbarkeit von
+       <literal>set</literal>, da diese immer die restriktivere ist.
       </simpara>
      </listitem>
     </itemizedlist>
     <note>
      <simpara>
-      Spaces are not allowed in the set-visibility declaration.
-      <literal>private(set)</literal> is correct.
-      <literal>private( set )</literal> is not correct and will result in a parse error.
+      Leerzeichen sind in der Sichtbarkeitsdeklaration von set nicht erlaubt.
+      <literal>private(set)</literal> ist korrekt.
+      <literal>private( set )</literal> ist nicht korrekt und führt zu einem
+      Parser-Fehler.
      </simpara>
     </note>
     <simpara>
-     When a class extends another, the child class may redefine
-     any property that is not <literal>final</literal>.  When doing so,
-     it may widen either the main visibility or the <literal>set</literal>
-     visibility, provided that the new visibility is the same or wider
-     than the parent class.  However, be aware that if a <literal>private</literal>
-     property is overridden, it does not actually change the parent's property
-     but creates a new property with a different internal name.
+     Wenn eine Klasse eine andere erweitert, kann die Kindklasse jede
+     Eigenschaft, die nicht <literal>final</literal> ist, neu definieren.
+     Dabei kann sie entweder die Hauptsichtbarkeit oder die Sichtbarkeit von
+     <literal>set</literal> erweitern, vorausgesetzt, die neue Sichtbarkeit
+     ist gleich oder größer als die der Elternklasse. Es ist jedoch zu
+     beachten, dass eine <literal>private</literal> Eigenschaft, die
+     überschrieben wird, nicht die Eigenschaft der Elternklasse ändert, sondern
+     eine neue Eigenschaft mit einem anderen internen Namen erzeugt.
     </simpara>
     <example>
-     <title>Asymmetric Property inheritance</title>
+     <title>Vererbung asymmetrischer Eigenschaften</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -195,9 +204,9 @@ class Book
 
 class SpecialBook extends Book
 {
-    public protected(set) $title; // OK, as reading is wider and writing the same.
-    public string $author; // OK, as reading is the same and writing is wider.
-    public protected(set) int $pubYear; // Fatal Error. private(set) properties are final.
+    public protected(set) $title; // OK, da die Rechte zum Lesen breiter sind und die zum Schreiben gleich.
+    public string $author; // OK, da die Rechte zum Lesen gleich sind und die zum Schreiben breiter.
+    public protected(set) int $pubYear; // Fatal Fehler. private(set)-Eigenschaften sind final.
 }
 ?>
 ]]>
@@ -213,7 +222,7 @@ class SpecialBook extends Book
     Methoden ohne jede explizite Deklaration sind als public definiert.
    </para>
    <example>
-    <title>Methodendeklaration</title>
+    <title>Deklarieren von Methoden</title>
     <programlisting role="php">
 <![CDATA[
 <?php
@@ -312,7 +321,7 @@ $myFoo->test(); // Bar::testPrivate
     Sichtbarkeitsangabe deklariert wurden, sind public.
    </para>
    <example>
-    <title>Konstantendeklaration von PHP 7.1.0 an</title>
+    <title>Deklarieren von Konstanten von PHP 7.1.0 an</title>
     <programlisting role="php">
 <![CDATA[
 <?php
