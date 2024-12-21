@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- EN-Revision: 887c21f977369af0808290874dc2c279ad4d0af2 Maintainer: nobody Status: wip -->
+<!-- EN-Revision: ef5a00895dbb9a3abbe3edc03d1f966b239a2eb2 Maintainer: nobody Status: ready -->
 <!-- Reviewed: no -->
 <sect1 xml:id="language.types.string">
  <title>Strings (Zeichenketten)</title>
@@ -613,13 +613,12 @@ FOOBAR;
    <para>
     Nowdocs sind für Strings in einfachen Anführungszeichen das, was Heredocs
     für Strings in doppelten Anführungszeichen sind. Ein Nowdoc wird ähnlich
-    wie ein Heredoc angegeben, aber es wird
-    <emphasis>keine String-Interpolation</emphasis> innerhalb eines Nowdocs
-    durchgeführt. Das Konstrukt ist ideal für die Einbettung von PHP-Code oder
-    anderen großen Textblöcken ohne maskieren zu müssen. Es hat einige
-    Eigenschaften mit dem <literal>&lt;![CDATA[ ]]&gt;</literal>-Konstrukt in
-    SGML gemeinsam, indem es einen Textblock deklariert, der nicht geparst
-    werden soll.
+    wie ein Heredoc angegeben, aber innerhalb eines Nowdocs wird
+    <emphasis>keine String-Interpolation</emphasis> durchgeführt. Das Konstrukt
+    ist ideal für die Einbettung von PHP-Code oder anderen großen Textblöcken
+    ohne maskieren zu müssen. Es hat einige Eigenschaften mit dem
+    <literal>&lt;![CDATA[ ]]&gt;</literal>-Konstrukt in SGML gemeinsam, indem
+    es einen Textblock deklariert, der nicht geparst werden soll.
    </para>
 
    <para>
@@ -760,11 +759,8 @@ He drank some apple juice.
     </informalexample>
 
     <simpara>
-     In ähnlicher Weise kann ein <type>&array;</type>-Index oder eine
-     <type>&object;</type>-Eigenschaft geparst werden. Bei Array-Indizes
-     markiert die schließende eckige Klammer (<literal>]</literal>) das Ende
-     des Indexes. Für Objekteigenschaften gelten die gleichen Regeln wie für
-     einfache Variablen.
+     Formal ist die Struktur für die grundlegende Syntax der Ersetzung von
+     Variablen wie folgt:
     </simpara>
     <informalexample>
      <programlisting>
@@ -797,9 +793,10 @@ Name::
 
     <warning>
      <para>
-      The <literal>${ expression }</literal> syntax is deprecated as of
-      PHP 8.2.0, as it can be interpreted as
-      <link linkend="language.variables.variable">variable variables</link>:
+      Die Syntax <literal>${ expression }</literal> ist seit PHP 8.2.0
+      veraltet, da sie als
+      <link linkend="language.variables.variable">variable Variable</link>
+      interpretiert werden kann:
       <informalexample>
        <programlisting role="php">
 <![CDATA[
@@ -830,40 +827,41 @@ string(3) "bar"
 ]]>
        </screen>
       </informalexample>
-      The <link linkend="language.types.string.parsing.advanced">advanced</link>
-      string interpolation syntax should be used instead.
+      Stattdessen sollte die
+      <link linkend="language.types.string.parsing.advanced">erweiterte</link>
+      Syntax der String-Interpolation verwendet werden.
      </para>
     </warning>
 
     <note>
      <simpara>
-      If it is not possible to form a valid name the dollar sign remains
-      as verbatim in the string:
+      Wenn es nicht möglich ist, einen gültigen Namen zu bilden, bleibt das
+      Dollarzeichen unverändert im String erhalten:
      </simpara>
      <informalexample>
       <programlisting role="php">
 <![CDATA[
 <?php
-echo "No interpolation $  has happened\n";
-echo "No interpolation $\n has happened\n";
-echo "No interpolation $2 has happened\n";
+echo "Für $ wurde keine Interpolation durchgeführt\n";
+echo "Für $\n wurde keine Interpolation durchgeführt\n";
+echo "Für $2 wurde keine Interpolation durchgeführt\n";
 ?>
 ]]>
       </programlisting>
       &example.outputs;
       <screen>
 <![CDATA[
-No interpolation $  has happened
-No interpolation $
- has happened
-No interpolation $2 has happened
+Für $ wurde keine Interpolation durchgeführt
+Für $
+ wurde keine Interpolation durchgeführt
+Für $2 wurde keine Interpolation durchgeführt
 ]]>
       </screen>
      </informalexample>
     </note>
 
     <example>
-     <title>Interpolating the value of the first dimension of an array or property</title>
+     <title>Interpolieren des Wertes der ersten Dimension eines Arrays oder einer Eigenschaft</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -882,7 +880,7 @@ class A {
 
 $o = new A();
 
-echo "Object value: $o->s.";
+echo "Wert des Objekts: $o->s.";
 ?>
 ]]>
      </programlisting>
@@ -892,17 +890,18 @@ echo "Object value: $o->s.";
 He drank some apple juice.
 He drank some orange juice.
 He drank some purple juice.
-Object value: string.
+Wert des Objekts: string.
 ]]>
      </screen>
     </example>
 
     <note>
      <simpara>
-      The array key must be unquoted, and it is therefore not possible to
-      refer to a constant as a key with the basic syntax. Use the
-      <link linkend="language.types.string.parsing.advanced">advanced</link>
-      syntax instead.
+      Der Array-Schlüssel muss nicht in Anführungszeichen gesetzt werden, daher
+      ist es nicht möglich, mit der einfachen Syntax auf eine Konstante als
+      Schlüssel zu verweisen. Verwenden Sie stattdessen die
+      <link linkend="language.types.string.parsing.advanced">erweiterte</link>
+      Syntax.
      </simpara>
     </note>
 
@@ -943,20 +942,21 @@ Die Änderung des Zeichens an Index -3 auf o ergibt strong.
     <title>Erweiterte (geschweifte) Syntax</title>
 
     <simpara>
-     Diese Syntax wird nicht komplex genannt, weil sie komplex ist, sondern
-     weil sie die Verwendung komplexer Ausdrücke erlaubt.
+     Die erweiterte Syntax ermöglicht die Interpolation von
+     <emphasis>Variablen</emphasis> mit beliebigen Zugriffsmethoden.
     </simpara>
 
     <simpara>
      Jede skalare Variable, jedes Array-Element oder jede Objekteigenschaft
-     mit einer <type>String</type>-Darstellung kann über diese Syntax
-     eingebunden werden. Der Ausdruck wird so geschrieben, wie er auch
-     außerhalb des <type>String</type>s erscheinen würde, und dann von
-     <literal>{</literal> und <literal>}</literal> umschlossen. Da
-     <literal>{</literal> nicht maskiert werden kann, wird diese Syntax nur
-     erkannt werden, wenn das <literal>$</literal> unmittelbar auf das
-     <literal>{</literal> folgt. Verwenden Sie <literal>{\$</literal>, um ein
-     wörtliches <literal>{$</literal> zu erhalten. Einige Beispiele, um es zu
+     (<modifier>static</modifier> oder nicht) mit einer
+     <type>String</type>-Darstellung kann über diese Syntax eingebunden werden.
+     Der Ausdruck wird so geschrieben, wie er auch außerhalb des
+     <type>String</type>s erscheinen würde, und dann von <literal>{</literal>
+     und <literal>}</literal> umschlossen. Da <literal>{</literal> nicht
+     maskiert werden kann, wird diese Syntax nur erkannt werden, wenn das
+     <literal>$</literal> unmittelbar auf das <literal>{</literal> folgt.
+     Verwenden Sie <literal>{\$</literal>, um ein wörtliches
+     <literal>{$</literal> zu erhalten. Einige Beispiele, um es zu
      verdeutlichen:
     </simpara>
 
@@ -964,135 +964,72 @@ Die Änderung des Zeichens an Index -3 auf o ergibt strong.
      <programlisting role="php">
 <![CDATA[
 <?php
-// Alle Fehler anzeigen
-error_reporting(E_ALL);
 
+const DATA_KEY = 'const-key';
 $great = 'fantastisch';
+$arr = [
+    '1',
+    '2',
+    '3',
+    [41, 42, 43],
+    'key' => 'Indexierter Wert',
+    'const-key' => 'Schlüssel mit Minuszeichen',
+    'foo' => ['foo1', 'foo2', 'foo3']
+];
 
-// Wird nicht funktionieren, Ausgabe: Das ist { fantastisch}
+// Funktioniert nicht, Ausgabe: Das ist { fantastisch}
 echo "Das ist { $great}";
 
 // Funktioniert, Ausgabe: Das ist fantastisch
 echo "Das ist {$great}";
 
+class Square {
+    public $width;
+
+    public function __construct(int $width) { $this->width = $width; }
+}
+
+$square = new Square(5);
+
 // Funktioniert
 echo "Dieses Quadrat ist {$square->width}00 Zentimeter breit.";
 
 
-// Funktioniert, Anführungszeichen funktionieren nur mit der geschweiften Klammer
+// Funktioniert, Anführungszeichen funktionieren nur mit der
+// Syntax der geschweiften Klammer
 echo "Das funktioniert: {$arr['key']}";
 
 
 // Funktioniert
-echo "Das funktioniert: {$arr[4][3]}";
+echo "Das funktioniert: {$arr[3][2]}";
 
-// Dies ist aus demselben Grund falsch, aus dem $foo[bar] außerhalb eines
-// Strings falsch ist. PHP sucht zunächst nach einer Konstante namens foo und
-// gibt einen Fehler aus, wenn sie nicht gefunden wird. Wenn sie gefunden
-// wird, wird ihr Wert (und nicht "foo" selbst) für den Array-Index verwendet.
-echo "Das ist falsch: {$arr[foo][3]}";
+echo "Das funktioniert: {$arr[DATA_KEY]}";
 
-// Funktioniert. Verwenden Sie bei mehrdimensionalen Arrays immer geschweifte
-// Klammern um die Arrays, wenn diese innerhalb von Strings stehen
-echo "Das funktioniert: {$arr['foo'][3]}";
+// Verwenden Sie bei mehrdimensionalen Arrays immer geschweifte Klammern
+// um die Arrays, wenn diese innerhalb von Strings stehen
+echo "Das funktioniert: {$arr['foo'][2]}";
 
-// Funktioniert.
-echo "Das funktioniert: " . $arr['foo'][3];
+echo "Das funktioniert: {$obj->values[3]->name}";
 
-echo "Das funktioniert auch: {$obj->values[3]->name}";
+echo "Das funktioniert: {$obj->$staticProp}";
 
-echo "Das ist der Wert der Variable namens $name: {${$name}}";
+// Funktioniert nicht, Ausgabe: C:\directory\{fantastisch}.txt
+echo "C:\directory\{$great}.txt";
 
-echo "Das ist der Wert der Variable, die durch den Rückgabewert von getName() benannt wurde: {${getName()}}";
-
-echo "Das ist der Wert der Variable, die durch den Rückgabewert von \$object->getName() benannt wurde: {${$object->getName()}}";
-
-// Wird nicht funktionieren, Ausgabe: Das ist der Rückgabewert von getName(): {getName()}
-echo "Das ist der Rückgabewert von getName(): {getName()}";
-
-// Wird nicht funktionieren, Ausgabe: C:\folder\{fantastic}.txt
-echo "C:\folder\{$great}.txt"
-// Funktioniert, Ausgabe: C:\folder\fantastic.txt
-echo "C:\\folder\\{$great}.txt"
+// Funktioniert, Ausgabe: C:\folder\fantastisch.txt
+echo "C:\\directory\\{$great}.txt";
 ?>
 ]]>
-<!-- maybe it's better to leave this out??
-// das funktioniert, aber ich rate von seiner Verwendung ab, da es hier NICHT
-// um Funktionen geht, sondern nur um Variablen, Arrays und Objekte.
-$beer = 'Heineken';
-echo "Ich hätte gerne ein weiteres {${ strrev('reeb') }}, hips";
- -->
      </programlisting>
     </informalexample>
-
-    <para>
-     Es ist mit dieser Syntax auch möglich, über Variablen innerhalb von
-     Strings auf Klasseneigenschaften zuzugreifen.
-    </para>
-
-   <informalexample>
-    <programlisting role="php">
-<![CDATA[
-<?php
-class foo {
-    var $bar = 'I am bar.';
-}
-
-$foo = new foo();
-$bar = 'bar';
-$baz = array('foo', 'bar', 'baz', 'quux');
-echo "{$foo->$bar}\n";
-echo "{$foo->{$baz[1]}}\n";
-?>
-]]>
-    </programlisting>
-   &example.outputs;
-   <screen>
-<![CDATA[
-I am bar.
-I am bar.
-]]>
-   </screen>
-   </informalexample>
 
     <note>
-     <para>
-      Der Wert, auf den von Funktionen, Methodenaufrufen, statischen
-      Klassenvariablen, und Klassenkonstanten innerhalb von
-      <literal>{$}</literal> zugegriffen wird, wird als der Name einer
-      Variablen in dem Bereich interpretiert, in dem der String definiert ist.
-      Die Verwendung von einzelnen geschweiften Klammern
-      (<literal>{}</literal>) funktioniert nicht für den Zugriff auf die
-      Rückgabewerte von Funktionen oder Methoden oder die Werte von
-      Klassenkonstanten oder statischen Klassenvariablen.
-     </para>
+     <simpara>
+      Da diese Syntax beliebige Ausdrücke erlaubt, ist es möglich,
+      <link linkend="language.variables.variable">variable Variablen</link>
+      innerhalb der erweiterten Syntax zu verwenden.
+     </simpara>
     </note>
-
-    <informalexample>
-     <programlisting role="php">
-<![CDATA[
-<?php
-// Alle Fehler anzeigen
-error_reporting(E_ALL);
-
-class beers {
-    const softdrink = 'rootbeer';
-    public static $ale = 'ipa';
-}
-
-$rootbeer = 'A & W';
-$ipa = 'Alexander Keith\'s';
-
-// Das funktioniert; Ausgabe: Ich hätte gerne ein A & W
-echo "Ich hätte gerne ein {${beers::softdrink}}\n";
-
-// Das funktioniert auch; Ausgabe: Ich hätte gerne ein Alexander Keith's
-echo "Ich hätte gerne ein {${beers::$ale}}\n";
-?>
-]]>
-     </programlisting>
-    </informalexample>
-
    </sect4>
   </sect3>
 
