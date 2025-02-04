@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: df1e7145848499f193d0e106a86c27a9b94d130e Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 7d804723a85d3a8039ba3d0d2c8c414e85f5ede1 Maintainer: nobody Status: ready -->
+<!-- Reviewed: no -->
 <!-- Credits: betz -->
  <chapter xml:id="language.variables" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Variablen</title>
@@ -535,6 +535,35 @@ function foo(){
      </programlisting>
     </example>
    </para>
+
+   <simpara>
+    Statische Variablen innerhalb anonymer Funktionen bleiben nur innerhalb der
+    jeweiligen Funktionsinstanz bestehen. Wenn die anonyme Funktion bei jedem
+    Aufruf neu erstellt wird, wird die statische Variable neu initialisiert.
+   </simpara>
+   <example>
+    <title>Statische Variablen in anonymen Funktionen</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+function exampleFunction($input) {
+    $result = (static function () use ($input) {
+        static $counter = 0;
+        $counter++;
+        return "Eingabe: $input, Zähler: $counter\n";
+    });
+
+    return $result();
+}
+
+// Bei Aufrufen von exampleFunction wird die anonyme Funktion neu erstellt,
+// so dass die statische Variable ihren Wert nicht beibehält.
+echo exampleFunction('A'); // Ausgabe: Eingabe: A, Zähler: 1
+echo exampleFunction('B'); // Ausgabe: Eingabe: B, Zähler: 1
+?>
+]]>
+    </programlisting>
+   </example>
 
    <para>
     Wenn eine Methode, die statische Variablen verwendet, vererbt (aber nicht

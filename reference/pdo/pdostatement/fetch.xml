@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: daf4cc624df3c21d472149725feb377b1beedb04 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: a8863b0123dc5348c91e67198b995222878a7e65 Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
 <refentry xml:id="pdostatement.fetch" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
@@ -61,14 +60,21 @@
         <listitem>
          <para>
           <constant>PDO::FETCH_CLASS</constant>: gibt eine neue Instanz der
-          angeforderten Klasse zurück, wobei die Spalten der Ergebnismenge den
-          benannten Eigenschaften der Klasse zugeordnet werden und
-          anschließend der Konstruktor aufgerufen wird, es sei denn,
-          <constant>PDO::FETCH_PROPS_LATE</constant> ist ebenfalls angegeben.
-          Wenn <parameter>mode</parameter> das Attribut PDO::FETCH_CLASSTYPE
-          enthält (&zb; <literal>PDO::FETCH_CLASS |
-          PDO::FETCH_CLASSTYPE</literal>), wird der Name der Klasse aus einem
-          Wert der ersten Spalte ermittelt.
+          angeforderten Klasse zurück. Das Objekt wird initialisiert, indem die
+          Spalten der Ergebnismenge den Eigenschaften der Klasse zugewiesen
+          werden. Dies geschieht vor dem Aufruf des Konstruktors und erlaubt
+          die Belegung von Eigenschaften unabhängig von ihrer Sichtbarkeit oder
+          davon, ob sie als <literal>readonly</literal> markiert sind. Wenn
+          eine Eigenschaft in der Klasse nicht existiert, wird die magische
+          Methode <link linkend="object.set">__set()</link> aufgerufen, falls
+          sie existiert; andernfalls wird eine dynamische öffentliche
+          Eigenschaft erstellt. Wenn jedoch auch
+          <constant>PDO::FETCH_PROPS_LATE</constant> angegeben ist, wird der
+          Konstruktor <emphasis>vor</emphasis> dem Belegen der Eigenschaften
+          aufgerufen. Wenn <parameter>mode</parameter> das Attribut
+          <constant>PDO::FETCH_CLASSTYPE</constant> enthält (&zb;
+          <literal>PDO::FETCH_CLASS | PDO::FETCH_CLASSTYPE</literal>), wird der
+          Name der Klasse aus einem Wert der ersten Spalte ermittelt.
          </para>
         </listitem>
         <listitem>
@@ -301,7 +307,7 @@ Rückwärts ausgelesen:
     <simpara>
      Wenn Objekte über <constant>PDO::FETCH_CLASS</constant> abgerufen werden,
      werden zuerst die Objekteigenschaften zugewiesen und dann der Konstruktor
-     der Klasse aufgerufen. Wenn zusätzlich
+     der Klasse aufgerufen. Wenn jedoch zusätzlich
      <constant>PDO::FETCH_PROPS_LATE</constant> angegeben wird, wird diese
      Reihenfolge umgekehrt, &dh; zuerst wird der Konstruktor aufgerufen und
      danach werden die Eigenschaften zugewiesen.
