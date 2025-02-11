@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 9ee9eccf455188ab6eb352194eb6f9eb99e15606 Maintainer: hholzgra  Status: ready -->
+<!-- EN-Revision: 009f215fc983eeded6161676bcffdd8cf3b6b080 Maintainer: hholzgra  Status: ready -->
+<!-- Reviewed: no -->
  <sect1 xml:id="language.oop5.late-static-bindings" xmlns="http://docbook.org/ns/docbook">
   <title>Späte statische Bindung</title>
   <para>
@@ -50,22 +50,30 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-class A {
-    public static function who() {
+
+class A
+{
+    public static function who()
+    {
         echo __CLASS__;
     }
-    public static function test() {
+
+    public static function test()
+    {
         self::who();
     }
 }
 
-class B extends A {
-    public static function who() {
+class B extends A
+{
+    public static function who()
+    {
         echo __CLASS__;
     }
 }
 
 B::test();
+
 ?>
 ]]>
     </programlisting>
@@ -99,22 +107,30 @@ A
     <programlisting role="php">
 <![CDATA[
 <?php
-class A {
-    public static function who() {
+
+class A
+{
+    public static function who()
+    {
         echo __CLASS__;
     }
-    public static function test() {
+
+    public static function test()
+    {
         static::who(); // Hier kommt die späte statische Bindung
     }
 }
 
-class B extends A {
-    public static function who() {
+class B extends A
+{
+    public static function who()
+    {
         echo __CLASS__;
     }
 }
 
 B::test();
+
 ?>
 ]]>
     </programlisting>
@@ -140,31 +156,45 @@ B
     <programlisting role="php">
 <![CDATA[
 <?php
-class A {
-    private function foo() {
+
+class A
+{
+    private function foo()
+    {
         echo "Erfolg!\n";
     }
-    public function test() {
+
+    public function test()
+    {
         $this->foo();
         static::foo();
     }
 }
 
-class B extends A {
-   /* foo() wird nach B kopiert, weshalb ihr Geltungsbereich immer noch A ist,
-    * und der Aufruf wird erfolgreich sein */
+class B extends A
+{
+    /* foo() wird nach B kopiert, weshalb ihr Geltungsbereich immer noch A ist
+    * und der Aufruf erfolgreich sein wird */
 }
 
-class C extends A {
-    private function foo() {
+class C extends A
+{
+    private function foo()
+    {
         /* ursprüngliche Methode wird ersetzt; der Geltungsbereich der neuen ist C */
     }
 }
 
 $b = new B();
 $b->test();
+
 $c = new C();
-$c->test();   //scheitert
+try {
+    $c->test();
+} catch (Error $e) {
+    echo $e->getMessage();
+}
+
 ?>
 ]]>
     </programlisting>
@@ -174,9 +204,7 @@ $c->test();   //scheitert
 Erfolg!
 Erfolg!
 Erfolg!
-
-
-Fatal error:  Call to private method C::foo() from context 'A' in /tmp/test.php on line 9
+Call to private method C::foo() from scope A
 ]]>
     </screen>
    </example>
@@ -192,34 +220,45 @@ Fatal error:  Call to private method C::foo() from context 'A' in /tmp/test.php 
      <programlisting role="php">
 <![CDATA[
 <?php
-class A {
-    public static function foo() {
+
+class A
+{
+    public static function foo()
+    {
         static::who();
     }
 
-    public static function who() {
-        echo __CLASS__."\n";
+    public static function who()
+    {
+        echo __CLASS__ . "\n";
     }
 }
 
-class B extends A {
-    public static function test() {
+class B extends A
+{
+    public static function test()
+    {
         A::foo();
         parent::foo();
         self::foo();
     }
 
-    public static function who() {
-        echo __CLASS__."\n";
+    public static function who()
+    {
+        echo __CLASS__ . "\n";
     }
 }
-class C extends B {
-    public static function who() {
-        echo __CLASS__."\n";
+
+class C extends B
+{
+    public static function who()
+    {
+        echo __CLASS__ . "\n";
     }
 }
 
 C::test();
+
 ?>
 ]]>
      </programlisting>
