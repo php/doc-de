@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- EN-Revision: 5d7f95f58f99eb121d25348370ee6146c0442b0c Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: da15b6674ac1900c7d065bd746a04b53d7e963bf Maintainer: sammywg Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 9d2b858bca85edbeebb83f05a1cd2e87cf90127d Reviewer: samesch -->
 <refentry xml:id="function.parse-str" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>parse_str</refname>
-  <refpurpose>Überträgt einen String in Variablen</refpurpose>
+  <refpurpose>Verarbeitet einen String als Abfrage-String einer URL</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -17,9 +17,10 @@
   </methodsynopsis>
   <para>
    Verarbeitet <parameter>string</parameter>, als ob er der Query-String einer
-   URL-Übergabe via GET wäre, und erstellt Variablen im aktuellen
-   Geltungsbereich (oder im Array, wenn der Parameter
-   <parameter>result</parameter> übergeben wurde).
+   URL-Übergabe via GET wäre, und setzt Schlüssel im angegebenen Array
+   <parameter>result</parameter>. Wenn kein
+   <parameter>result</parameter> übergeben wurde, werden die Werte stattdessen
+   als Variablen im aktuellen Geltungsbereich gesetzt.
   </para>
  </refsect1>
 
@@ -39,8 +40,12 @@
      <term><parameter>result</parameter></term>
      <listitem>
       <para>
-       Ist der zweite Parameter <parameter>arr</parameter> angegeben, werden
-       die Variablen in diesem Array als dessen Elemente gespeichert.
+       Eine per Referenz übergebene Variable, die auf ein Array gesetzt wird,
+       das die aus <parameter>string</parameter> extrahierten
+       Schlüssel-Wert-Paare enthält.
+       Wenn der Parameter <parameter>result</parameter> nicht übergeben wird,
+       wird für jeden Schlüssel eine eigene Variable im lokalen Geltungsbereich
+       gesetzt.
       </para>
       <warning>
        <para>
@@ -106,33 +111,25 @@ $str = "erstes=wert&arr[]=foo+bar&arr[]=baz";
 
 // Empfohlen
 parse_str($str, $output);
-echo $output['erstes'];  // value
-echo $output['arr'][0]; // foo bar
-echo $output['arr'][1]; // baz
-
-// NICHT EMPFOHLEN
-parse_str($str);
-echo $erstes;  // value
-echo $arr[0]; // foo bar
-echo $arr[1]; // baz
+echo $output['erstes'], PHP_EOL; // value
+echo $output['arr'][0], PHP_EOL; // foo bar
+echo $output['arr'][1], PHP_EOL; // baz
 ?>
 ]]>
     </programlisting>
    </example>
   </para>
   <para>
-   Weil PHP-Variablen keine Punkte oder Leerzeichen im Namen enthalten dürfen,
-   werden diese in Unterstriche umgewandelt. Dasselbe gilt für die
-   entsprechenden Schlüsselnamen, für den Fall, dass diese Funktion mit dem
+   Bei der Erstellung von Array-Schlüsseln oder lokalen Variablen werden alle
+   Leerzeichen und Punkte in Parameternamen in Unterstriche umgewandelt.
+   Dies liegt daran, dass Variablennamen in PHP keine Leerzeichen oder Punkte
+   enthalten dürfen. Das gilt auch, wenn diese Funktion mit dem empfohlenen
    Parameter <parameter>result</parameter> verwendet wird.
    <example>
     <title><function>parse_str</function>-Namens-Manipulation</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-parse_str("Mein Wert=Etwas");
-echo $Mein_Wert; // Etwas
-
 parse_str("Mein Wert=Etwas", $output);
 echo $output['Mein_Wert']; // Etwas
 ?>
@@ -146,7 +143,7 @@ echo $output['Mein_Wert']; // Etwas
   &reftitle.notes;
   <note>
    <para>
-    <function>parse_str()</function> wird durch die Direktive
+    <function>parse_str</function> wird durch die Direktive
     <link linkend="ini.max-input-vars">max_input_vars</link> beeinflusst. Das
     Überschreiten dieser Grenze löst ein
     <constant>E_WARNING</constant> aus und alle Variablen, die über diese
@@ -158,15 +155,16 @@ echo $output['Mein_Wert']; // Etwas
   </note>
   <note>
    <para>
-    Alle erzeugten Variablen (oder Werte, die im Array zurückgegeben werden,
-    wenn der zweite Parameter übergeben wurde) wurden bereits mit
-    <function>urldecode</function> vorbereitet.
+    Alle Werte, die in das Array <parameter>result</parameter> eingetragen
+    werden (oder Variablen, die erstellt werden, wenn der zweite Parameter
+    nicht gesetzt ist), sind bereits URL-dekodiert. Dabei gelten die gleichen
+    Regeln wie bei <function>urldecode</function>.
    </para>
   </note>
   <note>
    <para>
-    Um auf den aktuellen <literal>QUERY_STRING</literal> zuzugreifen, kann
-    die Variable <varname>$_SERVER['QUERY_STRING']</varname> verwendet werden.
+    Um auf den Query-String der aktuellen Anfrage zuzugreifen, kann die
+    Variable <varname>$_SERVER['QUERY_STRING']</varname> verwendet werden.
     Weitere Informationen finden sich auch im Abschnitt
     <link linkend="language.variables.external">Variablen aus externen Quellen</link>.
    </para>
