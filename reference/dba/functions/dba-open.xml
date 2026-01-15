@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 44428b04b7b046593e9ab33874eddd1fea7dfab1 Maintainer: samesch Status: ready -->
+<!-- EN-Revision: bfa334803465822457b4dabcf9d9f9a5a990c4d3 Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
-<refentry xml:id="function.dba-open" xmlns="http://docbook.org/ns/docbook">
+<refentry xmlns="http://docbook.org/ns/docbook" xml:id="function.dba-open">
  <refnamediv>
   <refname>dba_open</refname>
   <refpurpose>Öffnet eine Datenbank</refpurpose>
@@ -28,198 +28,196 @@
 
  <refsect1 role="parameters">
   &reftitle.parameters;
-  <para>
-   <variablelist>
-    <varlistentry>
-     <term><parameter>path</parameter></term>
-     <listitem>
+  <variablelist>
+   <varlistentry>
+    <term><parameter>path</parameter></term>
+    <listitem>
+     <para>
+      Ein gültiger Pfad im Dateisystem.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>mode</parameter></term>
+    <listitem>
+     <para>
+      Das ist <literal>r</literal> für lesenden Zugriff, <literal>w</literal>
+      für lesenden und schreibenden Zugriff auf eine existierende Datenbank,
+      <literal>c</literal> für lesenden und schreibenden Zugriff und
+      Erstellen der Datenbank, falls sie noch nicht existiert, und
+      <literal>n</literal> für das Erstellen einer Datenbank, bzw. deren
+      Zurücksetzen auf die Größe 0, falls sie schon existiert, und lesenden
+      und schreibenden Zugriff. Die Datenbank wird im BTree-Modus erzeugt.
+      Andere Modi, wie Hash oder Queue, werden nicht unterstützt.
+     </para>
+     <para>
+      Zusätzlich kann mit dem nächsten Buchstaben die Datenbank-Sperrmethode
+      festgelegt werden. Verwenden Sie <literal>l</literal>, um
+      die Datenbank mit einer <filename>.lck</filename>-Datei zu sperren, oder
+      <literal>d</literal>, um die Datenbank-Datei selbst zu sperren. Es ist
+      wichtig, dass alle Ihre Anwendungen das einheitlich machen.
+     </para>
+     <para>
+      Falls Sie den Zugriff testen wollen, ohne auf die Sperrung zu warten,
+      können Sie <literal>t</literal> als dritten Buchstaben anfügen. Wenn
+      Sie sich absolut sicher sind, dass Sie keine Datenbanksperre benötigen,
+      können Sie statt <literal>l</literal> oder <literal>d</literal>
+      <literal>-</literal> verwenden. Wenn weder <literal>d</literal> oder
+      <literal>l</literal> noch <literal>-</literal> verwendet werden, sperrt
+      dba die Datenbank-Datei wie bei Verwendung von <literal>d</literal>.
+     </para>
+     <note>
       <para>
-       Ein gültiger Pfad im Dateisystem.
+       Es kann jeweils nur einen Schreibzugriff auf eine Datenbank-Datei
+       geben. Wenn dba auf einem Webserver verwendet wird und mehr als eine
+       Anfrage Schreibzugriff benötigt, kann nur einer nach dem anderen
+       erledigt werden. Auch das Lesen ist während des Schreibens nicht
+       erlaubt. Die DBA-Erweiterung verwendet Sperren, um dies zu verhindern.
+       Siehe folgende Tabelle:
+       <table>
+        <title>DBA-Sperrung</title>
+        <tgroup cols="9">
+         <thead>
+          <row>
+           <entry>schon geöffnet</entry>
+           <entry><parameter>mode</parameter> = "rl"</entry>
+           <entry><parameter>mode</parameter> = "rlt"</entry>
+           <entry><parameter>mode</parameter> = "wl"</entry>
+           <entry><parameter>mode</parameter> = "wlt"</entry>
+           <entry><parameter>mode</parameter> = "rd"</entry>
+           <entry><parameter>mode</parameter> = "rdt"</entry>
+           <entry><parameter>mode</parameter> = "wd"</entry>
+           <entry><parameter>mode</parameter> = "wdt"</entry>
+          </row>
+         </thead>
+         <tbody>
+          <row>
+           <entry>nicht geöffnet</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+          </row>
+          <row>
+           <entry><parameter>mode</parameter> = "rl"</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>warten</entry>
+           <entry>&false;</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+          </row>
+          <row>
+           <entry><parameter>mode</parameter> = "wl"</entry>
+           <entry>warten</entry>
+           <entry>&false;</entry>
+           <entry>warten</entry>
+           <entry>&false;</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+          </row>
+          <row>
+           <entry><parameter>mode</parameter> = "rd"</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>OK</entry>
+           <entry>OK</entry>
+           <entry>warten</entry>
+           <entry>&false;</entry>
+          </row>
+          <row>
+           <entry><parameter>mode</parameter> = "wd"</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>unzulässig</entry>
+           <entry>warten</entry>
+           <entry>&false;</entry>
+           <entry>warten</entry>
+           <entry>&false;</entry>
+          </row>
+         </tbody>
+        </tgroup>
+       </table>
+       <simplelist>
+        <member>OK: der zweite Aufruf ist erfolgreich.</member>
+        <member>warten: der zweite Aufruf wartet bis für den ersten <function>dba_close</function> aufgerufen wird.</member>
+        <member>&false;: der zweite Aufruf gibt &false; zurück.</member>
+        <member>unzulässig: Sie dürfen beim Parameter <parameter>mode</parameter> die Modifikatoren <literal>"l"</literal> und <literal>"d"</literal> nicht zusammen verwenden.</member>
+       </simplelist>
       </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>mode</parameter></term>
-     <listitem>
-      <para>
-       Das ist <literal>r</literal> für lesenden Zugriff, <literal>w</literal>
-       für lesenden und schreibenden Zugriff auf eine existierende Datenbank,
-       <literal>c</literal> für lesenden und schreibenden Zugriff und
-       Erstellen der Datenbank, falls sie noch nicht existiert, und
-       <literal>n</literal> für das Erstellen einer Datenbank, bzw. deren
-       Zurücksetzen auf die Größe 0, falls sie schon existiert, und lesenden
-       und schreibenden Zugriff. Die Datenbank wird im BTree-Modus erzeugt.
-       Andere Modi, wie Hash oder Queue, werden nicht unterstützt.
-      </para>
-      <para>
-       Zusätzlich kann mit dem nächsten Buchstaben die Datenbank-Sperrmethode
-       festgelegt werden. Verwenden Sie <literal>l</literal>, um
-       die Datenbank mit einer <filename>.lck</filename>-Datei zu sperren, oder
-       <literal>d</literal>, um die Datenbank-Datei selbst zu sperren. Es ist
-       wichtig, dass alle Ihre Anwendungen das einheitlich machen.
-      </para>
-      <para>
-       Falls Sie den Zugriff testen wollen, ohne auf die Sperrung zu warten,
-       können Sie <literal>t</literal> als dritten Buchstaben anfügen. Wenn
-       Sie sich absolut sicher sind, dass Sie keine Datenbanksperre benötigen,
-       können Sie statt <literal>l</literal> oder <literal>d</literal>
-       <literal>-</literal> verwenden. Wenn weder <literal>d</literal> oder
-       <literal>l</literal> noch <literal>-</literal> verwendet werden, sperrt
-       dba die Datenbank-Datei wie bei Verwendung von <literal>d</literal>.
-      </para>
-      <note>
-       <para>
-        Es kann jeweils nur einen Schreibzugriff auf eine Datenbank-Datei
-        geben. Wenn dba auf einem Webserver verwendet wird und mehr als eine
-        Anfrage Schreibzugriff benötigt, kann nur einer nach dem anderen
-        erledigt werden. Auch das Lesen ist während des Schreibens nicht
-        erlaubt. Die DBA-Erweiterung verwendet Sperren, um dies zu verhindern.
-        Siehe folgende Tabelle:
-        <table>
-         <title>DBA-Sperrung</title>
-         <tgroup cols="9">
-          <thead>
-           <row>
-            <entry>schon geöffnet</entry>
-            <entry><parameter>mode</parameter> = "rl"</entry>
-            <entry><parameter>mode</parameter> = "rlt"</entry>
-            <entry><parameter>mode</parameter> = "wl"</entry>
-            <entry><parameter>mode</parameter> = "wlt"</entry>
-            <entry><parameter>mode</parameter> = "rd"</entry>
-            <entry><parameter>mode</parameter> = "rdt"</entry>
-            <entry><parameter>mode</parameter> = "wd"</entry>
-            <entry><parameter>mode</parameter> = "wdt"</entry>
-           </row>
-          </thead>
-          <tbody>
-           <row>
-            <entry>nicht geöffnet</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-           </row>
-           <row>
-            <entry><parameter>mode</parameter> = "rl"</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>warten</entry>
-            <entry>&false;</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-           </row>
-           <row>
-            <entry><parameter>mode</parameter> = "wl"</entry>
-            <entry>warten</entry>
-            <entry>&false;</entry>
-            <entry>warten</entry>
-            <entry>&false;</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-           </row>
-           <row>
-            <entry><parameter>mode</parameter> = "rd"</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>OK</entry>
-            <entry>OK</entry>
-            <entry>warten</entry>
-            <entry>&false;</entry>
-           </row>
-           <row>
-            <entry><parameter>mode</parameter> = "wd"</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>unzulässig</entry>
-            <entry>warten</entry>
-            <entry>&false;</entry>
-            <entry>warten</entry>
-            <entry>&false;</entry>
-           </row>
-          </tbody>
-         </tgroup>
-        </table>
-        <simplelist>
-         <member>OK: der zweite Aufruf ist erfolgreich.</member>
-         <member>warten: der zweite Aufruf wartet bis für den ersten <function>dba_close</function> aufgerufen wird.</member>
-         <member>&false;: der zweite Aufruf gibt &false; zurück.</member>
-         <member>unzulässig: Sie dürfen beim Parameter <parameter>mode</parameter> die Modifikatoren <literal>"l"</literal> und <literal>"d"</literal> nicht zusammen verwenden.</member>
-        </simplelist>
-       </para>
-      </note>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>handler</parameter></term>
-     <listitem>
-      <para>
-       Der Name des <link linkend="dba.requirements">Handler</link>s, der für
-       den Zugriff auf <parameter>path</parameter> benutzt werden soll. Er
-       bekommt alle optionalen Argumente übergeben, die der Funktion
-       <function>dba_open</function> mitgegeben wurden, und kann damit in
-       deren Name verfahren. Wenn <parameter>handler</parameter> &null; ist,
-       wird der Standard-Handler aufgerufen.
-      </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>permission</parameter></term>
-     <listitem>
-      <para>
-       Ein optionaler &integer;-Parameter, der an den Treiber übergeben wird.
-       Er hat dieselbe Bedeutung wie der Parameter
-       <literal>permissions</literal> bei <function>chmod</function>. Der
-       Standardwert ist <literal>0644</literal>.
-      </para>
-      <para>
-       Der Parameter <parameter>permission</parameter> wird vom
-       <literal>db1</literal>-, <literal>db2</literal>-,
-       <literal>db3</literal>-, <literal>db4</literal>-,
-       <literal>dbm</literal>-, <literal>gdbm</literal>-,
-       <literal>ndbm</literal>- und <literal>lmdb</literal>-Treiber
-       unterstützt.
-      </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>map_size</parameter></term>
-     <listitem>
-      <para>
-       Ein optionaler &integer;-Parameter, der an den Treiber übergeben wird.
-       Sein Wert sollte ein Vielfaches der Größe einer Speicherseite (Page
-       Size) des Betriebssystems sein. Wenn Null angegeben wird, wird die
-       Standard-Map-Size verwendet.
-      </para>
-      <para>
-       Der Parameter <parameter>map_size</parameter> wird nur vom
-       <literal>lmdb</literal>-Treiber akzeptiert.
-      </para>
-     </listitem>
-    </varlistentry>
-    <varlistentry>
-     <term><parameter>flags</parameter></term>
-     <listitem>
-      <para>
-       Die Flags, die an den Datenbanktreiber übergeben werden. Falls &null;,
-       werden die Standard-Flags bereitgestellt. Derzeit unterstützt nur der
-       LMDB-Treiber die Flags <constant>DBA_LMDB_USE_SUB_DIR</constant> und
-       <constant>DBA_LMDB_NO_SUB_DIR</constant>.
-      </para>
-     </listitem>
-    </varlistentry>
-   </variablelist>
-  </para>
+     </note>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>handler</parameter></term>
+    <listitem>
+     <para>
+      Der Name des <link linkend="dba.requirements">Handler</link>s, der für
+      den Zugriff auf <parameter>path</parameter> benutzt werden soll. Er
+      bekommt alle optionalen Argumente übergeben, die der Funktion
+      <function>dba_open</function> mitgegeben wurden, und kann damit in
+      deren Name verfahren. Wenn <parameter>handler</parameter> &null; ist,
+      wird der Standard-Handler aufgerufen.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>permission</parameter></term>
+    <listitem>
+     <para>
+      Ein optionaler &integer;-Parameter, der an den Treiber übergeben wird.
+      Er hat dieselbe Bedeutung wie der Parameter
+      <literal>permissions</literal> bei <function>chmod</function>. Der
+      Standardwert ist <literal>0644</literal>.
+     </para>
+     <para>
+      Der Parameter <parameter>permission</parameter> wird vom
+      <literal>db1</literal>-, <literal>db2</literal>-,
+      <literal>db3</literal>-, <literal>db4</literal>-,
+      <literal>dbm</literal>-, <literal>gdbm</literal>-,
+      <literal>ndbm</literal>- und <literal>lmdb</literal>-Treiber
+      unterstützt.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>map_size</parameter></term>
+    <listitem>
+     <para>
+      Ein optionaler &integer;-Parameter, der an den Treiber übergeben wird.
+      Sein Wert sollte ein Vielfaches der Größe einer Speicherseite (Page
+      Size) des Betriebssystems sein. Wenn Null angegeben wird, wird die
+      Standard-Map-Size verwendet.
+     </para>
+     <para>
+      Der Parameter <parameter>map_size</parameter> wird nur vom
+      <literal>lmdb</literal>-Treiber akzeptiert.
+     </para>
+    </listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>flags</parameter></term>
+    <listitem>
+     <para>
+      Die Flags, die an den Datenbanktreiber übergeben werden. Falls &null;,
+      werden die Standard-Flags bereitgestellt. Derzeit unterstützt nur der
+      LMDB-Treiber die Flags <constant>DBA_LMDB_USE_SUB_DIR</constant> und
+      <constant>DBA_LMDB_NO_SUB_DIR</constant>.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
 
  <refsect1 role="returnvalues">
@@ -284,12 +282,10 @@
 
  <refsect1 role="seealso">
   &reftitle.seealso;
-  <para>
-   <simplelist>
-    <member><function>dba_popen</function></member>
-    <member><function>dba_close</function></member>
-   </simplelist>
-  </para>
+  <simplelist>
+   <member><function>dba_popen</function></member>
+   <member><function>dba_close</function></member>
+  </simplelist>
  </refsect1>
 
 </refentry>
