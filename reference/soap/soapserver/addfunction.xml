@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: fe4e8b87d18f17394e7177917c498774b062448c Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 577239f64b3959c22d348a5f381eaf32fde996ed Maintainer: sammywg Status: ready -->
 <refentry xml:id="soapserver.addfunction" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>SoapServer::addFunction</refname>
@@ -35,9 +35,14 @@
        exportieren.
       </para>
       <para>
-       Spezielle Konstante <constant>SOAP_FUNCTIONS_ALL</constant> übergeben,
-       um alle Funktionen zu exportieren.
+       Ein Array von Funktionsnamen übergeben, um alle Funktionen zu exportieren.
       </para>
+      <simpara>
+       Seit PHP 8.4.0 ist es veraltet, einen <type>int</type>-Wert (einschließlich
+       <constant>SOAP_FUNCTIONS_ALL</constant>) zu übergeben.
+       Stattdessen sollte <function>get_defined_functions</function> verwendet
+       werden, um alle Funktionen abzurufen und als Array zu übergeben.
+      </simpara>
       <note>
        <para>
         <parameter>functions</parameter> muss alle Argumente in der gleichen
@@ -58,6 +63,30 @@
   <para>
    &return.void;
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.4.0</entry>
+      <entry>
+       Die Übergabe eines <type>int</type>-Werts an
+       <methodname>SoapServer::addFunction</methodname>, einschließlich
+       <constant>SOAP_FUNCTIONS_ALL</constant>, wurde als veraltet markiert.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -83,7 +112,8 @@ function echoTwoStrings($inputString1, $inputString2)
 }
 $server->addFunction(array("echoString", "echoTwoStrings"));
 
-$server->addFunction(SOAP_FUNCTIONS_ALL);
+$functions = array_merge(...get_defined_functions());
+$server->addFunction($functions);
 
 ?>
 ]]>
