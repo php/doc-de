@@ -1,148 +1,237 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 0799f7789c50a11b746ad713cc8787e4b04dd926 Maintainer: hholzgra Status: ready -->
+<!-- EN-Revision: ee5ee84013f11aaaf01b09484bc9aa3225379748 Maintainer: hholzgra Status: ready -->
 <!-- Credits: tom -->
- <chapter xml:id="features.persistent-connections" xmlns="http://docbook.org/ns/docbook">
-  <title>Persistente Datenbankverbindungen</title>
+<chapter xml:id="features.persistent-connections" xmlns="http://docbook.org/ns/docbook">
+ <title>Persistente Datenbankverbindungen</title>
 
+ <simplesect>
+  <title>Was sind persistente Verbindungen?</title>
   <simpara>
-   Persistente Verbindungen sind Verbindungen, die nach
-   Abarbeitung des Skriptes nicht geschlossen werden. Wenn eine
-   persistente Verbindung angefordert wird, prüft PHP zuerst, ob
-   bereits eine identische persistente Verbindung (die vielleicht
-   vorher offen geblieben ist) existiert und benutzt sie in diesem Fall.
-   Sollte keine Verbindung existieren, wird eine hergestellt. Eine
-   'identische' Verbindung ist eine Verbindung, die zu dem
-   gleichen Host mit dem gleichen Usernamen und Passwort
-   hergestellt wurde.</simpara>
-  <simpara>
-   Wer nicht durchgängig mit der Art und Weise vertraut ist, wie
-   Webserver arbeiten und die Last verteilen, könnte missverstehen,
-   wofür persistente Verbindungen gedacht sind. Im Besonderen bieten
-   sie <emphasis>keine</emphasis> Möglichkeit, 'Benutzersitzungen'
-   über die gleiche Verbindung zu öffnen und
-   <emphasis>keine</emphasis> Möglichkeit, eine Transaktion effizient
-   aufzubauen, und sie können auch viele andere Dinge nicht. Um
-   absolute Klarheit zu schaffen: Persistente Verbindungen bieten
-   <emphasis>keine</emphasis> Funktionalität, die nicht auch von
-   nicht-persistenten Verbindungen bereitgestellt wird.
+   Persistente Verbindungen sind Verbindungen, die nach Beendigung der
+   Skriptausführung nicht geschlossen werden. Wird eine persistente
+   Verbindung angefordert, prüft PHP, ob bereits eine identische persistente
+   Verbindung (die von einem früheren Aufruf offen geblieben ist) existiert;
+   ist dies der Fall, wird sie wiederverwendet, andernfalls wird eine neue
+   Verbindung aufgebaut. Eine 'identische' Verbindung ist eine Verbindung,
+   die zum gleichen Host mit demselben Benutzernamen und Passwort
+   (sofern zutreffend) hergestellt wurde.
   </simpara>
   <simpara>
-   Warum?
-  </simpara> 
-  <simpara>
-   Das hat mit der Arbeitsweise von Webservern zu tun. Es gibt drei
-   Möglichkeiten, wie ein Webserver PHP zur Generierung von
-   Webseiten einsetzen kann.
+   Es gibt keine Möglichkeit, eine bestimmte Verbindung anzufordern oder zu
+   garantieren, ob die zurückgegebene Verbindung eine bestehende oder eine
+   ganz neue ist (etwa wenn alle bestehenden Verbindungen in Verwendung sind
+   oder die Anfrage von einem anderen Worker bearbeitet wird, der einen
+   eigenen Pool von Verbindungen besitzt).
   </simpara>
   <simpara>
-   Die erste Methode ist, PHP als CGI-'Wrapper' zu benutzen. 
-   Wenn diese Methode eingesetzt wird, wird für jede Anfrage 
-   nach einer PHP-Seite vom Webserver eine Instanz des PHP-
-   Interpreters gestartet und anschließend wieder beendet. 
-   Durch die Beendigung des Interpreters nach abgeschlossener
-   Anfrage werden alle Ressourcen, auf die zugegriffen wurde 
-   (wie beispielsweise eine Verbindung zu einem SQL-
-   Datenbankserver) wieder geschlossen. In diesem Fall erreicht
-   man nichts, wenn man persistente Verbindungen benutzt - sie
-   sind eben nicht beständig.
+   Die persistenten Verbindungen von PHP können daher beispielsweise nicht
+   verwendet werden, um:
+  </simpara>
+  <simplelist>
+   <member>eine bestimmte Datenbanksitzung einem bestimmten Web-Benutzer zuzuweisen</member>
+   <member>eine umfangreiche Transaktion über mehrere Anfragen hinweg aufzubauen</member>
+   <member>eine Abfrage in einer Anfrage zu starten und die Ergebnisse in einer anderen abzurufen</member>
+  </simplelist>
+  <simpara>
+   Persistente Verbindungen bieten <emphasis>keinerlei</emphasis>
+   Funktionalität, die nicht auch mit nicht-persistenten Verbindungen
+   möglich wäre.
+  </simpara>
+ </simplesect>
+
+ <simplesect xml:id="persistent-connections.web">
+  <title>Web-Anfragen</title>
+  <simpara>
+   Es gibt zwei Möglichkeiten, wie ein Webserver PHP zur Generierung von
+   Webseiten einsetzen kann:
   </simpara>
   <simpara>
-   Die zweite und populärste Methode ist der Einsatz von PHP als
-   Modul in einem Multiprozess-Webserver, was momentan nur auf den
-   Apache zutrifft. Typischerweise hat ein Multiprozess-Webserver
-   einen Prozess (den 'Eltern' Prozess), der einen Satz weiterer
-   Prozesse (die 'Kinder') koordiniert, welche die eigentliche Arbeit
-   des Bereitstellens der Seiten übernehmen. Jede Anfrage, die von
-   einem Client erfolgt, wird an einen untergeordneten Prozess, der
-   noch keine andere Anfrage bearbeitet, weitergereicht. Das bedeutet,
-   dass eine zweite Anfrage des gleichen Clients an den Server unter
-   Umständen von einem anderen untergeordneten Prozess als die
-   erste Anfrage bearbeitet wird. Wurde eine persistente Verbindung
-   einmal geöffnet kann jede danach folgende Seite innerhalb des
-   gleichen Prozesses diese bereits zum Server bestehende Verbindung
-   weiter verwenden.
+   Die erste Methode ist, PHP als CGI-"Wrapper" zu benutzen. Wenn diese
+   Methode eingesetzt wird, wird für jede Anfrage nach einer PHP-Seite vom
+   Webserver eine Instanz des PHP-Interpreters gestartet und anschließend
+   wieder beendet. Durch die Beendigung des Interpreters nach jeder Anfrage
+   werden alle Ressourcen, auf die zugegriffen wurde (wie beispielsweise
+   eine Verbindung zu einem SQL-Datenbankserver), wieder geschlossen. In
+   diesem Fall erreicht man nichts, wenn man persistente Verbindungen
+   benutzt - sie sind eben nicht beständig.
   </simpara>
   <simpara>
-   Die letzte Methode ist, PHP als Plug-in für einen Multithread-
-   Webserver zu benutzen. Derzeit bietet PHP Unterstützung für
-   WSAPI und NSAPI (unter Windows), wodurch die Nutzung von
-   PHP mit Multithread-Serven wie Netscape Fast Track (iPlanet),
-   Microsoft Internet Information Server (IIS) und O'Reilly's WebSite
-   Pro ermöglicht wird. Das Verhalten entspricht im wesentlichen dem
-   oben beschriebenen Multiprozess-Modell.
+   Die zweite und populärste Methode ist der Einsatz von PHP-FPM oder von
+   PHP als Modul in einem Multiprozess-Webserver (derzeit nur Apache).
+   Solche Setups haben typischerweise einen Prozess (den Eltern-Prozess),
+   der eine Reihe weiterer Prozesse (seine Kinder) koordiniert, welche die
+   eigentliche Arbeit des Bereitstellens der Webseiten übernehmen. Wenn
+   eine Anfrage von einem Client eingeht, wird sie an eines der Kinder
+   weitergereicht, das gerade keinen anderen Client bedient. Das bedeutet,
+   dass eine zweite Anfrage desselben Clients an den Server unter Umständen
+   von einem anderen Kindprozess als die erste Anfrage bearbeitet wird.
+   Wurde eine persistente Verbindung einmal geöffnet, kann jede danach
+   vom selben Kindprozess bediente Seite die bereits aufgebaute Verbindung
+   zum SQL-Server weiterverwenden.
+  </simpara>
+  <note>
+   <para>
+   Die verwendete Methode lässt sich anhand des Werts von "Server API" in
+   der Ausgabe von <function>phpinfo</function> oder anhand des Werts der
+   Konstante <constant>PHP_SAPI</constant>, ausgeführt über eine
+   Web-Anfrage, prüfen.
+   </para>
+   <para>
+    Lautet die Server API "Apache 2 Handler" oder "FPM/FastCGI", werden
+    persistente Verbindungen über Anfragen hinweg wiederverwendet, die vom
+    selben Worker bedient werden. Bei jedem anderen Wert bleiben
+    persistente Verbindungen nach jeder Anfrage nicht erhalten.
+   </para>
+  </note>
+ </simplesect>
+
+ <simplesect xml:id="persistent-connections.cli">
+  <title>Kommandozeilen-Prozesse</title>
+  <simpara>
+   Da PHP auf der Kommandozeile für jedes Skript einen neuen Prozess
+   verwendet, werden persistente Verbindungen nicht zwischen
+   Kommandozeilen-Skripten geteilt. Es bringt daher keinen Nutzen, sie in
+   kurzlebigen Skripten wie Cronjobs oder Befehlen einzusetzen. Sie können
+   jedoch zum Beispiel in einem langlaufenden Anwendungsserver nützlich
+   sein, der viele Anfragen oder Aufgaben bedient, von denen jede ihre
+   eigene Datenbankverbindung benötigen kann.
+  </simpara>
+ </simplesect>
+
+ <simplesect xml:id="persistent-connections.why">
+  <title>Wozu sie verwenden?</title>
+  <simpara>
+   Persistente Verbindungen sind nützlich, wenn der Aufwand zum Aufbau
+   einer Verbindung zu einem SQL-Server hoch ist. Ob dieser Aufwand
+   signifikant ist, hängt von vielen Faktoren ab, etwa von der Art der
+   Datenbank, davon, ob sie auf demselben Rechner wie der Webserver läuft,
+   und davon, wie stark dieser Rechner ausgelastet ist. Ist der
+   Verbindungsaufwand hoch, können persistente Verbindungen erheblich
+   helfen: Jeder Kindprozess verbindet sich nur einmal während seiner
+   gesamten Lebensdauer, statt jedes Mal, wenn er eine Seite verarbeitet,
+   die eine Verbindung zum SQL-Server benötigt. Das bedeutet, dass jeder
+   Kindprozess, der eine persistente Verbindung öffnet, seine eigene
+   Verbindung zum Server unterhält. Bei beispielsweise 20 verschiedenen
+   Kindprozessen, die jeweils ein Skript ausführen, das eine persistente
+   Verbindung zum SQL-Server aufbaut, ergeben sich 20 separate
+   Verbindungen zu diesem Server, eine pro Kind.
+  </simpara>
+ </simplesect>
+
+ <simplesect xml:id="persistent-connections.drawbacks.conn-limits">
+  <title>Mögliche Nachteile: Verbindungslimits</title>
+  <simpara>
+   Es ist jedoch zu beachten, dass dies Nachteile haben kann, wenn eine
+   Datenbank mit Verbindungslimits verwendet wird, die durch persistente
+   Verbindungen der Kindprozesse überschritten werden. Hat die Datenbank
+   ein Limit von 16 gleichzeitigen Verbindungen und versuchen während
+   einer stark ausgelasteten Server-Sitzung 17 Kindprozesse, eine
+   Verbindung herzustellen, wird einer von ihnen fehlschlagen. Bestehen in
+   den Skripten Fehler, die das Schließen der Verbindungen verhindern
+   (wie etwa Endlosschleifen), kann eine Datenbank mit nur 16 Verbindungen
+   sehr schnell überschwemmt werden.
   </simpara>
   <simpara>
-   Wozu dienen persistente Verbindungen, wenn sie keine 
-   zusätzliche Funktionalität bieten?
+   Persistente Verbindungen erhöhen in der Regel die Anzahl der zu einem
+   gegebenen Zeitpunkt geöffneten Verbindungen, da untätige Worker
+   weiterhin die Verbindungen halten, die sie für vorherige Anfragen
+   geöffnet haben. Werden viele Worker hochgefahren, um eine
+   Lastspitze zu bewältigen, bleiben die von ihnen geöffneten Verbindungen
+   bestehen, bis der Worker beendet wird oder der Datenbankserver die
+   Verbindung schließt.
   </simpara>
   <simpara>
-   Die Antwort ist außerordentlich einfach: Effizienz. Persistente
-   Verbindungen sind nützlich, wenn der Aufwand für das Herstellen
-   einer Verbindung zu einem SQL-Server hoch ist. Ob dies der Fall ist
-   oder nicht, hängt von vielen Faktoren ab - zum Beispiel, um welche
-   Datenbank es sich handelt, ob sie auf dem gleichen Rechner wie der
-   Webserver läuft oder welche Last die SQL-Maschine zu bewältigen hat
-   usw. Grundsätzlich gilt, dass, wenn viele Verbindungen hergestellt
-   werden müssen, persistente Verbindungen außerordentlich hilfreich
-   sind. Sie veranlassen den untergeordneten Prozess, sich während
-   seiner gesamten Lebensdauer lediglich einmal mit dem SQL-Server zu
-   verbinden, anstatt bei jedem Aufruf einer Seite, die eine Verbindung
-   benötigt. Das heißt, dass jeder untergeordnete Prozess, der eine
-   persistente Verbindung öffnet, seine eigene dauerhafte Verbindung
-   zum Server hat. Bei 20 untergeordneten Prozessen, die ein Skript 
-   ausführen, das eine persistente Verbindung zum SQL-Server 
-   herstellt, hat man beispielsweise 20 verschiedene Verbindungen 
-   zum SQL-Server - eine für jeden untergeordneten Prozess.
+   Es ist sicherzustellen, dass die vom Datenbankserver erlaubte maximale
+   Anzahl an Verbindungen größer ist als die maximale Anzahl der Worker
+   für Web-Anfragen (zuzüglich aller weiteren Verwendungen wie Cronjobs
+   oder administrativer Verbindungen).
   </simpara>
   <simpara>
-   Beachten Sie jedoch, dass dies auch ein paar Nachteile haben kann,
-   wenn Sie eine Datenbank mit limitierten Verbindungen benutzen, welche
-   durch persistente Verbindungen überschritten werden. Wenn Ihre Datenbank
-   ein Limit von 16 gleichzeitigen Verbindungen hat, und aufgrund einer
-   stark ausgelasteten Server-Session 17 Kind-Prozesse versuchen, eine
-   Verbindung herzustellen, wird es einem nicht gelingen. Sollten in
-   Ihren Skripten Fehler bestehen, welche das Schließen der Verbindungen
-   nicht erlauben (wie z.B. Endlosschleifen), kann das eine Datenbank
-   mit mit nur 16 Verbindungen sehr schnell überschwemmen. Konsultieren
-   Sie die Dokumentation Ihrer Datenbank bezüglich der Behandlung von
-   aufgegebenen Verbindungen oder Verbindungen im Leerlauf.
+   Es empfiehlt sich, in der Dokumentation der Datenbank Informationen zur
+   Behandlung aufgegebener oder im Leerlauf befindlicher Verbindungen
+   (Timeouts) nachzuschlagen. Lange Timeouts können die Anzahl der zu
+   einem Zeitpunkt geöffneten persistenten Verbindungen erheblich
+   erhöhen.
   </simpara>
-  <warning>
-   <simpara>
-    Sie sollten sich zur Vorsicht noch ein paar Gedanken machen, wenn
-    Sie persistente Verbindungen benutzen. Einer ist, wenn Sie über eine
-    persistente Verbindung Tabellen sperren und das Skript diese Sperre
-    aus welchem Grund auch immer nicht mehr aufheben kann, nachfolgende
-    Skripte, welche die selbe Verbindung benutzen, blockieren und den
-    Neustart von entweder dem Webserver oder dem Datenbankserver
-    verlangen. Ein weiterer ist, dass wenn Sie Transaktionen benutzen,
-    ein Transaktionsblock zu dem nächsten die Verbindung nutzenden Skript
-    übertragen wird, wenn die Ausführung des Skriptes vor dem
-    Transaktionsblock gestoppt wird. In jedem Fall können Sie
-    <function>register_shutdown_function</function> benutzen, um eine
-    einfache Funktion zu registrieren, welche Ihre Tabellen wieder
-    entsperrt, oder Ihre Transaktionen zurückstellt. Besser ist es, wenn
-    Sie dieses Problem gänzlich vermeiden, indem keine persistenten
-    Verbindungen in Skripten benutzen, welche Tabellen sperren oder
-    Transaktionen verwenden (Sie können sie immer noch anderswo benutzen).
-   </simpara>
-  </warning>
+ </simplesect>
+
+ <simplesect xml:id="persistent-connections.drawbacks.state">
+  <title>Mögliche Nachteile: Verwaltung des Verbindungszustands</title>
   <simpara>
-   Eine wichtige Zusammenfassung. Persistente Verbindungen wurden
-   entwickelt, um eins-zu-eins Abbildungen auf reguläre Verbindungen 
-   zu haben. Das heißt, dass man <emphasis>immer</emphasis> in der Lage
-   sein sollte, die persistenten Verbindungen durch nicht-persistente
-   zu ersetzten, ohne dass dies den Skriptablauf verändert. Es <emphasis>
-   kann</emphasis> (und wird vermutlich auch) die Effizienz des Skriptes
-   beeinflussen, aber nicht dessen Verhalten.
+   Manche Datenbank-Erweiterungen führen eine automatische Bereinigung
+   durch, wenn die Verbindung wiederverwendet wird; andere überlassen
+   diese Aufgabe dem Anwendungsentwickler. Je nach gewählter
+   Datenbank-Erweiterung und Anwendungsdesign kann eine manuelle Bereinigung
+   vor Beendigung des Skripts erforderlich sein. Änderungen, die
+   Verbindungen in einem unerwarteten Zustand zurücklassen können, sind
+   unter anderem:
   </simpara>
-  <para>
-   Siehe auch <function>ibase_pconnect</function>, <function>ociplogon</function>,
-   <function>odbc_pconnect</function>, <function>oci_pconnect</function>,
-   <function>pfsockopen</function> und <function>pg_pconnect</function>.
-  </para>
- </chapter>
+  <simplelist>
+   <member>Ausgewählte / voreingestellte Datenbank</member>
+   <member>Tabellensperren</member>
+   <member>Nicht abgeschlossene Transaktionen</member>
+   <member>Temporäre Tabellen</member>
+   <member>Verbindungsspezifische Einstellungen oder Funktionen wie Profiling</member>
+  </simplelist>
+  <simpara>
+   Tabellensperren und Transaktionen, die nicht aufgeräumt oder
+   abgeschlossen werden, können dazu führen, dass andere Abfragen
+   unbegrenzt blockiert werden und/oder dass eine spätere
+   Wiederverwendung der Verbindung unerwartete Änderungen verursacht.
+  </simpara>
+  <simpara>
+   Ist die falsche Datenbank ausgewählt, kann eine spätere
+   Wiederverwendung der Verbindung Abfragen nicht wie erwartet ausführen
+   (oder führt sie auf der falschen Datenbank aus, wenn sich die Schemata
+   ausreichend ähneln).
+  </simpara>
+  <simpara>
+   Werden temporäre Tabellen nicht aufgeräumt, können nachfolgende
+   Anfragen dieselbe Tabelle nicht erneut anlegen.
+  </simpara>
+  <simpara>
+   Die Bereinigung kann mithilfe von Klassen-Destruktoren oder
+   <function>register_shutdown_function</function> umgesetzt werden.
+   Dedizierte Connection-Pooling-Proxies, die dies als Teil ihrer
+   Funktionalität enthalten, können ebenfalls in Betracht gezogen werden.
+  </simpara>
+ </simplesect>
+
+ <simplesect xml:id="persistent-connections.final-words">
+  <title>Schlussbemerkungen</title>
+  <simpara>
+   Aufgrund des oben beschriebenen Verhaltens und der potenziellen
+   Nachteile sollten persistente Verbindungen nicht ohne sorgfältige
+   Abwägung eingesetzt werden. Sie sollten nicht ohne zusätzliche
+   Anpassungen der Anwendung sowie ohne sorgfältige Konfiguration von
+   Datenbankserver und Webserver und/oder PHP-FPM verwendet werden.
+  </simpara>
+  <simpara>
+   Es sollten alternative Lösungen in Betracht gezogen werden, etwa die
+   Untersuchung und Behebung der Ursachen für den
+   Verbindungsaufbau-Overhead (beispielsweise das Deaktivieren von
+   Reverse-DNS-Lookups auf dem Datenbankserver) oder dedizierte
+   Connection-Pooling-Proxies.
+  </simpara>
+  <simpara>
+   Für Web-APIs mit hohem Anfragevolumen sollten alternative Runtimes oder
+   langlaufende Anwendungsserver in Betracht gezogen werden.
+  </simpara>
+ </simplesect>
+
+ <simplesect role="seealso" xml:id="persistent-connections.seealso">
+  &reftitle.seealso;
+  <simplelist>
+   <member><function>ibase_pconnect</function></member>
+   <member><function>oci_pconnect</function></member>
+   <member><function>odbc_pconnect</function></member>
+   <member><function>pfsockopen</function></member>
+   <member><function>pg_connect</function></member>
+   <member><link linkend="mysqli.persistconns">MySQLi und persistente Verbindungen</link></member>
+   <member><link linkend="pdo.connections">PDO-Verbindungsverwaltung</link></member>
+  </simplelist>
+ </simplesect>
+</chapter>
 
 <!-- Keep this comment at the end of the file
 Local variables:
