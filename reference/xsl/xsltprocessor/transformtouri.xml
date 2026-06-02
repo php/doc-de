@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 5d95b4bb24353111b02874a24af2dc39e3c8a9de Maintainer: theseer Status: ready -->
+<!-- EN-Revision: 01904e809eaf0aa60e7ce0524400ddd5681c9541 Maintainer: theseer Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 07e6a4aaa2d28b6218a362b05e573fb13267358d Reviewer: samesch -->
-<refentry xml:id="xsltprocessor.transformtouri" xmlns="http://docbook.org/ns/docbook">
+<refentry xml:id="xsltprocessor.transformtouri" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude">
  <refnamediv>
   <refname>XSLTProcessor::transformToUri</refname>
   <refpurpose>Transformiert in einen URI</refpurpose>
@@ -31,8 +30,9 @@
      <term><parameter>document</parameter></term>
      <listitem>
       <para>
-       Das zu verarbeitende <classname>DOMDocument</classname>- oder
-       <classname>SimpleXMLElement</classname>-Objekt
+       Das zu verarbeitende <classname>Dom\Document</classname>-,
+       <classname>DOMDocument</classname>-,
+       <classname>SimpleXMLElement</classname>- oder libxml-kompatible Objekt.
       </para>
      </listitem>
     </varlistentry>
@@ -48,12 +48,44 @@
   </para>
  </refsect1>
 
+ <xi:include xpointer="domxpath.query..errors" />
+
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
    Gibt die Anzahl geschriebener Bytes zurück oder &false;, falls ein Fehler
    aufgetreten ist.
   </para>
+ </refsect1>
+
+ <refsect1 role="changelog" xml:id="xsltprocessor.transformtouri..changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.4.0</entry>
+      <entry>
+       Wenn der Callback nicht aufgerufen werden kann, wird nun ein
+       <exceptionname>Error</exceptionname> ausgelöst, anstatt eine Warnung
+       auszugeben.
+      </entry>
+     </row>
+     <row>
+      <entry>8.4.0</entry>
+      <entry>
+       Unterstützung für <classname>Dom\Document</classname> hinzugefügt.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
@@ -72,7 +104,26 @@ $xml->load('collection.xml');
 $xsl = new DOMDocument;
 $xsl->load('collection.xsl');
 
-// Prozessor instanziieren und konfigurieren
+// Transformierenden Prozessor instanziieren und konfigurieren
+$proc = new XSLTProcessor;
+$proc->importStyleSheet($xsl); // die XSL-Regeln anhängen
+
+$proc->transformToURI($xml, 'file:///tmp/out.html');
+
+?>
+]]>
+    </programlisting>
+   </example>
+   <example>
+    <title>Transformation in eine HTML-Datei mittels <classname>Dom\Document</classname></title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+$xml = Dom\XMLDocument::createFromFile('collection.xml');
+$xsl = Dom\XMLDocument::createFromFile('collection.xsl');
+
+// Transformierenden Prozessor instanziieren und konfigurieren
 $proc = new XSLTProcessor;
 $proc->importStyleSheet($xsl); // die XSL-Regeln anhängen
 

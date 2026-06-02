@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: f5e5b54129045a7d02c5285a88cea0abff8ffb6f Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: 5c04cf0fd637b258d2a3bf7f4b7aba1beef6d823 Maintainer: wiesemann Status: ready -->
+<!-- Reviewed: no -->
  <sect1 xml:id="language.oop5.visibility" xmlns="http://docbook.org/ns/docbook">
   <title>Sichtbarkeit</title>
   <para>
@@ -13,17 +13,16 @@
    einzig auf die Klasse ein, die das Element definiert.
   </para>
 
-  <sect2 xml:id="language.oop5.visiblity-members">
+  <sect2 xml:id="language.oop5.visibility-members">
    <title>Sichtbarkeit von Membern</title>
    <para>
      Klasseneigenschaften können als public, private oder protected definiert
      werden. Eigenschaften, die ohne explizites Schlüsselwort für die
      Sichtbarkeit deklariert sind, werden als public definiert.
    </para>
-   <para>
-    <example>
-     <title>Eigenschaftendeklaration</title>
-     <programlisting role="php">
+   <example>
+    <title>Deklarieren von Eigenschaften</title>
+    <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 /**
@@ -55,7 +54,7 @@ $obj->printHello(); // Zeigt Public, Protected und Private
  */
 class MyClass2 extends MyClass
 {
-    // Wir können die public- und protected-Eigenschaften neu deklarieren, 
+    // Wir können die public- und protected-Eigenschaften neu deklarieren,
     // aber nicht die private
     public $public = 'Public2';
     protected $protected = 'Protected2';
@@ -74,11 +73,146 @@ echo $obj2->protected; // Fataler Fehler
 echo $obj2->private; // Undefiniert
 $obj2->printHello(); // Zeigt Public2, Protected2, Undefined
 
-?> 
+?>
+]]>
+    </programlisting>
+   </example>
+   <sect3 xml:id="language.oop5.visibility-members-aviz">
+    <title>Asymmetrische Sichtbarkeit von Eigenschaften</title>
+    <simpara>
+     Seit PHP 8.4 kann die Sichtbarkeit von Eigenschaften auch asymmetrisch
+     festgelegt werden, mit unterschiedlichem Geltungsbereich für Lesen
+     (<literal>get</literal>) und Schreiben (<literal>set</literal>).
+     Insbesondere kann die Sichtbarkeit von <literal>set</literal> separat
+     spezifiziert werden, vorausgesetzt, sie erlaubt nicht mehr als die
+     standardmäßige Sichtbarkeit.
+    </simpara>
+    <example>
+     <title>Asymmetrische Sichtbarkeit von Eigenschaften</title>
+     <programlisting role="php" annotations="non-interactive">
+<![CDATA[
+<?php
+class Book
+{
+    public function __construct(
+        public private(set) string $title,
+        public protected(set) string $author,
+        protected private(set) int $pubYear,
+    ) {}
+}
+
+class SpecialBook extends Book
+{
+    public function update(string $author, int $year): void
+    {
+        $this->author = $author; // OK
+        $this->pubYear = $year; // Fataler Fehler
+    }
+}
+
+$b = new Book('How to PHP', 'Peter H. Peterson', 2024);
+
+echo $b->title; // Funktioniert
+echo $b->author; // Funktioniert
+echo $b->pubYear; // Fataler Fehler
+
+$b->title = 'How not to PHP'; // Fataler Fehler
+$b->author = 'Pedro H. Peterson'; // Fataler Fehler
+$b->pubYear = 2023; // Fataler Fehler
+?>
 ]]>
      </programlisting>
     </example>
-   </para>
+    <para>Bei der asymmetrischen Sichtbarkeit gibt es ein paar Einschränkungen:</para>
+    <itemizedlist>
+     <listitem>
+      <simpara>
+       Nur typisierte Eigenschaften können eine separate Sichtbarkeit von
+       <literal>set</literal> haben.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Die Sichtbarkeit von <literal>set</literal> muss dieselbe sein wie
+       <literal>get</literal> oder restriktiver. Das heißt,
+       <code>public protected(set)</code> und
+       <code>protected protected(set)</code> sind erlaubt, aber
+       <code>protected public(set)</code> führt zu einem Syntaxfehler.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Wenn eine Eigenschaft <literal>public</literal> ist, dann kann die
+       Hauptsichtbarkeit weggelassen werden. Das heißt,
+       <code>public private(set)</code> und <code>private(set)</code> haben das
+       gleiche Ergebnis.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Eine Eigenschaft mit der Sichtbarkeit <literal>private(set)</literal>
+       ist automatisch <literal>final</literal> und darf in einer Kindklasse
+       nicht neu deklariert werden.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       Der Zugriff auf eine Eigenschaftsreferenz folgt der Sichtbarkeit
+       von <literal>set</literal>, nicht <literal>get</literal>.
+       Das liegt daran, dass eine Referenz verwendet werden kann, um den
+       Eigenschaftswert zu ändern.
+      </simpara>
+     </listitem>
+     <listitem>
+      <simpara>
+       In ähnlicher Weise beinhaltet der Versuch, in eine Array-Eigenschaft zu
+       schreiben, intern sowohl eine <literal>get</literal>- als auch eine
+       <literal>set</literal>-Operation und folgt daher der Sichtbarkeit von
+       <literal>set</literal>, da diese immer die restriktivere ist.
+      </simpara>
+     </listitem>
+    </itemizedlist>
+    <note>
+     <simpara>
+      Leerzeichen sind in der Sichtbarkeitsdeklaration von set nicht erlaubt.
+      <literal>private(set)</literal> ist korrekt.
+      <literal>private( set )</literal> ist nicht korrekt und führt zu einem
+      Parser-Fehler.
+     </simpara>
+    </note>
+    <simpara>
+     Wenn eine Klasse eine andere erweitert, kann die Kindklasse jede
+     Eigenschaft, die nicht <literal>final</literal> ist, neu definieren.
+     Dabei kann sie entweder die Hauptsichtbarkeit oder die Sichtbarkeit von
+     <literal>set</literal> erweitern, vorausgesetzt, die neue Sichtbarkeit
+     ist gleich oder größer als die der Elternklasse. Es ist jedoch zu
+     beachten, dass eine <literal>private</literal> Eigenschaft, die
+     überschrieben wird, nicht die Eigenschaft der Elternklasse ändert, sondern
+     eine neue Eigenschaft mit einem anderen internen Namen erzeugt.
+    </simpara>
+    <example>
+     <title>Vererbung asymmetrischer Eigenschaften</title>
+     <programlisting role="php" annotations="non-interactive">
+<![CDATA[
+<?php
+class Book
+{
+    protected string $title;
+    public protected(set) string $author;
+    protected private(set) int $pubYear;
+}
+
+class SpecialBook extends Book
+{
+    public protected(set) string $title; // OK, da die Rechte zum Lesen breiter sind und die zum Schreiben gleich.
+    public string $author; // OK, da die Rechte zum Lesen gleich sind und die zum Schreiben breiter.
+    public protected(set) int $pubYear; // Fatal Fehler. private(set)-Eigenschaften sind final.
+}
+?>
+]]>
+     </programlisting>
+    </example>
+   </sect3>
   </sect2>
 
   <sect2 xml:id="language.oop5.visiblity-methods">
@@ -87,10 +221,9 @@ $obj2->printHello(); // Zeigt Public2, Protected2, Undefined
     Klassenmethoden müssen mit public, private oder protected definiert werden.
     Methoden ohne jede explizite Deklaration sind als public definiert.
    </para>
-   <para>
-    <example>
-     <title>Methodendeklaration</title>
-     <programlisting role="php">
+   <example>
+    <title>Deklarieren von Methoden</title>
+    <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 /**
@@ -144,7 +277,7 @@ $myclass2 = new MyClass2;
 $myclass2->MyPublic(); // Funktioniert
 $myclass2->Foo2(); // Public und Protected funktionieren, Private nicht
 
-class Bar 
+class Bar
 {
     public function test() {
         $this->testPrivate();
@@ -154,31 +287,30 @@ class Bar
     public function testPublic() {
         echo "Bar::testPublic\n";
     }
-    
+
     private function testPrivate() {
         echo "Bar::testPrivate\n";
     }
 }
 
-class Foo extends Bar 
+class Foo extends Bar
 {
     public function testPublic() {
         echo "Foo::testPublic\n";
     }
-    
+
     private function testPrivate() {
         echo "Foo::testPrivate\n";
     }
 }
 
 $myFoo = new Foo();
-$myFoo->test(); // Bar::testPrivate 
+$myFoo->test(); // Bar::testPrivate
                 // Foo::testPublic
 ?>
 ]]>
-     </programlisting>
-    </example>
-   </para>
+    </programlisting>
+   </example>
   </sect2>
 
   <sect2 xml:id="language.oop5.visiblity-constants">
@@ -188,10 +320,9 @@ $myFoo->test(); // Bar::testPrivate
     protected definiert werden. Konstanten, die ohne eine explizite
     Sichtbarkeitsangabe deklariert wurden, sind public.
    </para>
-   <para>
-    <example>
-     <title>Konstantendeklaration von PHP 7.1.0 an</title>
-     <programlisting role="php">
+   <example>
+    <title>Deklarieren von Konstanten von PHP 7.1.0 an</title>
+    <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 /**
@@ -242,9 +373,8 @@ echo MyClass2::MY_PUBLIC; // funktioniert
 $myclass2->foo2(); // öffentlich und geschützt funktioniert, aber nicht privat
 ?>
 ]]>
-     </programlisting>
-    </example>
-   </para>
+    </programlisting>
+   </example>
   </sect2>
 
   <sect2 xml:id="language.oop5.visibility-other-objects">
@@ -257,7 +387,7 @@ $myclass2->foo2(); // öffentlich und geschützt funktioniert, aber nicht privat
    </para>
    <example>
     <title>Zugriff auf als private markierte Member des gleichen Objekttyps</title>
-    <programlisting role="php">
+    <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 class Test

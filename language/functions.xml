@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: f94d903985119d3ac00f4528551df947f57b667f Maintainer: cmb Status: ready -->
+<!-- EN-Revision: dd87866772c31671146ff778140dc0955c55005c Maintainer: cmb Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: b95e76e41de2ffe5c75e04be1b187d80ca745359 Reviewer: samesch -->
 <!-- Credits: hholzgra, tom, updated to fix build by theseer -->
@@ -10,26 +9,42 @@
   <sect1 xml:id="functions.user-defined">
    <title>Benutzerdefinierte Funktionen</title>
    <para>
-    Eine Funktion kann wie folgt definiert werden:
+    Eine Funktion wird definiert mit dem Schlüsselwort
+    <literal>function</literal>, einem Namen, einer Liste von Parametern (die
+    auch leer sein können), die durch Kommata (<literal>,</literal>) getrennt
+    und in Klammern eingeschlossen sind, gefolgt vom Funktionskörper, der in
+    geschweiften Klammern eingeschlossen ist, wie im folgenden Beispiel:
    </para>
-   <para>
-    <example>
-     <title>Pseudocode zur Demonstration der Nutzung von Funktionen</title>
-     <programlisting role="php">
+   <example>
+    <title>Deklarieren einer neuen Funktion namens <literal>foo</literal></title>
+    <programlisting role="php">
 <![CDATA[
 <?php
-function foo($arg_1, $arg_2, ..., $arg_n)
+function foo($arg_1, $arg_2, /* ..., */ $arg_n)
 {
     echo "Beispielfunktion.\n";
     return $retval;
 }
 ?>
 ]]>
-     </programlisting>
-    </example>
-   </para>
+    </programlisting>
+   </example>
+   <note>
+    <para>
+     Seit PHP 8.0.0 kann die Liste der Parameter ein Komma am Ende enthalten:
+     <informalexample>
+      <programlisting role="php">
+<![CDATA[
+<?php
+function foo($arg_1, $arg_2,) { }
+?>
+]]>
+      </programlisting>
+     </informalexample>
+    </para>
+   </note>
    <simpara>
-    Jeder beliebige korrekte PHP-Code kann in einer Funktion
+    Innerhalb des Funktionskörpers kann jeder beliebige korrekte PHP-Code
     vorkommen, sogar andere Funktionen und
     <link linkend="language.oop5.basic.class">Klassen</link>-Definitionen.
    </simpara>
@@ -174,13 +189,15 @@ function recursion($a)
   </sect1>
 
   <sect1 xml:id="functions.arguments">
-   <title>Funktionsparameter</title>
+   <title>Funktionsparameter und -argumente</title>
    <simpara>
-    Mit einer Parameterliste kann man Informationen an eine Funktion
-    übergeben. Die Parameterliste ist eine durch Kommas getrennte Liste von
-    Ausdrücken. Die Parameter werden von links nach rechts ausgewertet, bevor
-    die eigentliche Funktion aufgerufen wird, &dh; mit der sog.
-    <emphasis>eager</emphasis> Evaluation (dt. eifrige Auswertung).
+    Die Funktionsparameter werden in der Signatur der Funktion deklariert.
+    Mit einer Liste von Argumenten kann man Informationen an eine Funktion
+    übergeben. Die Argumentenliste ist eine durch Kommas getrennte Liste von
+    Ausdrücken. Die Argumente werden von links nach rechts ausgewertet und das
+    Ergebnis wird den Parametern der Funktion zugewiesen, bevor die eigentliche
+    Funktion aufgerufen wird, &dh; mit der sog.
+    <emphasis>eager</emphasis>-Evaluation (dt. eifrige Auswertung).
    </simpara>
    <para>
     PHP unterstützt die Weitergabe von Parametern als Werte (das ist der
@@ -191,21 +208,24 @@ function recursion($a)
     und <link linkend="functions.named-arguments">benannte Parameter</link> werden
     ebenfalls unterstützt.
    </para>
-   <para>
-    <example>
-     <title>Arrays an Funktionen übergeben</title>
-     <programlisting role="php">
+   <note>
+    <para>
+     Seit PHP 7.3.0 ist es möglich, in der Argumentliste eines Funktionsaufrufs
+     ein nachgestelltes Komma zu verwenden:
+     <informalexample>
+      <programlisting role="php">
 <![CDATA[
 <?php
-function nimm_array($eingabe)
-{
-    echo "$eingabe[0] + $eingabe[1] = ", $eingabe[0]+$eingabe[1];
-}
+$v = foo(
+    $arg_1,
+    $arg_2,
+);
 ?>
 ]]>
-     </programlisting>
-    </example>
-   </para>
+      </programlisting>
+     </informalexample>
+    </para>
+   </note>
    <para>
     Seit PHP 8.0.0 kann die Liste der Funktionsparameter ein nachgestelltes
     Komma enthalten, das ignoriert wird. Das ist besonders nützlich in Fällen,
@@ -267,8 +287,9 @@ echo $str; // Ausgabe: 'Dies ist ein String, und etwas mehr.'
      </example>
     </para>
     <para>
-     Es ist ein Fehler, einen Wert als Parameter zu übergeben, der eigentlich
-     als Referenz übergeben werden müsste.
+     Es ist ein Fehler, einen konstanten Ausdruck als Argument an einen
+     Parameter zu übergeben, der eigentlich als Referenz übergeben werden
+     müsste.
     </para>
    </sect2>
    <sect2 xml:id="functions.arguments.default">
@@ -277,8 +298,8 @@ echo $str; // Ausgabe: 'Dies ist ein String, und etwas mehr.'
     <para>
      Eine Funktion kann Standardwerte für Parameter definieren, indem sie eine
      ähnliche Syntax wie bei der Zuweisung von Variablen verwendet. Der
-     Standardwert wird nur verwendet, wenn der Parameter nicht angegeben ist.
-     Dabei ist insbesondere zu beachten, dass bei der Übergabe von &null;
+     Standardwert wird nur verwendet, wenn für den Parameter kein Argument
+     übergeben wurde. Es ist zu beachten, dass bei der Übergabe von &null;
      <emphasis>nicht</emphasis> der Standardwert zugewiesen wird.
     </para>
     <para>
@@ -386,7 +407,7 @@ Bereite einen schönen Kaffee für Dich zu.
     </para>
     <para>
      <example>
-      <title>Ungültige Verwendung von Vorgabewerten</title>
+      <title>Ungültige Verwendung von Funktionsparametern mit Vorgabewerten</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -413,7 +434,7 @@ Fatal error: Uncaught ArgumentCountError: Too few arguments
     </para>
     <para>
      <example>
-     <title>Richtiger Einsatz von Vorgabewerten</title>
+      <title>Richtiger Einsatz von  Funktionsparametern mit Vorgabewerten</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -436,12 +457,12 @@ Mache einen Becher rechtsdrehendes Brombeer-Joghurt.
     </para>
     <para>
      Seit PHP 8.0.0 können
-     <link linkend="functions.named-arguments">benannte Parameter</link>
+     <link linkend="functions.named-arguments">benannte Argumente</link>
      verwendet werden, um mehrere optionale Parameter zu überspringen.
     </para>
     <para>
      <example>
-      <title>Korrekte Verwendung von Funktionsparametern mit Standardwerten</title>
+      <title>Korrekte Verwendung von Funktionsparametern mit Vorgabewerten</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -468,20 +489,26 @@ Making a bowl of raspberry natural yogurt.
      Allgemeinen durch das Weglassen des Standardwertes gelöst werden, da er
      nie verwendet wird. Eine Ausnahme von dieser Regel sind Parameter der Form
      <code>Type $param = null</code>, wobei der Standardwert &null; den Typ
-     implizit nullbar macht. Diese Verwendung bleibt erlaubt, obwohl empfohlen
-     wird, stattdessen einen explizit
-     <link linkend="language.types.declarations.nullable">nullbaren Typ</link>
-     zu verwenden.
+     implizit nullbar macht. Diese Verwendung ist seit PHP 8.4.0 veraltet und
+     stattdessen sollte ein expliziter
+     <link linkend="language.types.declarations.nullable">nullable Typ</link>
+     verwendet werden.
      <example>
       <title>Angabe von optionalen Parametern nach obligatorischen Parametern</title>
       <programlisting role="php">
 <![CDATA[
 <?php
-function foo($a = [], $b) {} // Seit PHP 8.0.0 veraltet; Standardwert wird nicht verwendet
-function foo($a, $b) {}      // Funktionell identisch, aber ohne Veraltet-Hinweis
 
-function bar(A $a = null, $b) {} // Noch erlaubt; $a wird benötigt, kann aber null sein
+function foo($a = [], $b) {}     // Standardwert wird nicht verwendet;
+                                 // seit PHP 8.0.0 veraltet
+function foo($a, $b) {}          // Funktionell identisch, aber ohne Veraltet-Hinweis
+
+function bar(A $a = null, $b) {} // Seit PHP 8.1.0 ist $a implizit erforderlich
+                                 // (da es vor dem erforderlichen Parameter steht),
+                                 // aber implizit löschbar (seit PHP 8.4.0 veraltet),
+                                 // da der Standardparameterwert null ist
 function bar(?A $a, $b) {}       // Empfohlen
+
 ?>
 ]]>
       </programlisting>
@@ -496,25 +523,25 @@ function bar(?A $a, $b) {}       // Empfohlen
     </note>
     <note>
      <simpara>
-      Parameter, die per Verweis übergeben werden, dürfen einen Standardwert
+      Parameter, die ein Argument per Verweis erwarten, dürfen einen Standardwert
       haben.
      </simpara>
     </note>
    </sect2>
 
    <sect2 xml:id="functions.variable-arg-list">
-    <title>Variable Anzahl von Parametern</title>
+    <title>Variable Anzahl von Argumenten</title>
     <simpara>
-     PHP unterstützt eine variable Anzahl an Parametern in benutzerdefinierten
+     PHP unterstützt eine variable Anzahl an Argumenten in benutzerdefinierten
      Funktionen durch Verwendung des <literal>...</literal>-Tokens.
     </simpara>
     <para>
      Eine Liste von Parametern kann das Token <literal>...</literal>
      enthalten, um anzugeben, dass die Funktion eine variable Anzahl von
-     Parametern akzeptiert. Die zusätzlichen Werte werden als &array; an die
+     Argumenten akzeptiert. Die Argumente werden als &array; an die
      entsprechende Variable übergeben:
      <example>
-      <title>Verwendung von <literal>...</literal> für den Zugriff auf variable Parameter</title>
+      <title>Verwendung von <literal>...</literal> für den Zugriff auf variable Argumente</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -541,9 +568,9 @@ echo sum(1, 2, 3, 4);
     <para>
      Das Token <literal>...</literal> kann auch dazu verwendet werden, um ein
      <type>&array;</type> oder ein <classname>Traversable</classname>-Objekt als
-     Liste von Parametern zu übergeben:
+     Liste von Argumenten zu übergeben:
      <example>
-      <title>Verwendung von <literal>...</literal> zur Übergabe einer Parameterliste</title>
+      <title>Verwendung von <literal>...</literal> zur Übergabe einer Argumentenliste</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -577,10 +604,10 @@ echo add(...$a);
     <para>
      Es ist zudem auch möglich, dem <literal>...</literal>-Token eine
      <link linkend="language.types.declarations">Typdeklaration</link>
-     voranzustellen. Ist dies der Fall, dann müssen alle Parameter, die von
+     voranzustellen. Ist dies der Fall, dann müssen alle Argumente, die von
      <literal>...</literal> erfasst werden, vom entsprechenden Typ sein.
      <example>
-      <title>Variable Parameter mit Typdeklaration</title>
+      <title>Variable Argumente mit Typdeklaration</title>
       <programlisting role="php">
 <![CDATA[
 <?php
@@ -612,7 +639,7 @@ Catchable fatal error: Argument 2 passed to total_intervals() must be an instanc
     </para>
     <para>
      Durch ein voran gestelltes <literal>&amp;</literal> ist auch die Übergabe
-     von variablen Parametern
+     von variablen Argumenten
      <link linkend="functions.arguments.by-reference">als Referenz</link>
      möglich.
     </para>
@@ -620,24 +647,24 @@ Catchable fatal error: Argument 2 passed to total_intervals() must be an instanc
    </sect2>
 
    <sect2 xml:id="functions.named-arguments">
-    <title>Benannte Parameter</title>
+    <title>Benannte Argumente</title>
     <para>
-     PHP 8.0.0 führt benannte Parameter als eine Erweiterung der bestehenden
-     Positionsparameter ein. Benannte Parameter ermöglichen die Übergabe von
-     Parametern an eine Funktion basierend auf dem Parameternamen und nicht
-     auf der Position des Parameters. Das macht die Bedeutung von Parametern
-     selbsterklärend, macht die Parameter unabhängig von der Reihenfolge und
+     PHP 8.0.0 führt benannte Argumente als eine Erweiterung der bestehenden
+     Positionsparameter ein. Benannte Argumente ermöglichen die Übergabe von
+     Argumenten an eine Funktion basierend auf dem Parameternamen und nicht
+     auf der Position des Parameters. Das macht die Bedeutung von Argumenten
+     selbsterklärend, macht die Argumente unabhängig von der Reihenfolge und
      ermöglicht das willkürliche Überspringen von Standardwerten.
     </para>
     <para>
-     Benannte Parameter werden übergeben, indem dem Wert der Parametername
+     Benannte Argumente werden übergeben, indem dem Wert der Parametername
      gefolgt von einem Doppelpunkt vorangestellt wird. Reservierte
      Schlüsselwörter dürfen als Parameternamen verwendet werden. Der
      Parametername muss ein Bezeichner sein; eine dynamische Angabe ist nicht
      erlaubt.
     </para>
     <example>
-     <title>Syntax benannter Parameter</title>
+     <title>Syntax benannter Argumente</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -651,21 +678,21 @@ function_name($variableStoringParamName: $value);
      </programlisting>
     </example>
     <example>
-     <title>Positionsparameter im Vergleich zu benannten Parametern</title>
+     <title>Positionsargumente im Vergleich zu benannten Argumenten</title>
      <programlisting role="php">
 <![CDATA[
 <?php
-// Verwendung von Positionsparametern:
+// Verwendung von Positionsargumenten:
 array_fill(0, 100, 50);
 
-// Verwendung von benannten Parametern:
+// Verwendung von benannten Argumenten:
 array_fill(start_index: 0, count: 100, value: 50);
 ?>
 ]]>
      </programlisting>
     </example>
     <para>
-     Die Reihenfolge, in der die benannten Parameter übergeben werden, spielt
+     Die Reihenfolge, in der die benannten Argumente übergeben werden, spielt
      keine Rolle.
     </para>
     <example>
@@ -679,13 +706,13 @@ array_fill(value: 50, count: 100, start_index: 0);
      </programlisting>
     </example>
     <para>
-     Benannte Parameter können mit Positionsparametern kombiniert werden. In
-     diesem Fall müssen die benannten Parameter nach den Positionsparametern
-     kommen. Es ist auch möglich, nur einige der optionalen Parameter einer
+     Benannte Argumente können mit Positionsargumenten kombiniert werden. In
+     diesem Fall müssen die benannten Argumente nach den Positionsargumenten
+     kommen. Es ist auch möglich, nur einige der optionalen Argumente einer
      Funktion anzugeben, unabhängig von ihrer Reihenfolge.
     </para>
     <example>
-     <title>Kombinieren von benannten Parametern mit Positionsparametern</title>
+     <title>Kombinieren von benannten Argumenten mit Positionsargumenten</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -697,33 +724,37 @@ htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8', fa
      </programlisting>
     </example>
     <para>
-     Die mehrfache Übergabe desselben Parameters führt zu einer Error-Exception.
+     Die mehrfache Übergabe eines Arguments an denselben benannten Parameter
+     führt zu einer <classname>Error</classname>-Exception.
     </para>
     <example>
-     <title>Die mehrfache Übergabe desselben Parameters erzeugt einen Fehler</title>
+     <title>Die mehrfache Übergabe eines Arguments an denselben benannten Parameter erzeugt einen Fehler</title>
      <programlisting role="php">
 <![CDATA[
 <?php
+
 function foo($param) { ... }
 
 foo(param: 1, param: 2);
 // Error: Named parameter $param overwrites previous argument
+
 foo(1, param: 2);
 // Error: Named parameter $param overwrites previous argument
+
 ?>
 ]]>
      </programlisting>
     </example>
 
     <para>
-     Seit PHP 8.1.0 ist es möglich, benannte Parameter nach dem Entpacken von
-     Parametern zu verwenden. Ein bereits entpackter Parameter
-     <emphasis>darf nicht</emphasis> durch einen benannten Parameter
+     Seit PHP 8.1.0 ist es möglich, benannte Argumente nach dem Entpacken von
+     Argumenten zu verwenden. Ein bereits entpacktes Argument
+     <emphasis>darf nicht</emphasis> durch einen benanntes Argument
      überschrieben werden.
     </para>
 
     <example>
-    <title>Verwendung benannter Parameter nach dem Entpacken</title>
+    <title>Verwendung benannter Argumente nach dem Entpacken</title>
      <programlisting role="php">
 <![CDATA[
 <?php
@@ -734,7 +765,7 @@ function foo($a, $b, $c = 3, $d = 4) {
 var_dump(foo(...[1, 2], d: 40)); // 46
 var_dump(foo(...['b' => 2, 'a' => 1], d: 40)); // 46
 
-var_dump(foo(...[1, 2], b: 20)); // Fataler Fehler. Der benannte Parameter $b überschreibt den vorherige Parameter
+var_dump(foo(...[1, 2], b: 20)); // Fataler Fehler. Der benannte Parameter $b überschreibt das vorherige Argument
 ?>
 ]]>
      </programlisting>
@@ -863,7 +894,7 @@ function foo() {
 
 function bar($arg = '')
 {
-    echo "In bar(); der Parameter ist '$arg'.<br />\n";
+    echo "In bar(); das Argument ist '$arg'.<br />\n";
 }
 
 // Dies ist eine Wrapperfunktion für echo
@@ -1183,7 +1214,7 @@ $example();
 $message = 'welt';
 $example();
 
-// Closures können auch reguläre Parameter akzeptieren
+// Closures können auch reguläre Argumente akzeptieren
 $example = function ($arg) use ($message) {
     var_dump($arg . ' ' . $message);
 };
@@ -1400,6 +1431,14 @@ Warning: Cannot bind an instance to a static closure in %s on line %d
        </thead>
        <tbody>
         <row>
+         <entry>8.3.0</entry>
+         <entry>
+          Closures, die von
+          <link linkend="language.oop5.magic">magischen Methoden</link>
+          erstellt werden, können benannte Parameter akzeptieren.
+         </entry>
+        </row>
+        <row>
          <entry>7.1.0</entry>
          <entry>
           Anonyme Funktionen dürfen &link.superglobals;,
@@ -1513,7 +1552,7 @@ var_export($fn(5)(10));
 <?php
 
 fn(array $x) => $x;
-static fn(): int => $x;
+static fn($x): int => $x;
 fn($x = 42) => $x;
 fn(&$x) => $x;
 fn&($x) => $x;

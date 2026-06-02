@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e50e79746736dbdfbabe9bd3566793b3ddf38f58 Maintainer: conni Status: ready -->
+<!-- EN-Revision: 5f1a92089fa4efe81e9777f87f9ed93f4853898b Maintainer: conni Status: ready -->
 <refentry xml:id="function.pg-prepare" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>pg_prepare</refname>
@@ -24,20 +24,18 @@
    <function>pg_send_execute</function> ausgeführt werden kann. Dank dieser
    Eigenschaft brauchen wiederholt ausgeführte Abfragen nur ein einziges Mal
    geparst und geplant werden, anstatt bei jeder Ausführung.
-   <function>pg_prepare</function> wird nur für Verbindungen zu PostgreSQL ab
-   der Version 7.4 unterstützt und schlägt bei allen niedrigeren Versionen
-   fehl.
   </para>
   <para>
    Diese Funktion erzeugt aus der Abfrage <parameter>query</parameter> eine
    vorbereitete Abfrage mit dem Namen <parameter>stmtname</parameter>.
    <parameter>query</parameter> darf nur ein einzelnes SQL-Kommando enthalten.
-   <parameter>stmtname</parameter> kann "" sein, um eine unbenannte Abfrage zu
-   erzeugen, wobei zuvor definierte unbenannte Abfragen automatisch
-   überschrieben werden. Falls der Name der vorbereiteten Abfrage in der
-   aktuellen Datenbanksitzung schon vergeben ist, wird ein Fehler
+   <parameter>stmtname</parameter> kann <literal>""</literal> sein, um eine
+   unbenannte Abfrage zu erzeugen, wobei zuvor definierte unbenannte Abfragen
+   automatisch überschrieben werden. Falls der Name der vorbereiteten Abfrage
+   in der aktuellen Datenbanksitzung schon vergeben ist, wird ein Fehler
    zurückgegeben. Falls irgendwelche Parameter übergeben wurden, werden diese
-   in <parameter>query</parameter> als $1, $2 usw. referenziert.
+   in <parameter>query</parameter> als <literal>$1</literal>,
+   <literal>$2</literal> usw. referenziert.
   </para>
   <para>
    Vorbereitete Abfragen, die mit <function>pg_prepare</function> erzeugt
@@ -64,9 +62,9 @@
      <listitem>
       <para>
        Der Name, unter dem die vorbereitete Abfrage gespeichert wird. Dieser
-       muss für jede Verbindung eindeutig sein. Falls "" angegeben wurde, wird
-       eine unbenannte Abfrage erzeugt, die alle zuvor definierten unbenannten
-       Abfragen überschreibt.
+       muss für jede Verbindung eindeutig sein. Falls <literal>""</literal>
+       angegeben wurde, wird eine unbenannte Abfrage erzeugt, die alle zuvor
+       definierten unbenannten Abfragen überschreibt.
       </para>
      </listitem>
     </varlistentry>
@@ -77,7 +75,7 @@
        Die parametrisierte vorbereitete Abfrage. Diese darf nur ein einziges
        SQL-Kommando enthalten (mehrere Kommandos, durch Semikolon getrennt,
        sind nicht zulässig). Falls Parameter übergeben werden, werden sie als
-       $1, $2, ... referenziert.
+       <literal>$1</literal>, <literal>$2</literal>, ... referenziert.
       </para>
      </listitem>
     </varlistentry>
@@ -119,13 +117,14 @@
     <programlisting role="php">
 <![CDATA[
 <?php
+
 // Verbindung zu einer Datenbank namens "mary" aufbauen
 $dbconn = pg_connect("dbname=mary");
 
 // Abfrage vorbereiten
 $result = pg_prepare($dbconn, "my_query", 'SELECT * FROM shops WHERE name = $1');
 
-// die vorbereitete Abfrage ausführen. Beachten Sie, dass es
+// Die vorbereitete Abfrage ausführen. Es ist zu beachten, dass es
 // nicht nötig ist, den String "Joe's Widgets" zu maskieren.
 $result = pg_execute($dbconn, "my_query", array("Joe's Widgets"));
 

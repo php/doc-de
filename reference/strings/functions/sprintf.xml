@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: f134250210702ab6280ab303b846679177d39f14 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 45042fef652f1b4e904e809fcbfcf31f6c60670b Maintainer: sammywg Status: ready -->
+<!-- Reviewed: no -->
 <refentry xml:id="function.sprintf" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>sprintf</refname>
@@ -79,55 +79,75 @@ echo sprintf($format, $anzahl, $ort);
 Es sind 5 Affen auf dem Baum
 ]]>
    </screen>
+  </example>
+  <para>
+   Aber nehmen wir einmal an, dass wir den Formatstring in einer separaten
+   Datei erstellen, da wir ihn internationalisieren wollen und deshalb wie
+   folgt umschreiben:
+  </para>
+  <example>
+   <title>Falsche Reihenfolge der Argumente</title>
    <para>
-    Aber nehmen
-    wir einmal an, dass wir den Formatstring in einer separaten Datei
-    erstellen, da wir ihn internationalisieren wollen und deshalb wie
-    folgt umschreiben:
+    Der Formatstring unterstützt die Nummerierung/Vertauschung von Argumenten.
    </para>
    <programlisting role="php">
 <![CDATA[
 <?php
-$format = 'Der %s enthält %d Affen';
+$anzahl = 5;
+$ort = 'Baum';
+
+$format = 'Auf dem %s sind %d Affen';
 echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
    </programlisting>
-   <para>
-    Nun haben wir ein Problem. Die Reihenfolge der Platzhalter im
-    Formatstrings entspricht nicht mehr der Reihenfolge der Argumente im
-    Code. Wir würden gern den Code belassen wie er ist und einfach im
-    Formatstring angeben, welche Argumenten welchen Platzhaltern entsprechen.
-    Wir würden dann den Formatstring wie folgt schreiben:
-   </para>
+  </example>
+  <para>
+   Nun haben wir ein Problem. Die Reihenfolge der Platzhalter im Formatstring
+   entspricht nicht mehr der Reihenfolge der Argumente im Code. Wir würden gern
+   den Code belassen wie er ist und einfach im Formatstring angeben, auf welche
+   Argumente sich die Platzhalter beziehen.
+   Wir würden dann den Formatstring wie folgt schreiben:
+  </para>
+  <example>
+   <title>Verwenden der Reihenfolge bei Platzhaltern</title>
    <programlisting role="php">
 <![CDATA[
 <?php
-$format = 'Der %2$s enthält %1$d Affen';
+$anzahl = 5;
+$ort = 'Baum';
+
+$format = 'Auf dem %2$s sind %1$d Affen';
 echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
    </programlisting>
-   <para>
-    Ein weiterer Vorteil ist, dass die Platzhalter wiederholt werden
-    können, ohne mehr Argumente im Code hinzufügen zu müssen.
-   </para>
+  </example>
+  <para>
+   Ein weiterer Vorteil ist, dass die Platzhalter wiederholt werden
+   können, ohne mehr Argumente im Code hinzufügen zu müssen.
+  </para>
+  <example>
+   <title>Platzhalter mehrfach verwenden</title>
    <programlisting role="php">
 <![CDATA[
 <?php
-$format = 'Der %2$s enthält %1$d Affen.
+$anzahl = 5;
+$ort = 'Baum';
+
+$format = 'Auf dem %2$s sind %1$d Affen.
            %1$d Affen sind ziemlich viel für einen %2$s.';
 echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
    </programlisting>
-   <para>
-    Wenn Argumenttausch verwendet wird, muss die
-    <literal>n$</literal>-<emphasis>Positionsangabe</emphasis> direkt nach dem
-    Prozentzeichen (<literal>%</literal>) folgen, vor jeglichen anderen
-    Angaben, wie unten zu sehen ist.
-   </para>
   </example>
+  <para>
+   Wenn Argumente vertauscht werden, muss die
+   <literal>n$</literal>-<emphasis>Positionsangabe</emphasis> direkt nach dem
+   Prozentzeichen (<literal>%</literal>) folgen, vor jeglichen anderen Angaben,
+   wie unten zu sehen ist.
+  </para>
   <example>
    <title>Angabe von Füllzeichen</title>
    <programlisting role="php">
@@ -151,7 +171,10 @@ echo sprintf("%'.09d\n", 123);
    <programlisting role="php">
 <![CDATA[
 <?php
-$format= 'Der %2$s enthält %1$04d Affen';
+$anzahl = 5;
+$ort = 'Baum';
+
+$format= 'Auf dem %2$s sind %1$04d Affen';
 echo sprintf($format, $anzahl, $ort);
 ?>
 ]]>
@@ -159,7 +182,7 @@ echo sprintf($format, $anzahl, $ort);
    &example.outputs;
    <screen>
 <![CDATA[
-Der Baum enthält 0005 Affen.
+Auf dem Baum sind 0005 Affen.
 ]]>
    </screen>
   </example>
@@ -168,7 +191,11 @@ Der Baum enthält 0005 Affen.
    <programlisting role="php">
 <![CDATA[
 <?php
-$isodate = sprintf("%04d-%02d-%02d", $year, $month, $day);
+$jahr = 2005;
+$monat = 5;
+$tag = 6;
+
+$isodatum = sprintf("%04d-%02d-%02d", $jahr, $monat, $tag);
 ?>
 ]]>
    </programlisting>
@@ -178,13 +205,13 @@ $isodate = sprintf("%04d-%02d-%02d", $year, $month, $day);
    <programlisting role="php">
 <![CDATA[
 <?php
-$money1 = 68.75;
-$money2 = 54.35;
-$money = $money1 + $money2;
-echo $money;
-echo "\n";
-$formatted = sprintf("%01.2f", $money);
-echo $formatted;
+$betrag1 = 68.75;
+$betrag2 = 54.35;
+$summe = $betrag1 + $betrag2;
+echo $summe, PHP_EOL;
+
+$formatiert = sprintf("%01.2f", $summe);
+echo $formatiert, PHP_EOL;
 ?>
 ]]>
    </programlisting>
@@ -201,9 +228,9 @@ echo $formatted;
    <programlisting role="php">
 <![CDATA[
 <?php
-$number = 362525200;
+$zahl = 362525200;
 
-echo sprintf("%.3e", $number);
+echo sprintf("%.3e", $zahl), PHP_EOL;
 ?>
 ]]>
    </programlisting>

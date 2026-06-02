@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 850ac483c876e767048222f9133e2498145f9f4a Maintainer: hholzgra  Status: ready -->
+<!-- EN-Revision: bb9bfdfc5a4a8ffe27ab4edcfe0d8747a375e2f2 Maintainer: hholzgra  Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: f739452fff4a12d64c78a3656640ed03fcfe91d0 Reviewer: samesch -->
 <refentry xml:id="function.glob" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -23,6 +22,13 @@
    C-Bibliothek und entspricht weitgehend den Regeln in den üblichen
    Kommandozeilen-Shells.
   </para>
+  <simpara>
+   Das Verhalten auf Unix- und macOS-Systemen wird durch die systemeigene
+   Implementierung von glob() bestimmt. Unter Windows wird eine Implementierung
+   verwendet, die der POSIX-Definition 1003.2 für glob() entspricht und eine
+   Erweiterung enthält, mit der die <literal>[!...]</literal>-Konvention für
+   die Negierung eines Bereichs behandelt werden kann.
+  </simpara>
  </refsect1>
 
  <refsect1 role="parameters">
@@ -57,6 +63,13 @@
         </listitem>
         <listitem>
          <simpara>
+          <literal>{a,b,c}</literal> - Wenn das Flag
+          <constant>GLOB_BRACE</constant> verwendet wird, eine Zeichenkette aus
+          einer Gruppe von Zeichenketten, die durch ein Komma getrennt sind.
+         </simpara>
+        </listitem>
+        <listitem>
+         <simpara>
           <literal>\</literal> - Maskiert das folgende Zeichen, es sei denn,
           das Flag <constant>GLOB_NOESCAPE</constant> wurde verwendet.
          </simpara>
@@ -69,10 +82,7 @@
      <term><parameter>flags</parameter></term>
      <listitem>
       <para>
-       Mögliche Flags:
-       <variablelist>
-        <xi:include set-xml-id="" xpointer="xmlns(db=http://docbook.org/ns/docbook) xpointer(id('constant.glob-constant-variablelist')/*)"><xi:fallback/></xi:include>
-       </variablelist>
+       Jede der <constant>GLOB_<replaceable>*</replaceable></constant>-Konstanten.
       </para>
      </listitem>
     </varlistentry>
@@ -86,13 +96,9 @@
    Gibt ein Array mit den übereinstimmenden Datei- und Verzeichnisnamen zurück.
    Wenn keine Treffer gefunden wurden, wird ein leeres Array zurückgegeben,
    und im Fehlerfall &false;.
+   Wenn nicht <literal>GLOB_NOSORT</literal> verwendet wird, werden die Namen
+   alphanumerisch sortiert.
   </para>
-  <note>
-   <para>
-    Auf manchen Systemen ist es nicht möglich, zwischen einer leeren
-    Ergebnismenge und einem aufgetretenen Fehler zu unterscheiden.
-   </para>
-  </note>
  </refsect1>
 
  <refsect1 role="examples">
@@ -118,6 +124,30 @@ foreach (glob("*.txt") as $filename) {
 funclist.txt - Größe: 44686
 funcsummary.txt - Größe: 267625
 quickref.txt - Größe: 137820
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>
+     Beispiel mit einem komplexeren Muster
+    </title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+foreach (glob("path/*/*.{txt,md}", \GLOB_BRACE) as $filename) {
+    echo "$filename\n";
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+path/docs/mailinglist-rules.md
+path/docs/README.md
+path/docs/release-process.md
+path/pear/install-pear.txt
+path/Zend/README.md
 ]]>
     </screen>
    </example>

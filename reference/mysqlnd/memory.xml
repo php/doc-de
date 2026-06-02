@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: e016fe67d1f58dc26592e50a244584fcfcf2604d Maintainer: samesch Status: ready -->
+<!-- EN-Revision: 9598935f21bc472f22383fb989625f0b22785331 Maintainer: samesch Status: ready -->
 <!-- Reviewed: no -->
-<chapter xml:id="mysqlnd.memory" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="mysqlnd.memory">
  <title>Speicherverwaltung</title>
- <para>
+ <simpara>
   <emphasis role="bold">Einführung</emphasis>
- </para>
- <para>
+ </simpara>
+ <simpara>
   Der MySQL Native Driver verwaltet den Speicher anders als die MySQL Client
   Library. Die Bibliotheken unterscheiden sich in der Art und Weise, wie
   Speicher zugewiesen und freigegeben wird, wie Speicher beim Lesen von
   MySQL-Ergebnissen in Teilstücken zugewiesen wird, welche Debug- und
   Entwicklungsoptionen existieren und wie von MySQL gelesene Ergebnisse mit
   PHP-Benutzervariablen verknüpft werden.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Die folgenden Hinweise sind als Einführung und Zusammenfassung für Benutzer
   gedacht, die daran interessiert sind, den MySQL Native Driver auf
   C-Code-Ebene zu verstehen.
- </para>
- <para>
+ </simpara>
+ <simpara>
   <emphasis role="bold">Für die Speicherverwaltung verwendete Funktionen</emphasis>
- </para>
- <para>
+ </simpara>
+ <simpara>
   Alle Zuweisungen und Freigaben von Speicher erfolgen über die Funktionen der
   PHP-Speicherverwaltung, weshalb der Speicherverbrauch von mysqlnd mit Hilfe
   von PHP-API-Aufrufen wie <function>memory_get_usage</function> verfolgt
@@ -36,8 +36,8 @@
   verwendet direkt die Aufrufe der Speicherverwaltung des Betriebssystems,
   sodass die Auswirkungen sofort auf der Betriebssystemebene beobachtet werden
   können.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Jede von PHP erzwungene Speicherbegrenzung wirkt sich auch auf den MySQL
   Native Driver aus. Dies kann zu "Out-of-Memory"-Fehlern führen, wenn große
   Ergebnismengen abgerufen werden, die die Größe des von PHP zur Verfügung
@@ -48,24 +48,24 @@
   das PHP-Speicherlimit hinaus anwachsen. Gleichzeitig sind PHP-Skripte in der
   Lage, größere Ergebnismengen zu verarbeiten, da der für die Speicherung der
   Ergebnismengen vorgesehene Speicher nicht unter der Kontrolle von PHP steht.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Die Funktionen der PHP-Speicherverwaltung werden vom MySQL Native Driver
   über einen schlanken Wrapper aufgerufen. Der Wrapper erleichtert unter
   anderem das Debugging.
- </para>
- <para>
+ </simpara>
+ <simpara>
   <emphasis role="bold">Handhabung von Ergebnismengen</emphasis>
- </para>
- <para>
+ </simpara>
+ <simpara>
   Die verschiedenen MySQL-Server- und Client-APIs unterscheiden zwischen
   <link linkend="mysqli.quickstart.statements">gepufferten und ungepufferten</link>
   Ergebnismengen. Ungepufferte Ergebnismengen werden Zeile für Zeile von MySQL
   zum Client übertragen, während der Client die Ergebnisse durchläuft.
   Gepufferte Ergebnisse werden in ihrer Gesamtheit von der Client-Bibliothek
   abgerufen, bevor sie an den Client weitergegeben werden.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Der MySQL Native Driver verwendet PHP-Streams für die Kommunikation mit dem
   MySQL-Server. Die von MySQL gesendeten Ergebnisse werden aus den
   Netzwerkpuffern der PHP-Streams in den Ergebnispuffer von mysqlnd abgerufen.
@@ -74,8 +74,8 @@
   Übertragung vom Ergebnispuffer in PHP-Variablen wirkt sich auf den
   Speicherverbrauch aus und macht sich vor allem dann bemerkbar, wenn
   gepufferte Ergebnismengen verwendet werden.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Standardmäßig versucht der MySQL Native Driver zu vermeiden, dass gepufferte
   Ergebnisse doppelt im Speicher gehalten werden. Die Ergebnisse werden nur
   einmal im internen Ergebnispuffer und ihren Zvals gespeichert. Wenn die
@@ -92,8 +92,8 @@
   realisiert. Copy-on-Write muss auch dann durchgeführt werden, wenn der
   Benutzer eine Ergebnismenge in PHP-Variablen einliest und eine Ergebnismenge
   wieder freigibt, bevor die Variablen zurückgesetzt werden.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Im Allgemeinen funktioniert diese Vorgehensweise gut bei Skripten, die eine
   Ergebnismenge einmal lesen und die Variablen mit den Ergebnissen nicht
   verändern. Ihr größter Nachteil ist der durch die zusätzliche
@@ -110,8 +110,8 @@
   implizit freigegeben wird und somit der Speicher länger als nötig verwendet
   wird. Anhand der Statistiken lässt sich auch feststellen, wie viele
   Copy-on-Write-Operationen durchgeführt wurden.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Ein PHP-Skript, das viele kleine Zeilen aus einer gepufferten Ergebnismenge
   ausliest und dazu einen Codeschnipsel verwendet, der <literal>while ($row =
   $res-&gt;fetch_assoc()) { ... }</literal> entspricht, kann den
@@ -124,11 +124,11 @@
   der Spitzenspeichernutzung dazu beitragen, die Gesamtleistung des Systems zu
   verbessern, obwohl der Weg über Kopien für ein einzelnes Skript aufgrund
   zusätzlicher Zuweisungen und Speicherkopiervorgänge langsamer sein kann.
- </para>
- <para>
+ </simpara>
+ <simpara>
   <emphasis role="bold">Überwachung und Fehlersuche</emphasis>
- </para>
- <para>
+ </simpara>
+ <simpara>
   Es gibt mehrere Möglichkeiten, die Speichernutzung des MySQL Native Drivers
   zu verfolgen. Um einen schnellen Überblick zu erhalten oder die
   Speichereffizienz von PHP-Skripten zu überprüfen, empfiehlt sich ein Blick
@@ -136,15 +136,15 @@
   Bibliothek gesammelt werden. Anhand der Statistiken können &zb;
   SQL-Anweisungen erkannt werden, die mehr Ergebnisse erzeugen als von einem
   PHP-Skript verarbeitet werden.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Das <link linkend="ini.mysqlnd.debug">Debug</link>-Trace-Protokoll kann so
   konfiguriert werden, dass es Aufrufe der Speicherverwaltung aufzeichnet. Das
   ist hilfreich, um zu sehen, wann Speicher zugewiesen oder freigegeben wird.
   Die Größe der angeforderten Speicherabschnitte wird jedoch möglicherweise
   nicht aufgeführt.
- </para>
- <para>
+ </simpara>
+ <simpara>
   Einige neuere Versionen des MySQL Native Drivers bieten die Emulation von
   zufälligen "Out-of-Memory"-Situationen. Diese Funktion ist nur für die
   C-Entwickler der Bibliothek oder die Autoren des
@@ -153,7 +153,7 @@
   Quellcode zu finden. Die Funktion wird als nicht für die Allgemeinheit
   bestimmt betrachtet und kann jederzeit ohne vorherige Ankündigung geändert
   werden.
- </para>
+ </simpara>
 
 </chapter>
 <!-- Keep this comment at the end of the file

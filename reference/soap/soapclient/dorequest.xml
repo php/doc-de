@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: a4563933821baeb67ce9af86e875d4528eeb8c26 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 9a8c593c09cf7d84085989e42f3b2b23536279db Maintainer: sammywg Status: ready -->
 <refentry xml:id="soapclient.dorequest" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>SoapClient::__doRequest</refname>
@@ -16,6 +16,7 @@
    <methodparam><type>string</type><parameter>action</parameter></methodparam>
    <methodparam><type>int</type><parameter>version</parameter></methodparam>
    <methodparam choice="opt"><type>bool</type><parameter>oneWay</parameter><initializer>&false;</initializer></methodparam>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>null</type></type><parameter>uriParserClass</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
    Führt eine SOAP-Anfrage über HTTP aus.
@@ -73,6 +74,17 @@
       </para>
      </listitem>
     </varlistentry>
+    <varlistentry>
+     <term><parameter>uriParserClass</parameter></term>
+     <listitem>
+      <simpara>
+       Der Klassenname, der zum Parsen der Umleitungs-URI verwendet werden soll,
+       wenn ein <literal>"Location"</literal>-Header in der Antwort empfangen wird,
+       oder &null;, um das Standardverhalten basierend auf <function>parse_url</function>
+       zu verwenden.
+      </simpara>
+     </listitem>
+    </varlistentry>
    </variablelist>
   </para>
  </refsect1>
@@ -96,6 +108,13 @@
     </thead>
     <tbody>
      <row>
+      <entry>8.5.0</entry>
+      <entry>
+       Der optionale Parameter <parameter>uriParserClass</parameter> wurde
+       hinzugefügt.
+      </entry>
+     </row>
+     <row>
       <entry>8.0.0</entry>
       <entry>
        <parameter>oneWay</parameter> ist nun vom Typ &boolean;; vorher war er
@@ -115,31 +134,49 @@
     <programlisting role="php">
 <![CDATA[
 <?php
-function Add($x, $y) {
-  return $x + $y;
+
+function Add($x, $y)
+{
+    return $x + $y;
 }
 
-class LocalSoapClient extends SoapClient {
-  private $server;
+class LocalSoapClient extends SoapClient
+{
+    private $server;
 
-  function __construct($wsdl, $options) {
-    parent::__construct($wsdl, $options);
-    $this->server = new SoapServer($wsdl, $options);
-    $this->server->addFunction('Add');
-  }
+    public function __construct($wsdl, $options)
+    {
+        parent::__construct($wsdl, $options);
+        $this->server = new SoapServer($wsdl, $options);
+        $this->server->addFunction('Add');
+    }
 
-  function __doRequest($request, $location, $action, $version, $one_way = false): ?string {
-    ob_start();
-    $this->server->handle($request);
-    $response = ob_get_contents();
-    ob_end_clean();
-    return $response;
-  }
+    public function __doRequest(
+        $request,
+        $location,
+        $action,
+        $version,
+        $one_way = false,
+    ): ?string {
+        ob_start();
+        $this->server->handle($request);
+        $response = ob_get_contents();
+        ob_end_clean();
 
+        return $response;
+    }
 }
 
-$x = new LocalSoapClient(NULL, ['location'=>'test://', 'uri'=>'http://testuri.org']);
+$x = new LocalSoapClient(
+    null,
+    [
+        'location' => 'test://',
+        'uri' => 'http://testuri.org',
+    ]
+);
+
 var_dump($x->Add(3, 4));
+
 ?>
 ]]>
     </programlisting>

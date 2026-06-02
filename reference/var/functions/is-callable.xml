@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 83a17a7324c2597bd6385148abf19f76127229f5 Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 32c55286c8739fd20de9c8624473b2f3268de68e Maintainer: nobody Status: ready -->
 <!-- Reviewed: yes -->
-<!-- Rev-Revision: 1.0 Reviewer: samesch -->
+<!-- Rev-Revision: 83a17a7324c2597bd6385148abf19f76127229f5 Reviewer: samesch -->
 <refentry xml:id="function.is-callable" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>is_callable</refname>
@@ -20,7 +19,8 @@
    <methodparam choice="opt"><type>string</type><parameter role="reference">callable_name</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Prüft, ob ein Wert ein <type>callable</type> ist.
+   Prüft, ob <parameter>value</parameter> ein <type>callable</type> ist oder
+   mit der Funktion <function>call_user_func</function> aufgerufen werden kann.
   </para>
  </refsect1>
 
@@ -41,12 +41,13 @@
      <listitem>
       <para>
        Wenn dieser Parameter auf &true; gesetzt wird, prüft die Funktion nur,
-       ob <parameter>value</parameter> eine Funktion oder Methode
-       enthalten könnte. Nur einfache Variablen, die keinen String enthalten,
-       werden zurückgewiesen, oder Arrays, die nicht die richtige Struktur
-       haben, um als Callback verwendet werden zu können. Gültige Arrays
-       müssen zwei Elemente haben, von denen der erste ein Objekt oder String
-       und der zweite ein String ist.
+       ob <parameter>value</parameter> eine Funktion oder Methode sein könnte.
+       Es werden alle Werte zurückgewiesen, die keine
+       <link linkend="object.invoke">invocable</link> Objekte,
+       <classname>Closure</classname>s, &string;s oder &array;s sind, die nicht
+       die richtige Struktur haben, um als Callback verwendet werden zu können.
+       Ein gültiges Callable-Array hat 2 Einträge, wobei der erste ein Objekt
+       oder ein String und der zweite ein String ist.
       </para>
      </listitem>
     </varlistentry>
@@ -54,9 +55,11 @@
      <term><parameter>callable_name</parameter></term>
      <listitem>
       <para>
-       Hier wird der "aufrufbare Name" abgelegt. Für das Beispiel weiter unten
-       ist dies "someClass::someMethod". Es ist zu beachten, dass dies keine
-       statische Methode ist, auch wenn die Syntax das nahelegt.
+       Hier wird der "aufrufbare Name" abgelegt, &zb;
+       <literal>"SomeClass::someMethod"</literal>. Es ist jedoch zu beachten,
+       dass trotz der Implikation, dass
+       <literal>SomeClass::someMethod()</literal> eine aufrufbare statische
+       Methode ist, dies nicht der Fall ist.
       </para>
      </listitem>
     </varlistentry>
@@ -76,55 +79,68 @@
   &reftitle.examples;
   <para>
    <example>
-    <title><function>is_callable</function>-Beispiel</title>
+    <title>Prüfent, ob eine Zeichenkette als Funktion aufgerufen werden kann</title>
     <programlisting role="php">
 <![CDATA[
 <?php
-// Wie man prüft, ob eine Variable als Funktion aufgerufen werden kann
 
-//
-// Eine einfache Variable, die eine Funktion enthält
-//
-
-function someFunction()
-{
-}
+function someFunction() {}
 
 $functionVariable = 'someFunction';
 
-var_dump(is_callable($functionVariable, false, $callable_name));  // bool(true)
+var_dump(is_callable($functionVariable, false, $callable_name));
 
-echo $callable_name, "\n";  // someFunction
-
-//
-// Ein Array, das eine Methode enthält
-//
-
-class someClass {
-
-  function someMethod()
-  {
-  }
-
-}
-
-$anObject = new someClass();
-
-$methodVariable = array($anObject, 'someMethod');
-
-var_dump(is_callable($methodVariable, true, $callable_name));  //  bool(true)
-
-echo $callable_name, "\n";  //  someClass::someMethod
+var_dump($callable_name);
 
 ?>
 ]]>
     </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+bool(true)
+string(12) "someFunction"
+]]>
+    </screen>
+   </example>
+   <example>
+    <title>Prüfent, ob ein Array als Funktion aufgerufen werden kann</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+
+class SomeClass
+{
+    public function someMethod() {}
+}
+
+$anObject = new SomeClass();
+
+$methodVariable = [$anObject, 'someMethod'];
+
+var_dump(is_callable($methodVariable, true, $callable_name));
+
+var_dump($callable_name);
+
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+bool(true)
+string(21) "SomeClass::someMethod"
+]]>
+    </screen>
    </example>
    <example>
     <title><function>is_callable</function> und Konstruktoren</title>
     <simpara>
-     <function>is_callable</function> meldet Konstruktoren als nicht
-     aufrufbar.
+     Obwohl Konstruktoren die Methoden sind, die aufgerufen werden, wenn ein
+     Objekt erzeugt wird, sind sie keine statischen Methoden und
+     <function>is_callable</function> gibt &false; für sie zurück. Es ist nicht
+     möglich, mit <function>is_callable</function> zu prüfen, ob eine Klasse
+     aus der aktuellen Domäne instanziiert werden kann.
     </simpara>
     <programlisting role="php">
 <![CDATA[
@@ -133,13 +149,19 @@ echo $callable_name, "\n";  //  someClass::someMethod
 class Foo
 {
     public function __construct() {}
+
     public function foo() {}
 }
 
 var_dump(
-    is_callable(array('Foo', '__construct')),
-    is_callable(array('Foo', 'foo'))
+    is_callable(['Foo', '__construct']),
+    is_callable(['Foo', 'foo'])
 );
+
+$foo = new Foo();
+var_dump(is_callable([$foo, '__construct']));
+
+?>
 ]]>
     </programlisting>
     &example.outputs;
@@ -147,6 +169,7 @@ var_dump(
 <![CDATA[
 bool(false)
 bool(false)
+bool(true)
 ]]>
     </screen>
    </example>
@@ -181,6 +204,7 @@ bool(false)
   &reftitle.seealso;
   <para>
    <simplelist>
+    <member><function>call_user_func</function></member>
     <member><function>function_exists</function></member>
     <member><function>method_exists</function></member>
    </simplelist>

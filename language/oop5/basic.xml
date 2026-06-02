@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: f94d903985119d3ac00f4528551df947f57b667f Maintainer: wiesemann Status: ready -->
+<!-- EN-Revision: fc068b4857342eb409efeafe6723058f39ab1045 Maintainer: wiesemann Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: 5d1673b7a0e1a941111595d25cda663d8667a015 Reviewer: samesch -->
 
@@ -18,10 +17,12 @@
    <para>
     Der Klassenname kann ein beliebiger gültiger Bezeichner sein,
     vorausgesetzt es ist kein von PHP
-    <link linkend="reserved">reserviertes Wort</link>. Ein gültiger
-    Klassenname beginnt mit einem Buchstaben oder einem Unterstrich, gefolgt
-    von einer beliebigen Anzahl von Buchstaben, Ziffern oder Unterstrichen;
-    als regulärer Ausdruck formuliert:
+    <link linkend="reserved">reserviertes Wort</link>.
+    Seit PHP 8.4.0 ist die Verwendung eines einzelnen Unterstrichs
+    <literal>_</literal> als Klassenname veraltet.
+    Ein gültiger Klassenname beginnt mit einem Buchstaben oder einem
+    Unterstrich, gefolgt von einer beliebigen Anzahl von Buchstaben, Ziffern
+    oder Unterstrichen; als regulärer Ausdruck formuliert:
     <code>^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$</code>.
    </para>
    <para>
@@ -229,7 +230,11 @@ readonly class Foo
     <programlisting role="php">
 <![CDATA[
 <?php
+class SimpleClass {
+}
+
 $instanz = new SimpleClass();
+var_dump($instanz);
 
 // dies ist auch mit einer Variablen möglich:
 $klassenName = 'SimpleClass';
@@ -304,6 +309,9 @@ object(ClassD)#1 (0) {
     <programlisting role="php">
 <![CDATA[
 <?php
+class SimpleClass {
+    public string $var;
+}
 
 $instanz = new SimpleClass();
 
@@ -381,14 +389,17 @@ bool(true)
     <programlisting role="php">
 <![CDATA[
 <?php
-echo (new DateTime())->format('Y');
+echo (new DateTime())->format('Y'), PHP_EOL;
+// Seit PHP 8.4.0 sind umschließende Klammern optional
+echo new DateTime()->format('Y'), PHP_EOL;
 ?>
 ]]>
     </programlisting>
     &example.outputs.similar;
     <screen>
 <![CDATA[
-2016
+2025
+2025
 ]]>
     </screen>
    </example>
@@ -506,6 +517,14 @@ echo ($obj->bar)(), PHP_EOL;
     <programlisting role="php">
 <![CDATA[
 <?php
+class SimpleClass
+{
+    function displayVar()
+    {
+        echo "Elternklasse\n";
+    }
+}
+
 class ExtendClass extends SimpleClass
 {
     // Die Elternmethode überschreiben
@@ -525,7 +544,7 @@ $extended->displayVar();
     <screen>
 <![CDATA[
 Erweiternde Klasse
-ein Standardwert
+Elternklasse
 ]]>
     </screen>
    </example>
@@ -770,9 +789,10 @@ Does\Not\Exist
 namespace NS {
     class ClassName {
     }
+
+    $c = new ClassName();
+    print $c::class;
 }
-$c = new ClassName();
-print $c::class;
 ?>
 ]]>
     </programlisting>
@@ -802,7 +822,7 @@ NS\ClassName
    <para>
     <example>
      <title>Nullsafe Operator</title>
-     <programlisting role="php">
+     <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 

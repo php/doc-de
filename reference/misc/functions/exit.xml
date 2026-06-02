@@ -1,73 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 86e6094e86b84a51d00ab217ac50ce8dde33d82a Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: 2aaaf1967f2510471b694daf8e41a419fc98b751 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 2aaaf1967f2510471b694daf8e41a419fc98b751 Reviewer: samesch -->
 <refentry xml:id="function.exit" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>exit</refname>
-  <refpurpose>Gibt eine Meldung aus und beendet das aktuelle Skript</refpurpose>
+  <refpurpose>Beendet das aktuelle Skript mit einem Statuscode oder einer Meldung</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   &reftitle.description;
   <methodsynopsis>
-   <type>void</type><methodname>exit</methodname>
-   <methodparam choice="opt"><type>string</type><parameter>status</parameter></methodparam>
+   <type>never</type><methodname>exit</methodname>
+   <methodparam choice="opt"><type class="union"><type>string</type><type>int</type></type><parameter>status</parameter><initializer>0</initializer></methodparam>
   </methodsynopsis>
-  <methodsynopsis>
-   <type>void</type><methodname>exit</methodname>
-   <methodparam><type>int</type><parameter>status</parameter></methodparam>
-  </methodsynopsis>
-  <para>
-   Beendet die Ausführung des Skripts. <link
-   linkend="function.register-shutdown-function">Shutdown-Funktionen</link>
-   und <link
-   linkend="language.oop5.decon.destructor">Objekt-Destruktoren</link> werden
-   immer ausgeführt, auch wenn <function>exit</function> aufgerufen wurde.
-  </para>
-  <para>
-   <literal>exit</literal> ist ein Sprachkonstrukt und kann ohne Klammern
-   aufgerufen werden, wenn kein <parameter>status</parameter> übergeben wird.
-  </para>
+  <simpara>
+   Beendet die Ausführung des Skripts.
+   <link linkend="function.register-shutdown-function">Shutdown-Funktionen</link>
+   und <link linkend="language.oop5.decon.destructor">Objekt-Destruktoren</link>
+   werden immer ausgeführt, auch wenn <function>exit</function> aufgerufen wurde.
+   &finally;-Blöcke werden jedoch nie ausgeführt.
+  </simpara>
+  <simpara>
+   Ein Exit-Code von <literal>0</literal> zeigt an, dass das Programm seine
+   Aufgaben erfolgreich ausgeführt hat.
+   Jeder andere Wert bedeutet, dass während der Ausführung ein Fehler
+   aufgetreten ist.
+  </simpara>
+  <simpara>
+   <function>exit</function> ist eine besondere Funktion, weil sie im Parser
+   ein eigenes Token hat. Als solche kann sie wie eine Anweisung (&dh; ohne
+   Klammern) verwendet werden, um das Skript mit dem Standard-Statuscode zu
+   beenden.
+  </simpara>
+  <caution>
+   <simpara>
+    Es ist nicht möglich, die globale Funktion <function>exit</function> zu
+    deaktivieren oder eine Funktion in einem Namensraum zu erstellen, die diese
+    Funktion überschreibt.
+   </simpara>
+  </caution>
  </refsect1>
 
  <refsect1 role="parameters">
   &reftitle.parameters;
-  <para>
-   <variablelist>
-    <varlistentry>
-     <term><parameter>status</parameter></term>
-     <listitem>
-      <para>
-       Falls <parameter>status</parameter> eine Zeichenkette ist, gibt diese
-       Funktion beim Beenden den <parameter>status</parameter> aus.
-      </para>
-      <para>
-       Falls <parameter>status</parameter> vom Typ <type>int</type> ist, wird
-       dieser Wert als Exit-Status verwendet anstatt ausgegeben zu werden. Ein
-       Exit-Status sollte im Bereich von 0 bis 254 liegen, weil der
-       Exit-Status 255 von PHP reserviert ist und deshalb nicht benutzt werden
-       sollte. Der Status 0 wird verwendet, um ein Programm erfolgreich zu
-       beenden.
-      </para>
-     </listitem>
-    </varlistentry>
-   </variablelist>
-  </para>
+  <variablelist>
+   <varlistentry>
+    <term><parameter>status</parameter></term>
+    <listitem>
+     <simpara>
+      Falls <parameter>status</parameter> eine Zeichenkette ist, gibt diese
+      Funktion den <parameter>status</parameter> unmittelbar vor dem Beenden aus.
+      Der von PHP zurückgegebene Exit-Code ist <literal>0</literal>.
+     </simpara>
+     <para>
+      Falls <parameter>status</parameter> vom Typ <type>int</type> ist, gibt
+      PHP <parameter>status</parameter> als Exit-Code zurück.
+      <note>
+       <simpara>
+        Exit-Codes sollten im Bereich von <literal>0</literal> bis
+        <literal>254</literal> liegen, weil der Exit-Code <literal>255</literal>
+        von PHP reserviert ist und deshalb nicht benutzt werden sollte.
+       </simpara>
+      </note>
+     </para>
+     <warning>
+      <simpara>
+       Vor PHP 8.4.0 folgte <function>exit</function> nicht PHPs
+       Standard-<link linkend="language.types.type-juggling.function">Semantik der Typen-Jonglage</link>
+       und berücksichtigte auch nicht die
+       <link linkend="language.types.declarations.strict"><literal>strict_types</literal></link>-Deklaration.
+       declare.
+      </simpara>
+      <simpara>
+       Jeder Wert, der nicht vom Typ <type>int</type> war, wurde in
+       <type>string</type> umgewandelt, also auch Werte vom Typ
+       <type>resource</type> und <type>array</type>.
+       Seit PHP 8.4.0 folgt es der üblichen Semantik der Typen-Jonglage und löst
+       bei ungültigen Werten einen <exceptionname>TypeError</exceptionname> aus.
+      </simpara>
+     </warning>
+    </listitem>
+   </varlistentry>
+  </variablelist>
  </refsect1>
 
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
-  <para>
-   &return.void;
-  </para>
+  <simpara>
+   Da diese Funktion das PHP-Skript beendet, wird kein Wert zurückgegeben.
+  </simpara>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.4.0</entry>
+      <entry>
+       <function>exit</function> ist nun eine echte Funktion, folgt also der
+       üblichen
+       <link linkend="language.types.type-juggling.function">Semantik der Typen-Jonglage</link>,
+       ist von der <link linkend="language.types.declarations.strict"><literal>strict_types</literal></link>-Deklaration
+       betroffen, kann mit benannten Argumenten aufgerufen werden und kann eine
+       <link linkend="functions.variable-functions">Variablenfunktion</link> sein.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
  </refsect1>
 
  <refsect1 role="examples">
   &reftitle.examples;
-  <para>
-   <example>
-    <title><literal>exit</literal>-Beispiel</title>
-    <programlisting role="php">
+  <example>
+   <title>Einfaches <literal>exit</literal>-Beispiel</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+// das Programm normal beenden
+exit();
+exit(0);
+
+// das Programm mit einem Fehlercode beenden
+exit(1);
+
+?>
+]]>
+   </programlisting>
+  </example>
+  <example>
+   <title><function>exit</function>-Beispiel mit einem <type>string</type></title>
+   <programlisting role="php">
 <![CDATA[
 <?php
 
@@ -77,34 +151,11 @@ $datei = fopen($dateiname, 'r')
 
 ?>
 ]]>
-    </programlisting>
-   </example>
-  </para>
-  <para>
-   <example>
-    <title><literal>exit</literal>-Status-Beispiel</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-
-// das Programm normal beenden
-exit;
-exit();
-exit(0);
-
-// das Programm mit einem Fehlercode beenden
-exit(1);
-exit(0376); // oktal
-
-?>
-]]>
-    </programlisting>
-   </example>
-  </para>
-  <para>
-   <example>
-    <title>Shutdown-Funktionen und Destruktoren werden trotzdem aufgerufen</title>
-    <programlisting role="php">
+   </programlisting>
+  </example>
+  <example>
+   <title>Shutdown-Funktionen und Destruktoren werden trotzdem aufgerufen</title>
+   <programlisting role="php">
 <![CDATA[
 <?php
 class Foo
@@ -124,38 +175,53 @@ $foo = new Foo();
 register_shutdown_function('shutdown');
 
 exit();
-echo 'Das hier wird nicht mehr ausgegeben werden.';
+echo 'Dies wird nicht ausgegeben.';
 ?>
 ]]>
-    </programlisting>
-    &example.outputs;
-    <screen>
- <![CDATA[
- Shutdown-Funktion: shutdown()
- Destruktor: Foo::__destruct()
- ]]>
-    </screen>
-   </example>
-  </para>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+Shutdown-Funktion: shutdown()
+Destruktor: Foo::__destruct()
+]]>
+   </screen>
+  </example>
+  <example>
+   <title><function>exit</function> als Anweisung</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+
+// Programm mit Exit-Code 0 normal beenden
+exit;
+
+?>
+]]>
+   </programlisting>
+  </example>
  </refsect1>
 
  <refsect1 role="notes">
   &reftitle.notes;
-  &note.language-construct;
-  <note>
-   <para>
-    Dieses Sprachkonstrukt entspricht <function>die</function>.
-   </para>
-  </note>
+  <warning>
+   <simpara>
+    Vor PHP 8.4.0 war <function>exit</function> ein Sprachkonstrukt und keine
+    Funktion, sodass es nicht möglich war, es mit
+    <link linkend="functions.variable-functions">Variablenfunktionen</link>
+    oder <link linkend="functions.named-arguments">Benannte Argumenten</link>
+    aufzurufen.
+   </simpara>
+  </warning>
  </refsect1>
 
  <refsect1 role="seealso">
   &reftitle.seealso;
-  <para>
-   <simplelist>
-    <member><function>register_shutdown_function</function></member>
-   </simplelist>
-  </para>
+  <simplelist>
+   <member><function>register_shutdown_function</function></member>
+   <member><link linkend="function.register-shutdown-function">Shutdown-Funktionen</link></member>
+   <member><link linkend="language.oop5.decon.destructor">Objekt-Destruktoren</link></member>
+  </simplelist>
  </refsect1>
 
 </refentry>

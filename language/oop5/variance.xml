@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 76874c0982c06b2cdfeb12427bb319e34c6066d8 Maintainer: simp Status: ready -->
+<!-- EN-Revision: 2e7c00fd314a708ecbd495ef7cc9ae8c8462c33c Maintainer: simp Status: ready -->
 <sect1 xml:id="language.oop5.variance" xmlns="http://docbook.org/ns/docbook">
  <title>Kovarianz und Kontravarianz</title>
 
  <para>
-  Mit PHP 7.2.0 wurde teilweise Kontravarianz eingeführt, indem Typeneinschränkungen
-  bei Parametern von Kindmethoden entfernt wurden.
+  Mit PHP 7.2.0 wurde teilweise Kontravarianz eingeführt, indem
+  Typeneinschränkungen bei Parametern von Kindmethoden entfernt wurden.
   Mit PHP 7.4.0 wurde dann vollständige Unterstützung für Kovarianz und
   Kontravarianz eingeführt.
  </para>
  <para>
-  Kovarianz erlaubt es den Methoden eines Kindes, einen spezifischeren Typen als die
-  Elternmethode für den Rückgabewert zurückzugeben.
-  Auf der anderen Seite erlaubt die Kontravarianz einen weniger spezifischen Parametertypen
-  in einer Kindmethode als in der Elternmethode.
+  Kovarianz erlaubt es den Methoden eines Kindes, einen spezifischeren Typen
+  als die Elternmethode für den Rückgabewert zurückzugeben.
+  Die Kontravarianz erlaubt einen weniger spezifischen Parametertyp in einer
+  Kindmethode als in der Elternmethode.
  </para>
  <para>
   Eine Typdeklaration wird in den folgenden Fällen als spezifischer angesehen:
@@ -247,6 +247,70 @@ Fatal error: Uncaught TypeError: Argument 1 passed to Tier::iss() must be an ins
 ]]>
    </screen>
   </informalexample>
+ </sect2>
+ <sect2>
+  <title>Varianz der Eigenschaften</title>
+  <simpara>
+   Standardmäßig sind Eigenschaften weder kovariant noch kontravariant, &dh;
+   sie sind invariant.
+   Das bedeutet, dass sich ihr Typ in einer Kindklasse überhaupt nicht ändern
+   darf.
+   Der Grund dafür ist, dass "get"-Operationen kovariant und "set"-Operationen
+   kontravariant sein müssen.
+   Die einzige Möglichkeit für eine Eigenschaft, beide Anforderungen zu
+   erfüllen, besteht darin, invariant zu sein.
+  </simpara>
+  <simpara>
+   Seit PHP 8.4.0 ist es mit der Einführung von abstrakten Eigenschaften (auf
+   einer Schnittstelle oder einer abstrakten Klasse) und
+   <link linkend="language.oop5.property-hooks.virtual">virtuellen Eigenschaften</link>
+   möglich, eine Eigenschaft zu deklarieren, die nur eine get- oder
+   set-Operation hat.
+   Folglich können abstrakte Eigenschaften oder virtuelle Eigenschaften, die
+   nur eine "get"-Operation benötigen, kovariant sein.
+   Ebenso kann eine abstrakte Eigenschaft oder eine virtuelle Eigenschaft, die
+   nur eine "set"-Operation benötigt, kontravariant sein.
+  </simpara>
+  <simpara>
+   Sobald eine Eigenschaft jedoch sowohl eine get- als auch eine set-Operation
+   hat, ist sie für weitere Erweiterungen nicht mehr kovariant oder
+   kontravariant.
+   Mit anderen Worten: Sie ist nun invariant.
+  </simpara>
+  <example>
+   <title>Varianz des Eigenschaftstyps</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Animal {}
+class Dog extends Animal {}
+class Poodle extends Dog {}
+
+interface PetOwner
+{
+    // Es wird nur eine get-Operation benötigt, so dass diese kovariant
+    // sein kann.
+    public Animal $pet { get; }
+}
+
+class DogOwner implements PetOwner
+{
+    // Dies kann ein restriktiverer Typ sein, da die "get"-Seite immer ein
+    // Animal zurückgibt. Da es sich jedoch um eine native Eigenschaft handelt,
+    // können Kinder dieser Klasse den Typ nicht mehr ändern.
+    public Dog $pet;
+}
+
+class PoodleOwner extends DogOwner
+{
+    // Dies ist NICHT ZULÄSSIG, da für DogOwner::$pet sowohl get- als auch
+    // set-Operationen definiert sind und benötigt werden.
+    public Poodle $pet;
+}
+?>
+]]>
+   </programlisting>
+  </example>
  </sect2>
 </sect1>
 <!-- Keep this comment at the end of the file

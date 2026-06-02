@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Revision$ -->
-<!-- EN-Revision: 5bc68add3da3cd18c40f851e944b15095d3a26aa Maintainer: jaenecke Status: ready -->
+<!-- EN-Revision: 110ac43250fdb3531fe26d4d29292e33df7855e8 Maintainer: jaenecke Status: ready -->
+<!-- Reviewed: yes -->
+<!-- Rev-Revision: 110ac43250fdb3531fe26d4d29292e33df7855e8 Reviewer: samesch -->
 <refentry xml:id="function.openssl-seal" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>openssl_seal</refname>
@@ -19,18 +21,19 @@
    <methodparam choice="opt"><type>string</type><parameter role="reference">iv</parameter><initializer>&null;</initializer></methodparam>
   </methodsynopsis>
   <para>
-   Die Funktion <function>openssl_seal</function> verschlüsselt
+   Die Funktion <function>openssl_seal</function> versiegelt (verschlüsselt)
    <parameter>data</parameter> unter Verwendung des angegebenen
    <parameter>cipher_algo</parameter> mit einem zufällig erzeugten geheimen
-   Schlüssel. Dieser Schlüssel wird mit jedem öffentlichen Schlüssel
-   verschlüsselt, der mit der Kennung in <parameter>public_key</parameter>
-   verknüpft ist. Jeder verschlüsselte Schlüssel wird in
-   <parameter>encrypted_keys</parameter>zurückgegeben. Das bedeutet, dass Sie
-   verschlüsselte Daten an mehrere Empfänger versenden können (unter der
-   Voraussetzung, dass Sie irgendwann die öffentlichen Schlüssel der Empfänger
-   erhalten haben). Jeder Empfänger muss sowohl die verschlüsselten Daten als
-   auch den entsprechenden Umschlagschlüssel erhalten, der mit dem
-   öffentlichen Schlüssel des Empfängers versiegelt wurde.
+   Schlüssel. Dieser Schlüssel wird dann mit jedem öffentlichen Schlüssel aus
+   dem Array <parameter>public_key</parameter> verschlüsselt und jeder
+   verschlüsselte Umschlagschlüssel wird in
+   <parameter>encrypted_keys</parameter> zurückgegeben. Auf diese Weise können
+   versiegelte Daten an mehrere Empfänger gesendet werden (sofern deren
+   öffentliche Schlüssel verfügbar sind). Jeder Empfänger muss sowohl die
+   versiegelten Daten als auch den entsprechenden Umschlagschlüssel erhalten,
+   der mit dem öffentlichen Schlüssel des Empfängers versiegelt wurde. Der IV
+   (Initialisierungsvektor) wird erzeugt, und sein Wert wird in
+   <parameter>iv</parameter> zurückgegeben.
   </para>
  </refsect1>
 
@@ -42,7 +45,7 @@
      <term><parameter>data</parameter></term>
      <listitem>
       <para>
-       Die zu verschlüsselnden Daten.
+       Die zu versiegelten Daten.
       </para>
      </listitem>
     </varlistentry>
@@ -50,7 +53,7 @@
      <term><parameter>sealed_data</parameter></term>
      <listitem>
       <para>
-       Die verschlüsselten Daten.
+       Die versiegelten Daten.
       </para>
      </listitem>
     </varlistentry>
@@ -78,9 +81,9 @@
        Die Verschlüsselungsmethode.
        <caution>
         <simpara>
-         Der Standardwert (<literal>'RC4'</literal>) wird als unsicher
-         betrachtet. Es wird dringend empfohlen, explizit eine sichere
-         Verschlüsselungsmethode anzugeben.
+         Der Standardwert für PHP-Versionen vor 8.0 ist
+         <literal>'RC4'</literal>, was als unsicher gilt. Es wird dringend
+         empfohlen, explizit eine sichere Verschlüsselungsmethode anzugeben.
         </simpara>
        </caution>
       </para>
@@ -90,8 +93,18 @@
      <term><parameter>iv</parameter></term>
      <listitem>
       <para>
-       Der Initialisierungsvektor.
+       Der Initialisierungsvektor für die Entschlüsselung von
+       <parameter>data</parameter>. Er wird benötigt, wenn die
+       Verschlüsselungsmethode einen IV erfordert. Dies kann durch den Aufruf
+       von <function>openssl_cipher_iv_length</function> mit
+       <parameter>cipher_algo</parameter> ermittelt werden.
       </para>
+      <caution>
+       <simpara>
+        Der IV kann nicht explizit festgelegt werden. Jeder darin eingestellte
+        Wert wird durch einen zufällig generierten Wert überschrieben.
+       </simpara>
+      </caution>
      </listitem>
     </varlistentry>
    </variablelist>
@@ -101,11 +114,10 @@
  <refsect1 role="returnvalues">
   &reftitle.returnvalues;
   <para>
-   Gibt bei Erfolg die Länge der verschlüsselten Daten zurück; in diesem Fall
-   sind die verschlüsselten Daten in <parameter>sealed_data</parameter>
-   enthalten und <parameter>encrypted_keys</parameter> enthält die
-   Umschlagschlüssel. Sollte ein Fehler aufgetreten sein gibt die Funktion
-   &false; zurück.
+   Gibt bei Erfolg die Länge der versiegelten Daten zurück; in diesem Fall sind
+   die versiegelten Daten in <parameter>sealed_data</parameter> enthalten und
+   <parameter>encrypted_keys</parameter> enthält die Umschlagschlüssel. Wenn
+   ein Fehler aufgetreten ist, gibt die Funktion &false; zurück.
   </para>
  </refsect1>
 
@@ -125,7 +137,7 @@
       <entry>
        <parameter>public_key</parameter> akzeptiert nun ein &array; von
        <classname>OpenSSLAsymmetricKey</classname>-Instanzen; vorher wurde ein
-       &array; von &resource;n vom Typ <literal>OpenSSL-Schlüssel</literal>
+       &array; von &resource;n vom Typ <literal>OpenSSL key</literal>
        akzeptiert.
       </entry>
      </row>
@@ -156,27 +168,19 @@
 <![CDATA[
 <?php
 // Annahme: $data enthält die zu versiegelnden Daten
+$data = "test";
 
-// holen und vorbereiten der öffentlichen Schlüssel unserer Empfänger
-$fp = fopen("/src/openssl-0.9.6/demos/maurice/cert.pem", "r");
-$cert = fread($fp, 8192);
-fclose($fp);
-$pk1 = openssl_get_publickey($cert);
+// Holen der öffentlichen Schlüssel
+$pk1 = openssl_get_publickey("file://cert1.pem");
+$pk2 = openssl_get_publickey("file://cert2.pem");
 
-// Wiederholung für den zweiten Empfänger
-$fp = fopen("/src/openssl-0.9.6/demos/sign/cert.pem", "r");
-$cert = fread($fp, 8192);
-fclose($fp);
-$pk2 = openssl_get_publickey($cert);
-
-// versiegeln der Nachricht, nur Besitzer von $pk1 und $pk2 können mit
-// Schlüsseln $sealed entschlüsseln, entsprechendes gilt für $ekeys[0]
-// und $ekeys[1].
-openssl_seal($data, $sealed, $ekeys, array($pk1, $pk2));
-
-// Löschen der Schlüssel aus dem Speicher
-openssl_free_key($pk1);
-openssl_free_key($pk2);
+// Versiegeln der Nachricht, nur Besitzer von $pk1 und $pk2 können $sealed
+// mit den Schlüsseln $ekeys[0] bzw. $ekeys[1] entschlüsseln.
+if (openssl_seal($data, $sealed, $ekeys, array($pk1, $pk2), 'AES256', $iv) > 0) {
+    // Gegebenenfalls die Werte von $sealed und $iv speichern und später
+    // in openssl_open verwenden
+    echo "Erfolg\n";
+}
 ?>
 ]]>
     </programlisting>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- EN-Revision: 43d07782b514d0c7a8487f2c74063739f302df8d Maintainer: nobody Status: ready -->
+<!-- EN-Revision: 16934048f79c6e117cd16a23c09c1b2ea502e284 Maintainer: nobody Status: ready -->
 <!-- Reviewed: yes -->
 <!-- Rev-Revision: e4b889a3e8b9d87ab605aac9bbe85d2c16c69a1b Reviewer: samesch -->
 <!-- CREDITS: tzwenny, betz -->
@@ -306,12 +306,32 @@
 <![CDATA[
 <?php
 $a = 3 * 3 % 5; // (3 * 3) % 5 = 4
-// die Assoziativität des ternären Operators ist anders als bei C/C++
-$a = true ? 0 : true ? 1 : 2; // (true ? 0 : true) ? 1 : 2 = 2 (vor PHP 8.0.0)
+var_dump($a);
 
 $a = 1;
 $b = 2;
 $a = $b += 3; // $a = ($b += 3) -> $a = 5, $b = 5
+var_dump($a, $b);
+?>
+]]>
+   </programlisting>
+  </example>
+ </para>
+ <para>
+  Der ternäre Operator erfordert explizit die Verwendung von Klammern, um
+  den Rangfolge zu verdeutlichen.
+ </para>
+ <para>
+  <example>
+   <title>Explizite Rangfolge</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$a = true ? 0 : (true ? 1 : 2);
+var_dump($a);
+
+// Dies ist seit PHP 8 nicht mehr erlaubt
+// $a = true ? 0 : true ? 1 : 2;
 ?>
 ]]>
    </programlisting>
@@ -326,7 +346,7 @@ $a = $b += 3; // $a = ($b += 3) -> $a = 5, $b = 5
   umgebenden Code abhängen.
   <example>
    <title>Nicht definierte Auswertungsreihenfolge</title>
-   <programlisting role="php">
+   <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 $a = 1;
@@ -339,15 +359,43 @@ $array[$i] = $i++; // der Index ist entweder 1 oder 2
    </programlisting>
   </example>
   <example>
-   <title><literal>+</literal>, <literal>-</literal> und <literal>.</literal> haben dieselbe Rangfolge (vor PHP 8.0.0)</title>
+   <title>Die Rangfolge von <literal>+</literal>, <literal>-</literal> und <literal>.</literal></title>
    <programlisting role="php">
 <![CDATA[
 <?php
 $x = 4;
 // diese Zeile könnte eine unerwartete Ausgabe produzieren:
 echo "x minus 1 ist gleich " . $x-1 . ", hoffe ich jedenfalls\n";
+
+// die gewünschte Rangfolge kann durch die Verwendung von Klammern erzwungen werden:
+echo "x minus 1 ist gleich " . ($x-1) . ", hoffe ich jedenfalls\n";
+
+// Dies ist nicht erlaubt und führt zu einem TypeError:
+echo (("x minus 1 ist gleich " . $x) - 1) . ", hoffe ich jedenfalls\n";
+?>
+]]>
+   </programlisting>
+   &example.outputs;
+   <screen>
+<![CDATA[
+-1, hoffe ich jedenfalls
+-1, hoffe ich jedenfalls
+Fatal error: Uncaught TypeError: Unsupported operand types: string - int
+]]>
+   </screen>
+  </example>
+  <example>
+   <title>Vor PHP 8 hatten <literal>+</literal>, <literal>-</literal> und <literal>.</literal> dieselbe Rangfolge</title>
+   <programlisting role="php" annotations="non-interactive">
+<![CDATA[
+<?php
+$x = 4;
+// diese Zeile könnte eine unerwartete Ausgabe produzieren:
+echo "x minus 1 ist gleich " . $x-1 . ", hoffe ich jedenfalls\n";
+
 // da es wie diese Zeile ausgewertet wird (vor PHP 8.0.0):
 echo (("x minus 1 ist gleich " . $x) - 1) . ", hoffe ich jedenfalls\n";
+
 // die gewünschte Rangfolge kann durch die Verwendung von Klammern erzwungen werden:
 echo "x minus 1 ist gleich " . ($x-1) . ", hoffe ich jedenfalls\n";
 ?>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- $Revision$ -->
-<!-- EN-Revision: 4150dc92749c177758efe59eab23b6a5d32ffda2 Maintainer: sammywg Status: ready -->
+<!-- EN-Revision: a9e47cecca7d5834de43b7641baf5d86828bb153 Maintainer: sammywg Status: ready -->
+<!-- Reviewed: no -->
 <refentry xml:id="function.unserialize" xmlns="http://docbook.org/ns/docbook">
  <refnamediv>
   <refname>unserialize</refname>
@@ -90,7 +90,7 @@
         <tbody>
          <row>
           <entry><literal>allowed_classes</literal></entry>
-          <entry><type>mixed</type></entry>
+          <entry><type class="union"><type>array</type><type>bool</type></type></entry>
           <entry>
            <simpara>
             Entweder ein &array; von Klassennamen, die akzeptiert werden
@@ -144,10 +144,17 @@
 
  <refsect1 role="errors">
   &reftitle.errors;
-  <para>
+  <simpara>
    Objekte können <classname>Throwable</classname>s in ihren
    Deserialisierungs-Routinen ausführen.
-  </para>
+  </simpara>
+  <simpara>
+   Wenn das Element <literal>allowed_classes</literal> von
+   <parameter>options</parameter> kein <type>array</type> von Klassennamen ist,
+   löst <function>unserialize</function> seit PHP 8.4.0
+   <exceptionname>TypeError</exceptionname>s und
+   <exceptionname>ValueError</exceptionname>s aus.
+  </simpara>
  </refsect1>
 
  <refsect1 role="changelog">
@@ -162,6 +169,22 @@
       </row>
      </thead>
      <tbody>
+      <row>
+       <entry>8.4.0</entry>
+       <entry>
+        Löst nun <exceptionname>TypeError</exceptionname>s und
+        <exceptionname>ValueError</exceptionname>s aus, wenn das Element
+        <literal>allowed_classes</literal> von <parameter>options</parameter>
+        kein <type>array</type> von Klassennamen ist.
+       </entry>
+      </row>
+      <row>
+       <entry>8.3.0</entry>
+       <entry>
+        Gibt nun ein <constant>E_WARNING</constant> aus, wenn die
+        Eingabezeichenkette nicht verwendete Daten enthält.
+       </entry>
+      </row>
       <row>
        <entry>8.3.0</entry>
        <entry>
@@ -182,7 +205,7 @@
        <entry>7.1.0</entry>
        <entry>
         Das <literal>allowed_classes</literal>-Element von
-        <parameter>options</parameter>) ist nun strikt typisiert, &dh; wird
+        <parameter>options</parameter> ist nun strikt typisiert, &dh; wird
         etwas anderes als ein <type>Array</type> oder ein <type>bool</type>
         übergeben, liefert <function>unserialize</function> &false; zurück und
         löst ein <constant>E_WARNING</constant> aus.
@@ -199,7 +222,7 @@
   <para>
    <example>
     <title><function>unserialize</function>-Beispiel</title>
-    <programlisting role="php">
+    <programlisting role="php" annotations="non-interactive">
 <![CDATA[
 <?php
 // Als Beispiel benutzen wir unserialize(), um Daten aus einer Datenbank in das
@@ -240,7 +263,10 @@ function mycallback($classname)
     // einfach eine Datei einbinden, dass die Klassendefinitionen enthält
     // Sie erhalten $classname, womit Sie herausfinden können, welche
     // Klassendefinition benötigt wird
+    var_dump($classname);
 }
+
+unserialize($serialized_object);
 ?>
 ]]>
     </programlisting>
@@ -256,7 +282,7 @@ function mycallback($classname)
     &false;-Wert zurückgegeben. Es ist möglich, diesen speziellen Fall
     abzufangen, indem man <parameter>data</parameter> mit
     <literal>serialize(false)</literal> vergleicht oder prüft, ob ein
-    <constant>E_NOTICE</constant> produziert wurde.
+    <constant>E_WARNING</constant> produziert wurde.
    </para>
   </warning>
  </refsect1>
