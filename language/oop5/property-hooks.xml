@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: dfd68fd22aef25658bc9348176b55b504d26ab11 Maintainer: lacatoire Status: ready -->
+<!-- Reviewed: no -->
+<sect1 xml:id="language.oop5.property-hooks" xmlns="http://docbook.org/ns/docbook">
+ <title>Property Hooks</title>
+
+ <simpara>
+  Property Hooks, in einigen anderen Sprachen auch als
+  &quot;Property-Accessors&quot; bekannt, sind eine Möglichkeit, das Lese- und
+  Schreibverhalten einer Eigenschaft abzufangen und zu überschreiben.
+  Diese Funktionalität erfüllt zwei Zwecke:
+ </simpara>
+ <orderedlist>
+  <listitem>
+   <simpara>
+    Sie ermöglicht es, Eigenschaften direkt zu verwenden, ohne get- und
+    set-Methoden, wobei die Möglichkeit offen bleibt, in Zukunft zusätzliches
+    Verhalten hinzuzufügen. Dadurch werden die meisten standardmäßigen
+    get/set-Methoden überflüssig, selbst ohne Hooks zu verwenden.
+   </simpara>
+  </listitem>
+  <listitem>
+   <simpara>
+    Sie ermöglicht Eigenschaften, die ein Objekt beschreiben, ohne dass ein
+    Wert direkt gespeichert werden muss.
+   </simpara>
+  </listitem>
+ </orderedlist>
+ <simpara>
+  Für nicht-statische Eigenschaften stehen zwei Hooks zur Verfügung:
+  <literal>get</literal> und <literal>set</literal>.
+  Sie ermöglichen es, das Lese- bzw. Schreibverhalten einer Eigenschaft zu
+  überschreiben. Hooks sind sowohl für typisierte als auch für untypisierte
+  Eigenschaften verfügbar.
+ </simpara>
+ <simpara>
+  Eine Eigenschaft kann &quot;hinterlegt&quot; (backed) oder &quot;virtuell&quot;
+  sein. Eine hinterlegte Eigenschaft ist eine, die tatsächlich einen Wert
+  speichert. Jede Eigenschaft, die keine Hooks besitzt, ist hinterlegt.
+  Eine virtuelle Eigenschaft ist eine, die Hooks besitzt, wobei diese Hooks
+  nicht mit der Eigenschaft selbst interagieren.
+  In diesem Fall verhalten sich die Hooks im Wesentlichen wie Methoden, und das
+  Objekt belegt keinen Speicherplatz, um einen Wert für diese Eigenschaft zu
+  speichern.
+ </simpara>
+ <simpara>
+  Property Hooks sind mit <literal>readonly</literal>-Eigenschaften
+  inkompatibel. Wenn es notwendig ist, den Zugriff auf eine
+  <literal>get</literal>- oder <literal>set</literal>-Operation zusätzlich zur
+  Änderung ihres Verhaltens einzuschränken, ist die
+  <link linkend="language.oop5.visibility-members-aviz">asymmetrische Sichtbarkeit von Eigenschaften</link>
+  zu verwenden.
+ </simpara>
+
+ <note>
+  <title>Versionsinformationen</title>
+  <simpara>
+   Property Hooks wurden in PHP 8.4 eingeführt.
+  </simpara>
+ </note>
+
+ <sect2>
+  <title>Grundlegende Hook-Syntax</title>
+  <simpara>
+   Die allgemeine Syntax zur Deklaration eines Hooks lautet wie folgt.
+  </simpara>
+  <example>
+   <title>Property Hooks (vollständige Version)</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    private bool $modified = false;
+
+    public string $foo = 'default value' {
+        get {
+            if ($this->modified) {
+                return $this->foo . ' (modified)';
+            }
+            return $this->foo;
+        }
+        set(string $value) {
+            $this->foo = strtolower($value);
+            $this->modified = true;
+        }
+    }
+}
+
+$example = new Example();
+$example->foo = 'changed';
+print $example->foo;
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Die Eigenschaft <varname>$foo</varname> endet mit <literal>{}</literal>
+   anstatt mit einem Semikolon. Dies zeigt das Vorhandensein von Hooks an.
+   Es werden sowohl ein <literal>get</literal>- als auch ein
+   <literal>set</literal>-Hook definiert, obwohl es zulässig ist, nur den einen
+   oder den anderen zu definieren. Beide Hooks besitzen einen durch
+   <literal>{}</literal> gekennzeichneten Rumpf, der beliebigen Code enthalten
+   darf.
+  </simpara>
+  <simpara>
+   Der <literal>set</literal>-Hook erlaubt es zusätzlich, den Typ und den Namen
+   eines eingehenden Werts anzugeben, wobei dieselbe Syntax wie bei einer
+   Methode verwendet wird. Der Typ muss entweder mit dem Typ der Eigenschaft
+   übereinstimmen oder zu diesem
+   <link linkend="language.oop5.variance.contravariance">kontravariant</link>
+   (weiter) sein. Beispielsweise könnte eine Eigenschaft vom Typ
+   <type>string</type> einen <literal>set</literal>-Hook besitzen, der
+   <type class="union"><type>string</type><type>Stringable</type></type>
+   akzeptiert, aber keinen, der nur <type>array</type> akzeptiert.
+  </simpara>
+  <simpara>
+   Mindestens einer der Hooks verweist auf <code>$this->foo</code>, die
+   Eigenschaft selbst. Das bedeutet, dass die Eigenschaft
+   &quot;hinterlegt&quot; sein wird. Beim Aufruf von
+   <code>$example->foo = 'changed'</code> wird die übergebene Zeichenkette
+   zunächst in Kleinbuchstaben umgewandelt und dann im hinterlegten Wert
+   gespeichert. Beim Lesen aus der Eigenschaft kann an den zuvor gespeicherten
+   Wert bedingt zusätzlicher Text angehängt werden.
+  </simpara>
+  <simpara>
+   Es gibt außerdem eine Reihe von Kurzschreibweisen, um häufige Fälle zu
+   behandeln.
+  </simpara>
+  <simpara>
+   Wenn der <literal>get</literal>-Hook aus einem einzigen Ausdruck besteht,
+   können die <literal>{}</literal> weggelassen und durch einen Pfeilausdruck
+   ersetzt werden.
+  </simpara>
+  <example>
+   <title>Property-get-Ausdruck</title>
+   <simpara>
+    Dieses Beispiel ist äquivalent zum vorherigen.
+   </simpara>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    private bool $modified = false;
+
+    public string $foo = 'default value' {
+        get => $this->foo . ($this->modified ? ' (modified)' : '');
+
+        set(string $value) {
+            $this->foo = strtolower($value);
+            $this->modified = true;
+        }
+    }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Wenn der Parametertyp des <literal>set</literal>-Hooks mit dem Typ der
+   Eigenschaft übereinstimmt (was typisch ist), kann er weggelassen werden.
+   In diesem Fall erhält der zu setzende Wert automatisch den Namen
+   <varname>$value</varname>.
+  </simpara>
+  <example>
+   <title>Property-set-Standardwerte</title>
+   <simpara>
+    Dieses Beispiel ist äquivalent zum vorherigen.
+   </simpara>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    private bool $modified = false;
+
+    public string $foo = 'default value' {
+        get => $this->foo . ($this->modified ? ' (modified)' : '');
+
+        set {
+            $this->foo = strtolower($value);
+            $this->modified = true;
+        }
+    }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Wenn der <literal>set</literal>-Hook nur eine veränderte Version des
+   übergebenen Werts setzt, kann er ebenfalls zu einem Pfeilausdruck
+   vereinfacht werden. Der Wert, zu dem der Ausdruck ausgewertet wird, wird im
+   hinterlegten Wert gesetzt.
+  </simpara>
+  <example>
+   <title>Property-set-Ausdruck</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    private bool $modified = false;
+
+    public string $foo = 'default value' {
+        get => $this->foo . ($this->modified ? ' (modified)' : '');
+        set => strtolower($value);
+    }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Dieses Beispiel ist nicht ganz äquivalent zum vorherigen, da es nicht
+   zusätzlich <code>$this->modified</code> verändert. Wenn im Rumpf des
+   set-Hooks mehrere Anweisungen benötigt werden, ist die Variante mit
+   geschweiften Klammern zu verwenden.
+  </simpara>
+  <simpara>
+   Eine Eigenschaft kann je nach Situation null, einen oder beide Hooks
+   implementieren. Alle Kurzschreibweisen sind voneinander unabhängig. Das
+   heißt, die Verwendung eines Kurz-get mit einem langen set oder eines
+   Kurz-set mit einem expliziten Typ usw. ist alles gültig.
+  </simpara>
+  <simpara>
+   Bei einer hinterlegten Eigenschaft bedeutet das Weglassen eines
+   <literal>get</literal>- oder <literal>set</literal>-Hooks, dass das
+   standardmäßige Lese- bzw. Schreibverhalten verwendet wird.
+  </simpara>
+  <note>
+   <simpara>
+    Hooks können bei der Verwendung der
+    <link linkend="language.oop5.decon.constructor.promotion">Konstruktor-Promotion von Eigenschaften</link>
+    definiert werden. In diesem Fall müssen die dem Konstruktor übergebenen
+    Werte jedoch mit dem der Eigenschaft zugeordneten Typ übereinstimmen,
+    unabhängig davon, was der <literal>set</literal>-Hook erlauben könnte.
+   </simpara>
+   <simpara>
+    Man betrachte das Folgende:
+   </simpara>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    public function __construct(
+        public private(set) DateTimeInterface $created {
+            set (string|DateTimeInterface $value) {
+                if (is_string($value)) {
+                    $value = new DateTimeImmutable($value);
+                }
+                $this->created = $value;
+            }
+        },
+    ) {
+    }
+}
+]]>
+   </programlisting>
+   <simpara>
+    Intern zerlegt die Engine dies in das Folgende:
+   </simpara>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    public private(set) DateTimeInterface $created {
+        set (string|DateTimeInterface $value) {
+            if (is_string($value)) {
+                $value = new DateTimeImmutable($value);
+            }
+            $this->created = $value;
+        }
+    }
+
+    public function __construct(
+        DateTimeInterface $created,
+    ) {
+        $this->created = $created;
+    }
+}
+]]>
+   </programlisting>
+   <simpara>
+    Jeder Versuch, die Eigenschaft außerhalb des Konstruktors zu setzen, lässt
+    entweder <type>string</type>- oder
+    <interfacename>DateTimeInterface</interfacename>-Werte zu, der Konstruktor
+    erlaubt jedoch nur <interfacename>DateTimeInterface</interfacename>.
+    Das liegt daran, dass der für die Eigenschaft definierte Typ
+    (<interfacename>DateTimeInterface</interfacename>) als Parametertyp
+    innerhalb der Konstruktorsignatur verwendet wird, unabhängig davon, was der
+    <literal>set</literal>-Hook erlaubt.
+   </simpara>
+   <simpara>
+    Wenn diese Art von Verhalten vom Konstruktor benötigt wird, kann die
+    Konstruktor-Promotion von Eigenschaften nicht verwendet werden.
+   </simpara>
+  </note>
+ </sect2>
+ <sect2 xml:id="language.oop5.property-hooks.virtual">
+  <title>Virtuelle Eigenschaften</title>
+  <simpara>
+   Virtuelle Eigenschaften sind Eigenschaften, die keinen hinterlegten Wert
+   besitzen. Eine Eigenschaft ist virtuell, wenn weder ihr
+   <literal>get</literal>- noch ihr <literal>set</literal>-Hook unter
+   Verwendung der exakten Syntax auf die Eigenschaft selbst verweist. Das
+   heißt, eine Eigenschaft mit dem Namen <code>$foo</code>, deren Hook
+   <code>$this->foo</code> enthält, wird hinterlegt sein. Das Folgende ist
+   jedoch keine hinterlegte Eigenschaft und wird einen Fehler verursachen:
+  </simpara>
+  <example>
+   <title>Ungültige virtuelle Eigenschaft</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Example
+{
+    public string $foo {
+        get {
+            $temp = __PROPERTY__;
+            return $this->$temp; // Verweist nicht auf $this->foo, zählt also nicht.
+        }
+    }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Wird bei virtuellen Eigenschaften ein Hook weggelassen, so existiert die
+   betreffende Operation nicht, und der Versuch, sie zu verwenden, erzeugt
+   einen Fehler. Virtuelle Eigenschaften belegen keinen Speicherplatz in einem
+   Objekt. Virtuelle Eigenschaften eignen sich für &quot;abgeleitete&quot;
+   Eigenschaften, etwa solche, die die Kombination zweier anderer Eigenschaften
+   sind.
+  </simpara>
+  <example>
+   <title>Virtuelle Eigenschaft</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Rectangle
+{
+    // Eine virtuelle Eigenschaft.
+    public int $area {
+        get => $this->h * $this->w;
+    }
+
+    public function __construct(public int $h, public int $w) {}
+}
+
+$s = new Rectangle(4, 5);
+print $s->area; // gibt 20 aus
+$s->area = 30; // Fehler, da keine set-Operation definiert ist.
+?>
+]]>
+   </programlisting>
+  </example>
+  <simpara>
+   Es ist ebenfalls zulässig, sowohl einen <literal>get</literal>- als auch
+   einen <literal>set</literal>-Hook für eine virtuelle Eigenschaft zu
+   definieren.
+  </simpara>
+ </sect2>
+ <sect2>
+  <title>Geltungsbereich</title>
+  <simpara>
+   Alle Hooks operieren im Geltungsbereich des Objekts, das verändert wird.
+   Das bedeutet, dass sie Zugriff auf alle public-, private- oder
+   protected-Methoden des Objekts haben, ebenso wie auf alle public-, private-
+   oder protected-Eigenschaften, einschließlich Eigenschaften, die ihre eigenen
+   Property Hooks besitzen können. Der Zugriff auf eine andere Eigenschaft
+   innerhalb eines Hooks umgeht nicht die für diese Eigenschaft definierten
+   Hooks.
+  </simpara>
+  <simpara>
+   Die bemerkenswerteste Auswirkung davon ist, dass nicht-triviale Hooks bei
+   Bedarf eine beliebig komplexe Methode aufrufen können.
+  </simpara>
+  <example>
+   <title>Aufruf einer Methode aus einem Hook</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+class Person {
+    public string $phone {
+        set => $this->sanitizePhone($value);
+    }
+
+    private function sanitizePhone(string $value): string {
+        $value = ltrim($value, '+');
+        $value = ltrim($value, '1');
+
+        if (!preg_match('/\d\d\d\-\d\d\d\-\d\d\d\d/', $value)) {
+            throw new \InvalidArgumentException();
+        }
+        return $value;
+    }
+}
+?>
+]]>
+   </programlisting>
+  </example>
+ </sect2>
+ <sect2>
+  <title>Referenzen</title>
+  <simpara>
+   Da das Vorhandensein von Hooks den Lese- und Schreibprozess für
+   Eigenschaften abfängt, verursachen sie Probleme beim Erlangen einer Referenz
+   auf eine Eigenschaft oder bei indirekter Veränderung, etwa
+   <code>$this->arrayProp['key'] = 'value';</code>. Das liegt daran, dass jeder
+   Versuch, den Wert per Referenz zu verändern, einen set-Hook umgehen würde,
+   sofern einer definiert ist.
+  </simpara>
+  <simpara>
+   In dem seltenen Fall, dass das Erlangen einer Referenz auf eine Eigenschaft,
+   für die Hooks definiert sind, notwendig ist, kann dem
+   <literal>get</literal>-Hook <literal>&amp;</literal> vorangestellt werden,
+   damit er per Referenz zurückgibt. Das Definieren von sowohl
+   <literal>get</literal> als auch <literal>&amp;get</literal> für dieselbe
+   Eigenschaft ist ein Syntaxfehler.
+  </simpara>
+  <simpara>
+   Das Definieren von sowohl <literal>&amp;get</literal>- als auch
+   <literal>set</literal>-Hooks für eine hinterlegte Eigenschaft ist nicht
+   zulässig. Wie oben angemerkt, würde das Schreiben in den per Referenz
+   zurückgegebenen Wert den <literal>set</literal>-Hook umgehen. Bei virtuellen
+   Eigenschaften gibt es keinen notwendigerweise zwischen den beiden Hooks
+   geteilten gemeinsamen Wert, daher ist das Definieren beider zulässig.
+  </simpara>
+  <simpara>
+   Das Schreiben in einen Index einer Array-Eigenschaft beinhaltet ebenfalls
+   eine implizite Referenz. Aus diesem Grund ist das Schreiben in eine
+   hinterlegte Array-Eigenschaft mit definierten Hooks genau dann zulässig,
+   wenn sie nur einen <literal>&amp;get</literal>-Hook definiert. Bei einer
+   virtuellen Eigenschaft ist das Schreiben in das von <literal>get</literal>
+   oder <literal>&amp;get</literal> zurückgegebene Array zulässig, ob dies
+   jedoch eine Auswirkung auf das Objekt hat, hängt von der Implementierung des
+   Hooks ab.
+  </simpara>
+  <simpara>
+   Das Überschreiben der gesamten Array-Eigenschaft ist in Ordnung und verhält
+   sich wie bei jeder anderen Eigenschaft. Nur das Arbeiten mit Elementen des
+   Arrays erfordert besondere Sorgfalt.
+  </simpara>
+ </sect2>
+ <sect2>
+  <title>Vererbung</title>
+  <sect3>
+   <title>Finale Hooks</title>
+   <simpara>
+    Hooks können auch als <link linkend="language.oop5.final">final</link>
+    deklariert werden, wodurch sie nicht überschrieben werden können.
+   </simpara>
+   <example>
+    <title>Finale Hooks</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class User
+{
+    public string $username {
+        final set => strtolower($value);
+    }
+}
+
+class Manager extends User
+{
+    public string $username {
+        // Dies ist erlaubt
+        get => strtoupper($this->username);
+
+        // Aber dies ist NICHT erlaubt, weil set in der Elternklasse final ist.
+        set => strtoupper($value);
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <simpara>
+    Eine Eigenschaft kann ebenfalls als
+    <link linkend="language.oop5.final">final</link> deklariert werden. Eine
+    finale Eigenschaft darf von einer Kindklasse in keiner Weise neu deklariert
+    werden, was das Ändern von Hooks oder das Erweitern ihres Zugriffs
+    ausschließt.
+   </simpara>
+   <simpara>
+    Hooks bei einer Eigenschaft als final zu deklarieren, die als final
+    deklariert ist, ist redundant und wird stillschweigend ignoriert. Dies ist
+    dasselbe Verhalten wie bei finalen Methoden.
+   </simpara>
+   <simpara>
+    Eine Kindklasse kann einzelne Hooks einer Eigenschaft definieren oder neu
+    definieren, indem sie die Eigenschaft und nur die Hooks, die sie
+    überschreiben möchte, neu definiert. Eine Kindklasse kann auch Hooks zu
+    einer Eigenschaft hinzufügen, die keine besaß. Dies ist im Wesentlichen
+    dasselbe, als ob die Hooks Methoden wären.
+   </simpara>
+   <example>
+    <title>Vererbung von Hooks</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Point
+{
+    public int $x;
+    public int $y;
+}
+
+class PositivePoint extends Point
+{
+    public int $x {
+        set {
+            if ($value < 0) {
+                throw new \InvalidArgumentException('Too small');
+            }
+            $this->x = $value;
+        }
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <simpara>
+    Jeder Hook überschreibt die Implementierungen der Elternklasse unabhängig
+    voneinander. Wenn eine Kindklasse Hooks hinzufügt, wird jeder für die
+    Eigenschaft gesetzte Standardwert entfernt und muss neu deklariert werden.
+    Dies ist konsistent damit, wie Vererbung bei Eigenschaften ohne Hooks
+    funktioniert.
+   </simpara>
+  </sect3>
+  <sect3>
+   <title>Zugriff auf Hooks der Elternklasse</title>
+   <simpara>
+    Ein Hook in einer Kindklasse kann unter Verwendung des Schlüsselworts
+    <code>parent::$prop</code>, gefolgt vom gewünschten Hook, auf die
+    Eigenschaft der Elternklasse zugreifen. Zum Beispiel
+    <code>parent::$propName::get()</code>. Dies kann gelesen werden als
+    &quot;greife auf die in der Elternklasse definierte Eigenschaft
+    <varname>prop</varname> zu und führe dann ihre get-Operation aus&quot;
+    (oder set-Operation, je nachdem).
+   </simpara>
+   <simpara>
+    Wenn der Zugriff nicht auf diese Weise erfolgt, wird der Hook der
+    Elternklasse ignoriert. Dieses Verhalten ist konsistent damit, wie alle
+    Methoden funktionieren. Es bietet außerdem eine Möglichkeit, auf den
+    Speicher der Elternklasse zuzugreifen, falls vorhanden. Wenn es keinen Hook
+    für die Eigenschaft der Elternklasse gibt, wird ihr standardmäßiges
+    get/set-Verhalten verwendet. Hooks dürfen auf keinen anderen Hook als ihren
+    eigenen Eltern-Hook ihrer eigenen Eigenschaft zugreifen.
+   </simpara>
+   <simpara>
+    Das obige Beispiel könnte wie folgt umgeschrieben werden, was es der Klasse
+    <literal>Point</literal> ermöglichen würde, in Zukunft problemlos ihren
+    eigenen <literal>set</literal>-Hook hinzuzufügen (im vorherigen Beispiel
+    würde ein zur Elternklasse hinzugefügter Hook in der Kindklasse ignoriert).
+   </simpara>
+   <example>
+    <title>Zugriff auf Eltern-Hook (set)</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Point
+{
+    public int $x;
+    public int $y;
+}
+
+class PositivePoint extends Point
+{
+    public int $x {
+        set {
+            if ($value < 0) {
+                throw new \InvalidArgumentException('Too small');
+            }
+            parent::$x::set($value);
+        }
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+   <simpara>
+    Ein Beispiel für das Überschreiben nur eines get-Hooks könnte sein:
+   </simpara>
+   <example>
+    <title>Zugriff auf Eltern-Hook (get)</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+class Strings
+{
+    public string $val;
+}
+
+class CaseFoldingStrings extends Strings
+{
+    public bool $uppercase = true;
+
+    public string $val {
+        get => $this->uppercase
+            ? strtoupper(parent::$val::get())
+            : strtolower(parent::$val::get());
+    }
+}
+?>
+]]>
+    </programlisting>
+   </example>
+  </sect3>
+ </sect2>
+ <sect2>
+  <title>Serialisierung</title>
+  <simpara>
+   PHP verfügt über eine Reihe unterschiedlicher Möglichkeiten, wie ein Objekt
+   serialisiert werden kann, entweder für die öffentliche Verwendung oder zu
+   Debugging-Zwecken. Das Verhalten von Hooks variiert je nach Anwendungsfall.
+   In einigen Fällen wird der rohe hinterlegte Wert einer Eigenschaft
+   verwendet, wobei jegliche Hooks umgangen werden. In anderen wird die
+   Eigenschaft &quot;durch&quot; den Hook gelesen oder geschrieben, genau wie
+   bei jeder anderen normalen Lese-/Schreibaktion.
+  </simpara>
+  <simplelist>
+   <member><function>var_dump</function>: Verwendet den rohen Wert</member>
+   <member><function>serialize</function>: Verwendet den rohen Wert</member>
+   <member><function>unserialize</function>: Verwendet den rohen Wert</member>
+   <member><link linkend="object.serialize">__serialize()</link>/<link linkend="object.unserialize">__unserialize()</link>: Eigene Logik, verwendet den get/set-Hook</member>
+   <member>Array-Casting: Verwendet den rohen Wert</member>
+   <member><function>var_export</function>: Verwendet den get-Hook</member>
+   <member><function>json_encode</function>: Verwendet den get-Hook</member>
+   <member><interfacename>JsonSerializable</interfacename>: Eigene Logik, verwendet den get-Hook</member>
+   <member><function>get_object_vars</function>: Verwendet den get-Hook</member>
+   <member><function>get_mangled_object_vars</function>: Verwendet den rohen Wert</member>
+  </simplelist>
+ </sect2>
+</sect1>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
