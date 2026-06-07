@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: dfd68fd22aef25658bc9348176b55b504d26ab11 Maintainer: lacatoire Status: ready -->
+<!-- Reviewed: no -->
+<refentry xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="function.cubrid-connect-with-url">
+ <refnamediv>
+  <refname>cubrid_connect_with_url</refname>
+  <refpurpose>Bereitet die Umgebung für die Verbindung zu einem CUBRID-Server vor</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>resource</type><methodname>cubrid_connect_with_url</methodname>
+   <methodparam><type>string</type><parameter>conn_url</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>userid</parameter></methodparam>
+   <methodparam choice="opt"><type>string</type><parameter>passwd</parameter></methodparam>
+   <methodparam choice="opt"><type>bool</type><parameter>new_link</parameter><initializer>&false;</initializer></methodparam>
+  </methodsynopsis>
+  <simpara>
+   Die Funktion <function>cubrid_connect_with_url</function> wird verwendet, um
+   die Umgebung für die Verbindung zu Ihrem Server vorzubereiten, wobei die
+   Verbindungsinformationen über ein URL-Zeichenkettenargument übergeben
+   werden. Wenn in CUBRID die HA-Funktion aktiviert ist, müssen Sie die
+   Verbindungsinformationen des Standby-Servers, der bei einem Ausfall für das
+   Failover verwendet wird, im URL-Zeichenkettenargument dieser Funktion
+   angeben. Wenn kein Benutzername und kein Passwort angegeben werden, wird
+   standardmäßig die Verbindung "PUBLIC" hergestellt.
+  </simpara>
+  <simpara>
+   &lt;url&gt; ::= CUBRID:&lt;host&gt;:&lt;db_name&gt;:&lt;db_user&gt;:&lt;db_password&gt;:[?&lt;properties&gt;]
+  </simpara>
+  <simpara>
+   &lt;properties&gt; ::= &lt;property&gt; [&amp;&lt;property&gt;]
+  </simpara>
+  <simpara>
+   &lt;properties&gt; ::= alhosts=&lt;alternative_hosts&gt;[ &amp;rctime=&lt;time&gt;]
+  </simpara>
+  <simpara>
+   &lt;properties&gt; ::= login_timeout=&lt;milli_sec&gt;
+  </simpara>
+  <simpara>
+   &lt;properties&gt; ::= query_timeout=&lt;milli_sec&gt;
+  </simpara>
+  <simpara>
+   &lt;properties&gt; ::= disconnect_on_query_timeout=true|false
+  </simpara>
+  <simpara>
+   &lt;alternative_hosts&gt; ::= &lt;standby_broker1_host&gt;:&lt;port&gt; [,&lt;standby_broker2_host&gt;:&lt;port&gt;]
+  </simpara>
+  <simpara>
+   &lt;host&gt; := HOSTNAME | IP_ADDR
+  </simpara>
+  <simpara>
+   &lt;time&gt; := SECOND
+  </simpara>
+  <simpara>
+   &lt;milli_sec&gt; := MILLI SECOND
+  </simpara>
+  <simplelist>
+   <member>host : Ein Hostname oder eine IP-Adresse der Master-Datenbank</member>
+   <member>db_name : Ein Name der Datenbank</member>
+   <member>db_user : Ein Name des Datenbankbenutzers</member>
+   <member>db_password : Ein Passwort des Datenbankbenutzers</member>
+   <member>
+    alhosts : Gibt die Broker-Informationen des Standby-Servers an, der für das
+    Failover verwendet wird, wenn keine Verbindung zum aktiven Server möglich
+    ist. Sie können mehrere Broker für das Failover angeben, und die Verbindung
+    zu den Brokern wird in der in alhosts aufgeführten Reihenfolge
+    versucht</member>
+   <member>
+    rctime : Ein Intervall zwischen den Versuchen, eine Verbindung zu dem
+    aktiven Broker herzustellen, bei dem der Ausfall aufgetreten ist. Nach
+    einem Ausfall verbindet sich das System mit dem durch althosts angegebenen
+    Broker (Failover), beendet die Transaktion und versucht dann bei jedem
+    rctime, sich mit dem aktiven Broker der Master-Datenbank zu verbinden. Der
+    Standardwert beträgt 600 Sekunden.</member>
+   <member>
+    login_timeout : Timeout-Wert (Einheit: Millisekunden) für die
+    Datenbankanmeldung. Der Standardwert ist 0, was eine unendliche
+    Verzögerung bedeutet.
+   </member>
+   <member>
+    query_timeout : Timeout-Wert (Einheit: Millisekunden) für eine
+    Abfrageanforderung. Bei Zeitüberschreitung wird eine Nachricht zum
+    Abbrechen der angeforderten Abfrage an den Server gesendet. Der
+    Rückgabewert kann von der Konfiguration disconnect_on_query_timeout
+    abhängen; auch wenn die Nachricht zum Abbrechen einer Anforderung an den
+    Server gesendet wird, kann diese Anforderung erfolgreich sein.
+   </member>
+   <member>
+    disconnect_on_query_timeout : Konfiguriert einen Wert, der angibt, ob bei
+    einer Zeitüberschreitung sofort ein Fehler der ausgeführten Funktion
+    zurückgegeben werden soll. Der Standardwert ist false.
+   </member>
+  </simplelist>
+  <note>
+   <simpara>
+    <literal>?</literal> und <literal>:</literal>, die in der
+    PHP-Verbindungs-URL als Bezeichner verwendet werden, dürfen nicht im
+    Passwort enthalten sein. Das Folgende ist ein Beispiel für ein Passwort,
+    das nicht als Verbindungs-URL verwendet werden kann, da es
+    "<literal>?:</literal>" enthält.
+   </simpara>
+   <simpara>
+    $url = "CUBRID:localhost:33000:tdb:dba:12?:?login_timeout=100";
+   </simpara>
+   <simpara>
+    Passwörter, die <literal>?</literal> oder <literal>:</literal> enthalten,
+    können als separater Parameter übergeben werden.
+   </simpara>
+   <simpara>
+    $url = "CUBRID:localhost:33000:tbd:::?login_timeout=100";
+   </simpara>
+   <simpara>
+    $conn = cubrid_connect_with_url($url, "dba", "12?");
+   </simpara>
+   <simpara>
+    Wenn der Benutzer oder das Passwort leer ist, dürfen Sie
+    "<literal>:</literal>" nicht entfernen; das Folgende ist ein Beispiel.
+   </simpara>
+   <simpara>
+    $url = "CUBRID:localhost:33000:demodb:::";
+   </simpara>
+  </note>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <variablelist>
+   <varlistentry>
+    <term><parameter>conn_url</parameter></term>
+    <listitem><simpara>Eine Zeichenkette, die die Verbindungsinformationen des Servers enthält.</simpara></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>userid</parameter></term>
+    <listitem><simpara>Benutzername für die Datenbank.</simpara></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>passwd</parameter></term>
+    <listitem><simpara>Benutzerpasswort.</simpara></listitem>
+   </varlistentry>
+   <varlistentry>
+    <term><parameter>new_link</parameter></term>
+    <listitem><simpara>Wenn ein zweiter Aufruf von
+      <function>cubrid_connect_with_url</function> mit denselben Argumenten
+      erfolgt, wird keine neue Verbindung hergestellt, sondern stattdessen die
+      Verbindungskennung der bereits geöffneten Verbindung zurückgegeben. Der
+      Parameter <parameter>new_link</parameter> ändert dieses Verhalten und
+      bewirkt, dass <function>cubrid_connect_with_url</function> immer eine neue
+      Verbindung öffnet, selbst wenn
+      <function>cubrid_connect_with_url</function> zuvor mit denselben
+      Parametern aufgerufen wurde.</simpara></listitem>
+   </varlistentry>
+  </variablelist>
+ </refsect1>
+
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <simpara>
+   Die Verbindungskennung, wenn der Vorgang erfolgreich ist,&return.falseforfailure;.
+  </simpara>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <example>
+   <title>Beispiel für <function>cubrid_connect_with_url</function> mit einer URL ohne Eigenschaften</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$conn_url = "CUBRID:localhost:33000:demodb:dba::";
+$con = cubrid_connect_with_url($conn_url);
+
+if ($con) {
+   echo "connected successfully";
+   cubrid_execute($con, "create table person(id int,name char(16))");
+   $req =cubrid_execute($con, "insert into person values(1,'James')");
+
+   if ($req) {
+      cubrid_close_request($req);
+      cubrid_commit($con);
+   } else {
+      cubrid_rollback($con);
+   }
+   cubrid_disconnect($con);
+}
+?>
+]]>
+   </programlisting>
+  </example>
+
+  <example>
+   <title>Beispiel für <function>cubrid_connect_with_url</function> mit einer URL mit Eigenschaften</title>
+   <programlisting role="php">
+<![CDATA[
+<?php
+$conn_url = "CUBRID:127.0.0.1:33000:demodb:dba::?login_timeout=100";
+$con = cubrid_connect_with_url ($conn_url);
+
+if ($con) {
+   echo "connected successfully";
+   cubrid_execute($con, "create table person(id int,name char(16))");
+   $req =cubrid_execute($con, "insert into person values(1,'James')");
+
+   if ($req) {
+      cubrid_close_request($req);
+      cubrid_commit($con);
+   } else {
+      cubrid_rollback($con);
+   }
+   cubrid_disconnect($con);
+}
+?>
+]]>
+   </programlisting>
+  </example>
+ </refsect1>
+
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <simplelist>
+   <member><function>cubrid_connect</function></member>
+   <member><function>cubrid_pconnect</function></member>
+   <member><function>cubrid_pconnect_with_url</function></member>
+   <member><function>cubrid_disconnect</function></member>
+   <member><function>cubrid_close</function></member>
+  </simplelist>
+ </refsect1>
+
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
