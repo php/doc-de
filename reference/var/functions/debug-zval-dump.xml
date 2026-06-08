@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EN-Revision: 17ebcd2ea14b405b781bd93aea6fa7219b6e29ae Maintainer: lacatoire Status: ready -->
+<refentry xml:id="function.debug-zval-dump" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>debug_zval_dump</refname>
+  <refpurpose>Gibt eine Zeichenkettendarstellung einer internen zval-Struktur aus</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  &reftitle.description;
+  <methodsynopsis>
+   <type>void</type><methodname>debug_zval_dump</methodname>
+   <methodparam><type>mixed</type><parameter>value</parameter></methodparam>
+   <methodparam rep="repeat"><type>mixed</type><parameter>values</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Gibt eine Zeichenkettendarstellung einer internen zval-Struktur (Zend
+   value) aus. Das ist vor allem nützlich, um Implementierungsdetails der Zend
+   Engine oder von PHP-Erweiterungen zu verstehen oder zu debuggen.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  &reftitle.parameters;
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>value</parameter></term>
+     <listitem>
+      <para>
+       Die auszugebende Variable oder der auszugebende Wert.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>values</parameter></term>
+     <listitem>
+      <para>
+       Weitere auszugebende Variablen oder Werte.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  &reftitle.returnvalues;
+  <para>
+   &return.void;
+  </para>
+ </refsect1>
+
+ <refsect1 role="changelog">
+  &reftitle.changelog;
+  <informaltable>
+   <tgroup cols="2">
+    <thead>
+     <row>
+      <entry>&Version;</entry>
+      <entry>&Description;</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry>8.4.0</entry>
+      <entry>
+       <function>debug_zval_dump</function> gibt nun an, ob ein Array gepackt
+       ist.
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </informaltable>
+ </refsect1>
+
+ <refsect1 role="examples">
+  &reftitle.examples;
+  <para>
+   <example>
+    <title><function>debug_zval_dump</function>-Beispiel</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+$var1 = 'Hello';
+$var1 .= ' World';
+$var2 = $var1;
+
+debug_zval_dump($var1);
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+string(11) "Hello World" refcount(3)
+]]>
+    </screen>
+   </example>
+  </para>
+  <note>
+   <title>Den <literal>refcount</literal> verstehen</title>
+   <para>
+    Der von dieser Funktion angezeigte <literal>refcount</literal>-Wert kann
+    ohne ein detailliertes Verständnis der Implementierung der Engine
+    überraschend sein.
+   </para>
+   <para>
+    Die Zend Engine verwendet Referenzzählung für zwei verschiedene Zwecke:
+   </para>
+   <para>
+    <simplelist>
+     <member>
+      Optimierung des Speicherverbrauchs mit einer Technik namens "Copy on
+      Write", bei der mehrere Variablen, die denselben Wert enthalten, auf
+      dieselbe Kopie im Speicher verweisen. Wird eine der Variablen geändert,
+      wird sie auf eine neue Kopie im Speicher verwiesen, und der
+      Referenzzähler des Originals wird um 1 verringert.
+     </member>
+     <member>
+      Verfolgung von Variablen, die per Referenz zugewiesen oder übergeben
+      wurden (siehe <link linkend="language.references">Referenzen
+      erklärt</link>). Dieser refcount wird in einem separaten Referenz-zval
+      gespeichert, der auf das zval für den aktuellen Wert verweist. Dieses
+      zusätzliche zval wird derzeit nicht von
+      <function>debug_zval_dump</function> angezeigt.
+     </member>
+    </simplelist>
+   </para>
+   <para>
+    Da <function>debug_zval_dump</function> seine Eingabe als normale, per
+    Wert übergebene Parameter entgegennimmt, wird zu ihrer Übergabe die
+    Copy-on-Write-Technik verwendet: Anstatt die Daten zu kopieren, wird der
+    refcount für die Dauer des Funktionsaufrufs um eins erhöht. Würde die
+    Funktion den Parameter nach dem Empfang ändern, würde eine Kopie
+    erstellt; da sie das nicht tut, zeigt sie einen um eins höheren refcount
+    als im aufrufenden Geltungsbereich an.
+   </para>
+   <para>
+    Die Parameterübergabe verhindert außerdem, dass
+    <function>debug_zval_dump</function> Variablen anzeigt, die per Referenz
+    zugewiesen wurden. Zur Veranschaulichung soll eine leicht abgewandelte
+    Version des obigen Beispiels betrachtet werden:
+
+    <informalexample>
+     <programlisting role="php">
+<![CDATA[
+<?php
+$var1 = 'Hello';
+$var1 .= ' World';
+// Drei Variablen als Referenzen auf denselben Wert setzen
+$var2 =& $var1;
+$var3 =& $var1;
+
+debug_zval_dump($var1);
+?>
+]]>
+     </programlisting>
+     &example.outputs;
+     <screen>
+<![CDATA[
+string(11) "Hello World" refcount(2)
+]]>
+     </screen>
+    </informalexample>
+   </para>
+   <para>
+    Obwohl <varname>$var1</varname>, <varname>$var2</varname> und
+    <varname>$var3</varname> als Referenzen verknüpft sind, wird nur der
+    <emphasis>Wert</emphasis> an <function>debug_zval_dump</function>
+    übergeben. Dieser Wert wird einmal von der Gruppe der Referenzen und
+    einmal innerhalb von <function>debug_zval_dump</function> verwendet und
+    zeigt daher einen refcount von 2.
+   </para>
+   <para>
+    Weitere Komplikationen ergeben sich durch Optimierungen, die in der Engine
+    für verschiedene Datentypen vorgenommen werden. Einige Typen wie
+    Ganzzahlen verwenden kein "Copy on Write" und zeigen daher überhaupt
+    keinen refcount. In anderen Fällen zeigt der refcount zusätzliche, intern
+    verwendete Kopien, etwa wenn eine literale Zeichenkette oder ein Array als
+    Teil einer Code-Anweisung gespeichert wird.
+   </para>
+  </note>
+ </refsect1>
+ <refsect1 role="seealso">
+  &reftitle.seealso;
+  <para>
+   <simplelist>
+    <member><function>var_dump</function></member>
+    <member><function>debug_backtrace</function></member>
+    <member><link linkend="language.references">Referenzen erklärt</link></member>
+    <member><link xlink:href="&url.derick.references;">Referenzen erklärt (von Derick Rethans)</link></member>
+   </simplelist>
+  </para>
+ </refsect1>
+</refentry>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->
